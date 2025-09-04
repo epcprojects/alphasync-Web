@@ -10,14 +10,20 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-primary: #2862A9;
+  --color-lightGray: #D5D7DA;
+  --color-charcoal: #393939;
+  --color-mercury: #E9EAEB;
+  --color-raven: #717680;
+  --color-gravel: #414651;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
   background: var(--background);
