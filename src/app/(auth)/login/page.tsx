@@ -28,7 +28,7 @@ const Page = () => {
             placeholder="abc@example.com"
             // value={formData.username}
             // onChange={handleChange}
-            error={false}
+            error={true}
             errorMessage="Please enter a valid email address."
           />
           {loginType === "Doctor" && (
@@ -41,7 +41,7 @@ const Page = () => {
               // value={formData.username}
               // onChange={handleChange}
               error={false}
-              errorMessage="Please enter a valid email address."
+              errorMessage="Please enter your correct password."
             />
           )}
         </div>
