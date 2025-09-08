@@ -1,11 +1,13 @@
 import React from "react";
 
+type buttonType = "button" | "submit" | "reset";
 interface ThemeButtonProps {
   label: string;
   onClick?: () => void;
   icon?: React.ReactNode;
   className?: string;
   disabled?: boolean;
+  type?: buttonType;
 }
 
 const ThemeButton: React.FC<ThemeButtonProps> = ({
@@ -14,6 +16,7 @@ const ThemeButton: React.FC<ThemeButtonProps> = ({
   className,
   icon,
   disabled,
+  type = "button",
 }) => {
   return (
     <div
@@ -27,6 +30,7 @@ const ThemeButton: React.FC<ThemeButtonProps> = ({
         <button
           disabled={disabled}
           onClick={onClick}
+          type={type}
           className={`
             p-2 w-full md:p-2.5 flex disabled:cursor-not-allowed  items-center gap-2  justify-center text-xs md:text-sm rounded-full 
                      bg-gradient-to-r cursor-pointer 

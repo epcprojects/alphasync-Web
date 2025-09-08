@@ -5,6 +5,11 @@ import ThemeInput from "./ui/inputs/ThemeInput";
 import AttributionCard from "./ui/cards/AttributionCard";
 import LoginBanner from "./LoginBanner";
 import Portal from "./ui/portal";
+import InfoModal from "./ui/modals/InfoModal";
+import InfoList from "./ui/cards/InfoList";
+import Header from "./layout/header";
+import DashboardStats from "./layout/DashboardStats";
+
 
 export {
     ThemeButton,
@@ -13,5 +18,9 @@ export {
     ThemeInput,
     AttributionCard,
     LoginBanner,
-    Portal
+    Portal,
+    InfoModal,
+    InfoList,
+    Header,
+    DashboardStats
 }

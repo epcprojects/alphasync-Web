@@ -2,6 +2,7 @@
 import { AuthHeader, ThemeButton } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import { InfoIcon } from "@/icons";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState } from "react";
 import OTPInput from "react-otp-input";
 import { toast } from "react-toastify";
@@ -9,12 +10,24 @@ import { toast } from "react-toastify";
 const Page = () => {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const loginType = searchParams.get("loginType"); // "Doctor" or "Customer"
+  const email = searchParams.get("email");
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("verify");
+
     if (otp === "123456") {
       setError(false);
       console.log("OTP Verified");
+      if (loginType === "Doctor") {
+        router.push("/dashboard");
+      } else {
+        router.push(`/verify-info?email=${email}`);
+      }
     } else {
       setError(true);
       toast.error(`Incorrect OTP`, {
@@ -72,7 +85,7 @@ const Page = () => {
         <ThemeButton
           disabled={otp.length < 6 || error}
           label="Verify"
-          onClick={() => {}}
+          type="submit"
         />
       </form>
       <div className="flex items-center gap-1">

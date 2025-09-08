@@ -44,7 +44,9 @@ export default function RootLayout({
         <link rel="manifest" href="images/favicon/site.webmanifest" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
-      <body className={`${poppins_init.variable}  antialiased`}>
+      <body
+        className={`${poppins_init.variable} !bg-[url(/images/background.png)] !bg-center w-full min-h-dvh !bg-cover !bg-no-repeat antialiased`}
+      >
         {children}
         <CustomToastContainer />
       </body>
