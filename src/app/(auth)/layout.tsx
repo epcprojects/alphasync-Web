@@ -9,7 +9,7 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-screen bg-white">
       <div className="grid xs:grid-cols-1 md:grid-cols-2 md:gap-4 ">
         {children}
         <LoginBanner

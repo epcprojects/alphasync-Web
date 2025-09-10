@@ -31,7 +31,7 @@ const InfoModal: React.FC<InfoModalProps> = ({
   if (!isOpen) return null;
   return (
     <Portal>
-      <div className="fixed min-h-dvh  top-0 inset-0 bg-black/50 backdrop-blur-xs flex items-end md:items-center justify-center z-50">
+      <div className="fixed min-h-dvh z-[100]  top-0 inset-0 bg-black/50 backdrop-blur-xs flex items-end md:items-center justify-center ">
         <div
           className="bg-white rounded-t-xl relative md:rounded-xl max-w-lg w-full    md:m-auto md:p-8 p-3 container md:mx-4 shadow-xl"
           onClick={(e) => e.stopPropagation()}

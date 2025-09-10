@@ -34,7 +34,7 @@ const Page = () => {
         position: "top-left",
         icon: <InfoIcon />,
         closeButton: false,
-        autoClose: 30000,
+        autoClose: 3000,
         hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: true,

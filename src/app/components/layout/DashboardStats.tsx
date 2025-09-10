@@ -10,12 +10,14 @@ interface StatItem {
 
 interface DashboardStatsProps {
   username: string;
+  showUserName: boolean;
   heading: string;
   stats: StatItem[];
 }
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({
   username,
+  showUserName,
   heading,
   stats,
 }) => {
@@ -23,9 +25,11 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
     <div className="flex items-center gap-3 md:gap-12 flex-col">
       {/* Header */}
       <div className="flex items-center flex-col gap-1.5 md:gap-3 justify-center">
-        <h2 className="text-white font-normal text-base md:text-2xl">
-          👋 Welcome {username},
-        </h2>
+        {showUserName && (
+          <h2 className="text-white font-normal text-base md:text-2xl">
+            👋 Welcome {username},
+          </h2>
+        )}
 
         <h3 className="text-white text-2xl font-semibold md:text-4xl">
           {heading}
