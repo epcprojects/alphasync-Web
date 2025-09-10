@@ -6,16 +6,15 @@ import {
   ThemeInput,
 } from "@/app/components";
 import { Images } from "@/app/ui/images";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "react-toastify";
-import { InfoIcon } from "@/icons";
 
-const Page = () => {
+function Content() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const email = searchParams.get("email");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -113,6 +112,12 @@ const Page = () => {
       />
     </div>
   );
-};
+}
 
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Content />
+    </Suspense>
+  );
+}

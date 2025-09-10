@@ -10,6 +10,7 @@ import PackageIcon from "../../../../public/icons/PackageIcon";
 import ThemeButton from "./buttons/ThemeButton";
 
 export default function Notifications() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type notiType = "reorder" | "message" | "request";
 
   const notifications = [

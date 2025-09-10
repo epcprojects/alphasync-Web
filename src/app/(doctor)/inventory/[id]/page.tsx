@@ -3,15 +3,13 @@ import { ProductSwiper, ThemeButton } from "@/app/components";
 import OrderModal from "@/app/components/ui/modals/OrderModal";
 import { ArrowDownIcon, HeartFilledIcon, ShopingCartIcon } from "@/icons";
 import { showSuccessToast } from "@/lib/toast";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
-interface Props {
-  params: { id: string };
-}
-
-export default function PostDetail({ params }: Props) {
+export default function PostDetail() {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const params = useParams<{ id: string }>();
   const productViews = [
     {
       id: "condition-history",

@@ -1,5 +1,5 @@
 import { AuthPagesImages } from "./auth";
-import {LayoutImages} from './layout'
+import {LayoutImages} from './layoutImg'
 
 export const Images = {
   auth: AuthPagesImages,

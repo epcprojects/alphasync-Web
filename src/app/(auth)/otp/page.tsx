@@ -3,11 +3,11 @@ import { AuthHeader, ThemeButton } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import { InfoIcon } from "@/icons";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import OTPInput from "react-otp-input";
 import { toast } from "react-toastify";
 
-const Page = () => {
+function OTPContent() {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState(false);
   const searchParams = useSearchParams();
@@ -102,6 +102,12 @@ const Page = () => {
       </div>
     </div>
   );
-};
+}
 
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OTPContent />
+    </Suspense>
+  );
+}

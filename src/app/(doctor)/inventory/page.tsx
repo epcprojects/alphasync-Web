@@ -9,13 +9,11 @@ import {
   GridViewIcon,
   ListViewIcon,
   SearchIcon,
-  ToastSuccessIcon,
 } from "@/icons";
 import { showSuccessToast } from "@/lib/toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import ReactPaginate from "react-paginate";
-import { toast } from "react-toastify";
 
 const products = [
   {
@@ -80,7 +78,7 @@ const products = [
   },
 ];
 
-const Page = () => {
+function InventoryContent() {
   const [search, setSearch] = useState("");
   const [showFavourites, setShowFavourites] = useState(false);
   const [showGridView, setShowGridView] = useState(true);
@@ -194,7 +192,7 @@ const Page = () => {
               <ProductCard
                 key={product.id}
                 product={product}
-                onAddToCart={(id) => setIsOrderModalOpen(true)}
+                onAddToCart={() => setIsOrderModalOpen(true)}
                 onCardClick={() => router.push(`/inventory/${product.id}`)}
               />
             ))}
@@ -214,7 +212,7 @@ const Page = () => {
                 key={product.id}
                 product={product}
                 onToggleFavourite={(id) => console.log("Fav toggled", id)}
-                onAddToCart={(id) => setIsOrderModalOpen(true)}
+                onAddToCart={() => setIsOrderModalOpen(true)}
               />
             ))}
           </div>
@@ -281,6 +279,12 @@ const Page = () => {
       />
     </div>
   );
-};
+}
 
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InventoryContent />
+    </Suspense>
+  );
+}

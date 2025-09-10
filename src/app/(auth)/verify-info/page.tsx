@@ -2,9 +2,9 @@
 import { AuthHeader, InfoList, ThemeButton } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import { useRouter, useSearchParams } from "next/navigation";
-import React from "react";
+import React, { Suspense } from "react";
 
-const Page = () => {
+function VerifyInfoContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -57,6 +57,12 @@ const Page = () => {
       </div>
     </div>
   );
-};
+}
 
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyInfoContent />
+    </Suspense>
+  );
+}
