@@ -24,6 +24,7 @@ const headings: Record<string, string> = {
   "/reminder": "Refill Reminders",
   "/request": "Patient Requests",
   "/settings": "Settings",
+  "/pending-payments": "Trusted Peptide Solutions",
 };
 
 const subHeadings: Record<string, string> = {

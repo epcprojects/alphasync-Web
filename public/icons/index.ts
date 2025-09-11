@@ -38,6 +38,10 @@ import ApproveCheckIcon from "./ApproveCheckIcon";
 import RejectIcon from "./RejectIcon";
 import EyeIcon from "./EyeIcon";
 import UserRejectIcon from "./UserRejectIcon";
+import FilterIcon from "./FilterIcon"
+import CommandK from "./CommandK";
+import MedicineIcon from "./MedicineIcon";
+import Trash from "./Trash";
 export {
     ShoppingCartIcon,
     InfoIcon,
@@ -45,6 +49,7 @@ export {
     SuccessCheckIcon,
     InventoryIcon,
     CustomerIcon,
+    CommandK,
     OrdersIcon,
     ReminderIcon,
     SettingsIcon,
@@ -53,6 +58,7 @@ export {
     DeliveryBoxIcon,
     SearchIcon,
     FavoriteIcon,
+    FilterIcon,
     GridViewIcon,
     ListViewIcon,
     ShopingCartIcon,
@@ -65,6 +71,7 @@ export {
     ReorderIcon,
     ChatIcon,
     TrashBinIcon,
+    Trash,
     ProfileIcon,
     LogoutIcon,
     UserGroupIcon,
@@ -73,6 +80,7 @@ export {
     PlusIcon,
     PackageOutlineIcon,
     PackageIcon,
+    MedicineIcon,
     NoteIcon,
     RequestTabIcon,
     ApproveCheckIcon,
