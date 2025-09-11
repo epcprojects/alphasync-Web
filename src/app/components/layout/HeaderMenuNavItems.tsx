@@ -26,7 +26,7 @@ function HeaderMenuNavItems({ items }: HeaderMenuNavItemsProps) {
           <li key={item.href}>
             <Link
               href={item.href}
-              className={`nav-link flex items-center gap-1 font-medium rtl:leading-10 whitespace-nowrap text-base  py-1.5 px-3 duration-300 hover:bg-primary/80 ${
+              className={`nav-link group  flex items-center gap-1 font-light rtl:leading-10 whitespace-nowrap text-base  py-1.5 px-3 duration-300 hover:bg-primary/80 ${
                 isActive && "bg-primary"
               } rounded-full text-white`}
               style={{ cursor: "pointer" }}
@@ -38,7 +38,16 @@ function HeaderMenuNavItems({ items }: HeaderMenuNavItemsProps) {
                     : " text-white bg-white/20 backdrop-blur"
                 }`}
               >
-                <Icon fill={isActive ? "#2862A9" : "#ffffff50"} />
+                {/* <Icon fill={isActive ? "#2862A9" : "#ffffff50"} /> */}
+                <span
+                  className={`transition-colors duration-300  ${
+                    isActive
+                      ? "!text-[#2862A9]"
+                      : "text-white/50 group-hover:!text-white"
+                  }`}
+                >
+                  <Icon fill={"currentColor"} />
+                </span>
               </span>
               {item.label}
             </Link>

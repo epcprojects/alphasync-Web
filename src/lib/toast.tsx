@@ -30,5 +30,10 @@ export const showErrorToast = (message: string) => {
     closeOnClick: true,
     pauseOnHover: true,
     draggable: true,
+    style: {
+      width: "fit-content",
+      maxHeight: "44px",
+      minHeight: "44px",
+    },
   });
 };

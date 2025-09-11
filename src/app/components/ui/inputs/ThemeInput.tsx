@@ -65,7 +65,7 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
     <label className="block ">
       {label && (
         <span className="block mb-1 text-sm text-gray-700 font-medium text-start">
-          {label}:
+          {label}: {required && <span className="text-red-500"> *</span>}
         </span>
       )}
 
@@ -73,7 +73,7 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
         <input
           id={id}
           type={renderedType}
-          className={`w-full focus:ring-2 p-2 md:px-3 md:py-2 border  rounded-lg outline-none text-gray-900 placeholder:text-neutral-300
+          className={`w-full focus:ring h-11 p-2 md:px-3 md:py-2.5 border  rounded-lg outline-none text-gray-900 placeholder:text-neutral-300
             ${
               error
                 ? "border-red-500 focus:ring-red-200"

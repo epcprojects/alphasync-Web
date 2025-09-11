@@ -28,7 +28,7 @@ export default function ProductCard({
   return (
     <div
       onClick={onCardClick}
-      className="rounded-2xl pb-2 cursor-pointer flex-col bg-white shadow-xl border relative border-gray-200 px-2 flex items-center justify-center"
+      className="rounded-2xl pb-2 cursor-pointer flex-col bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] border relative border-gray-200 px-2 flex items-center justify-center"
     >
       <button className="absolute top-4 end-4 cursor-pointer">
         {product.isFavourite ? (
@@ -70,7 +70,10 @@ export default function ProductCard({
 
             <div className="flex items-center justify-between">
               <button
-                onClick={() => onAddToCart?.(product.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToCart?.(product.id);
+                }}
                 className="border flex items-center cursor-pointer hover:bg-gray-200 gap-2 md:min-w-60 justify-center border-gray-300 shadow text-gray-700 md:text-base text-sm font-semibold bg-white rounded-full px-2 md:px-4 py-1.5 md:py-2.5"
               >
                 <ShopingCartIcon /> Order

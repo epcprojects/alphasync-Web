@@ -43,7 +43,7 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = (): void => {
-      setIsSticky(window.scrollY > 100);
+      setIsSticky(window.scrollY > 350);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -71,7 +71,7 @@ const Header = () => {
     transition-all duration-500 ease-in-out 
     ${
       isSticky
-        ? "fixed w-[98%] pt-4 px-4 rounded-2xl top-4 !bg-[url(/images/bannerImage.png)] !bg-center !bg-cover !bg-no-repeat"
+        ? "fixed w-[98%] pt-4 px-4 rounded-2xl top-4 !bg-[url(/images/bannerImage.png)] !bg-top !bg-cover !bg-no-repeat"
         : "relative w-full border-b border-white/20 top-0"
     } 
     pb-2 md:pb-3.5 z-[99]`}
@@ -107,7 +107,7 @@ const Header = () => {
           <div className="items-center hidden gap-4 md:flex">
             <Notifications />
 
-            <div className="text-right">
+            <div className="text-right w-8 h-8 md:h-11 md:w-11">
               <Menu>
                 <MenuButton className="inline-flex items-center gap-2 rounded-full  text-sm/6 font-semibold  shadow-inner shadow-white/10 focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-700 data-open:bg-gray-700">
                   <Image

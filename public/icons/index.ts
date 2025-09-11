@@ -26,8 +26,18 @@ import ChatIcon from "./ChatIcon";
 import TrashBinIcon from "./TrashBinIcon";
 import ProfileIcon from "./ProfileIcon";
 import LogoutIcon from "./LogoutIcon";
-
-
+import UserGroupIcon from "./UserGroupIcon";
+import UserAddIcon from "./UserAddIcon";
+import BubbleChatIcon from "./BubbleChatIcon";
+import PlusIcon from "./PlusIcon";
+import PackageOutlineIcon from "./PackageOutlineIcon";
+import PackageIcon from "./PackageIcon";
+import NoteIcon from "./NoteIcon";
+import RequestTabIcon from "./RequestTabIcon";
+import ApproveCheckIcon from "./ApproveCheckIcon";
+import RejectIcon from "./RejectIcon";
+import EyeIcon from "./EyeIcon";
+import UserRejectIcon from "./UserRejectIcon";
 export {
     ShoppingCartIcon,
     InfoIcon,
@@ -56,5 +66,17 @@ export {
     ChatIcon,
     TrashBinIcon,
     ProfileIcon,
-    LogoutIcon
+    LogoutIcon,
+    UserGroupIcon,
+    UserAddIcon,
+    BubbleChatIcon,
+    PlusIcon,
+    PackageOutlineIcon,
+    PackageIcon,
+    NoteIcon,
+    RequestTabIcon,
+    ApproveCheckIcon,
+    RejectIcon,
+    EyeIcon,
+    UserRejectIcon
 }

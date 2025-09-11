@@ -30,7 +30,7 @@ export default function ProductListView({
     <div
       onClick={onRowClick}
       key={product.id}
-      className="grid cursor-pointer grid-cols-12 gap-4 items-center rounded-xl bg-white p-1 md:p-2"
+      className="grid cursor-pointer grid-cols-12 gap-4 items-center rounded-xl bg-white p-1 md:p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
     >
       <div className="col-span-5 flex items-center gap-3">
         <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -68,7 +68,10 @@ export default function ProductListView({
 
       <div className="col-span-1 flex items-center justify-center gap-2">
         <button
-          onClick={() => onToggleFavourite?.(product.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavourite?.(product.id);
+          }}
           className={`flex h-8 w-8 items-center justify-center rounded-md border cursor-pointer border-red-500 ${
             product.isFavourite ? "bg-red-50 text-red-500" : "text-red-500"
           }`}
@@ -81,7 +84,10 @@ export default function ProductListView({
         </button>
 
         <button
-          onClick={() => onAddToCart?.(product.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddToCart?.(product.id);
+          }}
           className="flex h-8 w-8 items-center justify-center rounded-md border cursor-pointer border-primary"
         >
           <ShopingCartIcon width={16} height={16} />
