@@ -8,6 +8,7 @@ type ChatMessageProps = {
   message: string;
   time: string;
   isUser?: boolean;
+  width?: string;
 };
 
 export default function ChatMessage({
@@ -15,10 +16,11 @@ export default function ChatMessage({
   message,
   time,
   isUser = false,
+  width = "min-w-lg max-w-lg",
 }: ChatMessageProps) {
   return (
     <div className={`w-full flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div className="w-full min-w-lg flex flex-col gap-1.5 max-w-lg">
+      <div className={`${width} w-full flex flex-col gap-1.5`}>
         <div className="flex items-center justify-between gap-1">
           <div className="flex gap-1 md:gap-2 items-center">
             {!isUser && (

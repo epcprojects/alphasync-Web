@@ -26,13 +26,20 @@ import { useEffect, useRef, useState } from "react";
 import { orders } from "../../../../../public/data/orders";
 import ReactPaginate from "react-paginate";
 import { PrecriptionDATA } from "../../../../../public/data/PrescriptionRequest";
-import Image from "next/image";
+import AddNoteModal from "@/app/components/ui/modals/AddNoteModal";
+import ProductRequestDetailModal from "@/app/components/ui/modals/ProductRequestDetailModal";
+import ChatModal from "@/app/components/ui/modals/ChatModal";
+import NewOrderModal from "@/app/components/ui/modals/NewOrderModal";
 
 export default function CustomerDetail() {
   const router = useRouter();
   // const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
   const itemsPerPage = 9;
 
@@ -46,11 +53,11 @@ export default function CustomerDetail() {
     setCurrentPage(selected);
   };
 
-  const handleConfirmOrder = () => {
-    console.log("log");
-    setIsOrderModalOpen(false);
-    showSuccessToast("Order created successfully!");
-  };
+  // const handleConfirmOrder = () => {
+  //   console.log("log");
+  //   setIsOrderModalOpen(false);
+  //   showSuccessToast("Order created successfully!");
+  // };
 
   const [messages, setMessages] = useState<
     { sender: string; time: string; text: string; isUser: boolean }[]
@@ -64,8 +71,8 @@ export default function CustomerDetail() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = (msg: string) => {
+    if (!msg.trim()) return;
 
     const now = new Date();
     const time = now.toLocaleTimeString([], {
@@ -78,13 +85,12 @@ export default function CustomerDetail() {
       {
         sender: toggle ? "You" : "John Smith",
         time,
-        text: input,
+        text: msg,
         isUser: toggle,
       },
     ]);
 
     setToggle(!toggle);
-    setInput("");
   };
 
   const handleApprove = (title: string) => {
@@ -93,12 +99,21 @@ export default function CustomerDetail() {
   };
 
   const handleReject = (title: string) => {
-    showErrorToast("Patient request denied.");
+    setIsRejectModalOpen(true);
     console.log(title);
   };
 
   const handleAddNote = (title: string) => {
+    setIsNoteModalOpen(true);
     console.log(title);
+  };
+
+  const handleCreateOrder = (data: {
+    customer: string;
+    items: { product: string; quantity: number; price: number }[];
+    totalAmount: number;
+  }) => {
+    console.log("Final Order Data:", data);
   };
 
   return (
@@ -188,7 +203,9 @@ export default function CustomerDetail() {
           <div className="flex items-center gap-1.5 md:gap-3">
             <ThemeButton
               label="Create Order"
-              onClick={() => {}}
+              onClick={() => {
+                setIsOrderModalOpen(true);
+              }}
               icon={<PlusIcon />}
               variant="primaryOutline"
               heightClass="h-10"
@@ -334,14 +351,14 @@ export default function CustomerDetail() {
                     placeholder="Type your message..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                    onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
                     className="border border-gray-200 h-12 rounded-full w-full outline-none focus:ring focus:ring-gray-200 placeholder:text-gray-400 ps-4 pe-20 bg-gray-50 text-sm md:text-base"
                   />
                   <ThemeButton
                     label="Send"
                     heightClass="h-10"
                     className="absolute end-1"
-                    onClick={handleSend}
+                    onClick={() => handleSend(input)}
                   />
                 </div>
               </TabPanel>
@@ -381,8 +398,12 @@ export default function CustomerDetail() {
                     onApprove={() => handleApprove(item.title)}
                     onReject={() => handleReject(item.title)}
                     onAddNote={() => handleAddNote(item.title)}
-                    onViewDetails={() => {}}
-                    onChat={() => {}}
+                    onViewDetails={() => {
+                      setIsDetailModalOpen(true);
+                    }}
+                    onChat={() => {
+                      setIsChatModalOpen(true);
+                    }}
                     {...item}
                   />
                 ))}
@@ -392,34 +413,76 @@ export default function CustomerDetail() {
         </div>
       </div>
 
-      <OrderModal
+      <RequestRejectModal
+        isOpen={isRejectModalOpen}
+        onClose={() => setIsRejectModalOpen(false)}
+        onConfirm={(reason) => {
+          showErrorToast("Patient request denied.");
+          console.log(reason);
+        }}
+        itemTitle="ORD-004"
+      />
+
+      <AddNoteModal
+        isOpen={isNoteModalOpen}
+        onClose={() => setIsNoteModalOpen(false)}
+        onConfirm={(note) => {
+          showSuccessToast("Note added Successfully.");
+          console.log(note);
+        }}
+        itemTitle="ORD-004"
+      />
+
+      <ProductRequestDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        itemTitle="REQ-001"
+      />
+
+      <ChatModal
+        isOpen={isChatModalOpen}
+        onClose={() => setIsChatModalOpen(false)}
+        itemTitle="REQ-001"
+        messages={messages}
+        onSend={(msg) => {
+          handleSend(msg);
+        }}
+      />
+
+      <NewOrderModal
         isOpen={isOrderModalOpen}
-        onConfirm={() => handleConfirmOrder()}
+        onCreateOrder={handleCreateOrder}
+        onClose={() => setIsOrderModalOpen(false)}
         customers={[
           {
             name: "John Smith",
             displayName: "John Smith",
-            email: "john.smith@email.com john.smith@email.com",
           },
           {
             name: "Sarah J",
             displayName: "Sarah J",
-            email: "john.smith@email.com",
+            email: "Sarah.smith@email.com",
           },
           {
             name: "Emily Chen",
             displayName: "Emily Chen",
-            email: "john.smith@email.com",
+            email: "Emily.smith@email.com",
           },
         ]}
-        onClose={() => setIsOrderModalOpen(false)}
-      />
-
-      <RequestRejectModal
-        isOpen={true}
-        onClose={() => {}}
-        onConfirm={() => {}}
-        itemTitle="ORD-004"
+        products={[
+          {
+            name: "BPC-157",
+            displayName: "BPC-157",
+          },
+          {
+            name: "TB-500",
+            displayName: "TB-500",
+          },
+          {
+            name: "CJC-1295",
+            displayName: "CJC-1295",
+          },
+        ]}
       />
     </div>
   );

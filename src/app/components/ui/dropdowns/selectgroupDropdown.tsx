@@ -13,7 +13,7 @@ import { ArrowDownIcon, UserIcon } from "@/icons";
 
 type GroupOption =
   | string
-  | { name: string; displayName: string; email: string };
+  | { name: string; displayName: string; email?: string };
 
 type SelectGroupDropdownProps = {
   selectedGroup: string | string[];
@@ -31,6 +31,7 @@ type SelectGroupDropdownProps = {
   optionPaddingClasses?: string;
   showLabel?: boolean;
   disabled?: boolean;
+  showIcon?: boolean;
 };
 
 const getGroupKey = (group: GroupOption) =>
@@ -57,6 +58,7 @@ const SelectGroupDropdown = ({
   optionPaddingClasses = "p-2",
   showLabel = true,
   disabled = false,
+  showIcon,
 }: SelectGroupDropdownProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -139,7 +141,9 @@ const SelectGroupDropdown = ({
           (selectedGroup as string)?.toLowerCase()
       );
       return selected
-        ? `${getGroupLabel(selected)} - ${getGroupEmail(selected)}`
+        ? getGroupEmail(selected)
+          ? `${getGroupLabel(selected)} - ${getGroupEmail(selected)}`
+          : getGroupLabel(selected)
         : placeholder || "Select group...";
     }
   };
@@ -157,7 +161,7 @@ const SelectGroupDropdown = ({
           ref={refs.setReference}
           className={cn(
             "relative z-10 w-full rounded-lg py-2 border cursor-pointer bg-white text-left",
-            errors ? "border-red-500" : "border-gray-200",
+            errors ? "border-red-500" : "border-lightGray",
             disabled && "!bg-gray-100 text-gray-400 cursor-not-allowed", // <-- disabled styles
             paddingClasses
           )}
@@ -173,9 +177,11 @@ const SelectGroupDropdown = ({
               selectedGroup ? "text-gray-900" : "text-gray-400"
             )}
           >
-            <span className="shrink-0">
-              <UserIcon />
-            </span>
+            {showIcon && (
+              <span className="shrink-0">
+                <UserIcon />
+              </span>
+            )}
             <span className="line-clamp-1  pe-3 text-sm">
               {selectedDisplay()}
             </span>
@@ -216,6 +222,7 @@ const SelectGroupDropdown = ({
               {filteredGroups.map((group) => {
                 const key = getGroupKey(group);
                 const label = getGroupLabel(group);
+                const email = getGroupEmail(group);
                 return (
                   <div
                     key={key}
@@ -227,10 +234,7 @@ const SelectGroupDropdown = ({
                     onClick={() => handleSelect(group)}
                   >
                     <span className="text-sm flex items-center gap-2 text-gray-900">
-                      {label}
-                      <span className="text-gray-600 text-xs md:text-sm">
-                        john.smith@email.com
-                      </span>
+                      {label} {email && email}
                     </span>
                     {isSelected(key) && (
                       <span className="text-green-500 font-bold">&#10003;</span>

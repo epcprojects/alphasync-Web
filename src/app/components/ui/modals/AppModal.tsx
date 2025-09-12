@@ -14,16 +14,18 @@ interface AppModalProps {
   onConfirm?: () => void;
   confirmLabel?: string;
   cancelLabel?: string;
-  size?: "small" | "medium" | "large";
+  size?: "small" | "medium" | "large" | "extraLarge";
   outSideClickClose?: boolean;
   onCancel?: () => void;
   confirmBtnVarient?: buttonVariant;
+  showFooter?: boolean;
+  bodyPaddingClasses?: string;
 }
 
 const sizeClasses = {
-  small: "max-w-sm", // ~384px
-  medium: "max-w-lg", // ~512px
-  large: "max-w-3xl", // ~672px
+  small: "max-w-lg", // ~512px
+  medium: "max-w-[600px]", // ~600x
+  large: "max-w-3xl", // ~768px
   extraLarge: "max-w-5xl", // ~1024
 };
 
@@ -41,6 +43,8 @@ const AppModal: React.FC<AppModalProps> = ({
   outSideClickClose = true,
   onCancel,
   confirmBtnVarient,
+  showFooter = true,
+  bodyPaddingClasses = "p-3 md:p-5",
 }) => {
   if (!isOpen) return null;
 
@@ -79,28 +83,30 @@ const AppModal: React.FC<AppModalProps> = ({
             </button>
           </div>
 
-          <div className="bg-white p-3 md:p-5">{children}</div>
+          <div className={`bg-white ${bodyPaddingClasses}`}>{children}</div>
 
-          <div className="border-t border-gray-200 bg-white flex items-center justify-between p-2 md:p-4">
-            <ThemeButton
-              label={cancelLabel}
-              onClick={onCancel ? onCancel : onClose}
-              size="medium"
-              className="min-w-36"
-              variant="outline"
-              heightClass="h-10"
-            />
-            {onConfirm && (
+          {showFooter && (
+            <div className="border-t border-gray-200 bg-white flex items-center justify-between p-2 md:p-4">
               <ThemeButton
-                label={confirmLabel}
-                className="min-w-36"
-                onClick={onConfirm}
+                label={cancelLabel}
+                onClick={onCancel ? onCancel : onClose}
                 size="medium"
+                className="min-w-36"
+                variant="outline"
                 heightClass="h-10"
-                variant={confirmBtnVarient}
               />
-            )}
-          </div>
+              {onConfirm && (
+                <ThemeButton
+                  label={confirmLabel}
+                  className="min-w-36"
+                  onClick={onConfirm}
+                  size="medium"
+                  heightClass="h-10"
+                  variant={confirmBtnVarient}
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
     </Portal>
