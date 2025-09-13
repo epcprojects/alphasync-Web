@@ -1,29 +1,17 @@
 "use client";
 import {
   ArrowLeftIcon,
-  CommandK,
+  CrossIcon,
   DeliveryBoxIcon,
-  FavoriteIcon,
   FilterIcon,
-  GridViewIcon,
-  ListViewIcon,
   SearchIcon,
 } from "@/icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useRef, useState } from "react";
-import { products } from "../../../../public/data/products";
-import { showSuccessToast } from "@/lib/toast";
-import { OrderModal, ProductCard, ProductListView } from "@/app/components";
 import ReactPaginate from "react-paginate";
-import PrescriptionOrderCard, {
-  PrescriptionOrder,
-} from "@/app/components/ui/cards/PrescriptionOrderCard";
-
-interface FilterOption {
-  id: string;
-  label: string;
-  count?: number;
-}
+import PrescriptionOrderCard from "@/app/components/ui/cards/PrescriptionOrderCard";
+import { paymentOrders } from "../../../../public/data/orders";
+import { filterOptions } from "../../../../public/data/Filters";
 
 function PendingPayments() {
   const [search, setSearch] = useState("");
@@ -34,87 +22,12 @@ function PendingPayments() {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const today = new Date();
 
   const itemsPerPage = 9;
 
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const orders: PrescriptionOrder[] = [
-    {
-      id: "1",
-      orderNumber: "PO-001",
-      doctorName: "Dr. Sarah Wilson",
-      orderItems: [
-        {
-          id: "1",
-          medicineName: "2X Blend CJC-1295 No DAC (5mg) / Ipamorelin (5mg)",
-          quantity: 2,
-          price: 89.99,
-        },
-        {
-          id: "2",
-          medicineName: "ARA-290 (16mg) x 1",
-          quantity: 1,
-          price: 89.99,
-        },
-      ],
-      orderedOn: "8/8/2025",
-      totalPrice: 309.97,
-      isDueToday: "Due Today",
-    },
-    {
-      id: "2",
-      orderNumber: "PO-001",
-      doctorName: "Dr. Sarah Wilson",
-      orderItems: [
-        {
-          id: "1",
-          medicineName: "2X Blend CJC-1295 No DAC (5mg) / Ipamorelin (5mg)",
-          quantity: 2,
-          price: 89.99,
-        },
-        {
-          id: "2",
-          medicineName: "ARA-290 (16mg) x 1",
-          quantity: 1,
-          price: 89.99,
-        },
-      ],
-      orderedOn: "8/8/2025",
-      totalPrice: 309.97,
-      isDueToday: "Due Today",
-    },
-    {
-      id: "3",
-      orderNumber: "PO-001",
-      doctorName: "Dr. Sarah Wilson",
-      orderItems: [
-        {
-          id: "1",
-          medicineName: "2X Blend CJC-1295 No DAC (5mg) / Ipamorelin (5mg)",
-          quantity: 2,
-          price: 89.99,
-        },
-        {
-          id: "2",
-          medicineName: "ARA-290 (16mg) x 1",
-          quantity: 1,
-          price: 89.99,
-        },
-      ],
-      orderedOn: "8/8/2025",
-      totalPrice: 309.97,
-      isDueToday: "Due by 3 days",
-    },
-  ];
-  const filterOptions: FilterOption[] = [
-    { id: "all", label: "All" },
-    { id: "due-today", label: "Due Today" },
-    { id: "due-tomorrow", label: "Due Tomorrow" },
-    { id: "due-three-days", label: "Due in Three Days" },
-    { id: "due-week", label: "Due this Week" },
-    { id: "due-month", label: "Due this month" },
-  ];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -146,25 +59,76 @@ function PendingPayments() {
     console.log("Selected filter:", filterId);
   };
 
+  const toDate = (dateString: string): Date => {
+    const [month, day, year] = dateString.split("/").map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  const isSameDay = (date1: Date, date2: Date): boolean =>
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate();
+
+  const filteredOrders = paymentOrders.filter((order) => {
+    if (selectedFilter === "all") return true;
+
+    const orderDate = toDate(order.orderedOn);
+
+    switch (selectedFilter) {
+      case "due-today":
+        return isSameDay(orderDate, today);
+
+      case "due-tomorrow": {
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        return isSameDay(orderDate, tomorrow);
+      }
+
+      case "due-three-days": {
+        const threeDaysLater = new Date(today);
+        threeDaysLater.setDate(today.getDate() + 3);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        return orderDate > today && orderDate <= threeDaysLater;
+      }
+
+      case "due-week": {
+        const weekEnd = new Date(today);
+        weekEnd.setDate(today.getDate() + 7);
+        return orderDate >= today && orderDate <= weekEnd;
+      }
+
+      case "due-month":
+        return (
+          orderDate.getFullYear() === today.getFullYear() &&
+          orderDate.getMonth() === today.getMonth() &&
+          orderDate >= today
+        );
+
+      default:
+        return true;
+    }
+  });
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 md:gap-4">
-          <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
+      <div className="flex flex-col gap-3 [@media(min-width:840px)]:flex-row [@media(min-width:840px)]:items-center [@media(min-width:840px)]:justify-between [@media(min-width:840px)]:gap-0">
+        <div className="flex items-center gap-2 [@media(min-width:840px)]:gap-4 mx-6 2xl:mx-0">
+          <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg [@media(min-width:840px)]:w-11 [@media(min-width:840px)]:h-11">
             <DeliveryBoxIcon />
           </span>
-          <h2 className="w-full text-black font-semibold text-lg md:text-3xl">
+          <h2 className="text-black font-semibold text-lg xl:text-2xl">
             Pending Payments
           </h2>
           <div className="px-3 py-1 w-32 rounded-full bg-white border border-utility-indigo-200">
             <p className="text-sm font-medium text-primary whitespace-nowrap">
-              3 Pendiing Order
+              3 Pending Order
             </p>
           </div>
         </div>
-        <div className="relative">
-          <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-lg w-fit">
-            <div className="flex items-center relative">
+        <div className="relative mx-6 [@media(min-width:840px)]:mx-0 [@media(min-width:840px)]:mr-6">
+          <div className="bg-white rounded-full flex items-center gap-1 [@media(min-width:840px)]:gap-2 p-2 shadow-lg w-full [@media(min-width:840px)]:w-fit">
+            <div className="flex items-center relative flex-1">
               <span className="absolute left-2">
                 <SearchIcon />
               </span>
@@ -172,59 +136,142 @@ function PendingPayments() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search"
-                className="ps-8 py-2 bg-gray-100 min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+                className="ps-8 py-2 bg-gray-100 w-full [@media(min-width:840px)]:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
               />
-              <span className="absolute right-2">
-                <CommandK />
-              </span>
             </div>
-
             <button
               ref={buttonRef}
-              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className={`w-8 h-8 md:h-11 md:w-11 ${
-                showFilterDropdown
-                  ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-                  : "bg-gray-100"
-              } cursor-pointer rounded-full flex items-center justify-center`}
+              onClick={() => {
+                console.log(
+                  "Toggling filter dropdown, current:",
+                  showFilterDropdown
+                );
+                setShowFilterDropdown(!showFilterDropdown);
+              }}
+              className="w-10 h-10 [@media(min-width:840px)]:h-10 [@media(min-width:840px)]:w-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
             >
               <FilterIcon />
             </button>
           </div>
           {showFilterDropdown && (
-            <div
-              ref={dropdownRef}
-              className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 max-w-52 py-2 z-50"
-              style={{
-                filter: "drop-shadow(0 10px 25px rgba(0, 0, 0, 0.1))",
-              }}
-            >
-              {filterOptions.map((option, index) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleFilterSelect(option.id)}
-                  className={`w-full text-sm text-left px-6 py-3 hover:bg-gray-50 transition-colors duration-150 ${
-                    selectedFilter === option.id
-                      ? "bg-gray-100 text-gray-950"
-                      : "text-gray-700"
-                  } ${index === 0 ? "font-normal text-gray-900" : "font-normal text-gray-500"}`}
+            <>
+              {/* Desktop dropdown (>= 840px) */}
+              <div
+                ref={dropdownRef}
+                className="hidden md:block absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 max-w-52 py-2 z-50"
+                style={{
+                  filter: "drop-shadow(0 10px 25px rgba(0, 0, 0, 0.1))",
+                }}
+              >
+                {filterOptions.map((option, index) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleFilterSelect(option.id)}
+                    className={`w-full text-sm text-left px-6 py-3 hover:bg-gray-50 transition-colors duration-150 ${
+                      selectedFilter === option.id
+                        ? "bg-gray-100 text-gray-950"
+                        : "text-gray-700"
+                    } ${
+                      index === 0
+                        ? "font-normal text-gray-900"
+                        : "font-normal text-gray-500"
+                    }`}
+                  >
+                    <span className="block">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+              {/* <div
+                className="block md:hidden fixed inset-0 z-50 bg-black/40"
+                onClick={() => {
+                  console.log("Overlay clicked, closing modal");
+                  setShowFilterDropdown(false);
+                }}
+              >
+                <div
+                  className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-xl animate-slideUp"
+                  onClick={(e) => {
+                    console.log("Inside white container clicked");
+                    e.stopPropagation();
+                  }}
                 >
-                  <span className="block">
-                    {option.label}
-                    {option.count && (
-                      <span className="text-gray-400 ml-2">
-                        ({option.count})
-                      </span>
-                    )}
-                  </span>
-                </button>
-              ))}
-            </div>
+                  <div className="p-4 flex justify-between items-center">
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      Filters
+                    </h3>
+                    <button
+                      onClick={() => setShowFilterDropdown(false)}
+                      className="text-gray-500"
+                    >
+                      <CrossIcon fill="#000" />
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col">
+                    {filterOptions.map((option, index) => (
+                      <button
+                        key={option.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log("Mobile filter clicked:", option.id);
+                          handleFilterSelect(option.id);
+                        }}
+                        className={`w-full text-sm text-left px-6 py-4 hover:bg-gray-50 transition-colors duration-150 ${
+                          selectedFilter === option.id
+                            ? "bg-gray-100 text-gray-950"
+                            : "text-gray-700"
+                        } ${
+                          index === 0
+                            ? "font-normal text-gray-900"
+                            : "font-normal text-gray-500"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div> */}
+            </>
           )}
         </div>
       </div>
+
       <div className="flex flex-col gap-2 md:gap-4">
-        <PrescriptionOrderCard orders={orders} />
+        <PrescriptionOrderCard orders={filteredOrders} />
+      </div>
+      <div className="hidden md:flex justify-center mb-8 mx-6 2xl:mx-0 ">
+        <ReactPaginate
+          breakLabel="..."
+          nextLabel={
+            <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+              Next
+              <span className="block mb-0.5 rotate-180">
+                <ArrowLeftIcon />
+              </span>
+            </span>
+          }
+          previousLabel={
+            <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+              <span className="mb-0.5">
+                <ArrowLeftIcon />
+              </span>{" "}
+              Previous
+            </span>
+          }
+          // onPageChange={handlePageChange}
+          pageRangeDisplayed={3}
+          marginPagesDisplayed={1}
+          pageCount={itemsPerPage}
+          forcePage={currentPage}
+          pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer block"
+          containerClassName="flex items-center relative w-full justify-center gap-2 px-4 py-3 rounded-2xl bg-white"
+          pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
+          activeClassName="bg-gray-200 text-gray-900 font-medium"
+          previousClassName="px-4 py-2 rounded-full  absolute left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
+          nextClassName="px-4 py-2 rounded-full bg-gray-50  absolute end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
+          breakClassName="px-3 py-1 font-semibold text-gray-400"
+        />
       </div>
     </div>
   );
