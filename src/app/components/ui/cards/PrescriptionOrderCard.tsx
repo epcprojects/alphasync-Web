@@ -8,6 +8,7 @@ interface OrderItem {
   medicineName: string;
   quantity: number;
   price: number;
+  amount: string;
 }
 
 export interface PrescriptionOrder {
@@ -23,21 +24,24 @@ export interface PrescriptionOrder {
 interface PrescriptionOrderCardProps {
   orders?: PrescriptionOrder[];
   onDelete?: (orderId: string) => void;
+  onPress?: (order: PrescriptionOrder) => void;
 }
 
 const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   orders,
   onDelete,
+  onPress,
 }) => {
   return (
-    <div className="space-y-4 mx-6 2xl:mx-0">
+    <div className="space-y-4 mx-6 2xl:mx-0 cursor-pointer">
       {orders?.map((order) => (
         <div
           key={order.id}
           className="bg-white rounded-2xl shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] border border-gray-200 p-4 2xl:p-6 
           w-full max-w-7xl"
+          onClick={() => onPress && onPress(order)}
         >
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-950">
               Order #{order.orderNumber}
             </h2>
@@ -59,24 +63,24 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               {order.isDueToday}
             </span>
           </div>
-          <div className="flex flex-col mt-4 md:mt-0 md:flex-row md:grid md:grid-cols-3 md:gap-8 gap-4 mb-2">
+          <div className="flex flex-col mt-4 md:mt-0 md:flex-row md:grid md:grid-cols-3 md:gap-8 gap-4 mb-4">
             <div className="flex justify-between  md:flex-col">
-              <p className="text-sm font-normal text-Gray-800">
+              <p className="text-sm font-normal text-gray-800">
                 Prescribing Doctor
               </p>
-              <p className="text-sm font-semibold text-Gray-800">
+              <p className="text-sm font-semibold text-gray-800">
                 {order.doctorName}
               </p>
             </div>
             <div className="flex justify-between md:flex-col">
-              <p className="text-sm font-normal text-Gray-800">Order Items</p>
-              <p className="text-sm font-semibold text-Gray-800">
+              <p className="text-sm font-normal text-gray-800">Order Items</p>
+              <p className="text-sm font-semibold text-gray-800 rounded-b-sm">
                 {String(order.orderItems.length).padStart(2, "0")}
               </p>
             </div>
             <div className="flex justify-between md:flex-col">
-              <p className="text-sm font-normal text-Gray-800">Ordered on</p>
-              <p className="text-sm font-semibold text-Gray-800">
+              <p className="text-sm font-normal text-gray-800">Ordered on</p>
+              <p className="text-sm font-semibold text-gray-800">
                 {order.orderedOn}
               </p>
             </div>
@@ -89,11 +93,11 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               >
                 <div className="flex items-center w-[70%]">
                   <div className="flex-shrink-0 w-[42px] h-[42px] flex items-center justify-center">
-                    <MedicineIcon className="w-[42px] h-[42px]" />
+                    <MedicineIcon  />
                   </div>
                   <span
                     className="
-            text-sm font-normal text-Gray-800 ml-2
+            text-sm font-normal text-gray-800 ml-2
             line-clamp-2 overflow-hidden text-ellipsis
           "
                   >

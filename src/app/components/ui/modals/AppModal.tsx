@@ -18,6 +18,7 @@ interface AppModalProps {
   outSideClickClose?: boolean;
   onCancel?: () => void;
   confirmBtnVarient?: buttonVariant;
+  isDetailsModel?: boolean;
 }
 
 const sizeClasses = {
@@ -41,17 +42,26 @@ const AppModal: React.FC<AppModalProps> = ({
   outSideClickClose = true,
   onCancel,
   confirmBtnVarient,
+  isDetailsModel = false,
 }) => {
   if (!isOpen) return null;
+
+    const modalClasses = isDetailsModel
+    ? "bg-white h-full md:h-full w-full md:w-[600px] rounded-none md:rounded-l-xl overflow-auto shadow-xl"
+    : `bg-white rounded-t-xl relative md:rounded-xl w-full overflow-hidden md:m-auto container md:mx-4 shadow-xl ${sizeClasses[size]}`;
+
+  const wrapperClasses = isDetailsModel
+    ? "fixed inset-0 z-[100] bg-black/50 backdrop-blur-xs flex justify-end items-stretch "
+    : "fixed min-h-dvh z-[100] top-0 inset-0 bg-black/50 backdrop-blur-xs flex items-end md:items-center justify-center";
 
   return (
     <Portal>
       <div
-        className="fixed min-h-dvh z-[100] top-0 inset-0 bg-black/50 backdrop-blur-xs flex items-end md:items-center justify-center"
+        className={wrapperClasses}
         onClick={outSideClickClose ? onClose : undefined}
       >
         <div
-          className={`bg-white rounded-t-xl relative md:rounded-xl  w-full overflow-hidden md:m-auto container md:mx-4 shadow-xl ${sizeClasses[size]}`}
+          className={modalClasses}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="px-4 py-3 bg-gray-100 flex items-center justify-between border-b border-gray-200">
@@ -81,7 +91,7 @@ const AppModal: React.FC<AppModalProps> = ({
 
           <div className="bg-white p-3 md:p-5">{children}</div>
 
-          <div className="border-t border-gray-200 bg-white flex items-center justify-between p-2 md:p-4">
+         {!isDetailsModel && <div className="border-t border-gray-200 bg-white flex items-center justify-between p-2 md:p-4">
             <ThemeButton
               label={cancelLabel}
               onClick={onCancel ? onCancel : onClose}
@@ -100,7 +110,7 @@ const AppModal: React.FC<AppModalProps> = ({
                 variant={confirmBtnVarient}
               />
             )}
-          </div>
+          </div>}
         </div>
       </div>
     </Portal>

@@ -40,9 +40,11 @@ import EyeIcon from "./EyeIcon";
 import UserRejectIcon from "./UserRejectIcon";
 import FilterIcon from "./FilterIcon"
 import MedicineIcon from "./MedicineIcon";
+import AlphaSyncMed from "./AlphaSyncMed";
 export {
     ShoppingCartIcon,
     InfoIcon,
+    AlphaSyncMed,
     CrossIcon,
     SuccessCheckIcon,
     InventoryIcon,
