@@ -89,7 +89,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
             {order.orderItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between bg-gray-100 pl-1 pr-2 py-1 md:py-2 rounded-lg mb-2"
+                className="flex items-center justify-between bg-gray-100 pl-1 pr-2 py-1 rounded-lg mb-2"
               >
                 <div className="flex items-center w-[70%]">
                   <div className="flex-shrink-0 w-[42px] h-[42px] flex items-center justify-center">
@@ -105,7 +105,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                   </span>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <span className="bg-white rounded-xs px-1.5 text-sm font-medium text-gray-600">
                     x{item.quantity}
                   </span>
