@@ -17,6 +17,7 @@ import { paymentOrders } from "../../../../public/data/orders";
 import { filterOptions } from "../../../../public/data/Filters";
 import { AppModal } from "@/app/components";
 import OrderDetail from "../../../../public/icons/OrdeerDetail";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
 function PendingPayments() {
   const [search, setSearch] = useState("");
@@ -153,7 +154,7 @@ function PendingPayments() {
                 className="ps-8 py-2 bg-gray-100 w-full [@media(min-width:840px)]:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
               />
             </div>
-            <button
+            {/* <button
               ref={buttonRef}
               onClick={() => {
                 console.log(
@@ -165,13 +166,52 @@ function PendingPayments() {
               className="w-10 h-10 [@media(min-width:840px)]:h-10 [@media(min-width:840px)]:w-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
             >
               <FilterIcon />
-            </button>
+            </button> */}
+            <Menu>
+              <MenuButton
+                onClick={() => {
+                  console.log(
+                    "Toggling filter dropdown, current:",
+                    showFilterDropdown
+                  );
+                  setShowFilterDropdown(!showFilterDropdown);
+                }}
+                className="w-10 h-10 [@media(min-width:840px)]:h-10 [@media(min-width:840px)]:w-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
+              >
+                <FilterIcon />
+              </MenuButton>
+
+              <MenuItems
+                className={
+                  "absolute top-20 rounded-xl p-1 bg-white hidden w- md:block"
+                }
+              >
+                {filterOptions.map((option, index) => (
+                  <MenuItem key={option.id}>
+                    <button
+                      onClick={() => handleFilterSelect(option.id)}
+                      className={`w-full text-sm text-left px-6 py-3 hover:bg-gray-50 transition-colors duration-150 ${
+                        selectedFilter === option.id
+                          ? "bg-gray-100 text-gray-950"
+                          : "text-gray-700"
+                      } ${
+                        index === 0
+                          ? "font-normal text-gray-900"
+                          : "font-normal text-gray-500"
+                      }`}
+                    >
+                      <span className="block">{option.label}</span>
+                    </button>
+                  </MenuItem>
+                ))}
+              </MenuItems>
+            </Menu>
           </div>
           {showFilterDropdown && (
             <>
               {/* Desktop dropdown (>= 840px) */}
-              <div
-                ref={dropdownRef}
+              {/* <div
+                // ref={dropdownRef}
                 className="hidden md:block absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 max-w-52 py-2 z-50"
                 style={{
                   filter: "drop-shadow(0 10px 25px rgba(0, 0, 0, 0.1))",
@@ -194,7 +234,8 @@ function PendingPayments() {
                     <span className="block">{option.label}</span>
                   </button>
                 ))}
-              </div>
+              </div> */}
+
               {/* Mobile dropdown (<= 840px) */}
               <div
                 className="block md:hidden fixed inset-0 z-50 bg-black/40"
