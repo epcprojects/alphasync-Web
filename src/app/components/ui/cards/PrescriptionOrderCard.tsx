@@ -64,7 +64,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
             </span>
           </div>
           <div className="flex flex-col mt-4 md:mt-0 md:flex-row md:grid md:grid-cols-3 md:gap-8 gap-4 mb-4">
-            <div className="flex justify-between  md:flex-col">
+            <div className="flex justify-between  md:flex-col gap-1">
               <p className="text-sm font-normal text-gray-800">
                 Prescribing Doctor
               </p>
@@ -72,13 +72,13 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                 {order.doctorName}
               </p>
             </div>
-            <div className="flex justify-between md:flex-col">
+            <div className="flex justify-between md:flex-col gap-1">
               <p className="text-sm font-normal text-gray-800">Order Items</p>
               <p className="text-sm font-semibold text-gray-800 rounded-b-sm">
                 {String(order.orderItems.length).padStart(2, "0")}
               </p>
             </div>
-            <div className="flex justify-between md:flex-col">
+            <div className="flex justify-between md:flex-col gap-1">
               <p className="text-sm font-normal text-gray-800">Ordered on</p>
               <p className="text-sm font-semibold text-gray-800">
                 {order.orderedOn}
@@ -118,10 +118,9 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
           </div>
           <div className="flex items-center justify-between [@media(min-width:450px)]:justify-end w-full">
             <div className="flex items-center space-x-2 w-full [@media(min-width:450px)]:w-auto">
-              <button className="w-11 h-11 hover:bg-red-50 cursor-pointer rounded-full flex items-center justify-center hover:border border-red-200">
+              <button className="w-11 h-11 hover:bg-red-50 cursor-pointer rounded-full flex items-center justify-center border border-red-200">
                 <TrashBinIcon />
               </button>
-
               <ThemeButton
                 variant="outline"
                 label="Pay Now"

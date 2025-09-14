@@ -4,6 +4,11 @@ import { CrossIcon, ShoppingCartIcon } from "@/icons";
 import ThemeButton, { buttonVariant } from "../buttons/ThemeButton";
 import Portal from "../portal";
 
+export enum ModalPosition {
+  CENTER = "center",
+  RIGHT = "right",
+}
+
 interface AppModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,7 +23,7 @@ interface AppModalProps {
   outSideClickClose?: boolean;
   onCancel?: () => void;
   confirmBtnVarient?: buttonVariant;
-  isDetailsModel?: boolean;
+  position?: ModalPosition;
 }
 
 const sizeClasses = {
@@ -42,17 +47,23 @@ const AppModal: React.FC<AppModalProps> = ({
   outSideClickClose = true,
   onCancel,
   confirmBtnVarient,
-  isDetailsModel = false,
+  position = ModalPosition.CENTER,
 }) => {
   if (!isOpen) return null;
 
-    const modalClasses = isDetailsModel
-    ? "bg-white h-full md:h-full w-full md:w-[600px] rounded-none md:rounded-l-xl overflow-auto shadow-xl"
-    : `bg-white rounded-t-xl relative md:rounded-xl w-full overflow-hidden md:m-auto container md:mx-4 shadow-xl ${sizeClasses[size]}`;
+  const baseModalClasses = "bg-white shadow-xl flex flex-col";
+  const baseWrapperClasses =
+    "fixed inset-0 z-[100] bg-black/50 backdrop-blur-xs flex";
 
-  const wrapperClasses = isDetailsModel
-    ? "fixed inset-0 z-[100] bg-black/50 backdrop-blur-xs flex justify-end items-stretch "
-    : "fixed min-h-dvh z-[100] top-0 inset-0 bg-black/50 backdrop-blur-xs flex items-end md:items-center justify-center";
+  const modalClasses =
+    position === ModalPosition.RIGHT
+      ? `${baseModalClasses} h-full md:h-[calc(100%-2rem)] w-full md:w-[600px] md:m-4 md:rounded-[12px] overflow-hidden`
+      : `${baseModalClasses} rounded-t-xl relative md:rounded-xl w-full overflow-hidden md:m-auto container md:mx-4 ${sizeClasses[size]}`;
+
+  const wrapperClasses =
+    position === ModalPosition.RIGHT
+      ? `${baseWrapperClasses} justify-end items-stretch`
+      : `${baseWrapperClasses} min-h-dvh top-0 items-end md:items-center justify-center`;
 
   return (
     <Portal>
@@ -60,10 +71,7 @@ const AppModal: React.FC<AppModalProps> = ({
         className={wrapperClasses}
         onClick={outSideClickClose ? onClose : undefined}
       >
-        <div
-          className={modalClasses}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className={modalClasses} onClick={(e) => e.stopPropagation()}>
           <div className="px-4 py-3 bg-gray-100 flex items-center justify-between border-b border-gray-200">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center border border-lightGray">
@@ -89,28 +97,32 @@ const AppModal: React.FC<AppModalProps> = ({
             </button>
           </div>
 
-          <div className="bg-white p-3 md:p-5">{children}</div>
+          <div className="flex-1 overflow-y-auto bg-white p-3 md:p-5">
+            {children}
+          </div>
 
-         {!isDetailsModel && <div className="border-t border-gray-200 bg-white flex items-center justify-between p-2 md:p-4">
-            <ThemeButton
-              label={cancelLabel}
-              onClick={onCancel ? onCancel : onClose}
-              size="medium"
-              className="min-w-36"
-              variant="outline"
-              heightClass="h-10"
-            />
-            {onConfirm && (
+          {!position && (
+            <div className="border-t border-gray-200 bg-white flex items-center justify-between p-2 md:p-4">
               <ThemeButton
-                label={confirmLabel}
-                className="min-w-36"
-                onClick={onConfirm}
+                label={cancelLabel}
+                onClick={onCancel ? onCancel : onClose}
                 size="medium"
+                className="min-w-36"
+                variant="outline"
                 heightClass="h-10"
-                variant={confirmBtnVarient}
               />
-            )}
-          </div>}
+              {onConfirm && (
+                <ThemeButton
+                  label={confirmLabel}
+                  className="min-w-36"
+                  onClick={onConfirm}
+                  size="medium"
+                  heightClass="h-10"
+                  variant={confirmBtnVarient}
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
     </Portal>

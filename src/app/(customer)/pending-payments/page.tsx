@@ -1,6 +1,5 @@
 "use client";
 import {
-  AlphaSyncMed,
   ArrowLeftIcon,
   CrossIcon,
   DeliveryBoxIcon,
@@ -15,9 +14,8 @@ import PrescriptionOrderCard, {
 } from "@/app/components/ui/cards/PrescriptionOrderCard";
 import { paymentOrders } from "../../../../public/data/orders";
 import { filterOptions } from "../../../../public/data/Filters";
-import { AppModal } from "@/app/components";
-import OrderDetail from "../../../../public/icons/OrdeerDetail";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import CustomerOrderDetails from "@/app/components/ui/modals/CustomerOrderDetails";
 
 function PendingPayments() {
   const [search, setSearch] = useState("");
@@ -33,9 +31,7 @@ function PendingPayments() {
     null
   );
   const today = new Date();
-
   const itemsPerPage = 9;
-
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
 
@@ -132,7 +128,7 @@ function PendingPayments() {
           <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg [@media(min-width:840px)]:w-11 [@media(min-width:840px)]:h-11">
             <DeliveryBoxIcon />
           </span>
-          <h2 className="text-black font-semibold text-lg xl:text-2xl">
+          <h2 className="text-black font-semibold text-lg xl:text-2xl whitespace-nowrap">
             Pending Payments
           </h2>
           <div className="px-3 py-1 w-32 rounded-full bg-white border border-utility-indigo-200">
@@ -141,7 +137,7 @@ function PendingPayments() {
             </p>
           </div>
         </div>
-        <div className="relative mx-6 [@media(min-width:840px)]:mx-0 [@media(min-width:840px)]:mr-6">
+        <div className="relative mx-6 lg:mx-6 2xl:mx-0">
           <div className="bg-white rounded-full flex items-center gap-1 [@media(min-width:840px)]:gap-2 p-2 shadow-lg w-full [@media(min-width:840px)]:w-fit">
             <div className="flex items-center relative flex-1">
               <span className="absolute left-2">
@@ -154,19 +150,6 @@ function PendingPayments() {
                 className="ps-8 py-2 bg-gray-100 w-full [@media(min-width:840px)]:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
               />
             </div>
-            {/* <button
-              ref={buttonRef}
-              onClick={() => {
-                console.log(
-                  "Toggling filter dropdown, current:",
-                  showFilterDropdown
-                );
-                setShowFilterDropdown(!showFilterDropdown);
-              }}
-              className="w-10 h-10 [@media(min-width:840px)]:h-10 [@media(min-width:840px)]:w-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
-            >
-              <FilterIcon />
-            </button> */}
             <Menu>
               <MenuButton
                 onClick={() => {
@@ -183,17 +166,17 @@ function PendingPayments() {
 
               <MenuItems
                 className={
-                  "absolute top-20 rounded-xl p-1 bg-white hidden w- md:block"
+                  "absolute top-16 right-1 shadow-[0_14px_34px_0_rgba(0,0,0,0.1)] rounded-lg p-1 bg-white hidden w-48 md:block border border-gray-200"
                 }
               >
                 {filterOptions.map((option, index) => (
                   <MenuItem key={option.id}>
                     <button
                       onClick={() => handleFilterSelect(option.id)}
-                      className={`w-full text-sm text-left px-6 py-3 hover:bg-gray-50 transition-colors duration-150 ${
+                      className={`w-full text-sm text-left p-2.5 rounded-md hover:bg-gray-50 transition-colors duration-150 ${
                         selectedFilter === option.id
-                          ? "bg-gray-100 text-gray-950"
-                          : "text-gray-700"
+                          ? "bg-gray-100 text-gray-900"
+                          : "text-gray-500"
                       } ${
                         index === 0
                           ? "font-normal text-gray-900"
@@ -208,87 +191,57 @@ function PendingPayments() {
             </Menu>
           </div>
           {showFilterDropdown && (
-            <>
-              {/* Desktop dropdown (>= 840px) */}
-              {/* <div
-                // ref={dropdownRef}
-                className="hidden md:block absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 max-w-52 py-2 z-50"
-                style={{
-                  filter: "drop-shadow(0 10px 25px rgba(0, 0, 0, 0.1))",
-                }}
-              >
-                {filterOptions.map((option, index) => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleFilterSelect(option.id)}
-                    className={`w-full text-sm text-left px-6 py-3 hover:bg-gray-50 transition-colors duration-150 ${
-                      selectedFilter === option.id
-                        ? "bg-gray-100 text-gray-950"
-                        : "text-gray-700"
-                    } ${
-                      index === 0
-                        ? "font-normal text-gray-900"
-                        : "font-normal text-gray-500"
-                    }`}
-                  >
-                    <span className="block">{option.label}</span>
-                  </button>
-                ))}
-              </div> */}
-
-              {/* Mobile dropdown (<= 840px) */}
+            <div
+              className="block md:hidden fixed inset-0 z-50 bg-black/40"
+              onClick={() => {
+                console.log("Overlay clicked, closing modal");
+                setShowFilterDropdown(false);
+              }}
+            >
               <div
-                className="block md:hidden fixed inset-0 z-50 bg-black/40"
-                onClick={() => {
-                  console.log("Overlay clicked, closing modal");
-                  setShowFilterDropdown(false);
+                className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-xl animate-slideUp"
+                onClick={(e) => {
+                  console.log("Inside white container clicked");
+                  e.stopPropagation();
                 }}
               >
-                <div
-                  className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-xl animate-slideUp"
-                  onClick={(e) => {
-                    console.log("Inside white container clicked");
-                    e.stopPropagation();
-                  }}
-                >
-                  <div className="p-4 flex justify-between items-center">
-                    <h3 className="text-xl font-semibold text-gray-900">
-                      Filters
-                    </h3>
-                    <button
-                      onClick={() => setShowFilterDropdown(false)}
-                      className="text-gray-500"
-                    >
-                      <CrossIcon fill="#000" />
-                    </button>
-                  </div>
+                <div className="p-4 flex justify-between items-center">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Filters
+                  </h3>
+                  <button
+                    onClick={() => setShowFilterDropdown(false)}
+                    className="text-gray-500"
+                  >
+                    <CrossIcon fill="#000" />
+                  </button>
+                </div>
 
-                  <div className="flex flex-col">
-                    {filterOptions.map((option, index) => (
-                      <button
-                        key={option.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("Mobile filter clicked:", option.id);
-                          handleFilterSelect(option.id);
-                        }}
-                        className={`w-full text-sm text-left px-6 py-4 hover:bg-gray-50 transition-colors duration-150 ${
-                          selectedFilter === option.id
-                            ? "bg-gray-100 text-gray-950"
-                            : "text-gray-700"
-                        } ${
-                          index === 0
-                            ? "font-normal text-gray-900"
-                            : "font-normal text-gray-500"
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex flex-col">
+                  {filterOptions.map((option, index) => (
+                    <button
+                      key={option.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log("Mobile filter clicked:", option.id);
+                        handleFilterSelect(option.id);
+                      }}
+                      className={`w-full text-sm text-left px-6 py-4 hover:bg-gray-50 transition-colors duration-150 ${
+                        selectedFilter === option.id
+                          ? "bg-gray-100 text-gray-900"
+                          : "text-gray-500"
+                      } ${
+                        index === 0
+                          ? "font-normal text-gray-900"
+                          : "font-normal text-gray-500"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -331,133 +284,11 @@ function PendingPayments() {
           breakClassName="px-3 py-1 font-semibold text-gray-400"
         />
       </div>
-      <AppModal
+      <CustomerOrderDetails
         isOpen={isDetailModelOpen}
         onClose={() => setIsDetailModelOpen(false)}
-        icon={<OrderDetail />}
-        title="Order Details"
-        subtitle={selectedOrder ? `Order #${selectedOrder.orderNumber}` : ""}
-        isDetailsModel={true}
-      >
-        {selectedOrder && (
-          <div className="gap-4">
-            {selectedOrder.orderItems.map((item) => (
-              <div key={item.id}>
-                <div className="flex items-start space-x-4 p-2 gap-3 pb-3">
-                  <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <AlphaSyncMed />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-[#1F2937] font-semibold text-base mb-1">
-                      {item.medicineName}
-                    </h3>
-                    <p className="text-sm font-normal text-[#1F2937] mb-1.5">
-                      A synthetic peptide known for its healing properties.
-                      BPC-157 promotes tissue...
-                    </p>
-                    <div className="flex justify-between items-center mt-1 text-sm text-gray-500">
-                      <div className="px-2.5 py-0.5 w-36 rounded-full bg-gray-100 border border-gray-200 mb-1.5">
-                        <p className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                          Recovery & Healing
-                        </p>
-                      </div>
-                      <p className="text-xs font-normal text-gray-800">
-                        {item.amount}
-                      </p>
-                    </div>
-                    <div className="flex justify-between mt-2 ">
-                      <span className="text-xs font-normal text-[#1F2937]">
-                        Quantity
-                      </span>
-                      <span className="text-xs font-medium text-[#1F2937]">
-                        {item.quantity}
-                      </span>
-                    </div>
-                    <div className="flex justify-between mt-2 ">
-                      <span className="text-xs font-normal text-[#1F2937]">
-                        Price
-                      </span>
-                      <span className="text-xs font-medium text-[#1F2937]">
-                        ${item.price.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between mt-2 ">
-                      <span className="text-base font-medium text-[#1F2937]">
-                        Total
-                      </span>
-                      <span className="text-base font-semibold text-primary">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-full h-[1px] bg-gray-200 my-3"></div>
-              </div>
-            ))}
-            <div className="mt-6 space-y-3 px-2.5 md:px-0 ">
-              <div className="flex justify-between">
-                <span className="text-sm font-normal text-[#1F2937]">
-                  Due days
-                </span>
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`${
-                      selectedOrder.isDueToday === "Due Today"
-                        ? `bg-utility-error-50`
-                        : "bg-success-50"
-                    } border ${
-                      selectedOrder.isDueToday === "Due Today"
-                        ? "border-utility-error-200"
-                        : "border-success-200"
-                    } ${
-                      selectedOrder.isDueToday === "Due Today"
-                        ? "text-utility-error-700"
-                        : "text-success-500"
-                    } px-3 py-1 rounded-full text-sm font-medium`}
-                  >
-                    {selectedOrder.isDueToday}
-                  </span>
-                </div>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-normal text-[#1F2937]">
-                  Doctor
-                </span>
-                <span className="text-sm font-medium text-[#1F2937]">
-                  {selectedOrder.doctorName}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-normal text-[#1F2937]">
-                  Order Date
-                </span>
-                <span className="text-sm font-medium text-[#1F2937]">
-                  {selectedOrder.orderedOn}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-normal text-[#1F2937]">
-                  Shipping Address
-                </span>
-                <span className="text-sm font-medium text-gray-800">
-                  123 Main St, New York, NY 10001
-                </span>
-              </div>
-            </div>
-            {/* <div className="w-full h-[1px] bg-gray-200 my-3"></div> */}
-            <hr className="my-3 text-gray-200" />
-            <div className="flex justify-between px-2.5 md:px-0">
-              <span className="text-lg font-semibold text-gray-800">
-                Total Order
-              </span>
-              <span className="text-lg font-semibold text-primary">
-                ${selectedOrder?.totalPrice}
-              </span>
-            </div>
-            <div className="w-full h-[1px] bg-gray-200 my-3"></div>
-          </div>
-        )}
-      </AppModal>
+        order={selectedOrder}
+      />
     </div>
   );
 }
