@@ -124,20 +124,20 @@ function PendingPayments() {
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
       <div className="flex flex-col gap-3 [@media(min-width:840px)]:flex-row [@media(min-width:840px)]:items-center [@media(min-width:840px)]:justify-between [@media(min-width:840px)]:gap-0">
-        <div className="flex items-center gap-2 [@media(min-width:840px)]:gap-4 mx-6 2xl:mx-0">
+        <div className="flex items-center gap-1 sm:gap-2 [@media(min-width:840px)]:gap-4 mx-0">
           <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg [@media(min-width:840px)]:w-11 [@media(min-width:840px)]:h-11">
             <DeliveryBoxIcon />
           </span>
           <h2 className="text-black font-semibold text-lg xl:text-2xl whitespace-nowrap">
             Pending Payments
           </h2>
-          <div className="px-3 py-1 w-32 rounded-full bg-white border border-utility-indigo-200">
+          <div className="px-3 py-1 rounded-full bg-white border border-utility-indigo-200">
             <p className="text-sm font-medium text-primary whitespace-nowrap">
               3 Pending Order
             </p>
           </div>
         </div>
-        <div className="relative mx-6 lg:mx-6 2xl:mx-0">
+        <div className="relative mx-0">
           <div className="bg-white rounded-full flex items-center gap-1 [@media(min-width:840px)]:gap-2 p-2 shadow-lg w-full [@media(min-width:840px)]:w-fit">
             <div className="flex items-center relative flex-1">
               <span className="absolute left-2">

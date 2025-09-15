@@ -33,7 +33,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   onPress,
 }) => {
   return (
-    <div className="space-y-4 mx-6 2xl:mx-0 cursor-pointer">
+    <div className="flex flex-col gap-4 mx-0 cursor-pointer">
       {orders?.map((order) => (
         <div
           key={order.id}
@@ -58,7 +58,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                 order.isDueToday === "Due Today"
                   ? "text-utility-error-700"
                   : "text-success-500"
-              } px-3 py-1 rounded-full text-sm font-medium`}
+              } px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap`}
             >
               {order.isDueToday}
             </span>
