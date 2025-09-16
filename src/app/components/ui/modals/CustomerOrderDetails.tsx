@@ -146,7 +146,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
             </div>
           ))}
           <div className="mt-6 space-y-3 px-2.5 md:px-0 ">
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Due days
               </span>
@@ -170,13 +170,13 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                 </span>
               </div>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between item">
               <span className="text-sm font-normal text-gray-800">Doctor</span>
               <span className="text-sm font-medium text-gray-800">
                 {order.doctorName}
               </span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between item">
               <span className="text-sm font-normal text-gray-800">
                 Order Date
               </span>
@@ -184,7 +184,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                 {order.orderedOn}
               </span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between item">
               <span className="text-sm font-normal text-gray-800">
                 Shipping Address
               </span>

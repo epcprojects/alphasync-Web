@@ -25,12 +25,14 @@ interface PrescriptionOrderCardProps {
   orders?: PrescriptionOrder[];
   onDelete?: (orderId: string) => void;
   onPress?: (order: PrescriptionOrder) => void;
+  onPay: () => void;
 }
 
 const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   orders,
   onDelete,
   onPress,
+  onPay,
 }) => {
   return (
     <div className="flex flex-col gap-4 mx-0 cursor-pointer">
@@ -93,7 +95,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               >
                 <div className="flex items-center w-[70%]">
                   <div className="flex-shrink-0 w-[42px] h-[42px] flex items-center justify-center">
-                    <MedicineIcon  />
+                    <MedicineIcon />
                   </div>
                   <span
                     className="
@@ -124,7 +126,10 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               <ThemeButton
                 variant="outline"
                 label="Pay Now"
-                onClick={() => {}}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPay?.();
+                }}
                 className="flex-1 [@media(min-width:450px)]:flex-none min-w-32"
                 heightClass="h-11"
               />

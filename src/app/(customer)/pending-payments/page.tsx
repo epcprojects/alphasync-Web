@@ -16,6 +16,8 @@ import { paymentOrders } from "../../../../public/data/orders";
 import { filterOptions } from "../../../../public/data/Filters";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import CustomerOrderDetails from "@/app/components/ui/modals/CustomerOrderDetails";
+import CustomerOrderPayment from "@/app/components/ui/modals/CustomerOrderPayment";
+import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
 
 function PendingPayments() {
   const [search, setSearch] = useState("");
@@ -25,6 +27,8 @@ function PendingPayments() {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [isDetailModelOpen, setIsDetailModelOpen] = useState(false);
+  const [isPaymentModelOpen, setIsPaymentModelOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [selectedOrder, setSelectedOrder] = useState<PrescriptionOrder | null>(
@@ -249,6 +253,9 @@ function PendingPayments() {
         <PrescriptionOrderCard
           orders={filteredOrders}
           onPress={handleOrderClick}
+          onPay={() => {
+            setIsPaymentModelOpen(true);
+          }}
         />
       </div>
       <div className="hidden md:flex justify-center mb-8 mx-6 2xl:mx-0 ">
@@ -289,6 +296,16 @@ function PendingPayments() {
         onClose={() => setIsDetailModelOpen(false)}
         order={selectedOrder}
       />
+      <CustomerOrderPayment
+        isOpen={isPaymentModelOpen}
+        onClose={() => setIsPaymentModelOpen(false)}
+        order={selectedOrder}
+        onClick={() => {
+          setIsPaymentModelOpen(false);
+          setIsSuccess(true);
+        }}
+      />
+      <PaymentSuccess isOpen={isSuccess} onClose={() => setIsSuccess(false)}  />
     </div>
   );
 }
