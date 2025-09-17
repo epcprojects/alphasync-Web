@@ -24,7 +24,7 @@ export default function ChatMessage({
         <div className="flex items-center justify-between gap-1">
           <div className="flex gap-1 md:gap-2 items-center">
             {!isUser && (
-              <span className="bg-red-100 text-red-500 h-7 w-7 justify-center rounded-full text-xs shrink-0  flex items-center">
+              <span className="bg-red-100 text-red-500 h-7 w-7 justify-center font-medium rounded-full text-xs shrink-0  flex items-center">
                 {getInitials(sender)}
               </span>
             )}

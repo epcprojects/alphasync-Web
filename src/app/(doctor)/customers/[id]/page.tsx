@@ -5,7 +5,6 @@ import {
   QuickTemplates,
   ThemeButton,
   CustomerOrderHistroyView,
-  OrderModal,
   PrescriptionRequestCard,
   RequestRejectModal,
 } from "@/app/components";
@@ -52,12 +51,6 @@ export default function CustomerDetail() {
   const handlePageChange = ({ selected }: { selected: number }) => {
     setCurrentPage(selected);
   };
-
-  // const handleConfirmOrder = () => {
-  //   console.log("log");
-  //   setIsOrderModalOpen(false);
-  //   showSuccessToast("Order created successfully!");
-  // };
 
   const [messages, setMessages] = useState<
     { sender: string; time: string; text: string; isUser: boolean }[]
@@ -453,6 +446,7 @@ export default function CustomerDetail() {
         isOpen={isOrderModalOpen}
         onCreateOrder={handleCreateOrder}
         onClose={() => setIsOrderModalOpen(false)}
+        currentCustomer={{ name: "John Doe", displayName: "John Doe" }}
         customers={[
           {
             name: "John Smith",

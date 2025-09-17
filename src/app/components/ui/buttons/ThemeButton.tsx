@@ -42,10 +42,10 @@ const ThemeButton: React.FC<ThemeButtonProps> = ({
 
   const variantClasses: Record<buttonVariant, string> = {
     filled: disabled
-      ? "bg-gray-300 text-white"
+      ? "bg-gray-200 text-gray-400"
       : "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white hover:bg-gradient-to-l group-hover:bg-gradient-to-l",
     outline:
-      "bg-white   text-gray-700 group-hover:!bg-gray-100 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200",
+      "bg-white   text-gray-700 group-hover:!bg-gray-100 disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200",
     success: "text-green-600 bg-green-50 group-hover:bg-green-200",
     primaryOutline:
       "text-primary border border-white bg-white group-hover:bg-primary group-hover:text-white group-hover:border-primary",

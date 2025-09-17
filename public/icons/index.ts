@@ -38,7 +38,36 @@ import ApproveCheckIcon from "./ApproveCheckIcon";
 import RejectIcon from "./RejectIcon";
 import EyeIcon from "./EyeIcon";
 import UserRejectIcon from "./UserRejectIcon";
+import CalendarIcon from "./CalendarIcon";
+import DeliveryTruckIcon from "./DeliveryTruckIcon";
+import LocationIcon from "./LocationIcon";
+import ShipmentTrackingIcon from "./ShipmentTrackingIcon";
+import PrinterIcon from "./PrinterIcon";
+import MessageOutgoingIcon from "./MessageOutgoingIcon";
+import ReminderFilledIcon from "./ReminderFilledIcon";
+import ReloadIcon from "./ReloadIcon";
+import AutoReloadIcon from "./AutoReloadIcon";
+import CheckMarkCircle from "./CheckMarkCircle";
+import UserFilledIcon from "./UserFilledIcon";
+import AccountSettingsIcon from "./AccountSettingsIcon";
+import LockIcon from "./LockIcon";
+import SecurityLock from "./SecurityLock";
+
 export {
+    SecurityLock,
+    LockIcon,
+    AccountSettingsIcon,
+    UserFilledIcon,
+    CheckMarkCircle,
+    ReloadIcon,
+    AutoReloadIcon,
+    ReminderFilledIcon,
+    MessageOutgoingIcon,
+    PrinterIcon,
+    ShipmentTrackingIcon,
+    LocationIcon,
+    DeliveryTruckIcon,
+    CalendarIcon,
     ShoppingCartIcon,
     InfoIcon,
     CrossIcon,

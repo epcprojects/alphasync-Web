@@ -137,7 +137,7 @@ function InventoryContent() {
           </div>
         ) : (
           <div className="space-y-1">
-            <div className="grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black">
+            <div className="grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
               <div className="col-span-5">Product</div>
               <div className="col-span-3">Category</div>
               <div className="col-span-2">Stock</div>

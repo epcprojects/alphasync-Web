@@ -59,7 +59,7 @@ export default function CustomerDatabaseView({
       <div className="col-span-3 flex items-center gap-3">
         <div className="flex items-center gap-1 md:gap-2">
           <span
-            className={`md:w-10 md:h-10 ${bg} ${text} flex items-center justify-center rounded-full`}
+            className={`md:w-10 md:h-10 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
           >
             {getInitials(customer.name)}
             {/* <Image

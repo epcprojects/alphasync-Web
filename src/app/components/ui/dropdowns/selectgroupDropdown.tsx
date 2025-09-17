@@ -162,7 +162,7 @@ const SelectGroupDropdown = ({
           className={cn(
             "relative z-10 w-full rounded-lg py-2 border cursor-pointer bg-white text-left",
             errors ? "border-red-500" : "border-lightGray",
-            disabled && "!bg-gray-100 text-gray-400 cursor-not-allowed", // <-- disabled styles
+            disabled && "!bg-gray-200 text-gray-400 cursor-not-allowed",
             paddingClasses
           )}
           onClick={() => {

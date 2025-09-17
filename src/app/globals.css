@@ -20,6 +20,7 @@
   --color-success-500: #067647;
   --color-success-50: #ECFDF3;
   --color-success-200: #ABEFC6;
+  --color-haiti: #181D27;
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -50,3 +51,98 @@ body {
   justify-content: start;
   align-items: start;
 }
+
+.rdrWeekDay {
+  color: #414651 !important;   
+  font-weight: 500;          
+  font-size: 14px;   
+}
+
+.rdrMonthName {
+  @apply hidden;
+}
+
+.rdrSelected, .rdrInRange, .rdrStartEdge, .rdrEndEdge {
+  background-color: #2862A9 !important;
+  border-color: #171717 !important;
+ }
+
+.rdrDayStartPreview,
+.rdrDayEndPreview,
+.rdrStartEdge,
+.rdrEndEdge {
+    border-color:  #2862A9 !important; 
+    /* height: 100% !important; */
+}
+
+.rdrDayInPreview {
+  color: red !important;
+  border-color:  #2862A9 !important;
+  /* height: 100% !important; */
+}
+
+
+/* .rdrDayStartOfMonth .rdrInRange, .rdrDayStartOfMonth .rdrEndEdge, .rdrDayStartOfWeek .rdrInRange, .rdrDayStartOfWeek .rdrStartEdge{
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 100% !important;
+}
+
+.rdrDayNumber {
+  top: 18px !important
+} */
+
+.rdrNextButton i,
+.rdrPprevButton i {
+  display: none !important;
+}
+
+.rdrNextPrevButton {
+  background-color:  transparent !important;
+}
+
+.rdrNextButton::after {
+  content: "";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%23A4A7AE' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5l7 7-7 7'/></svg>")
+    no-repeat center center;
+  background-size: contain;
+}
+
+.rdrPprevButton::after {
+  content: "";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%23A4A7AE' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5l7 7-7 7'/></svg>")
+    no-repeat center center;
+  background-size: contain;
+  rotate: 180deg;
+}
+
+
+/* .rdrMonthAndYearWrapper {
+  padding-top: 0px !important;
+}
+
+.rdrStartEdge .rdrEndEdge , .rdrDayNumber {
+  height: 99% !important;
+  border-radius: 100px !important;
+}
+
+.rdrStartEdge{
+    border-top-left-radius: 100% !important;
+    border-bottom-left-radius: 100% !important;
+    left: 2px;
+}
+ .rdrEndEdge{
+    border-top-right-radius: 100% !important;
+    border-bottom-right-radius: 100% !important;
+    left: 2px;
+}
+
+.rdrDayNumber , .rdrInRange {
+  height: 99% !important;
+} */
