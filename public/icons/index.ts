@@ -40,7 +40,25 @@ import EyeIcon from "./EyeIcon";
 import UserRejectIcon from "./UserRejectIcon";
 import FilterIcon from "./FilterIcon"
 import MedicineIcon from "./MedicineIcon";
+import Amex from "./Amex";
+import Dinners from "./Dinners";
+import Discover from "./Discover";
+import JCB from "./JCB";
+import Maestro from "./Maestro";
+import Master from "./Master";
+import RuPay from "./RuPay";
+import UnionPay from "./UnionPay";
+import Visa from "./Visa";
 export {
+    Amex,
+    Dinners,
+    Discover,
+    JCB,
+    Maestro,
+    Master,
+    RuPay,
+    UnionPay,
+    Visa,
     ShoppingCartIcon,
     InfoIcon,
     CrossIcon,

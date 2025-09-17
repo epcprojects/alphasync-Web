@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import Verify from "../../../../../public/icons/Verify";
 import { CrossIcon } from "@/icons";
+import Portal from "../portal";
 
 interface PaymentSuccessProps {
   isOpen: boolean;
@@ -21,8 +22,9 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="relative bg-success-100 rounded-2xl shadow-lg w-[90%] max-w-md p-6 text-center">
+      <div className="relative bg-success-100 rounded-2xl shadow-lg  max-w-lg p-6 text-center">
         <div
           onClick={onClose}
           className="absolute top-4 right-4 p-1 rounded-full cursor-pointer"
@@ -43,6 +45,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ isOpen, onClose }) => {
         </button>
       </div>
     </div>
+    </Portal>
   );
 };
 
