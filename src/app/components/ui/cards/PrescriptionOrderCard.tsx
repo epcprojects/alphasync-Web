@@ -2,6 +2,7 @@ import React from "react";
 import MedicineIcon from "../../../../../public/icons/MedicineIcon";
 import ThemeButton from "../buttons/ThemeButton";
 import { TrashBinIcon } from "@/icons";
+import { showErrorToast } from "@/lib/toast";
 
 interface OrderItem {
   id: string;
@@ -23,7 +24,7 @@ export interface PrescriptionOrder {
 
 interface PrescriptionOrderCardProps {
   orders?: PrescriptionOrder[];
-  onDelete?: (orderId: string) => void;
+  onDelete?: () => void;
   onPress?: (order: PrescriptionOrder) => void;
   onPay: () => void;
 }
@@ -34,6 +35,15 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   onPress,
   onPay,
 }) => {
+  const getDueTodayClasses = (status?: string) => {
+    switch (status) {
+      case "Due Today":
+        return "bg-red-50 border border-red-200 text-red-700";
+      default:
+        return "bg-green-50 border border-green-200 text-green-700";
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4 cursor-pointer">
       {orders?.map((order) => (
@@ -48,41 +58,33 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               Order #{order.orderNumber}
             </h2>
             <span
-              className={`${
-                order.isDueToday === "Due Today"
-                  ? `bg-utility-error-50`
-                  : "bg-success-50"
-              } border ${
-                order.isDueToday === "Due Today"
-                  ? "border-utility-error-200"
-                  : "border-success-200"
-              } ${
-                order.isDueToday === "Due Today"
-                  ? "text-utility-error-700"
-                  : "text-success-500"
-              } px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap`}
+              className={`${getDueTodayClasses(
+                order.isDueToday
+              )} px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap`}
             >
               {order.isDueToday}
             </span>
           </div>
-          <div className="flex flex-col mt-4 md:mt-0 md:flex-row md:grid md:grid-cols-3 md:gap-8 gap-4 mb-2">
-            <div className="flex justify-between  md:flex-col gap-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mt-4 md:mt-0 mb-2">
+            <div className="grid grid-cols-2 md:grid-cols-1 gap-1">
               <p className="text-sm font-normal text-gray-800">
                 Prescribing Doctor
               </p>
-              <p className="text-sm font-semibold text-gray-800">
+              <p className="text-sm font-semibold text-gray-800 text-right md:text-left">
                 {order.doctorName}
               </p>
             </div>
-            <div className="flex justify-between md:flex-col gap-1">
+
+            <div className="grid grid-cols-2 md:grid-cols-1 gap-1">
               <p className="text-sm font-normal text-gray-800">Order Items</p>
-              <p className="text-sm font-semibold text-gray-800 rounded-b-sm">
+              <p className="text-sm font-semibold text-gray-800 rounded-b-sm text-right md:text-left">
                 {String(order.orderItems.length).padStart(2, "0")}
               </p>
             </div>
-            <div className="flex justify-between md:flex-col gap-1">
+
+            <div className="grid grid-cols-2 md:grid-cols-1 gap-1">
               <p className="text-sm font-normal text-gray-800">Ordered on</p>
-              <p className="text-sm font-semibold text-gray-800">
+              <p className="text-sm font-semibold text-gray-800 text-right md:text-left">
                 {order.orderedOn}
               </p>
             </div>
@@ -93,8 +95,8 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                 key={item.id}
                 className="flex items-center justify-between bg-gray-100 pl-1 pr-2 py-1 rounded-lg mb-2"
               >
-                <div className="flex items-center w-[70%]">
-                  <div className="flex-shrink-0 w-[42px] h-[42px] flex items-center justify-center">
+                <div className="flex items-center justify-between">
+                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
                     <MedicineIcon />
                   </div>
                   <span
@@ -118,9 +120,15 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               </div>
             ))}
           </div>
-          <div className="flex items-center justify-between [@media(min-width:450px)]:justify-end w-full">
+          {/* don't remove this code for now  */}
+          {/* <div className="flex items-center justify-between [@media(min-width:450px)]:justify-end w-full">
             <div className="flex items-center space-x-2 w-full [@media(min-width:450px)]:w-auto">
-              <button className="w-11 h-11 hover:bg-red-50 cursor-pointer rounded-full flex items-center justify-center border border-red-200">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                className="w-11 h-11 hover:bg-red-50 cursor-pointer rounded-full flex items-center justify-center border border-red-200"
+              >
                 <TrashBinIcon />
               </button>
               <ThemeButton
@@ -135,6 +143,34 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               />
 
               <span className="text-xl font-semibold text-primary text-right [@media(min-width:450px)]:text-left">
+                ${order.totalPrice.toFixed(2)}
+              </span>
+            </div>
+          </div> */}
+          <div className="flex items-center justify-end w-full">
+            <div className="flex items-center space-x-2 w-auto">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.();
+                }}
+                className="w-11 h-11 hover:bg-red-50 cursor-pointer rounded-full flex items-center justify-center border border-red-200"
+              >
+                <TrashBinIcon />
+              </button>
+
+              <ThemeButton
+                variant="outline"
+                label="Pay Now"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPay?.();
+                }}
+                className="flex-none min-w-32"
+                heightClass="h-11"
+              />
+
+              <span className="text-xl font-semibold text-primary text-left">
                 ${order.totalPrice.toFixed(2)}
               </span>
             </div>

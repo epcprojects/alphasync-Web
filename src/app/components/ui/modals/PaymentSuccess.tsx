@@ -29,7 +29,15 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
   return (
     <Portal>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-        <div className="relative bg-success-100 rounded-2xl shadow-lg  max-w-lg p-6 text-center">
+        <div
+          className="
+      relative bg-green-100 sm:rounded-2xl shadow-lg p-6 text-center
+      w-full sm:max-w-lg 
+      sm:mx-0 sm:w-auto
+      h-screen sm:h-auto
+      flex flex-col justify-center
+    "
+        >
           <div
             onClick={onClose}
             className="absolute top-4 right-4 p-1 rounded-full cursor-pointer"
@@ -48,7 +56,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
           </p>
           <button
             onClick={viewOrder}
-            className="mt-6 bg-white border border-gray-200 text-gray-700 px-8 py-3 rounded-full font-semibold text-base transition cursor-pointer"
+            className="mt-6 w-40 self-center bg-white border border-gray-200 text-gray-700 px-8 py-3 rounded-full font-semibold text-base transition cursor-pointer"
           >
             View Order
           </button>

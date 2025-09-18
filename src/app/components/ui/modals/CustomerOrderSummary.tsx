@@ -124,7 +124,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
                     </div> */}
                   </div>
                 </div>
-                <div className="flex md:flex-col md:gap-2">
+                <div className="flex flex-col gap-2 mt-2 md:mt-0">
                   <div className="flex justify-between">
                     <span className="text-xs font-normal text-gray-800">
                       Quantity

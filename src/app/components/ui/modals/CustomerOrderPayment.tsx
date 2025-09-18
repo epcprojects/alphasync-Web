@@ -69,6 +69,19 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const [zipCode, setZipCode] = useState("");
   const [billingAddress, setBillingAddress] = useState("");
   const [maxCardLength, setMaxCardLength] = useState(19);
+  const [showForm, setShowForm] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => setIsMobile(window.innerWidth < 768); // md breakpoint
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
+
+  const handleContinue = () => {
+    setShowForm(true);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -87,6 +100,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   );
   const tax = (subTotal * 0.08).toFixed(2);
   const total = (subTotal + parseFloat(tax)).toFixed(2);
+
   const detectCardType = (number: string): void => {
     if (!number) {
       setCardType("Default");
@@ -117,6 +131,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       setMaxCardLength(19);
     }
   };
+
   const formatCardNumber = (text: string) => {
     // Keep track if user removed last character
     const isBackspacing =
@@ -299,76 +314,84 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       icon={<Card />}
-      title="Complete Payment"
-      subtitle={"Your payment information is secure and encrypted"}
+      title={isMobile && !showForm ? "Order Summary" : "Complete Payment"}
+      subtitle={isMobile ? '' :  "Your payment information is secure and encrypted"}
       position={ModalPosition.RIGHT}
     >
       {order && (
         <div className="w-full max-w-2xl mx-auto gap-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-950">
-              Order #{order.orderNumber}
-            </h2>
-            <span className="text-primary text-sm font-semibold">
-              {order.orderItems.length.toString().padStart(2, "0")} Items
-            </span>
-          </div>
-          <div className="flex flex-col gap-3 mt-4">
-            {order.orderItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex justify-between items-center bg-gray-100 rounded-xl p-1.5 gap-2"
-              >
-                <div className="flex gap-3 items-center">
-                  <div className="w-12 h-12 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
-                    <Image
-                      alt="#"
-                      src={"/images/products/p1.png"}
-                      width={1024}
-                      height={1024}
-                    />
+          <div className={`${showForm ? "hidden" : "block"} md:block`}>
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-950">
+                Order #{order.orderNumber}
+              </h2>
+              <span className="text-primary text-sm font-semibold">
+                {order.orderItems.length.toString().padStart(2, "0")} Items
+              </span>
+            </div>
+            <div className="flex flex-col gap-3 mt-4">
+              {order.orderItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex justify-between items-center bg-gray-100 rounded-xl p-1.5 gap-2"
+                >
+                  <div className="flex gap-3 items-center">
+                    <div className="w-12 h-12 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
+                      <Image
+                        alt="#"
+                        src={"/images/products/p1.png"}
+                        width={1024}
+                        height={1024}
+                      />
+                    </div>
+                    <span className="text-sm font-normal text-gray-800">
+                      {item.medicineName}
+                    </span>
                   </div>
-                  <span className="text-sm font-normal text-gray-800 pr-20">
-                    {item.medicineName}
-                  </span>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm font-medium text-raven bg-white px-2.5 rounded-sm">
+                      x{item.quantity}
+                    </span>
+                    <span className="text-sm font-semibold text-primary">
+                      ${item.price.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex gap-2 items-center">
-                  <span className="text-sm font-medium text-raven bg-white px-2.5 rounded-sm">
-                    x{item.quantity}
-                  </span>
-                  <span className="text-sm font-semibold text-primary">
-                    ${item.price.toFixed(2)}
-                  </span>
-                </div>
+              ))}
+            </div>
+            <hr className=" my-3 md:my-4 text-gray-200" />
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-normal text-gray-800">
+                  Sub total
+                </span>
+                <span className="text-sm font-medium text-gray-800">
+                  ${subTotal.toFixed(2)}
+                </span>
               </div>
-            ))}
-          </div>
-          <hr className=" my-3 md:my-4 text-gray-200" />
-          <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-normal text-gray-800">
+                  Tax (8%)
+                </span>
+                <span className="text-sm font-medium text-gray-800">
+                  ${tax}
+                </span>
+              </div>
+            </div>
+            <hr className=" my-3 md:my-4 text-gray-200" />
             <div className="flex justify-between items-center">
-              <span className="text-sm font-normal text-gray-800">
-                Sub total
-              </span>
-              <span className="text-sm font-medium text-gray-800">
-                ${subTotal.toFixed(2)}
+              <span className="text-base font-medium text-gray-800">Total</span>
+              <span className="text-base font-semibold text-primary">
+                ${total}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-normal text-gray-800">
-                Tax (8%)
-              </span>
-              <span className="text-sm font-medium text-gray-800">${tax}</span>
-            </div>
+            <hr className=" my-3 md:my-4 text-gray-200" />
           </div>
-          <hr className=" my-3 md:my-4 text-gray-200" />
-          <div className="flex justify-between items-center">
-            <span className="text-base font-medium text-gray-800">Total</span>
-            <span className="text-base font-semibold text-primary">
-              ${total}
-            </span>
-          </div>
-          <hr className=" my-3 md:my-4 text-gray-200" />
-          <form className="mx-auto flex flex-col gap-4">
+          <form
+            className={`${
+              showForm ? "block" : "hidden"
+            } md:flex mx-auto flex flex-col gap-4`}
+          >
             <ThemeInput
               id="Name"
               label="Name on card"
@@ -434,21 +457,49 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
               onChange={(e) => setBillingAddress(e.target.value)}
             />
           </form>
-          <div className="flex mt-4 gap-6 border-t border-gray-200 pt-4">
+          <div
+            className="
+    flex gap-6 border-t border-gray-200 pt-4
+    md:mt-4
+    md:static md:bg-transparent
+    fixed bottom-0 left-0 right-0 bg-white p-4 md:px-0 md:pb-0
+  "
+          >
             <div className="flex-1">
               <ThemeButton
                 label={"Cancel"}
                 variant="outline"
                 heightClass="h-11"
+                onClick={() => {
+                  if (isMobile && showForm) {
+                    setShowForm(false);
+                  } else {
+                    onClose();
+                  }
+                }}
               />
             </div>
+
             <div className="flex-1">
               <ThemeButton
-                label={`Pay $${total}`}
+                label={
+                  isMobile
+                    ? showForm
+                      ? `Pay $${total}`
+                      : "Continue"
+                    : `Pay $${total}`
+                }
                 variant="filled"
-                onClick={onClick}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!showForm && window.innerWidth < 768) {
+                    handleContinue();
+                  } else {
+                    onClick();
+                  }
+                }}
                 heightClass="h-11"
-                disabled={!isAnyFieldValid()}
+                disabled={(showForm || !isMobile) && !isAnyFieldValid()}
               />
             </div>
           </div>

@@ -19,6 +19,7 @@ import CustomerOrderDetails from "@/app/components/ui/modals/CustomerOrderDetail
 import CustomerOrderPayment from "@/app/components/ui/modals/CustomerOrderPayment";
 import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
 import CustomerOrderSummary from "@/app/components/ui/modals/CustomerOrderSummary";
+import { showErrorToast } from "@/lib/toast";
 
 function PendingPayments() {
   const [search, setSearch] = useState("");
@@ -231,14 +232,14 @@ function PendingPayments() {
                         console.log("Mobile filter clicked:", option.id);
                         handleFilterSelect(option.id);
                       }}
-                      className={`w-full text-sm text-left px-6 py-4 hover:bg-gray-50 transition-colors duration-150 ${
+                      className={`w-full text-sm text-left px-6 py-4 font-normal hover:bg-gray-50 transition-colors duration-150 ${
                         selectedFilter === option.id
                           ? "bg-gray-100 text-gray-900"
                           : "text-gray-500"
                       } ${
                         index === 0
-                          ? "font-normal text-gray-900"
-                          : "font-normal text-gray-500"
+                          ? "text-gray-900"
+                          : "text-gray-500"
                       }`}
                     >
                       {option.label}
@@ -256,6 +257,9 @@ function PendingPayments() {
           onPress={handleOrderClick}
           onPay={() => {
             setIsPaymentModelOpen(true);
+          }}
+          onDelete={() => {
+            showErrorToast('Order Cancelled')
           }}
         />
       </div>

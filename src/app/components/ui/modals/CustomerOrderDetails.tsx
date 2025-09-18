@@ -43,6 +43,14 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
     };
   }, [isOpen]);
   if (!order) return null;
+  const getDueTodayClasses = (status?: string) => {
+    switch (status) {
+      case "Due Today":
+        return "bg-red-50 border border-red-200 text-red-700";
+      default:
+        return "bg-green-50 border border-green-200 text-green-700";
+    }
+  };
   return (
     <AppModal
       isOpen={isOpen}
@@ -69,10 +77,12 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                   <h3 className=" text-gray-800 font-semibold text-base">
                     {item.medicineName}
                   </h3>
-                  <p className="text-sm font-normal text-gray-800 hidden md:block line-clamp-2">
-                    A synthetic peptide known for its healing properties.
-                    BPC-157 promotes tissue...
-                  </p>
+                  <div className="hidden md:flex">
+                    <p className="text-sm font-normal text-gray-800 line-clamp-2">
+                      A synthetic peptide known for its healing properties.
+                      BPC-157 promotes tissue...
+                    </p>
+                  </div>
                   <div className="flex justify-between items-center text-sm text-gray-500">
                     <div className="px-2.5 py-0.5 rounded-full bg-gray-100 border border-gray-200 mb-1.5">
                       <p className="text-sm font-medium text-gray-700 whitespace-nowrap">
@@ -145,38 +155,26 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               <hr className=" my-3 md:my-4 text-gray-200" />
             </div>
           ))}
-          <div className="mt-6 space-y-3 px-2.5 md:px-0 ">
+          <div className="mt-6 flex flex-col gap-4 px-2.5 md:px-0 ">
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Due days
               </span>
               <div className="flex items-center justify-between">
                 <span
-                  className={`${
-                    order.isDueToday === "Due Today"
-                      ? `bg-utility-error-50`
-                      : "bg-success-50"
-                  } border ${
-                    order.isDueToday === "Due Today"
-                      ? "border-utility-error-200"
-                      : "border-success-200"
-                  } ${
-                    order.isDueToday === "Due Today"
-                      ? "text-utility-error-700"
-                      : "text-success-500"
-                  } px-3 py-1 rounded-full text-sm font-medium`}
+                  className={`${getDueTodayClasses(order.isDueToday)} px-3 py-1 rounded-full text-sm font-medium`}
                 >
                   {order.isDueToday}
                 </span>
               </div>
             </div>
-            <div className="flex justify-between item">
+            <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">Doctor</span>
               <span className="text-sm font-medium text-gray-800">
                 {order.doctorName}
               </span>
             </div>
-            <div className="flex justify-between item">
+            <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Order Date
               </span>
@@ -184,7 +182,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                 {order.orderedOn}
               </span>
             </div>
-            <div className="flex justify-between item">
+            <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Shipping Address
               </span>
@@ -194,7 +192,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
             </div>
           </div>
           <hr className=" my-3 md:my-4 text-gray-200" />
-          <div className="flex justify-between px-2.5 md:px-0">
+          <div className="flex justify-between items-center px-2.5 md:px-0">
             <span className="text-lg font-semibold text-gray-800">
               Total Order
             </span>

@@ -62,7 +62,7 @@ const AppModal: React.FC<AppModalProps> = ({
 
   const wrapperClasses =
     position === ModalPosition.RIGHT
-      ? `${baseWrapperClasses} justify-end items-stretch p-5`
+      ? `${baseWrapperClasses} justify-end items-stretch p-0 md:p-5`
       : `${baseWrapperClasses} min-h-dvh top-0 items-end md:items-center justify-center`;
 
   return (

@@ -12,7 +12,7 @@ interface DashboardStatsProps {
   username: string;
   showUserName: boolean;
   heading: string;
-  stats: StatItem[];
+  stats?: StatItem[];
 }
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({
@@ -38,7 +38,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 lg:max-w-7xl md:max-w-6xl w-full mx-auto md:grid-cols-4 gap-2.5 md:gap-5">
-        {stats.map((item, idx) => (
+        {stats?.map((item, idx) => (
           <div
             key={idx}
             className="border flex items-center gap-2 md:gap-4 border-white/10 p-2 rounded-2xl bg-black/30 backdrop-blur-sm md:p-3"

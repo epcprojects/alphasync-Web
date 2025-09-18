@@ -63,34 +63,34 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         {!hideStats && (
           <DashboardStats
             showUserName={pathname.startsWith("/orders") ? false : true}
-            username={"Arina"}
+            username={"Daniel"}
             heading={heading}
-            stats={[
-              {
-                label: "Sales This Year",
-                value: "$67,890.41",
-                icon: <SyrupIcon />,
-                bgColor: "bg-purple-500",
-              },
-              {
-                label: "Sales This Month",
-                value: "$8,932.12",
-                icon: <SyrupIcon />,
-                bgColor: "bg-emerald-500",
-              },
-              {
-                label: "Sales This Week",
-                value: "$2,114.77",
-                icon: <SyrupIcon />,
-                bgColor: "bg-pink-500",
-              },
-              {
-                label: "Top Ordered Product",
-                value: "BPC-157",
-                icon: <SyrupIcon />,
-                bgColor: "bg-orange-400",
-              },
-            ]}
+            // stats={[
+            //   {
+            //     label: "Sales This Year",
+            //     value: "$67,890.41",
+            //     icon: <SyrupIcon />,
+            //     bgColor: "bg-purple-500",
+            //   },
+            //   {
+            //     label: "Sales This Month",
+            //     value: "$8,932.12",
+            //     icon: <SyrupIcon />,
+            //     bgColor: "bg-emerald-500",
+            //   },
+            //   {
+            //     label: "Sales This Week",
+            //     value: "$2,114.77",
+            //     icon: <SyrupIcon />,
+            //     bgColor: "bg-pink-500",
+            //   },
+            //   {
+            //     label: "Top Ordered Product",
+            //     value: "BPC-157",
+            //     icon: <SyrupIcon />,
+            //     bgColor: "bg-orange-400",
+            //   },
+            // ]}
           />
         )}
         <div className="flex items-center flex-col">
