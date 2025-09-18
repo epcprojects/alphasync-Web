@@ -35,7 +35,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   onPay,
 }) => {
   return (
-    <div className="flex flex-col gap-4 mx-0 cursor-pointer">
+    <div className="flex flex-col gap-4 cursor-pointer">
       {orders?.map((order) => (
         <div
           key={order.id}
@@ -65,7 +65,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               {order.isDueToday}
             </span>
           </div>
-          <div className="flex flex-col mt-4 md:mt-0 md:flex-row md:grid md:grid-cols-3 md:gap-8 gap-4 mb-4">
+          <div className="flex flex-col mt-4 md:mt-0 md:flex-row md:grid md:grid-cols-3 md:gap-8 gap-4 mb-2">
             <div className="flex justify-between  md:flex-col gap-1">
               <p className="text-sm font-normal text-gray-800">
                 Prescribing Doctor

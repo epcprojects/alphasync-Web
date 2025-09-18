@@ -69,7 +69,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                   <h3 className=" text-gray-800 font-semibold text-base">
                     {item.medicineName}
                   </h3>
-                  <p className="text-sm font-normal text-gray-800 hidden md:block">
+                  <p className="text-sm font-normal text-gray-800 hidden md:block line-clamp-2">
                     A synthetic peptide known for its healing properties.
                     BPC-157 promotes tissue...
                   </p>

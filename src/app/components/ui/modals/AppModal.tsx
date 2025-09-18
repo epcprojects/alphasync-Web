@@ -57,12 +57,12 @@ const AppModal: React.FC<AppModalProps> = ({
 
   const modalClasses =
     position === ModalPosition.RIGHT
-      ? `${baseModalClasses} h-full md:h-[calc(96%)] md:m-5 w-full md:w-[600px] md:rounded-[12px] overflow-hidden`
+      ? `${baseModalClasses} h-full w-full md:w-[600px] md:rounded-xl overflow-hidden`
       : `${baseModalClasses} rounded-t-xl relative md:rounded-xl w-full overflow-hidden md:m-auto container md:mx-4 ${sizeClasses[size]}`;
 
   const wrapperClasses =
     position === ModalPosition.RIGHT
-      ? `${baseWrapperClasses} justify-end items-stretch`
+      ? `${baseWrapperClasses} justify-end items-stretch p-5`
       : `${baseWrapperClasses} min-h-dvh top-0 items-end md:items-center justify-center`;
 
   return (

@@ -22,7 +22,6 @@ import CustomerOrderSummary from "@/app/components/ui/modals/CustomerOrderSummar
 
 function PendingPayments() {
   const [search, setSearch] = useState("");
-  const [showFavourites, setShowFavourites] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -63,7 +62,7 @@ function PendingPayments() {
     params.set("page", "0");
     router.replace(`?${params.toString()}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, showFavourites]);
+  }, [search]);
 
   const handleFilterSelect = (filterId: string) => {
     setSelectedFilter(filterId);
@@ -129,22 +128,22 @@ function PendingPayments() {
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
-      <div className="flex flex-col gap-3 [@media(min-width:840px)]:flex-row [@media(min-width:840px)]:items-center [@media(min-width:840px)]:justify-between [@media(min-width:840px)]:gap-0">
-        <div className="flex items-center gap-1 sm:gap-2 [@media(min-width:840px)]:gap-4 mx-0">
-          <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg [@media(min-width:840px)]:w-11 [@media(min-width:840px)]:h-11">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
+          <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
             <DeliveryBoxIcon />
           </span>
           <h2 className="text-black font-semibold text-lg xl:text-2xl whitespace-nowrap">
             Pending Payments
           </h2>
-          <div className="px-3 py-1 rounded-full bg-white border border-utility-indigo-200">
+          <div className="px-3 py-1 rounded-full bg-white border border-indigo-200">
             <p className="text-sm font-medium text-primary whitespace-nowrap">
               3 Pending Order
             </p>
           </div>
         </div>
-        <div className="relative mx-0">
-          <div className="bg-white rounded-full flex items-center gap-1 [@media(min-width:840px)]:gap-2 p-2 shadow-lg w-full [@media(min-width:840px)]:w-fit">
+        <div className="relative">
+          <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-lg w-full md:w-fit">
             <div className="flex items-center relative flex-1">
               <span className="absolute left-2">
                 <SearchIcon />
@@ -153,7 +152,7 @@ function PendingPayments() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search"
-                className="ps-8 py-2 bg-gray-100 w-full [@media(min-width:840px)]:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+                className="ps-8 py-2 bg-gray-100 w-full md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
               />
             </div>
             <Menu>
@@ -165,14 +164,14 @@ function PendingPayments() {
                   );
                   setShowFilterDropdown(!showFilterDropdown);
                 }}
-                className="w-10 h-10 [@media(min-width:840px)]:h-10 [@media(min-width:840px)]:w-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
+                className="w-10 h-10 md:h-10 md:w-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
               >
                 <FilterIcon />
               </MenuButton>
 
               <MenuItems
                 className={
-                  "absolute top-16 right-1 shadow-[0_14px_34px_0_rgba(0,0,0,0.1)] rounded-lg p-1 bg-white hidden w-48 md:block border border-gray-200"
+                  "absolute top-16 right-1 shadow-[0_14px_34px_0_rgba(0,0,0,0.1)] rounded-lg p-1 bg-white hidden w-48 md:block border border-gray-200 z-10"
                 }
               >
                 {filterOptions.map((option, index) => (
@@ -260,7 +259,7 @@ function PendingPayments() {
           }}
         />
       </div>
-      <div className="hidden md:flex justify-center mb-8 mx-6 2xl:mx-0 ">
+      <div className="hidden md:flex justify-center mb-8">
         <ReactPaginate
           breakLabel="..."
           nextLabel={
