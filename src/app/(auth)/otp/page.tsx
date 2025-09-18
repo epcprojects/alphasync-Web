@@ -24,7 +24,7 @@ function OTPContent() {
       setError(false);
       console.log("OTP Verified");
       if (loginType === "Doctor") {
-        router.push("/dashboard");
+        router.push("/inventory");
       } else {
         router.push(`/verify-info?email=${email}`);
       }
