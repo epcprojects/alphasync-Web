@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
 import ReactPaginate from "react-paginate";
 import { products } from "../../../../public/data/products";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 function InventoryContent() {
   const [search, setSearch] = useState("");
@@ -23,7 +24,7 @@ function InventoryContent() {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-
+  const isMobile = useIsMobile();
   const itemsPerPage = 9;
 
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
@@ -64,7 +65,7 @@ function InventoryContent() {
   };
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex md:flex-row flex-col md:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
           <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
             <DeliveryBoxIcon />
@@ -74,51 +75,63 @@ function InventoryContent() {
           </h2>
         </div>
 
-        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-lg w-fit">
-          <div className="flex items-center relative">
+        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:p-2 shadow-lg md:w-fit">
+          <div className="flex items-center relative w-full">
             <span className="absolute left-2">
-              <SearchIcon />
+              <SearchIcon
+                height={isMobile ? "16" : "20"}
+                width={isMobile ? "16" : "20"}
+              />
             </span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 py-2 bg-gray-100 min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-7 md:ps-8 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
 
           <button
             onClick={() => setShowFavourites((prev) => !prev)}
-            className={`w-8 h-8 md:h-11 md:w-11 ${
+            className={`w-8 h-8 shrink-0 md:h-11 md:w-11 ${
               showFavourites &&
               "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
             }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
           >
-            <FavoriteIcon />
+            <FavoriteIcon
+              height={isMobile ? "16" : "20"}
+              width={isMobile ? "16" : "20"}
+            />
           </button>
 
           <button
             onClick={() => {
               setShowGridView(true);
             }}
-            className={`w-8 h-8 md:h-11 md:w-11 ${
+            className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
               showGridView &&
               "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
             }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
           >
-            <GridViewIcon />
+            <GridViewIcon
+              height={isMobile ? "15" : "20"}
+              width={isMobile ? "15" : "20"}
+            />
           </button>
 
           <button
             onClick={() => {
               setShowGridView(false);
             }}
-            className={`w-8 h-8 md:h-11 md:w-11 ${
+            className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
               !showGridView &&
               "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
             }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
           >
-            <ListViewIcon />
+            <ListViewIcon
+              height={isMobile ? "15" : "20"}
+              width={isMobile ? "15" : "20"}
+            />
           </button>
         </div>
       </div>
@@ -137,7 +150,7 @@ function InventoryContent() {
           </div>
         ) : (
           <div className="space-y-1">
-            <div className="grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
+            <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
               <div className="col-span-5">Product</div>
               <div className="col-span-3">Category</div>
               <div className="col-span-2">Stock</div>
@@ -161,19 +174,19 @@ function InventoryContent() {
             <ReactPaginate
               breakLabel="..."
               nextLabel={
-                <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
-                  Next
+                <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                  <span className="hidden md:inline-block">Next</span>
                   <span className="block mb-0.5 rotate-180">
                     <ArrowLeftIcon />
                   </span>
                 </span>
               }
               previousLabel={
-                <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
-                  <span className="mb-0.5">
+                <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                  <span className="md:mb-0.5">
                     <ArrowLeftIcon />
-                  </span>{" "}
-                  Previous
+                  </span>
+                  <span className="hidden md:inline-block">Previous</span>
                 </span>
               }
               onPageChange={handlePageChange}
@@ -182,11 +195,11 @@ function InventoryContent() {
               pageCount={pageCount}
               forcePage={currentPage}
               pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer block"
-              containerClassName="flex items-center relative w-full justify-center gap-2 px-4 py-3 rounded-2xl bg-white"
+              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-2xl bg-white"
               pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
               activeClassName="bg-gray-200 text-gray-900 font-medium"
-              previousClassName="px-4 py-2 rounded-full  absolute left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-              nextClassName="px-4 py-2 rounded-full bg-gray-50  absolute end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
+              previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
+              nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
               breakClassName="px-3 py-1 font-semibold text-gray-400"
             />
           )}
@@ -222,7 +235,7 @@ function InventoryContent() {
 export default function Page() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      {/* <InventoryContent /> */}
+      <InventoryContent />
     </Suspense>
   );
 }

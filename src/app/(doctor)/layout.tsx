@@ -4,6 +4,7 @@ import { DashboardStats, Header } from "../components";
 import { SyrupIcon } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -55,22 +56,11 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     pathname.startsWith(route)
   );
 
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 640); // Mobile if width is less than 640px
-    };
-
-    handleResize(); // Initial check
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const isMobile = useIsMobile();
 
   return (
-    <div className={`w-full min-h-screen md:p-4 ${poppins_init.className}`}>
-      <div className="px-2 py-3 md:p-4 md:pb-6 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  md:rounded-2xl !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
+    <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
+      <div className="px-2 py-3 md:p-4 md:pb-6 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-2xl !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
         <Header />
 
         {!hideStats && (
@@ -141,7 +131,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           </div>
         )}
       </div>
-      {children}
+      <div className="px-3 md:px-0 pb-3">{children}</div>
     </div>
   );
 }

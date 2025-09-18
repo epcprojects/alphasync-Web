@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon } from "@/icons"; // adjust import based on your project
+import ThemeButton from "../buttons/ThemeButton";
 
 type Product = {
   id: number;
@@ -37,19 +38,20 @@ export default function ProductCard({
           <HeartOutlineIcon fill="#374151" />
         )}
       </button>
-      <div className="bg-[url(/images/productBgPattern.png)] !bg-center bg-cover h-60 flex items-center justify-center w-60">
+      <div className="bg-[url(/images/productBgPattern.png)] !bg-center bg-cover h-52 md:h-60 flex items-center justify-center ">
         <Image
           width={280}
+          className="h-full"
           height={280}
           src={product.image}
           alt={product.title}
         />
       </div>
 
-      <div className="bg-gray-50 border border-gray-100 p-2 md:p-4 min-h-56 max-h-56 w-full rounded-lg">
+      <div className="bg-gray-50 border border-gray-100 p-2 md:p-4 md:min-h-56 md:max-h-56 w-full rounded-lg">
         <div className="flex flex-col gap-2 h-full justify-between">
           <div className="flex flex-col gap-1">
-            <h2 className="text-gray-900 font-semibold line-clamp-2 text-sm md:text-lg">
+            <h2 className="text-gray-900 font-semibold line-clamp-2 text-base md:text-lg">
               {product.title}
             </h2>
             <h3 className="text-gray-600 text-xs line-clamp-2 md:text-sm">
@@ -68,18 +70,19 @@ export default function ProductCard({
               </span>
             </div>
 
-            <div className="flex items-center justify-between">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
+            <div className="flex items-center justify-between gap-4">
+              <ThemeButton
+                label="Order"
+                icon={<ShopingCartIcon />}
+                onClick={() => {
                   onAddToCart?.(product.id);
                 }}
-                className="border flex items-center cursor-pointer hover:bg-gray-200 gap-2 md:min-w-60 justify-center border-gray-300 shadow text-gray-700 md:text-base text-sm font-semibold bg-white rounded-full px-2 md:px-4 py-1.5 md:py-2.5"
-              >
-                <ShopingCartIcon /> Order
-              </button>
+                variant="outline"
+                className="w-full"
+                heightClass="h-10 md:h-11"
+              />
 
-              <h2 className="text-gray-950 font-semibold text-sm md:text-lg">
+              <h2 className="text-gray-950 font-semibold text-sm md:text-lg min-w-16 text-end">
                 {product.price}
               </h2>
             </div>

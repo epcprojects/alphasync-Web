@@ -72,17 +72,17 @@ const Header = () => {
     transition-all duration-500 ease-in-out 
     ${
       isSticky
-        ? "fixed w-[98%] pt-4 px-4 rounded-2xl top-4 !bg-[url(/images/bannerImage.png)] !bg-top !bg-cover !bg-no-repeat"
+        ? "fixed w-full md:w-[98%] pt-2.5 md:pt-4 px-2 md:px-4 md:rounded-2xl top-0 md:top-4 !bg-[url(/images/bannerImage.png)] !bg-top !bg-cover !bg-no-repeat"
         : "relative w-full border-b border-white/20 top-0"
     } 
-    pb-2 md:pb-3.5 z-[99]`}
+    pb-2.5 md:pb-3.5 z-[99]`}
       >
-        <nav className=" md:px-4 flex items-center justify-between  mx-auto ">
+        <nav className=" xl:px-4 flex items-center justify-between  mx-auto ">
           <div className="flex items-center gap-2 justify-start w-fit">
-            <div className="flex lg:hidden">
+            <div className="flex xl:hidden">
               <button
                 type="button"
-                className="inline-flex items-center justify-center w-8 h-8  bg-black/40 rounded-full text-black"
+                className="inline-flex items-center justify-center w-8 h-8 md:h-11 md:w-11  bg-black/40 rounded-full text-black"
                 onClick={handleMenuButtonClick}
                 aria-label="Open main menu"
               >
@@ -110,7 +110,7 @@ const Header = () => {
               </button>
             </div>
 
-            <Link href="/" className="w-fit">
+            <Link href="/" className="w-fit xl:flex hidden">
               <span className="sr-only">Your Company</span>
               <Image
                 alt="Company Logo"
@@ -132,7 +132,7 @@ const Header = () => {
             </Link>
           </div>
 
-          <div className="bg-black/40 backdrop-blur shadow-xl  md:rounded-full lg:px-3 md:p-2">
+          <div className="bg-black/40 xl:flex hidden backdrop-blur shadow-xl  md:rounded-full lx:px-3 md:p-2">
             <HeaderMenuNavItems items={menuItems} />
           </div>
 
@@ -184,7 +184,7 @@ const Header = () => {
 
         {/* Mobile Menu Overlay */}
         <div
-          className={`lg:hidden ${isMenuOpen ? "block" : "hidden"}`}
+          className={`xl:hidden ${isMenuOpen ? "block" : "hidden"}`}
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation menu"
@@ -196,7 +196,7 @@ const Header = () => {
             onClick={handleBackdropClick}
           ></div>
 
-          <div className="fixed inset-y-0 gap-4 flex flex-col left-0 z-20 w-[90%] p-4 px-4 overflow-y-auto bg-white md:px-6 md:py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+          <div className="fixed inset-y-0 gap-4 flex flex-col left-0 z-20 min-w-xs p-4 px-4 overflow-y-auto bg-white md:px-6 md:py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
             <div className="flex items-center justify-between pt-1.5">
               <Link href="/" onClick={closeMenu}>
                 <span className="sr-only">Your Company</span>

@@ -1,6 +1,10 @@
 import React from "react";
 
-const RequestIcon = ({ fill = "currentColor", width = "", height = "" }) => {
+const RequestIcon = ({
+  fill = "currentColor",
+  width = "19",
+  height = "18",
+}) => {
   return (
     <svg
       width={width}

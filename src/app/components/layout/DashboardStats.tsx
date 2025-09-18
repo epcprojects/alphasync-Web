@@ -37,7 +37,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:max-w-7xl md:max-w-6xl w-full mx-auto md:grid-cols-4 gap-2 md:gap-5">
+      <div className="grid grid-cols-2 lg:max-w-7xl md:max-w-6xl w-full mx-auto lg:grid-cols-4 gap-2 md:gap-5">
         {stats.map((item, idx) => (
           <div
             key={idx}

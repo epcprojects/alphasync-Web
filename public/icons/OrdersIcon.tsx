@@ -1,6 +1,6 @@
 import React from "react";
 
-const OrdersIcon = ({ fill = "currentColor", width = "", height = "" }) => {
+const OrdersIcon = ({ fill = "currentColor", width = "19", height = "18" }) => {
   return (
     <svg
       width={width}

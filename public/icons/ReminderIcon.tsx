@@ -1,6 +1,10 @@
 import React from "react";
 
-const ReminderIcon = ({ fill = "currentColor", width = "", height = "" }) => {
+const ReminderIcon = ({
+  fill = "currentColor",
+  width = "19",
+  height = "18",
+}) => {
   return (
     <svg
       width={width}
