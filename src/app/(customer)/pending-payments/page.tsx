@@ -18,6 +18,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import CustomerOrderDetails from "@/app/components/ui/modals/CustomerOrderDetails";
 import CustomerOrderPayment from "@/app/components/ui/modals/CustomerOrderPayment";
 import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
+import CustomerOrderSummary from "@/app/components/ui/modals/CustomerOrderSummary";
 
 function PendingPayments() {
   const [search, setSearch] = useState("");
@@ -29,6 +30,7 @@ function PendingPayments() {
   const [isDetailModelOpen, setIsDetailModelOpen] = useState(false);
   const [isPaymentModelOpen, setIsPaymentModelOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [selectedOrder, setSelectedOrder] = useState<PrescriptionOrder | null>(
@@ -305,7 +307,19 @@ function PendingPayments() {
           setIsSuccess(true);
         }}
       />
-      <PaymentSuccess isOpen={isSuccess} onClose={() => setIsSuccess(false)}  />
+      <PaymentSuccess
+        isOpen={isSuccess}
+        onClose={() => setIsSuccess(false)}
+        viewOrder={() => {
+          setIsSuccess(false);
+          setIsSummaryModalOpen(true);
+        }}
+      />
+      <CustomerOrderSummary
+        isOpen={isSummaryModalOpen}
+        onClose={() => setIsSummaryModalOpen(false)}
+        order={selectedOrder}
+      />
     </div>
   );
 }

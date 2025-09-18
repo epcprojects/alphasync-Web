@@ -49,6 +49,7 @@ import Master from "./Master";
 import RuPay from "./RuPay";
 import UnionPay from "./UnionPay";
 import Visa from "./Visa";
+import Tick from "./Tick";
 export {
     Amex,
     Dinners,
@@ -83,6 +84,7 @@ export {
     ArrowDownIcon,
     UserIcon,
     ToastSuccessIcon,
+    Tick,
     ReorderIcon,
     ChatIcon,
     TrashBinIcon,
