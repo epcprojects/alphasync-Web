@@ -25,9 +25,9 @@ const LoginBanner: React.FC<LoginBannerProps> = ({
   stats = [],
 }) => {
   return (
-    <div className="w-full h-dvh py-6 pe-6">
+    <div className="w-full h-dvh py-2 pe-2 sm:py-2 sm:pe-2 md:py-3 md:pe-3 lg:py-6 lg:pe-6">
       <div
-        className="flex items-center justify-center rounded-3xl w-full h-full bg-no-repeat bg-cover bg-center p-5 md:p-8"
+        className="flex items-center justify-center rounded-3xl w-full h-full bg-no-repeat bg-cover bg-center md:p-4  lg:p-8"
         style={{ backgroundImage: `url(${backgroundImage})` }}
       >
         <AttributionCard

@@ -54,15 +54,15 @@ function OTPContent() {
     }
   };
   return (
-    <div className="relative flex flex-col  gap-3 md:gap-5 items-center justify-center h-screen">
+    <div className="relative flex flex-col  gap-6 md:gap-8 items-center justify-center h-screen">
       <AuthHeader logo={Images.auth.logo} title="Verify OTP" />
 
       <form
         onSubmit={handleVerify}
-        className="md:w-96 flex flex-col gap-3 md:gap-6 w-80"
+        className="md:w-96 flex flex-col gap-5 md:gap-6 w-80"
       >
-        <div className="flex flex-col gap-2">
-          <label>
+        <div className="flex flex-col gap-3 md:gap-4">
+          <label className="text-base text-gray-600">
             Please enter the OTP <span className="text-red-500">*</span>
           </label>
           <OTPInput
@@ -73,10 +73,11 @@ function OTPContent() {
             }}
             numInputs={6}
             placeholder="000000"
+            inputType="number"
             containerStyle={
-              "flex items-center gap-4 justify-center w-full select-none"
+              "flex items-center gap-2 justify-center w-full select-none"
             }
-            inputStyle={`bg-white !w-full h-12 font-semibold placeholder:text-gray-200 border rounded-lg outline-primary focus:ring-1 focus:ring-gray-300 select-none ${
+            inputStyle={`bg-white !w-full h-13 font-semibold text-center placeholder:text-gray-200 border text-[32px] [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none rounded-lg outline-primary text-gray-800 focus:ring-1 focus:ring-gray-300 select-none ${
               error ? "border-red-500" : "border-lightGray"
             }`}
             renderInput={(props) => <input {...props} />}
@@ -86,16 +87,17 @@ function OTPContent() {
           disabled={otp.length < 6 || error}
           label="Verify"
           type="submit"
+          heightClass="h-11"
         />
       </form>
       <div className="flex items-center gap-1">
-        <h2 className="text-xs md:text-sm ">Didn’t receive the OTP?</h2>
+        <h2 className="text-sm text-vampire-gray">Didn’t receive the OTP?</h2>
         <button
           onClick={() => {
             setOtp("");
             setError(false);
           }}
-          className="text-primary cursor-pointer text-xs md:text-sm font-semibold"
+          className="text-primary cursor-pointer text-sm font-semibold"
         >
           Click to resend
         </button>

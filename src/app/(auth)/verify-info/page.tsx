@@ -44,6 +44,7 @@ function VerifyInfoContent() {
           onClick={() => {
             router.push("/pending-payments");
           }}
+          heightClass="h-11"
         />
       </div>
       <div className="flex items-center gap-1">

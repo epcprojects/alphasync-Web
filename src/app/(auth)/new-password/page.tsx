@@ -54,9 +54,9 @@ function Content() {
 
       <form
         onSubmit={formik.handleSubmit}
-        className="md:w-96 flex flex-col gap-3 md:gap-6 w-80"
+        className="md:w-96 flex flex-col gap-5 md:gap-6 w-80"
       >
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 md:gap-6">
           <ThemeInput
             id="password"
             label="New Password"
@@ -88,6 +88,7 @@ function Content() {
           label="Update Password"
           onClick={() => {}}
           type="submit"
+          heightClass="h-11"
         />
       </form>
       <div className="flex items-center gap-1">

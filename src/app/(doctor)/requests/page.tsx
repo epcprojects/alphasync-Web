@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDownIcon, ArrowLeftIcon, PackageIcon, SearchIcon } from "@/icons";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { requests } from "../../../../public/data/requestsData";
@@ -11,7 +11,7 @@ import RequestListView from "@/app/components/ui/cards/RequestListView";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { MessageSendModal, RequestRejectModal } from "@/app/components";
 
-const Page = () => {
+function RequestContent() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const searchParams = useSearchParams();
@@ -221,6 +221,12 @@ const Page = () => {
       />
     </div>
   );
-};
+}
 
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RequestContent />
+    </Suspense>
+  );
+}

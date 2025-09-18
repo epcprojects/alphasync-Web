@@ -31,9 +31,9 @@ const InfoModal: React.FC<InfoModalProps> = ({
   if (!isOpen) return null;
   return (
     <Portal>
-      <div className="fixed min-h-dvh z-[100]  top-0 inset-0 bg-black/50 backdrop-blur-xs flex items-end md:items-center justify-center ">
+      <div className="fixed min-h-dvh z-[100]  top-0 inset-0 bg-black/50 backdrop-blur-xs flex    items-center justify-center ">
         <div
-          className="bg-white rounded-t-xl relative md:rounded-xl max-w-lg w-full    md:m-auto md:p-8 p-3 container md:mx-4 shadow-xl"
+          className="bg-white  relative rounded-2xl max-w-xs md:max-w-lg w-full    md:m-auto md:p-8 p-5 pt-8 container md:mx-4 shadow-xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-end ">
@@ -41,17 +41,17 @@ const InfoModal: React.FC<InfoModalProps> = ({
               onClick={onClose}
               className="md:p-1 p-1 hover:bg-gray-100 absolute top-2 end-2 rounded-md cursor-pointer"
             >
-              <CrossIcon />
+              <CrossIcon fill="black" />
             </button>
           </div>
 
           <div className="flex items-center flex-col gap-3 md:gap-5 justify-center">
             {icon}
-            <h2 className="text-gray-950 font-medium text-center text-3xl">
+            <h2 className="text-gray-950 font-medium text-center text-2xl md:text-3xl">
               {title}
             </h2>
 
-            <p className="text-gray-500 font-normal text-center text-xs md:text-sm ">
+            <p className="text-gray-500 font-normal text-center text-sm ">
               {subtitle}{" "}
               <span className="text-gray-900 font-semibold underline underline-offset-1">
                 {email}
@@ -63,6 +63,7 @@ const InfoModal: React.FC<InfoModalProps> = ({
               label={buttonLabel}
               className="w-full"
               onClick={() => onClick()}
+              heightClass="h-11"
             />
           </div>
         </div>

@@ -22,9 +22,9 @@ const AttributionCard: React.FC<AttributionCardProps> = ({
   stats = [],
 }) => {
   return (
-    <div className="rounded-2xl p-5 flex flex-col gap-4 md:gap-8 md:p-8 backdrop-blur-sm bg-black/25">
+    <div className="rounded-2xl md:p-4 flex flex-col gap-4 md:gap-8  lg:p-6 xl:p-8 backdrop-blur-sm bg-black/25">
       {/* Top section: Image + Quote + Author */}
-      <div className="flex items-start gap-4 md:gap-8">
+      <div className="flex items-start sm:gap-2 md:gap-4 lg:gap-8">
         <Image
           src={image}
           alt={alt}
@@ -32,10 +32,10 @@ const AttributionCard: React.FC<AttributionCardProps> = ({
         />
 
         <div className="flex flex-col gap-2 md:gap-4">
-          <h2 className="text-white text-xl md:text-2xl font-semibold">
+          <h2 className="text-white text-xl lg:text-2xl font-semibold">
             “{quote}”
           </h2>
-          <h3 className="font-medium text-white text-sm md:text-base">
+          <h3 className="font-medium text-white text-sm lg:text-base">
             {author}
           </h3>
         </div>
@@ -43,7 +43,7 @@ const AttributionCard: React.FC<AttributionCardProps> = ({
 
       {/* Stats Section */}
       {stats.length > 0 && (
-        <div className="flex items-start gap-4">
+        <div className="flex lg:flex-row flex-col items-start gap-4">
           {stats.map((stat, index) => (
             <div
               key={index}

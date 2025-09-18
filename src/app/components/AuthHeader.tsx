@@ -22,11 +22,11 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({
   onToggleChange,
 }) => {
   return (
-    <div className={`flex flex-col items-center gap-6 ${width}`}>
+    <div className={`flex flex-col items-center gap-5 md:gap-6 ${width}`}>
       <Image alt="Auth logo" src={logo} />
       <div className="flex flex-col gap-1">
         {title && (
-          <h1 className="text-xl font-semibold text-center text-gray-900 md:text-3xl">
+          <h1 className="text-2xl font-semibold text-center text-gray-900 md:text-3xl">
             {title}
           </h1>
         )}
@@ -40,7 +40,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({
         )}
 
         {subtitle && (
-          <p className="mb-3 text-sm font-normal text-center text-gray-600 md:mb-4">
+          <p className="mb-3 text-sm font-normal text-center text-gray-600 md:mb-6">
             {subtitle}
           </p>
         )}

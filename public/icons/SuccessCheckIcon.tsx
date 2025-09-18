@@ -1,10 +1,10 @@
 import React from "react";
 
-const SuccessCheckIcon = () => {
+const SuccessCheckIcon = ({ width = "60", height = "60" }) => {
   return (
     <svg
-      width="66"
-      height="66"
+      width={width}
+      height={height}
       viewBox="0 0 66 66"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

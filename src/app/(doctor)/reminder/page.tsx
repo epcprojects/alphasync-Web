@@ -1,13 +1,13 @@
 "use client";
 
 import { ArrowLeftIcon, ReminderFilledIcon, SearchIcon } from "@/icons";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { reminders } from "../../../../public/data/reminders";
 import ReactPaginate from "react-paginate";
 import RefillView from "@/app/components/ui/cards/RefillView";
 
-const Page = () => {
+function ReminderContent() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const searchParams = useSearchParams();
@@ -136,6 +136,12 @@ const Page = () => {
       </div>
     </div>
   );
-};
+}
 
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ReminderContent />
+    </Suspense>
+  );
+}

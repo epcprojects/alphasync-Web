@@ -42,7 +42,7 @@ const Page = () => {
 
       <form
         onSubmit={formik.handleSubmit}
-        className="md:w-96 flex flex-col gap-3 md:gap-6 w-80"
+        className="md:w-96 flex flex-col gap-5 md:gap-6 w-80"
       >
         <ThemeInput
           id="Email"
@@ -60,6 +60,7 @@ const Page = () => {
           type="submit"
           disabled={formik.isSubmitting || !formik.values.email}
           label="Send Reset Link"
+          heightClass="h-11"
         />
       </form>
       <div className="flex items-center gap-1">

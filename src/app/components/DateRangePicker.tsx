@@ -220,8 +220,6 @@ interface DateRangeSelectorProps {
   onCancel?: () => void;
   /** Optional: control initial open/closed */
   defaultOpen?: boolean;
-  /** Optional: text for the trigger button */
-  triggerLabel?: string;
 }
 
 const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
@@ -230,7 +228,6 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   onApply,
   onCancel,
   defaultOpen = false,
-  triggerLabel = "Select Date Range",
 }) => {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -240,6 +237,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   // Keep local temp in sync if parent value changes from outside
   useEffect(() => {
     setTempRange([value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value.startDate, value.endDate]);
 
   const handleSelect = (item: RangeKeyDict) => {

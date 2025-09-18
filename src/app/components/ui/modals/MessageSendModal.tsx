@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import AppModal from "./AppModal";
-import { BubbleChatIcon, ChatIcon } from "@/icons";
+import { BubbleChatIcon } from "@/icons";
 import TextAreaField from "../inputs/TextAreaField";
 
 interface MessageSendModalProps {

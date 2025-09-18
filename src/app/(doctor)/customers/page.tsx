@@ -2,14 +2,14 @@
 
 import { ArrowLeftIcon, SearchIcon, UserAddIcon, UserGroupIcon } from "@/icons";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { CustomerDatabaseView, ThemeButton } from "@/app/components";
 import ReactPaginate from "react-paginate";
 import { customers } from "../../../../public/data/customers";
 import AddCustomerModal from "@/app/components/ui/modals/AddCustomerModal";
 import { showSuccessToast } from "@/lib/toast";
 
-const Page = () => {
+function CustomerContent() {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
@@ -145,6 +145,12 @@ const Page = () => {
       />
     </div>
   );
-};
+}
 
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CustomerContent />
+    </Suspense>
+  );
+}

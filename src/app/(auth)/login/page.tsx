@@ -61,9 +61,9 @@ const Page = () => {
 
       <form
         onSubmit={formik.handleSubmit}
-        className="md:w-96 flex flex-col gap-3 md:gap-6 w-80"
+        className="md:w-96 flex flex-col gap-5 md:gap-6 w-80"
       >
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 md:gap-6">
           <ThemeInput
             id="Email"
             label="Email"
@@ -92,7 +92,7 @@ const Page = () => {
           )}
         </div>
 
-        <div className="flex justify-between  aling-center">
+        <div className="flex justify-between   aling-center">
           <div className="flex items-center ">
             <input
               id="default-checkbox"
@@ -104,7 +104,7 @@ const Page = () => {
               htmlFor="default-checkbox"
               className="text-xs select-none font-medium text-gray-700 ms-2 md:text-sm "
             >
-              Remember me
+              Remember for 30 days
             </label>
           </div>
           <Link
@@ -120,6 +120,7 @@ const Page = () => {
           type="submit"
           disabled={formik.isSubmitting}
           onClick={() => {}}
+          heightClass="h-11"
         />
       </form>
     </div>

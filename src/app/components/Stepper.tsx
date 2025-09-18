@@ -1,6 +1,6 @@
 import React from "react";
 import clsx from "clsx";
-import { SuccessCheckIcon, ToastSuccessIcon } from "@/icons";
+import { ToastSuccessIcon } from "@/icons";
 
 type Step = {
   label: string;

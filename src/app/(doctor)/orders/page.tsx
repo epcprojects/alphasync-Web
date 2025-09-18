@@ -3,12 +3,11 @@
 import {
   ArrowDownIcon,
   ArrowLeftIcon,
-  DeliveryBoxIcon,
   PackageIcon,
   PlusIcon,
   SearchIcon,
 } from "@/icons";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeButton } from "@/app/components";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
@@ -24,7 +23,7 @@ type Selection = {
   key: "selection";
 };
 
-const Page = () => {
+function OrderContent() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const searchParams = useSearchParams();
@@ -148,7 +147,6 @@ const Page = () => {
               setRange(next);
               setCurrentPage(0);
             }}
-            triggerLabel="Pick dates"
           />
           <Menu>
             <MenuButton className="inline-flex py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full  text-sm/6 font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
@@ -325,6 +323,12 @@ const Page = () => {
       />
     </div>
   );
-};
+}
 
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OrderContent />
+    </Suspense>
+  );
+}
