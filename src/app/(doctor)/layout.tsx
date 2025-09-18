@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { DashboardStats, Header } from "../components";
 import { SyrupIcon } from "@/icons";
 import { usePathname } from "next/navigation";
@@ -55,9 +55,22 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     pathname.startsWith(route)
   );
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640); // Mobile if width is less than 640px
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
-    <div className={`w-full min-h-screen p-4 ${poppins_init.className}`}>
-      <div className="p-4 pb-6 h-fit mb-2 md:mb-4 flex flex-col gap-6 md:gap-10 relative  items-center justify-center bg-black/40  rounded-2xl !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
+    <div className={`w-full min-h-screen md:p-4 ${poppins_init.className}`}>
+      <div className="px-2 py-3 md:p-4 md:pb-6 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  md:rounded-2xl !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
         <Header />
 
         {!hideStats && (
@@ -69,42 +82,64 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
               {
                 label: "Sales This Year",
                 value: "$67,890.41",
-                icon: <SyrupIcon />,
+                icon: (
+                  <SyrupIcon
+                    height={isMobile ? "16" : "32"}
+                    width={isMobile ? "16" : "32"}
+                  />
+                ),
                 bgColor: "bg-purple-500",
               },
               {
                 label: "Sales This Month",
                 value: "$8,932.12",
-                icon: <SyrupIcon />,
+                icon: (
+                  <SyrupIcon
+                    height={isMobile ? "16" : "32"}
+                    width={isMobile ? "16" : "32"}
+                  />
+                ),
                 bgColor: "bg-emerald-500",
               },
               {
                 label: "Sales This Week",
                 value: "$2,114.77",
-                icon: <SyrupIcon />,
+                icon: (
+                  <SyrupIcon
+                    height={isMobile ? "16" : "32"}
+                    width={isMobile ? "16" : "32"}
+                  />
+                ),
                 bgColor: "bg-pink-500",
               },
               {
                 label: "Top Ordered Product",
                 value: "BPC-157",
-                icon: <SyrupIcon />,
+                icon: (
+                  <SyrupIcon
+                    height={isMobile ? "16" : "32"}
+                    width={isMobile ? "16" : "32"}
+                  />
+                ),
                 bgColor: "bg-orange-400",
               },
             ]}
           />
         )}
-        <div className="flex items-center flex-col">
-          {hideStats && (
-            <h2 className="text-white text-2xl font-semibold md:text-4xl">
-              {heading}
-            </h2>
-          )}
-          {showSubHeads && (
-            <h2 className="text-white/80 mt-1 text-base  md:text-xl">
-              {subheading}
-            </h2>
-          )}
-        </div>
+        {hideStats && (
+          <div className="flex items-center flex-col">
+            {hideStats && (
+              <h2 className="text-white text-2xl font-semibold md:text-4xl">
+                {heading}
+              </h2>
+            )}
+            {showSubHeads && (
+              <h2 className="text-white/80 mt-1 text-base  md:text-xl">
+                {subheading}
+              </h2>
+            )}
+          </div>
+        )}
       </div>
       {children}
     </div>

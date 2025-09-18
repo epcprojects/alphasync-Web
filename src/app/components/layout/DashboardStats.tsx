@@ -22,9 +22,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
   stats,
 }) => {
   return (
-    <div className="flex items-center gap-3 md:gap-12 flex-col">
+    <div className="flex items-center gap-3 w-full md:gap-12 flex-col">
       {/* Header */}
-      <div className="flex items-center flex-col gap-1.5 md:gap-3 justify-center">
+      <div className="flex items-center flex-col gap-1 md:gap-5 justify-center">
         {showUserName && (
           <h2 className="text-white font-normal text-base md:text-2xl">
             👋 Welcome {username},
@@ -37,23 +37,23 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 lg:max-w-7xl md:max-w-6xl w-full mx-auto md:grid-cols-4 gap-2.5 md:gap-5">
+      <div className="grid grid-cols-2 lg:max-w-7xl md:max-w-6xl w-full mx-auto md:grid-cols-4 gap-2 md:gap-5">
         {stats.map((item, idx) => (
           <div
             key={idx}
-            className="border flex items-center gap-2 md:gap-4 border-white/10 p-2 rounded-2xl bg-black/30 backdrop-blur-sm md:p-3"
+            className="border flex items-start md:items-center gap-2 md:gap-4 border-white/10 px-2 py-3 rounded-2xl bg-black/30 backdrop-blur-sm md:p-3"
           >
             <span
-              className={`w-10 h-10 md:w-15 md:h-15 rounded-full flex items-center justify-center ${item.bgColor}`}
+              className={`w-7 h-7 shrink-0 md:w-15 md:h-15 rounded-full flex items-center justify-center ${item.bgColor}`}
             >
               {item.icon}
             </span>
 
-            <div>
-              <span className="text-white/80 font-medium text-xs md:text-sm">
+            <div className="flex flex-col">
+              <span className="text-white/80 font-medium text-[11px] md:text-sm">
                 {item.label}
               </span>
-              <span className="text-lg md:text-2xl text-white font-semibold block">
+              <span className="text-sm md:text-2xl text-white font-semibold block">
                 {item.value}
               </span>
             </div>

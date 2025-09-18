@@ -222,7 +222,7 @@ function InventoryContent() {
 export default function Page() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <InventoryContent />
+      {/* <InventoryContent /> */}
     </Suspense>
   );
 }
