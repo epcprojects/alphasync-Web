@@ -52,8 +52,15 @@ import UserFilledIcon from "./UserFilledIcon";
 import AccountSettingsIcon from "./AccountSettingsIcon";
 import LockIcon from "./LockIcon";
 import SecurityLock from "./SecurityLock";
+import MailIcon from "./MailIcon";
+import MessageSquareIcon from "./MessageSquareIcon";
+import AlertIcon from "./AlertIcon";
+
 
 export {
+    MessageSquareIcon,
+    AlertIcon,
+    MailIcon,
     SecurityLock,
     LockIcon,
     AccountSettingsIcon,

@@ -25,7 +25,9 @@ import OrderModal from "./ui/modals/OrderModal";
 import PrescriptionRequestCard from "./ui/cards/PrescriptionRequestCard";
 import RequestRejectModal from "./ui/modals/RequestRejectModal";
 import MessageSendModal from "./ui/modals/MessageSendModal";
+import NotificationToggle from "./ui/buttons/NotificationToggle";
 export {
+    NotificationToggle,
     MessageSendModal,
     ThemeButton,
     ToggleGroup,
