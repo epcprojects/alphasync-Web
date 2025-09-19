@@ -69,9 +69,18 @@ import ReloadIcon from "./ReloadIcon";
 import AutoReloadIcon from "./AutoReloadIcon";
 import UserFilledIcon from "./UserFilledIcon";
 import CheckMarkCircle from "./CheckMarkCircle";
-
+import CreditCardOutlineIcon from "./CreditCardOutlineIcon";
+import ShopingCartFilledicon from "./ShopingCartFilledicon";
+import BubbleChatFilledIcon from "./BubbleChatFilledIcon";
+import UserAddFilledIcon from "./UserAddFilledIcon";
+import FileIcon from "./FileIcon";
 export {
-    ReloadIcon,
+    FileIcon,
+    ShopingCartFilledicon,
+    UserAddFilledIcon,
+    BubbleChatFilledIcon,
+    CreditCardOutlineIcon,
+   ReloadIcon,
     UserFilledIcon,
     AutoReloadIcon,
     CheckMarkCircle,

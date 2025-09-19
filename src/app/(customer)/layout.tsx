@@ -1,7 +1,14 @@
 "use client";
 import React, { ReactNode } from "react";
 import { DashboardStats, Header } from "../components";
-import { SyrupIcon } from "@/icons";
+import {
+  BubbleChatIcon,
+  CreditCardOutlineIcon,
+  InventoryIcon,
+  OrdersIcon,
+  ShoppingCartIcon,
+  SyrupIcon,
+} from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 
@@ -17,13 +24,30 @@ const poppins_init = Poppins({
   variable: "--poppins",
 });
 
+const menuItems = [
+  {
+    label: "pending-payments",
+    href: "/pending-payments",
+    icon: CreditCardOutlineIcon,
+  },
+  { label: "Order History", href: "/order-history", icon: OrdersIcon },
+  {
+    label: "Browse Products",
+    href: "/browse-products",
+    icon: ShoppingCartIcon,
+  },
+  {
+    label: "Chat with Physician",
+    href: "/chat",
+    icon: BubbleChatIcon,
+  },
+];
+
 const headings: Record<string, string> = {
   "/pending-payments": "Trusted Peptide Solutions",
-  "/customers": "Customer Management",
-  "/orders": "Order Management",
-  "/reminder": "Refill Reminders",
-  "/request": "Patient Requests",
-  "/settings": "Settings",
+  "/order-history": "Order History",
+  "/browse-products": "Browse Products",
+  "/chat": "",
 };
 
 const subHeadings: Record<string, string> = {
@@ -31,7 +55,12 @@ const subHeadings: Record<string, string> = {
   "/requests": "Review and manage patient medication requests",
 };
 
-const noStatsRoutes = ["/customers", "/reminder", "/requests", "/settings"];
+const noStatsRoutes = [
+  "/pending-payments",
+  "/order-history",
+  "/browse-products",
+  "/chat",
+];
 
 const showSubHeading = ["/reminder", "/requests"];
 
@@ -58,42 +87,14 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className={`w-full min-h-screen p-4 ${poppins_init.className}`}>
       <div className="p-4 pb-6 h-fit mb-2 md:mb-4 flex flex-col gap-6 md:gap-10 relative  items-center justify-center bg-black/40  rounded-2xl !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
-        <Header />
+        <Header menuItems={menuItems} />
 
-        {!hideStats && (
-          <DashboardStats
-            showUserName={pathname.startsWith("/orders") ? false : true}
-            username={"Daniel"}
-            heading={heading}
-            stats={[
-              {
-                label: "Sales This Year",
-                value: "$67,890.41",
-                icon: <SyrupIcon />,
-                bgColor: "bg-purple-500",
-              },
-              {
-                label: "Sales This Month",
-                value: "$8,932.12",
-                icon: <SyrupIcon />,
-                bgColor: "bg-emerald-500",
-              },
-              {
-                label: "Sales This Week",
-                value: "$2,114.77",
-                icon: <SyrupIcon />,
-                bgColor: "bg-pink-500",
-              },
-              {
-                label: "Top Ordered Product",
-                value: "BPC-157",
-                icon: <SyrupIcon />,
-                bgColor: "bg-orange-400",
-              },
-            ]}
-          />
-        )}
         <div className="flex items-center flex-col">
+          {pathname.startsWith(menuItems[0].href) && (
+            <h2 className="text-white font-normal mb-3 text-base md:text-2xl">
+              👋 Welcome Daniel,
+            </h2>
+          )}
           {hideStats && (
             <h2 className="text-white text-2xl font-semibold md:text-4xl">
               {heading}

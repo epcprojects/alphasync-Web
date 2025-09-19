@@ -84,6 +84,7 @@ export default function CustomerDetail() {
     ]);
 
     setToggle(!toggle);
+    setInput("");
   };
 
   const handleApprove = (title: string) => {
@@ -142,7 +143,7 @@ export default function CustomerDetail() {
                   John Smith
                 </h2>
                 <span
-                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium bg-green-50 text-green-500 border border-green-200`}
+                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium bg-green-50 text-green-700 border border-green-200`}
                 >
                   Active
                 </span>

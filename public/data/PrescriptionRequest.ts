@@ -13,6 +13,7 @@ export const PrecriptionDATA = [
       "Requesting this for a recent shoulder injury that's been slow to heal.",
     physicianNotes:
       "Patient is a good candidate for semaglutide therapy. BMI qualifies for treatment.",
+    category: "Recovery"
   },
   {
     id: 2,
@@ -25,6 +26,7 @@ export const PrecriptionDATA = [
     doctorName: "Dr. Michael Brown",
     price: "$350.00",
     physicianNotes: "Continue therapy as planned.",
+    category: "Recovery"
   },
   {
     id: 3,
@@ -38,6 +40,7 @@ export const PrecriptionDATA = [
       "Patient is a good candidate for semaglutide therapy. BMI qualifies for treatment.",
     requestedDate: "6/10/2025",
     denialReason: "Testosterone levels not within treatment range.",
+    category: "Recovery"
   },
 
 ];

@@ -107,7 +107,7 @@ const AppModal: React.FC<AppModalProps> = ({
             {children}
           </div>
 
-          {!position && showFooter && (
+          {showFooter && (
             <div className="border-t border-gray-200 bg-white flex items-center justify-between p-2 md:p-4">
               <ThemeButton
                 label={cancelLabel}

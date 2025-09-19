@@ -3,24 +3,23 @@ import React, { useEffect, useState, MouseEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Images } from "@/app/ui/images";
-import {
-  InventoryIcon,
-  CustomerIcon,
-  OrdersIcon,
-  ReminderIcon,
-  RequestIcon,
-  SettingsIcon,
-  ProfileIcon,
-  LogoutIcon,
-  UserIcon,
-} from "@/icons";
+import { ProfileIcon, LogoutIcon, UserIcon, FileIcon } from "@/icons";
 import HeaderMenuNavItems from "./HeaderMenuNavItems";
 import Notifications from "../ui/Notifications";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
-// interface HeaderProps {0}
+interface MenuItemType {
+  label: string;
+  href: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  icon: React.ComponentType<any>;
+}
 
-const Header = () => {
+interface HeaderProps {
+  menuItems: MenuItemType[];
+}
+
+const Header: React.FC<HeaderProps> = ({ menuItems }) => {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isSticky, setIsSticky] = useState<boolean>(false);
 
@@ -50,19 +49,6 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll);
     // return (): void => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const menuItems = [
-    { label: "Inventory", href: "/inventory", icon: InventoryIcon },
-    { label: "Customers", href: "/customers", icon: CustomerIcon },
-    { label: "Orders", href: "/orders", icon: OrdersIcon },
-    {
-      label: "Reminder",
-      href: "/reminder",
-      icon: ReminderIcon,
-    },
-    { label: "Requests", href: "/requests", icon: RequestIcon },
-    { label: "Settings", href: "/settings", icon: SettingsIcon },
-  ];
 
   return (
     <>
@@ -136,7 +122,14 @@ const Header = () => {
             <HeaderMenuNavItems items={menuItems} />
           </div>
 
-          <div className="items-center  gap-4 flex">
+          <div className="items-center  gap-4 flex ">
+            <Link
+              href={"/customer-requests"}
+              className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
+            >
+              <FileIcon />
+            </Link>
+
             <Notifications />
 
             <div className="text-right w-8 h-8 md:h-11 md:w-11">

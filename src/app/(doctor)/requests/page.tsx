@@ -1,6 +1,12 @@
 "use client";
 
-import { ArrowDownIcon, ArrowLeftIcon, PackageIcon, SearchIcon } from "@/icons";
+import {
+  ArrowDownIcon,
+  ArrowLeftIcon,
+  PackageIcon,
+  SearchIcon,
+  UserAddFilledIcon,
+} from "@/icons";
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
@@ -62,10 +68,10 @@ function RequestContent() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 md:gap-4">
           <span className="flex items-center text-primary justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-            <PackageIcon fill="currentColor" />
+            <UserAddFilledIcon />
           </span>
           <h2 className="text-black font-semibold text-lg md:text-3xl">
-            All Orders
+            Requests
           </h2>
         </div>
 

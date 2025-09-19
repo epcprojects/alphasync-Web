@@ -1,11 +1,13 @@
 import React from "react";
 
 interface TextAreaFieldProps {
-  label: string;
+  label?: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  name?: string;
   placeholder?: string;
   required?: boolean;
+  heightClasses?: string;
 }
 
 const TextAreaField: React.FC<TextAreaFieldProps> = ({
@@ -13,7 +15,9 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
   value,
   onChange,
   placeholder = "",
+  name,
   required = false,
+  heightClasses = "min-h-32 max-h-44",
 }) => {
   return (
     <div>
@@ -22,9 +26,10 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
       </label>
       <textarea
         value={value}
+        name={name}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full focus:ring p-2 md:px-3 md:py-2.5 min-h-16 max-h-32 border rounded-lg outline-none text-gray-900 placeholder:text-neutral-300 border-lightGray focus:ring-gray-200"
+        className={`${heightClasses} w-full focus:ring p-2 md:px-3 md:py-2.5  border rounded-lg outline-none text-gray-900 placeholder:text-neutral-300 border-lightGray focus:ring-gray-200`}
       ></textarea>
     </div>
   );

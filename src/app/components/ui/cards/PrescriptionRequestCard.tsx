@@ -8,8 +8,10 @@ import {
   BubbleChatIcon,
   EyeIcon,
   NoteIcon,
+  CreditCardOutlineIcon,
 } from "@/icons";
 
+export type cardVariantType = "Customer" | "Doctor";
 interface PrescriptionRequestCardProps {
   imageSrc?: string;
   title?: string;
@@ -28,6 +30,8 @@ interface PrescriptionRequestCardProps {
   onChat?: () => void;
   onViewDetails?: () => void;
   onAddNote?: () => void;
+  category?: string;
+  cardVarient?: cardVariantType;
 }
 
 const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
@@ -48,6 +52,8 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   onChat,
   onViewDetails,
   onAddNote,
+  category,
+  cardVarient = "Doctor",
 }) => {
   function getStatusClasses(status: string) {
     switch (status) {
@@ -62,8 +68,16 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
     }
   }
 
+  const baseClasses =
+    " flex-col flex items-start gap-1.5 md:gap-3  bg-white p-2 md:p-4";
+
+  const variantClasses: Record<cardVariantType, string> = {
+    Customer: "border-b border-b-gray-200 ",
+    Doctor: "border border-gray-200 rounded-xl",
+  };
+
   return (
-    <div className="border flex-col flex items-start gap-1.5 md:gap-3 border-gray-200 rounded-xl bg-white p-2 md:p-4">
+    <div className={`${baseClasses} ${variantClasses[cardVarient]}`}>
       <div className="w-full flex items-start gap-2.5 md:gap-5">
         <div className="w-14 shrink-0 h-14 md:w-20 md:h-20 rounded-lg bg-gray-100 flex items-center justify-center">
           <Image
@@ -76,27 +90,40 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
         </div>
 
         <div className="w-full flex flex-col gap-0.5 md:gap-1">
-          <div className="flex items-start gap-0.5 md:gap-1 flex-col">
-            <h2 className="text-gray-800 font-semibold text-sm md:text-base">
-              {title}{" "}
-              {subtitle && (
-                <span className="font-normal text-xs">{subtitle}</span>
+          <div className="flex items-start justify-between gap-0.5 md:gap-1 ">
+            <div>
+              <h2 className="text-gray-800 font-semibold text-sm md:text-base">
+                {title}{" "}
+                {subtitle && (
+                  <span className="font-normal text-xs">{subtitle}</span>
+                )}
+              </h2>
+              {description && (
+                <p className="text-[10px] text-gray-800">{description}</p>
               )}
-            </h2>
-            {description && (
-              <p className="text-[10px] text-gray-800">{description}</p>
-            )}
-          </div>
+            </div>
 
-          <div className="grid gird-cols-1 md:grid-cols-5">
             {status && (
               <div>
                 <span
-                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+                  className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
                     status
                   )}`}
                 >
                   {status}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="grid gird-cols-1 md:grid-cols-5">
+            {category && (
+              <div>
+                <span className="block mb-1 text-gray-800 text-xs md:text-sm">
+                  Category
+                </span>
+                <span className="block text-gray-800 text-xs md:text-sm font-semibold">
+                  {category}
                 </span>
               </div>
             )}
@@ -184,7 +211,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
       )}
 
       <div className="flex items-center justify-end gap-1 w-full md:gap-2">
-        {onApprove && status !== "Approved" && (
+        {onApprove && status !== "Approved" && cardVarient === "Doctor" && (
           <ThemeButton
             label="Approve"
             icon={<ApproveCheckIcon />}
@@ -193,7 +220,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             heightClass="h-10"
           />
         )}
-        {onReject && !denialReason && (
+        {onReject && !denialReason && cardVarient === "Doctor" && (
           <ThemeButton
             label="Reject"
             icon={<RejectIcon />}
@@ -202,15 +229,29 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             heightClass="h-10"
           />
         )}
-        {onChat && (
+        {onChat &&
+          !(
+            cardVarient === "Customer" &&
+            (status === "Approved" || status === "Denied")
+          ) && (
+            <ThemeButton
+              label={cardVarient === "Doctor" ? "Chat" : "Follow up"}
+              icon={<BubbleChatIcon height="20" width="20" fill="#4B5563" />}
+              onClick={onChat}
+              variant="outline"
+              heightClass="h-10"
+            />
+          )}
+
+        {cardVarient === "Customer" && status === "Approved" && (
           <ThemeButton
-            label="Chat"
-            icon={<BubbleChatIcon height="20" width="20" fill="#4B5563" />}
+            label="Proceed to Payment"
+            icon={<CreditCardOutlineIcon />}
             onClick={onChat}
-            variant="outline"
             heightClass="h-10"
           />
         )}
+
         {onViewDetails && (
           <ThemeButton
             label="View Details"
@@ -220,7 +261,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             heightClass="h-10"
           />
         )}
-        {onAddNote && !denialReason && (
+        {onAddNote && !(denialReason && cardVarient !== "Customer") && (
           <ThemeButton
             label="Add note"
             icon={<NoteIcon />}
