@@ -118,35 +118,8 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               </div>
             ))}
           </div>
-          {/* don't remove this code for now  */}
-          {/* <div className="flex items-center justify-between [@media(min-width:450px)]:justify-end w-full">
-            <div className="flex items-center space-x-2 w-full [@media(min-width:450px)]:w-auto">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                className="w-11 h-11 hover:bg-red-50 cursor-pointer rounded-full flex items-center justify-center border border-red-200"
-              >
-                <TrashBinIcon />
-              </button>
-              <ThemeButton
-                variant="outline"
-                label="Pay Now"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPay?.();
-                }}
-                className="flex-1 [@media(min-width:450px)]:flex-none min-w-32"
-                heightClass="h-11"
-              />
-
-              <span className="text-xl font-semibold text-primary text-right [@media(min-width:450px)]:text-left">
-                ${order.totalPrice.toFixed(2)}
-              </span>
-            </div>
-          </div> */}
           <div className="flex items-center justify-end w-full">
-            <div className="flex items-center space-x-2 w-auto">
+            <div className="flex items-center space-x-2 w-full sm:w-auto sm:justify-end justify-between">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -164,11 +137,11 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                   e.stopPropagation();
                   onPay?.(order);
                 }}
-                className="flex-none min-w-32"
+                className="flex-1 sm:flex-none sm:min-w-32"
                 heightClass="h-11"
               />
 
-              <span className="text-xl font-semibold text-primary text-left">
+              <span className="text-xl font-semibold text-primary text-left sm:text-right">
                 ${order.totalPrice.toFixed(2)}
               </span>
             </div>
