@@ -63,26 +63,26 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               {order.isDueToday}
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mt-4 md:mt-0 mb-2">
-            <div className="grid grid-cols-2 md:grid-cols-1 gap-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-8 mt-4 md:mt-0 mb-2">
+            <div className="flex justify-between md:flex-col md:gap-1">
               <p className="text-sm font-normal text-gray-800">
                 Prescribing Doctor
               </p>
-              <p className="text-sm font-semibold text-gray-800 text-right md:text-left">
+              <p className="text-sm font-semibold text-gray-800 md:text-left">
                 {order.doctorName}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-1 gap-1">
+            <div className="flex justify-between md:flex-col md:gap-1">
               <p className="text-sm font-normal text-gray-800">Order Items</p>
-              <p className="text-sm font-semibold text-gray-800 rounded-b-sm text-right md:text-left">
+              <p className="text-sm font-semibold text-gray-800 md:text-left">
                 {String(order.orderItems.length).padStart(2, "0")}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-1 gap-1">
+            <div className="flex justify-between md:flex-col md:gap-1">
               <p className="text-sm font-normal text-gray-800">Ordered on</p>
-              <p className="text-sm font-semibold text-gray-800 text-right md:text-left">
+              <p className="text-sm font-semibold text-gray-800 md:text-left">
                 {order.orderedOn}
               </p>
             </div>
