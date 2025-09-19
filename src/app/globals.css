@@ -12,6 +12,7 @@
   --font-mono: var(--font-geist-mono);
   --color-primary: #2862A9;
   --color-lightGray: #D5D7DA;
+  --color-tertiary: #535862;
   --color-charcoal: #393939;
   --color-mercury: #E9EAEB;
   --color-raven: #717680;
@@ -22,6 +23,18 @@
   --color-success-200: #ABEFC6;
   --color-haiti: #181D27;
   --color-vampire-gray: #535862;
+  --spacing-72: 72px;
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  --animate-slideUp: slideUp 0.3s ease-out;
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -34,7 +47,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--poppins);
 }
 
 .swiper-button-prev  , .swiper-button-next{

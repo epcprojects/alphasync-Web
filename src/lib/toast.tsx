@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import { ToastSuccessIcon } from "@/icons";
+import { Cross, ToastSuccessIcon } from "@/icons";
 
 export const showSuccessToast = (message: string) => {
   toast.success(message, {
@@ -22,18 +22,29 @@ export const showSuccessToast = (message: string) => {
 };
 
 export const showErrorToast = (message: string) => {
-  toast.error(message, {
-    position: "top-right",
-    closeButton: false,
-    autoClose: 3000,
-    hideProgressBar: true,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    style: {
-      width: "fit-content",
-      maxHeight: "44px",
-      minHeight: "44px",
-    },
-  });
+  toast.error(
+    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <Cross />
+      <span>{message}</span>
+    </div>,
+    {
+      position: "top-right",
+      closeButton: false,
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      icon: false,
+      style: {
+        width: "fit-content",
+        maxHeight: "44px",
+        minHeight: "44px",
+        background: "red",
+        color: "#fff",
+        display: "flex",
+        alignItems: "center",
+      },
+    }
+  );
 };

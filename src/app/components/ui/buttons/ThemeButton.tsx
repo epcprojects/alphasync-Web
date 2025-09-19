@@ -10,7 +10,7 @@ export type buttonVariant =
   | "danger";
 interface ThemeButtonProps {
   label: string;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   icon?: React.ReactNode;
   className?: string;
   disabled?: boolean;

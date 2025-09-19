@@ -24,6 +24,8 @@ type ThemeInputProps = {
   showErrorIcon?: boolean;
   errorMessage?: string;
   autoComplete?: string;
+  icon?: React.ReactNode;
+  maxLength?: number,
 };
 
 const ThemeInput: React.FC<ThemeInputProps> = ({
@@ -40,6 +42,8 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
   showErrorIcon = false,
   errorMessage = "",
   autoComplete,
+  icon,
+  maxLength
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -60,6 +64,7 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
   const resolvedAutoComplete =
     autoComplete ??
     (isPassword ? "current-password" : isEmail ? "email" : undefined);
+      const iconTotalPadding = 60
 
   return (
     <label className="block ">
@@ -69,10 +74,12 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
         </span>
       )}
 
-      <div className="relative">
+      <div className="relative flex items-center">
+        {icon && <div className="absolute left-3">{icon}</div>}
         <input
           id={id}
           type={renderedType}
+          style={icon ? { paddingLeft: `${iconTotalPadding}px` } : undefined}
           className={`w-full focus:ring h-11 p-2 md:px-3 md:py-2.5 border  rounded-lg outline-none text-gray-900 placeholder:text-neutral-300
             ${
               error
@@ -87,6 +94,7 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
           onChange={onChange}
           autoComplete={resolvedAutoComplete}
           inputMode={isEmail ? "email" : undefined}
+          maxLength={maxLength}
         />
 
         {error && showErrorIcon && (

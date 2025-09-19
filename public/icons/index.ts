@@ -38,46 +38,35 @@ import ApproveCheckIcon from "./ApproveCheckIcon";
 import RejectIcon from "./RejectIcon";
 import EyeIcon from "./EyeIcon";
 import UserRejectIcon from "./UserRejectIcon";
-import CalendarIcon from "./CalendarIcon";
-import DeliveryTruckIcon from "./DeliveryTruckIcon";
-import LocationIcon from "./LocationIcon";
-import ShipmentTrackingIcon from "./ShipmentTrackingIcon";
-import PrinterIcon from "./PrinterIcon";
-import MessageOutgoingIcon from "./MessageOutgoingIcon";
-import ReminderFilledIcon from "./ReminderFilledIcon";
-import ReloadIcon from "./ReloadIcon";
-import AutoReloadIcon from "./AutoReloadIcon";
-import CheckMarkCircle from "./CheckMarkCircle";
-import UserFilledIcon from "./UserFilledIcon";
-import AccountSettingsIcon from "./AccountSettingsIcon";
-import LockIcon from "./LockIcon";
-import SecurityLock from "./SecurityLock";
-import MailIcon from "./MailIcon";
-import MessageSquareIcon from "./MessageSquareIcon";
-import AlertIcon from "./AlertIcon";
-
-
+import FilterIcon from "./FilterIcon"
+import MedicineIcon from "./MedicineIcon";
+import Amex from "./Amex";
+import Dinners from "./Dinners";
+import Discover from "./Discover";
+import JCB from "./JCB";
+import Maestro from "./Maestro";
+import Master from "./Master";
+import RuPay from "./RuPay";
+import UnionPay from "./UnionPay";
+import Visa from "./Visa";
+import Tick from "./Tick";
+import CreditCard from "./CreditCard";
+import Cross from "./Cross";
 export {
-    MessageSquareIcon,
-    AlertIcon,
-    MailIcon,
-    SecurityLock,
-    LockIcon,
-    AccountSettingsIcon,
-    UserFilledIcon,
-    CheckMarkCircle,
-    ReloadIcon,
-    AutoReloadIcon,
-    ReminderFilledIcon,
-    MessageOutgoingIcon,
-    PrinterIcon,
-    ShipmentTrackingIcon,
-    LocationIcon,
-    DeliveryTruckIcon,
-    CalendarIcon,
+    Amex,
+    Dinners,
+    Discover,
+    JCB,
+    Maestro,
+    Master,
+    RuPay,
+    UnionPay,
+    Visa,
     ShoppingCartIcon,
     InfoIcon,
+    Cross,
     CrossIcon,
+    CreditCard,
     SuccessCheckIcon,
     InventoryIcon,
     CustomerIcon,
@@ -89,6 +78,7 @@ export {
     DeliveryBoxIcon,
     SearchIcon,
     FavoriteIcon,
+    FilterIcon,
     GridViewIcon,
     ListViewIcon,
     ShopingCartIcon,
@@ -98,6 +88,7 @@ export {
     ArrowDownIcon,
     UserIcon,
     ToastSuccessIcon,
+    Tick,
     ReorderIcon,
     ChatIcon,
     TrashBinIcon,
@@ -109,6 +100,7 @@ export {
     PlusIcon,
     PackageOutlineIcon,
     PackageIcon,
+    MedicineIcon,
     NoteIcon,
     RequestTabIcon,
     ApproveCheckIcon,
