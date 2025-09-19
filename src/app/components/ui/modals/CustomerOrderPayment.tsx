@@ -81,9 +81,10 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const [cardType, setCardType] = useState("Default");
   const [zipCode, setZipCode] = useState("");
   const [billingAddress, setBillingAddress] = useState("");
-  const [, setMaxCardLength] = useState(19);
+  const [maxCardLength, setMaxCardLength] = useState(19);
   const [showForm, setShowForm] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [expiryError, setExpiryError] = useState("");
 
   useEffect(() => {
     const checkScreenSize = () => setIsMobile(window.innerWidth < 768); // md breakpoint
@@ -272,13 +273,10 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
           formatted = "0" + expiryDate + "/" + newChar;
         }
       } else {
-        // After slash, just append
         formatted = input;
       }
     } else {
-      // Handle backspace
       if (expiryDate.length === 3) {
-        // Removing slash
         formatted = expiryDate.slice(0, 2);
       } else {
         formatted = input;
@@ -286,6 +284,37 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     }
 
     setExpiryDate(formatted);
+    validateExpiry(formatted);
+  };
+
+  const validateExpiry = (date: string) => {
+    if (!date || date.length !== 5 || !date.includes("/")) {
+      setExpiryError("Please enter a valid expiry date (MM/YY)");
+      return;
+    }
+
+    const [month, year] = date.split("/");
+    const currentYear = new Date().getFullYear() % 100;
+    const currentMonth = new Date().getMonth() + 1;
+
+    if (
+      isNaN(Number(month)) ||
+      isNaN(Number(year)) ||
+      Number(month) < 1 ||
+      Number(month) > 12
+    ) {
+      setExpiryError("Invalid month");
+      return;
+    }
+
+    if (
+      Number(year) < currentYear ||
+      (Number(year) === currentYear && Number(month) < currentMonth)
+    ) {
+      setExpiryError("Expiry date cannot be in the past");
+      return;
+    }
+    setExpiryError("");
   };
 
   const isAnyFieldValid = () => {
@@ -430,6 +459,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
               value={cardNumber}
               onChange={(e) => formatCardNumber(e.target.value)}
               icon={<SelectedCardIcon />}
+              maxLength={maxCardLength}
             />
             <div className="flex gap-4">
               <div className="flex-1">
@@ -442,6 +472,8 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   value={expiryDate}
                   onChange={handleExpiryChange}
                   maxLength={5}
+                  error={!!expiryError}
+                  errorMessage={expiryError}
                 />
               </div>
               <div className="flex-1">
