@@ -32,7 +32,7 @@ export default function ProductListView({
       key={product.id}
       className="grid cursor-pointer grid-cols-2 md:grid-cols-12 gap-2 md:gap-4 items-center rounded-xl bg-white p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
     >
-      <div className="col-span-2 md:col-span-5 flex items-center gap-3">
+      <div className="col-span-2 md:col-span-4 lg:col-span-5 flex items-center gap-3">
         <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
           <Image
             width={36}
@@ -72,13 +72,13 @@ export default function ProductListView({
         {product.price}
       </div>
 
-      <div className="col-span-1 flex items-center justify-end md:justify-center gap-2">
+      <div className="col-span-1 md:col-span-2 lg:col-span-1 flex items-center justify-end md:justify-center gap-2">
         <button
           onClick={(e) => {
             e.stopPropagation();
             onToggleFavourite?.(product.id);
           }}
-          className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary-500"
+          className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-md border cursor-pointer border-primary-500"
         >
           {product.isFavourite ? (
             <HeartFilledIcon fill="#2862A9" width={16} height={16} />
@@ -92,7 +92,7 @@ export default function ProductListView({
             e.stopPropagation();
             onAddToCart?.(product.id);
           }}
-          className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary"
+          className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-md border cursor-pointer border-primary"
         >
           <ShopingCartIcon width={16} height={16} />
         </button>

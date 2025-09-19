@@ -65,17 +65,17 @@ function InventoryContent() {
   };
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
-      <div className="flex md:flex-row flex-col md:items-center justify-between gap-3">
+      <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
           <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
             <DeliveryBoxIcon />
           </span>
-          <h2 className="w-full text-black font-semibold text-lg md:text-3xl">
+          <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
             Peptide Inventory
           </h2>
         </div>
 
-        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:p-2 shadow-lg md:w-fit">
+        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:p-2 shadow-lg lg:w-fit">
           <div className="flex items-center relative w-full">
             <span className="absolute left-2">
               <SearchIcon
@@ -138,7 +138,7 @@ function InventoryContent() {
 
       <div className="flex flex-col gap-2 md:gap-4">
         {showGridView ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
             {currentItems.map((product) => (
               <ProductCard
                 key={product.id}
@@ -151,11 +151,13 @@ function InventoryContent() {
         ) : (
           <div className="space-y-1">
             <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
-              <div className="col-span-5">Product</div>
+              <div className="col-span-5 md:col-span-4">Product</div>
               <div className="col-span-3">Category</div>
               <div className="col-span-2">Stock</div>
               <div className="col-span-1">Price</div>
-              <div className="col-span-1 text-center">Actions</div>
+              <div className="col-span-1 md:col-span-2 lg:col-span-1 text-center">
+                Actions
+              </div>
             </div>
             {currentItems.map((product) => (
               <ProductListView
@@ -204,8 +206,8 @@ function InventoryContent() {
                 breakClassName="px-3 py-1 font-semibold text-gray-400"
               />
 
-              <h2 className="absolute md:hidden">
-                {currentPage} of {pageCount}
+              <h2 className="absolute md:hidden text-gravel font-medium text-sm">
+                Page {currentPage + 1} of {pageCount}
               </h2>
             </div>
           )}

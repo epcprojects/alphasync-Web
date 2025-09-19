@@ -64,8 +64,8 @@ export default function PostDetail() {
           Back to Inventory
         </h2>
       </div>
-      <div className="bg-white shadow p-4 md:p-6 rounded-2xl ">
-        <div className="grid grid-cols-[410px_1fr] gap-4 md:gap-6">
+      <div className="bg-white shadow p-3 md:p-6 rounded-2xl ">
+        <div className="grid grid-cols-1 md:grid-cols-[410px_1fr] gap-4 md:gap-6">
           <div className="bg-white flex flex-col gap-4 h-fit shadow relative border border-gray-200 p-4 rounded-xl overflow-hidden">
             <button className="absolute top-4 end-4 z-10 cursor-pointer">
               {/* {product.isFavourite ? ( */}
