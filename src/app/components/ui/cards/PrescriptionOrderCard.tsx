@@ -24,7 +24,7 @@ interface PrescriptionOrderCardProps {
   orders?: PrescriptionOrder[];
   onDelete?: () => void;
   onPress?: (order: PrescriptionOrder) => void;
-  onPay: () => void;
+  onPay?: (order: PrescriptionOrder) => void;
 }
 
 const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
@@ -63,26 +63,26 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               {order.isDueToday}
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mt-4 md:mt-0 mb-2">
-            <div className="grid grid-cols-2 md:grid-cols-1 gap-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-8 mt-4 md:mt-0 mb-2">
+            <div className="flex justify-between md:flex-col md:gap-1">
               <p className="text-sm font-normal text-gray-800">
                 Prescribing Doctor
               </p>
-              <p className="text-sm font-semibold text-gray-800 text-right md:text-left">
+              <p className="text-sm font-semibold text-gray-800 md:text-left">
                 {order.doctorName}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-1 gap-1">
+            <div className="flex justify-between md:flex-col md:gap-1">
               <p className="text-sm font-normal text-gray-800">Order Items</p>
-              <p className="text-sm font-semibold text-gray-800 rounded-b-sm text-right md:text-left">
+              <p className="text-sm font-semibold text-gray-800 md:text-left">
                 {String(order.orderItems.length).padStart(2, "0")}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-1 gap-1">
+            <div className="flex justify-between md:flex-col md:gap-1">
               <p className="text-sm font-normal text-gray-800">Ordered on</p>
-              <p className="text-sm font-semibold text-gray-800 text-right md:text-left">
+              <p className="text-sm font-semibold text-gray-800 md:text-left">
                 {order.orderedOn}
               </p>
             </div>
@@ -118,35 +118,8 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               </div>
             ))}
           </div>
-          {/* don't remove this code for now  */}
-          {/* <div className="flex items-center justify-between [@media(min-width:450px)]:justify-end w-full">
-            <div className="flex items-center space-x-2 w-full [@media(min-width:450px)]:w-auto">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                className="w-11 h-11 hover:bg-red-50 cursor-pointer rounded-full flex items-center justify-center border border-red-200"
-              >
-                <TrashBinIcon />
-              </button>
-              <ThemeButton
-                variant="outline"
-                label="Pay Now"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPay?.();
-                }}
-                className="flex-1 [@media(min-width:450px)]:flex-none min-w-32"
-                heightClass="h-11"
-              />
-
-              <span className="text-xl font-semibold text-primary text-right [@media(min-width:450px)]:text-left">
-                ${order.totalPrice.toFixed(2)}
-              </span>
-            </div>
-          </div> */}
           <div className="flex items-center justify-end w-full">
-            <div className="flex items-center space-x-2 w-auto">
+            <div className="flex items-center space-x-2 w-full sm:w-auto sm:justify-end justify-between">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -162,13 +135,13 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                 label="Pay Now"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onPay?.();
+                  onPay?.(order);
                 }}
-                className="flex-none min-w-32"
+                className="flex-1 sm:flex-none sm:min-w-32"
                 heightClass="h-11"
               />
 
-              <span className="text-xl font-semibold text-primary text-left">
+              <span className="text-xl font-semibold text-primary text-left sm:text-right">
                 ${order.totalPrice.toFixed(2)}
               </span>
             </div>

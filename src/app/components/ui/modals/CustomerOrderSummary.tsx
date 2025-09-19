@@ -55,18 +55,16 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
       position={ModalPosition.RIGHT}
     >
       {order && (
-        <div className="gap-6">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-primary py-2">
-              Order Items
-            </h2>
-            <div className="w-6 h-6 rounded-full bg-white border border-mercury flex justify-center items-center">
+            <h2 className="text-lg font-semibold text-primary">Order Items</h2>
+            <div className="w-6 h-6 rounded-full bg-gray-50 border border-mercury flex justify-center items-center">
               <p className="text-xs font-semibold text-gravel">
                 {order.orderItems.length}
               </p>
             </div>
           </div>
-          <div className="gap-3 bg-gray-100 rounded-xl">
+          <div className="bg-gray-100 rounded-xl">
             {order.orderItems.map((item) => (
               <div key={item.id} className="px-4 pt-4">
                 <div className="flex items-start gap-3">
@@ -130,7 +128,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
                       Quantity
                     </span>
                     <span className="text-xs font-medium text-gray-800">
-                      {item.quantity}
+                      {String(item.quantity).padStart(2, "0")}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -154,10 +152,8 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
               </div>
             ))}
           </div>
-          <h2 className="text-lg font-semibold text-primary py-2">
-              Order Summary
-            </h2>
-          <div className="flex flex-col gap-3 p-4 bg-gray-100 rounded-xl ">
+          <h2 className="text-lg font-semibold text-primary">Order Summary</h2>
+          <div className="flex flex-col gap-2 p-4 bg-gray-100 rounded-xl ">
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Due days
@@ -172,13 +168,13 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
                 </span>
               </div>
             </div>
-            <div className="flex justify-between item">
+            <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">Doctor</span>
               <span className="text-sm font-medium text-gray-800">
                 {order.doctorName}
               </span>
             </div>
-            <div className="flex justify-between item">
+            <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Order Date
               </span>
@@ -186,7 +182,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
                 {order.orderedOn}
               </span>
             </div>
-            <div className="flex justify-between item">
+            <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Shipping Address
               </span>
@@ -194,7 +190,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
                 123 Main St, New York, NY 10001
               </span>
             </div>
-            <hr className="my-1 text-gray-200" />
+            <hr className="text-gray-200" />
             <div className="flex justify-between">
               <span className="text-lg font-semibold text-gray-800">
                 Total Order
@@ -204,10 +200,10 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
               </span>
             </div>
           </div>
-           <h2 className="text-lg font-semibold text-primary py-2">
-              Shipment Travel History
-            </h2>
-          <div className="flex flex-col gap-3 p-4 bg-gray-100 rounded-xl ">
+          <h2 className="text-lg font-semibold text-primary">
+            Shipment Travel History
+          </h2>
+          <div className="flex flex-col gap-2 p-4 bg-gray-100 rounded-xl ">
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Tracking Number
@@ -247,7 +243,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
               </span>
             </div>
           </div>
-          <div className="flex flex-col gap-4 py-4">
+          {/* <div className="flex flex-col gap-4">
             {trackingSummary.map((event, index) => (
               <div key={event.id} className="flex gap-4">
                 <div className="flex flex-col items-center">
@@ -261,10 +257,44 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
                     </div>
                   )}
                   {index !== trackingSummary.length - 1 && (
-                    <div className="h-8 border-l-2 border-dotted border-lightGray mt-2" />
+                    <div className="h-8 border-l-2 border-dotted border-lightGray mt-4" />
                   )}
                 </div>
                 <div className="flex flex-col gap-0.5 flex-1">
+                  <p className="text-sm font-semibold text-gravel">
+                    {event.date} – {event.time}
+                  </p>
+                  <p className="text-sm font-normal text-tertiary">
+                    {event.status}{" "}
+                    <span className="text-gray-600">| {event.location}</span>
+                  </p>
+                  {event.note && (
+                    <p className="text-sm font-normal text-tertiary">
+                      {event.note}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div> */}
+          <div className="flex flex-col gap-4">
+            {trackingSummary.map((event, index) => (
+              <div key={event.id} className="flex gap-4 relative">
+                <div className="flex flex-col items-center relative">
+                  {event.isDelivered ? (
+                    <Tick />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-white border border-mercury flex justify-center items-center z-10">
+                      <p className="text-xs font-semibold text-gravel">
+                        {event.id}
+                      </p>
+                    </div>
+                  )}
+                  {index !== trackingSummary.length - 1 && (
+                    <div className="absolute top-8 border-lightGray border-l-2 border-dotted h-[65%]" />
+                  )}
+                </div>
+                <div className="flex flex-col gap-0.5 flex-1 pb-4">
                   <p className="text-sm font-semibold text-gravel">
                     {event.date} – {event.time}
                   </p>

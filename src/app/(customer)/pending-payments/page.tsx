@@ -172,7 +172,7 @@ function PendingPayments() {
 
               <MenuItems
                 className={
-                  "absolute top-16 right-1 shadow-[0_14px_34px_0_rgba(0,0,0,0.1)] rounded-lg p-1 bg-white hidden w-48 md:block border border-gray-200 z-10"
+                  "absolute top-16 right-1 outline-none shadow-[0_14px_34px_0_rgba(0,0,0,0.1)] rounded-lg p-1 bg-white hidden w-48 md:block border border-gray-200 z-10"
                 }
               >
                 {filterOptions.map((option, index) => (
@@ -194,7 +194,7 @@ function PendingPayments() {
           </div>
           {showFilterDropdown && (
             <div
-              className="block md:hidden fixed inset-0 z-50 bg-black/40"
+              className="block md:hidden fixed inset-0 z-50 bg-black/40 outline-none"
               onClick={() => {
                 console.log("Overlay clicked, closing modal");
                 setShowFilterDropdown(false);
@@ -247,7 +247,8 @@ function PendingPayments() {
         <PrescriptionOrderCard
           orders={filteredOrders}
           onPress={handleOrderClick}
-          onPay={() => {
+          onPay={(order) => {
+            setSelectedOrder(order);
             setIsPaymentModelOpen(true);
           }}
           onDelete={() => {
@@ -295,15 +296,17 @@ function PendingPayments() {
         onClose={() => setIsDetailModelOpen(false)}
         order={selectedOrder}
       />
-      <CustomerOrderPayment
-        isOpen={isPaymentModelOpen}
-        onClose={() => setIsPaymentModelOpen(false)}
-        order={selectedOrder}
-        onClick={() => {
-          setIsPaymentModelOpen(false);
-          setIsSuccess(true);
-        }}
-      />
+      {selectedOrder && (
+        <CustomerOrderPayment
+          isOpen={isPaymentModelOpen}
+          onClose={() => setIsPaymentModelOpen(false)}
+          order={selectedOrder}
+          onClick={() => {
+            setIsPaymentModelOpen(false);
+            setIsSuccess(true);
+          }}
+        />
+      )}
       <PaymentSuccess
         isOpen={isSuccess}
         onClose={() => setIsSuccess(false)}
