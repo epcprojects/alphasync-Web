@@ -121,6 +121,36 @@ export const orders = [
   },
 ];
 
+const addDays = (date: Date, days: number): Date => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+};
+
+export const getOrderDate = (status: string): string => {
+  const today = new Date();
+
+  switch (status) {
+    case "Due Today":
+      return today.toLocaleDateString("en-US");
+
+    case "Due Tomorrow":
+      return addDays(today, 1).toLocaleDateString("en-US");
+
+    case "Due in Three Days":
+      return addDays(today, 3).toLocaleDateString("en-US");
+
+    case "Due this Week":
+      return addDays(today, 5).toLocaleDateString("en-US");
+
+    case "Due this month":
+      return addDays(today, 15).toLocaleDateString("en-US");
+
+    default:
+      return today.toLocaleDateString("en-US");
+  }
+};
+
 export const paymentOrders = [
   {
     id: "1",
@@ -163,7 +193,7 @@ export const paymentOrders = [
         amount: "2 mg vial",
       },
     ],
-    orderedOn: "9/14/2025",
+    orderedOn: getOrderDate("Due Today"),
     totalPrice: 699.97,
     isDueToday: "Due Today",
   },
@@ -187,7 +217,7 @@ export const paymentOrders = [
         amount: "2 mg vial",
       },
     ],
-    orderedOn: "9/14/2025",
+    orderedOn: getOrderDate("Due Today"),
     totalPrice: 309.97,
     isDueToday: "Due Today",
   },
@@ -211,7 +241,7 @@ export const paymentOrders = [
         amount: "2 mg vial",
       },
     ],
-    orderedOn: "9/17/2025",
+    orderedOn: getOrderDate("Due in Three Days"),
     totalPrice: 309.97,
     isDueToday: "Due in Three Days",
   },
@@ -235,7 +265,7 @@ export const paymentOrders = [
         amount: "2 mg vial",
       },
     ],
-    orderedOn: "9/15/2025",
+    orderedOn: getOrderDate("Due Tomorrow"),
     totalPrice: 309.97,
     isDueToday: "Due Tomorrow",
   },
@@ -259,7 +289,7 @@ export const paymentOrders = [
         amount: "2 mg vial",
       },
     ],
-    orderedOn: "9/17/2025",
+    orderedOn: getOrderDate("Due in Three Days"),
     totalPrice: 309.97,
     isDueToday: "Due in Three Days",
   },
@@ -283,7 +313,7 @@ export const paymentOrders = [
         amount: "2 mg vial",
       },
     ],
-    orderedOn: "9/19/2025",
+    orderedOn: getOrderDate("Due this Week"),
     totalPrice: 309.97,
     isDueToday: "Due this Week",
   },
@@ -307,7 +337,7 @@ export const paymentOrders = [
         amount: "2 mg vial",
       },
     ],
-    orderedOn: "9/5/2025",
+    orderedOn: getOrderDate("Due this month"),
     totalPrice: 309.97,
     isDueToday: "Due this month",
   },
@@ -331,8 +361,9 @@ export const paymentOrders = [
         amount: "2 mg vial",
       },
     ],
-    orderedOn: "9/17/2025",
+    orderedOn: getOrderDate("Due in Three Days"),
     totalPrice: 309.97,
     isDueToday: "Due in Three Days",
   },
 ];
+

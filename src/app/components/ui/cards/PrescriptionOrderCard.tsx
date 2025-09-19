@@ -24,7 +24,7 @@ interface PrescriptionOrderCardProps {
   orders?: PrescriptionOrder[];
   onDelete?: () => void;
   onPress?: (order: PrescriptionOrder) => void;
-  onPay: () => void;
+  onPay?: (order: PrescriptionOrder) => void;
 }
 
 const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
@@ -162,7 +162,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                 label="Pay Now"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onPay?.();
+                  onPay?.(order);
                 }}
                 className="flex-none min-w-32"
                 heightClass="h-11"
