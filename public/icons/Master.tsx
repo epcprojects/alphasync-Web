@@ -1,6 +1,6 @@
 import React from "react";
 
-const Master: React.FC<React.SVGProps<SVGSVGElement>> = (props) => {
+const Master: React.FC<React.SVGProps<SVGSVGElement>> = () => {
   return (
     <svg
       width={38}
@@ -8,7 +8,6 @@ const Master: React.FC<React.SVGProps<SVGSVGElement>> = (props) => {
       viewBox="0 0 38 26"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      {...props}
     >
       <rect
         x={1.04167}

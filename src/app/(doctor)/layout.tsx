@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode } from "react";
 import { DashboardStats, Header } from "../components";
 import { SyrupIcon } from "@/icons";
 import { usePathname } from "next/navigation";

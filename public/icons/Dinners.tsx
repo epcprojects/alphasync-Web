@@ -1,13 +1,12 @@
 import React from "react";
 
-const Dinners: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+const Dinners: React.FC<React.SVGProps<SVGSVGElement>> = () => (
   <svg
     width={37}
     height={26}
     viewBox="0 0 37 26"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    {...props}
   >
     <path
       d="M0.541667 4C0.541667 2.09002 2.09002 0.541667 4 0.541667H32.8333C34.7433 0.541667 36.2917 2.09001 36.2917 4V22C36.2917 23.91 34.7433 25.4583 32.8333 25.4583H4C2.09001 25.4583 0.541667 23.91 0.541667 22V4Z"

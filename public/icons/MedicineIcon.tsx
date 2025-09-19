@@ -1,14 +1,6 @@
 import * as React from "react";
-const MedicineIcon = (props) => (
-  <svg
-    width={42}
-    height={42}
-    viewBox="0 0 42 42"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    xmlnsXlink="http://www.w3.org/1999/xlink"
-    {...props}
-  >
+const MedicineIcon = () => (
+  <svg width={42} height={42} viewBox="0 0 42 42" fill="none">
     <rect width={42} height={42} rx={4.2} fill="white" />
     <rect
       x={2.09998}

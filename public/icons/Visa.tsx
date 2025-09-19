@@ -1,13 +1,12 @@
 import React from "react";
 
-const Visa: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+const Visa: React.FC<React.SVGProps<SVGSVGElement>> = () => (
   <svg
     width={38}
     height={26}
     viewBox="0 0 38 26"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    {...props}
   >
     <rect
       x={1.20841}

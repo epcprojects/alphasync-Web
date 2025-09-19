@@ -1,12 +1,11 @@
 import * as React from "react";
-const Card = (props) => (
+const Card = () => (
   <svg
     width={18}
     height={18}
     viewBox="0 0 18 18"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    {...props}
   >
     <path
       d="M7.5 11.4375C7.18934 11.4375 6.9375 11.6893 6.9375 12C6.9375 12.3107 7.18934 12.5625 7.5 12.5625H8.625C8.93566 12.5625 9.1875 12.3107 9.1875 12C9.1875 11.6893 8.93566 11.4375 8.625 11.4375H7.5Z"

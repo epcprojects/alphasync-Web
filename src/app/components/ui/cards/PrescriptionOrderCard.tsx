@@ -1,8 +1,6 @@
 import React from "react";
-import MedicineIcon from "../../../../../public/icons/MedicineIcon";
 import ThemeButton from "../buttons/ThemeButton";
-import { TrashBinIcon } from "@/icons";
-import { showErrorToast } from "@/lib/toast";
+import { MedicineIcon, TrashBinIcon } from "@/icons";
 
 interface OrderItem {
   id: string;

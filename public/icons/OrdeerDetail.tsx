@@ -1,12 +1,11 @@
 import * as React from "react";
-const OrderDetail = (props) => (
+const OrderDetail = () => (
   <svg
     width={18}
     height={18}
     viewBox="0 0 18 18"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    {...props}
   >
     <path
       d="M3.99678 8.74837C4.13571 8.47051 4.47359 8.35788 4.75145 8.49681L6.25145 9.24681C6.52932 9.38574 6.64194 9.72362 6.50301 10.0015C6.36408 10.2793 6.0262 10.392 5.74834 10.253L4.24834 9.50304C3.97048 9.36411 3.85785 9.02623 3.99678 8.74837Z"

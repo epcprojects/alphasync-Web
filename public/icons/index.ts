@@ -52,7 +52,42 @@ import Visa from "./Visa";
 import Tick from "./Tick";
 import CreditCard from "./CreditCard";
 import Cross from "./Cross";
+import DeliveryTruckIcon from "./DeliveryTruckIcon";
+import LocationIcon from "./LocationIcon";
+import ShipmentTrackingIcon from "./ShipmentTrackingIcon";
+import PrinterIcon from "./PrinterIcon";
+import MessageOutgoingIcon from "./MessageOutgoingIcon";
+import ReminderFilledIcon from "./ReminderFilledIcon";
+import MailIcon from "./MailIcon";
+import MessageSquareIcon from "./MessageSquareIcon";
+import AlertIcon from "./AlertIcon";
+import AccountSettingsIcon from "./AccountSettingsIcon";
+import LockIcon from "./LockIcon";
+import SecurityLock from "./SecurityLock";
+import CalendarIcon from "./CalendarIcon";
+import ReloadIcon from "./ReloadIcon";
+import AutoReloadIcon from "./AutoReloadIcon";
+import UserFilledIcon from "./UserFilledIcon";
+import CheckMarkCircle from "./CheckMarkCircle";
+
 export {
+    ReloadIcon,
+    UserFilledIcon,
+    AutoReloadIcon,
+    CheckMarkCircle,
+    CalendarIcon,
+    SecurityLock,
+    LockIcon,
+    AccountSettingsIcon,
+    MessageSquareIcon,
+    AlertIcon,
+    DeliveryTruckIcon,
+    ShipmentTrackingIcon,
+    MailIcon,
+    ReminderFilledIcon,
+    MessageOutgoingIcon,
+    PrinterIcon,
+    LocationIcon,
     Amex,
     Dinners,
     Discover,

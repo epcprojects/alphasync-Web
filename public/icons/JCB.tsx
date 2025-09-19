@@ -1,13 +1,12 @@
 import React from "react";
 
-const JCB: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+const JCB: React.FC<React.SVGProps<SVGSVGElement>> = () => (
   <svg
     width={37}
     height={26}
     viewBox="0 0 37 26"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    {...props}
   >
     <rect
       x={0.541667}

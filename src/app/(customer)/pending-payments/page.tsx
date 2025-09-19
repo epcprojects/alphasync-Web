@@ -176,7 +176,7 @@ function PendingPayments() {
                 }
               >
                 {filterOptions.map((option, index) => (
-                  <MenuItem key={option.id}>
+                  <MenuItem key={index}>
                     <button
                       onClick={() => handleFilterSelect(option.id)}
                       className={`w-full text-sm text-left p-2.5 my-0.5 rounded-md hover:bg-gray-50 transition-colors duration-150 ${
@@ -222,7 +222,7 @@ function PendingPayments() {
                 <div className="flex flex-col">
                   {filterOptions.map((option, index) => (
                     <button
-                      key={option.id}
+                      key={index}
                       onClick={(e) => {
                         e.stopPropagation();
                         console.log("Mobile filter clicked:", option.id);

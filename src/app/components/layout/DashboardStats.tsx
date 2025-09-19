@@ -12,7 +12,7 @@ interface DashboardStatsProps {
   username: string;
   showUserName: boolean;
   heading: string;
-  stats?: StatItem[];
+  stats: StatItem[];
 }
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({

@@ -1,12 +1,11 @@
 import * as React from "react";
-const CreditCard = (props) => (
+const CreditCard = () => (
   <svg
     width={34}
     height={24}
     viewBox="0 0 34 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    {...props}
   >
     <path
       d="M4 0.5H30C31.933 0.5 33.5 2.067 33.5 4V20C33.5 21.933 31.933 23.5 30 23.5H4C2.067 23.5 0.5 21.933 0.5 20V4C0.5 2.067 2.067 0.5 4 0.5Z"

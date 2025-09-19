@@ -81,7 +81,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const [cardType, setCardType] = useState("Default");
   const [zipCode, setZipCode] = useState("");
   const [billingAddress, setBillingAddress] = useState("");
-  const [maxCardLength, setMaxCardLength] = useState(19);
+  const [, setMaxCardLength] = useState(19);
   const [showForm, setShowForm] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
