@@ -165,7 +165,7 @@ function PendingPayments() {
                   );
                   setShowFilterDropdown(!showFilterDropdown);
                 }}
-                className="w-10 h-10 md:h-10 md:w-10 bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
+                className="w-10 h-10 md:h-10 md:w-10 outline-none bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
               >
                 <FilterIcon />
               </MenuButton>
@@ -179,15 +179,11 @@ function PendingPayments() {
                   <MenuItem key={option.id}>
                     <button
                       onClick={() => handleFilterSelect(option.id)}
-                      className={`w-full text-sm text-left p-2.5 rounded-md hover:bg-gray-50 transition-colors duration-150 ${
+                      className={`w-full text-sm text-left p-2.5 my-0.5 rounded-md hover:bg-gray-50 transition-colors duration-150 ${
                         selectedFilter === option.id
                           ? "bg-gray-100 text-gray-900"
                           : "text-gray-500"
-                      } ${
-                        index === 0
-                          ? "font-normal text-gray-900"
-                          : "font-normal text-gray-500"
-                      }`}
+                      } `}
                     >
                       <span className="block">{option.label}</span>
                     </button>
@@ -236,11 +232,7 @@ function PendingPayments() {
                         selectedFilter === option.id
                           ? "bg-gray-100 text-gray-900"
                           : "text-gray-500"
-                      } ${
-                        index === 0
-                          ? "text-gray-900"
-                          : "text-gray-500"
-                      }`}
+                      } `}
                     >
                       {option.label}
                     </button>
@@ -259,43 +251,45 @@ function PendingPayments() {
             setIsPaymentModelOpen(true);
           }}
           onDelete={() => {
-            showErrorToast('Order Cancelled')
+            showErrorToast("Order Cancelled");
           }}
         />
       </div>
-      <div className="hidden md:flex justify-center mb-8">
-        <ReactPaginate
-          breakLabel="..."
-          nextLabel={
-            <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
-              Next
-              <span className="block mb-0.5 rotate-180">
-                <ArrowLeftIcon />
+      {filteredOrders.length > 0 && (
+        <div className="hidden md:flex justify-center mb-8">
+          <ReactPaginate
+            breakLabel="..."
+            nextLabel={
+              <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                Next
+                <span className="block mb-0.5 rotate-180">
+                  <ArrowLeftIcon />
+                </span>
               </span>
-            </span>
-          }
-          previousLabel={
-            <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
-              <span className="mb-0.5">
-                <ArrowLeftIcon />
-              </span>{" "}
-              Previous
-            </span>
-          }
-          // onPageChange={handlePageChange}
-          pageRangeDisplayed={3}
-          marginPagesDisplayed={1}
-          pageCount={itemsPerPage}
-          forcePage={currentPage}
-          pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer block"
-          containerClassName="flex items-center relative w-full justify-center gap-2 px-4 py-3 rounded-2xl bg-white"
-          pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
-          activeClassName="bg-gray-200 text-gray-900 font-medium"
-          previousClassName="px-4 py-2 rounded-full  absolute left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-          nextClassName="px-4 py-2 rounded-full bg-gray-50  absolute end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-          breakClassName="px-3 py-1 font-semibold text-gray-400"
-        />
-      </div>
+            }
+            previousLabel={
+              <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                <span className="mb-0.5">
+                  <ArrowLeftIcon />
+                </span>{" "}
+                Previous
+              </span>
+            }
+            // onPageChange={handlePageChange}
+            pageRangeDisplayed={3}
+            marginPagesDisplayed={1}
+            pageCount={itemsPerPage}
+            forcePage={currentPage}
+            pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer block"
+            containerClassName="flex items-center relative w-full justify-center gap-2 px-4 py-3 rounded-2xl bg-white"
+            pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
+            activeClassName="bg-gray-200 text-gray-900 font-medium"
+            previousClassName="px-4 py-2 rounded-full  absolute left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
+            nextClassName="px-4 py-2 rounded-full bg-gray-50  absolute end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
+            breakClassName="px-3 py-1 font-semibold text-gray-400"
+          />
+        </div>
+      )}
       <CustomerOrderDetails
         isOpen={isDetailModelOpen}
         onClose={() => setIsDetailModelOpen(false)}

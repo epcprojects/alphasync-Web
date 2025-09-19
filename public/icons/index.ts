@@ -50,6 +50,8 @@ import RuPay from "./RuPay";
 import UnionPay from "./UnionPay";
 import Visa from "./Visa";
 import Tick from "./Tick";
+import CreditCard from "./CreditCard";
+import Cross from "./Cross";
 export {
     Amex,
     Dinners,
@@ -62,7 +64,9 @@ export {
     Visa,
     ShoppingCartIcon,
     InfoIcon,
+    Cross,
     CrossIcon,
+    CreditCard,
     SuccessCheckIcon,
     InventoryIcon,
     CustomerIcon,

@@ -43,7 +43,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
     };
   }, [isOpen]);
   if (!order) return null;
-  const getDueTodayClasses = (status?: string) => {
+  const getOrderTags = (status?: string) => {
     switch (status) {
       case "Due Today":
         return "bg-red-50 border border-red-200 text-red-700";
@@ -65,7 +65,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
           {order.orderItems.map((item) => (
             <div key={item.id}>
               <div className="flex items-start gap-3 p-2">
-                <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="w-72 h-72 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
                   <Image
                     alt="#"
                     src={"/images/products/p1.png"}
@@ -162,7 +162,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               </span>
               <div className="flex items-center justify-between">
                 <span
-                  className={`${getDueTodayClasses(order.isDueToday)} px-3 py-1 rounded-full text-sm font-medium`}
+                  className={`${getOrderTags(order.isDueToday)} px-3 py-0.5 rounded-full text-sm font-medium`}
                 >
                   {order.isDueToday}
                 </span>

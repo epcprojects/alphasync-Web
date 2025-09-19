@@ -21,6 +21,7 @@
   --color-success-500: #067647;
   --color-success-50: #ECFDF3;
   --color-success-200: #ABEFC6;
+  --spacing-72: 72px;
 
   @keyframes slideUp {
     from {

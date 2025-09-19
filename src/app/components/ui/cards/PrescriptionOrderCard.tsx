@@ -35,7 +35,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   onPress,
   onPay,
 }) => {
-  const getDueTodayClasses = (status?: string) => {
+  const getOrderTags = (status?: string) => {
     switch (status) {
       case "Due Today":
         return "bg-red-50 border border-red-200 text-red-700";
@@ -58,9 +58,9 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               Order #{order.orderNumber}
             </h2>
             <span
-              className={`${getDueTodayClasses(
+              className={`${getOrderTags(
                 order.isDueToday
-              )} px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap`}
+              )} px-3 py-0.5 rounded-full text-sm font-medium whitespace-nowrap`}
             >
               {order.isDueToday}
             </span>

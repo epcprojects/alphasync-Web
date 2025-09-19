@@ -7,6 +7,7 @@ import ThemeButton from "../buttons/ThemeButton";
 import { CardData } from "../../../../../public/data/CreditCard";
 import {
   Amex,
+  CreditCard,
   Dinners,
   Discover,
   JCB,
@@ -42,7 +43,7 @@ interface CustomerOrderPaymentProps {
   onClick: () => void;
 }
 
-const cardImages = {
+const cardImages: Record<CardType, React.FC> = {
   Visa: Visa,
   Mastercard: Master,
   American: Amex,
@@ -52,8 +53,20 @@ const cardImages = {
   RuPay: RuPay,
   Maestro: Maestro,
   UnionPay: UnionPay,
-  Default: Master,
+  Default: CreditCard,
 };
+
+type CardType =
+  | "Default"
+  | "Visa"
+  | "Mastercard"
+  | "American"
+  | "Discover"
+  | "JCB"
+  | "Diners"
+  | "RuPay"
+  | "Maestro"
+  | "UnionPay";
 
 const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   isOpen,
@@ -121,7 +134,10 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
 
     if (matchedCard) {
       const maxDigits = Math.max(...matchedCard.length);
-      const formatPattern = getCardFormat(matchedCard.name, maxDigits);
+      const formatPattern = getCardFormat(
+        matchedCard.name as CardType,
+        maxDigits
+      );
       const spaces = formatPattern.length - 1;
 
       setMaxCardLength(maxDigits + spaces);
@@ -138,6 +154,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       cardNumber.length > text.length && cardNumber.endsWith(" ");
 
     // Clean the input first
+    // eslint-disable-next-line prefer-const
     let cleaned = text
       .replace(/[^\d\s]/g, "")
       .replace(/\s+/g, " ")
@@ -165,7 +182,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
 
     // Get format pattern
     const formatPattern = matchedCard
-      ? getCardFormat(matchedCard.name, digitsOnly.length)
+      ? getCardFormat(matchedCard.name as CardType, digitsOnly.length)
       : getCardFormat("Default", digitsOnly.length);
 
     let formatted = "";
@@ -307,7 +324,8 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     return true;
   };
 
-  const SelectedCardIcon: React.FC = cardImages[cardType] || cardImages.Default;
+  const SelectedCardIcon: React.FC =
+    cardImages[cardType as keyof typeof cardImages] || cardImages.Default;
 
   return (
     <AppModal
@@ -315,7 +333,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       onClose={onClose}
       icon={<Card />}
       title={isMobile && !showForm ? "Order Summary" : "Complete Payment"}
-      subtitle={isMobile ? '' :  "Your payment information is secure and encrypted"}
+      subtitle={
+        isMobile ? "" : "Your payment information is secure and encrypted"
+      }
       position={ModalPosition.RIGHT}
     >
       {order && (
