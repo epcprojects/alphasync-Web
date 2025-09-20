@@ -366,6 +366,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
         isMobile ? "" : "Your payment information is secure and encrypted"
       }
       position={ModalPosition.RIGHT}
+      showFooter={false}
     >
       {order && (
         <div className="w-full max-w-2xl mx-auto gap-6">

@@ -74,7 +74,22 @@ import ShopingCartFilledicon from "./ShopingCartFilledicon";
 import BubbleChatFilledIcon from "./BubbleChatFilledIcon";
 import UserAddFilledIcon from "./UserAddFilledIcon";
 import FileIcon from "./FileIcon";
+import Info from "./Info";
+import Alert from "./Alert";
+import Calendar from "./Calendar";
+import Doctor from "./Doctor";
+import File from "./FIle";
+import Learning from "./Learning";
+import Target from "./Target";
+import Thermometer from "./Thermometer";
 export {
+    Alert,
+    Calendar,
+    Doctor,
+    File,
+    Learning,
+    Target,
+    Thermometer,
     FileIcon,
     ShopingCartFilledicon,
     UserAddFilledIcon,
@@ -108,6 +123,7 @@ export {
     Visa,
     ShoppingCartIcon,
     InfoIcon,
+    Info,
     Cross,
     CrossIcon,
     CreditCard,

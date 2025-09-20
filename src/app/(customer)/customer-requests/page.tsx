@@ -6,10 +6,17 @@ import { showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import React, { useState } from "react";
 import { PrecriptionDATA } from "../../../../public/data/PrescriptionRequest";
+import RequestDetails, {
+  requestDetails,
+} from "@/app/components/ui/modals/RequestDetails";
 
 const Page = () => {
   const [search, setSearch] = useState("");
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [isDetailModelOpen, setIsDetailModelOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<requestDetails | null>(
+    null
+  );
   const handleApprove = (title: string) => {
     showSuccessToast("Patient request approved successfully.");
     console.log(title);
@@ -33,6 +40,12 @@ const Page = () => {
       return matchesStatus && matchesSearch;
     });
   };
+
+  const handleRequests = (request: requestDetails) => {
+    setSelectedRequest(request);
+    setIsDetailModelOpen(true);
+  };
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
       <div className="flex items-center justify-between">
@@ -85,7 +98,7 @@ const Page = () => {
                   onApprove={() => handleApprove(item.title)}
                   onReject={() => handleReject(item.title)}
                   onAddNote={() => handleAddNote(item.title)}
-                  onViewDetails={() => {}}
+                  onViewDetails={() => handleRequests(item)}
                   onChat={() => {}}
                   {...item}
                 />
@@ -133,6 +146,16 @@ const Page = () => {
           </TabPanels>
         </TabGroup>
       </div>
+      <RequestDetails
+        isOpen={isDetailModelOpen}
+        onClose={() => setIsDetailModelOpen(false)}
+        request={selectedRequest}
+        onClick={() => {
+          if (selectedRequest) {
+            console.log("setIsDetailModelOpen");
+          }
+        }}
+      />
       <AddNoteModal
         isOpen={isNoteModalOpen}
         onClose={() => setIsNoteModalOpen(false)}

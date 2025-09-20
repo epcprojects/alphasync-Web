@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Image from "next/image";
 import { trackingSummary } from "../../../../../public/data/Summary";
 import { Tick } from "@/icons";
+import OrderItemCard from "../cards/OrderItemCards";
 
 type OrderItem = {
   id: string | number;
@@ -53,6 +54,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
       title="Order Details"
       subtitle={order ? `Order #${order.orderNumber}` : ""}
       position={ModalPosition.RIGHT}
+      showFooter={false}
     >
       {order && (
         <div className="flex flex-col gap-4">
@@ -94,32 +96,6 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
                         {item.amount}
                       </p>
                     </div>
-                    {/* <div className="flex md:flex-col md:gap-2">
-                      <div className="flex justify-between">
-                        <span className="text-xs font-normal text-gray-800">
-                          Quantity
-                        </span>
-                        <span className="text-xs font-medium text-gray-800">
-                          {item.quantity}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-xs font-normal text-gray-800">
-                          Price
-                        </span>
-                        <span className="text-xs font-medium text-gray-800">
-                          ${item.price.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-base font-medium text-gray-800">
-                          Total
-                        </span>
-                        <span className="text-base font-semibold text-primary">
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </span>
-                      </div>
-                    </div> */}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 mt-2 md:mt-0">
@@ -243,40 +219,6 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
               </span>
             </div>
           </div>
-          {/* <div className="flex flex-col gap-4">
-            {trackingSummary.map((event, index) => (
-              <div key={event.id} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  {event.isDelivered ? (
-                    <Tick />
-                  ) : (
-                    <div className="w-6 h-6 rounded-full bg-white border border-mercury flex justify-center items-center">
-                      <p className="text-xs font-semibold text-gravel">
-                        {event.id}
-                      </p>
-                    </div>
-                  )}
-                  {index !== trackingSummary.length - 1 && (
-                    <div className="h-8 border-l-2 border-dotted border-lightGray mt-4" />
-                  )}
-                </div>
-                <div className="flex flex-col gap-0.5 flex-1">
-                  <p className="text-sm font-semibold text-gravel">
-                    {event.date} – {event.time}
-                  </p>
-                  <p className="text-sm font-normal text-tertiary">
-                    {event.status}{" "}
-                    <span className="text-gray-600">| {event.location}</span>
-                  </p>
-                  {event.note && (
-                    <p className="text-sm font-normal text-tertiary">
-                      {event.note}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div> */}
           <div className="flex flex-col gap-4">
             {trackingSummary.map((event, index) => (
               <div key={event.id} className="flex gap-4 relative">

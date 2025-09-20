@@ -247,6 +247,7 @@ function PendingPayments() {
         <PrescriptionOrderCard
           orders={filteredOrders}
           onPress={handleOrderClick}
+          btnTitle="Pay Now"
           onPay={(order) => {
             setSelectedOrder(order);
             setIsPaymentModelOpen(true);

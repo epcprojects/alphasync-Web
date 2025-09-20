@@ -4,7 +4,7 @@ import Image from "next/image";
 import { InfoIcon, ShopingCartIcon } from "@/icons";
 import ThemeButton from "../buttons/ThemeButton";
 
-type Product = {
+export type Product = {
   id: number;
   title: string;
   description: string;
@@ -20,7 +20,7 @@ type Product = {
 interface BrowserProductCardProps {
   product: Product;
   onAddToCart?: (id: number) => void;
-  onCardClick?: () => void;
+  onCardClick: (product: Product) => void;
 }
 
 export default function BrowserProductCard({
@@ -30,10 +30,9 @@ export default function BrowserProductCard({
 }: BrowserProductCardProps) {
   return (
     <div
-      onClick={onCardClick}
       className="rounded-2xl pb-2 cursor-pointer flex-col bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] border relative border-gray-200 px-2 flex items-center justify-center"
     >
-      <button className="absolute top-4 end-4 cursor-pointer">
+      <button className="absolute top-4 end-4 cursor-pointer" onClick={() => onCardClick(product)}>
         <InfoIcon fill="#374151" width={28} height={28} />
       </button>
       <div className="bg-[url(/images/productBgPattern.png)] !bg-center bg-cover h-52 md:h-60 flex items-center justify-center ">
@@ -50,7 +49,7 @@ export default function BrowserProductCard({
         <div className="flex flex-col gap-2 h-full justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex justify-between items-start">
-              <h2 className="text-gray-900 font-semibold line-clamp-2 text-base md:text-lg">
+              <h2 className="text-gray-800 font-semibold line-clamp-1 overflow-hidden text-base md:text-lg">
                 {product.title}
               </h2>
               <span className="block w-fit whitespace-nowrap rounded-full bg-gray-100 border border-gray-200 py-0.5 px-2.5 text-gray-700 font-medium text-xs md:text-sm">

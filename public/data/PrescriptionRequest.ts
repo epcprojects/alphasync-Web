@@ -34,6 +34,9 @@ export const PrecriptionDATA = [
     subtitle: "(200mg/ml)",
     description: "Hormone replacement therapy",
     status: "Denied",
+    doctorName: "Dr. Michael Brown",
+    reviewedDate: "7/20/2025",
+    price: "$350.00",
       userNotes:
       "Requesting this for a recent shoulder injury that's been slow to heal.",
     physicianNotes:

@@ -2,6 +2,7 @@ import OrderDetail from "../../../../../public/icons/OrdeerDetail";
 import AppModal, { ModalPosition } from "./AppModal";
 import { useEffect } from "react";
 import Image from "next/image";
+import OrderItemCard from "../cards/OrderItemCards";
 
 type OrderItem = {
   id: string | number;
@@ -59,101 +60,12 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
       title="Order Details"
       subtitle={order ? `Order #${order.orderNumber}` : ""}
       position={ModalPosition.RIGHT}
+      showFooter={false}
     >
       {order && (
-        <div className="gap-4">
+        <div>
           {order.orderItems.map((item) => (
-            <div key={item.id}>
-              <div className="flex items-start gap-3 p-2">
-                <div className="w-72 h-72 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <Image
-                    alt="#"
-                    src={"/images/products/p1.png"}
-                    width={1024}
-                    height={1024}
-                  />
-                </div>
-                <div className="flex-1 flex flex-col gap-3 md:gap-1.5">
-                  <h3 className=" text-gray-800 font-semibold text-base">
-                    {item.medicineName}
-                  </h3>
-                  <div className="hidden md:flex">
-                    <p className="text-sm font-normal text-gray-800 line-clamp-2">
-                      A synthetic peptide known for its healing properties.
-                      BPC-157 promotes tissue...
-                    </p>
-                  </div>
-                  <div className="flex justify-between items-center text-sm text-gray-500">
-                    <div className="px-2.5 py-0.5 rounded-full bg-gray-100 border border-gray-200 mb-1.5">
-                      <p className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                        Recovery & Healing
-                      </p>
-                    </div>
-                    <p className="text-xs font-normal text-gray-800">
-                      {item.amount}
-                    </p>
-                  </div>
-                  {/* Desktop version - hidden on mobile, shown on desktop */}
-                  <div className="hidden md:flex md:flex-col md:gap-2">
-                    <div className="flex justify-between">
-                      <span className="text-xs font-normal text-gray-800">
-                        Quantity
-                      </span>
-                      <span className="text-xs font-medium text-gray-800">
-                        {item.quantity}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-xs font-normal text-gray-800">
-                        Price
-                      </span>
-                      <span className="text-xs font-medium text-gray-800">
-                        ${item.price.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-base font-medium text-gray-800">
-                        Total
-                      </span>
-                      <span className="text-base font-semibold text-primary">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* Mobile version - full width, aligned from start */}
-              <div className="w-full px-2 md:hidden">
-                <div className="flex flex-col gap-2">
-                  <div className="flex justify-between">
-                    <span className="text-xs font-normal text-gray-800">
-                      Quantity
-                    </span>
-                    <span className="text-xs font-medium text-gray-800">
-                      {item.quantity}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs font-normal text-gray-800">
-                      Price
-                    </span>
-                    <span className="text-xs font-medium text-gray-800">
-                      ${item.price.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-base font-medium text-gray-800">
-                      Total
-                    </span>
-                    <span className="text-base font-semibold text-primary">
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <hr className=" my-3 md:my-4 text-gray-200" />
-            </div>
+            <OrderItemCard key={item.id} item={item} />
           ))}
           <div className="mt-6 flex flex-col gap-4 px-2.5 md:px-0 ">
             <div className="flex justify-between items-center">
@@ -162,7 +74,9 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               </span>
               <div className="flex items-center justify-between">
                 <span
-                  className={`${getOrderTags(order.isDueToday)} px-3 py-0.5 rounded-full text-sm font-medium`}
+                  className={`${getOrderTags(
+                    order.isDueToday
+                  )} px-3 py-0.5 rounded-full text-sm font-medium`}
                 >
                   {order.isDueToday}
                 </span>

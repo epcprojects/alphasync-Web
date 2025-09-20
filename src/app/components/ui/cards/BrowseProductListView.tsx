@@ -22,7 +22,7 @@ type Product = {
 
 type BrowseProductListViewProps = {
   product: Product;
-  onInfoBtn?: (id: number) => void;
+  onInfoBtn: (product: Product) => void;
   onAddToCart?: (id: number) => void;
   onRowClick?: () => void;
 };
@@ -102,10 +102,7 @@ export default function BrowseProductListView({
 
       <div className="col-span-1 md:col-span-2 lg:col-span-1 flex items-center justify-end md:justify-center gap-2">
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onInfoBtn?.(product.id);
-          }}
+          onClick={() => onInfoBtn(product)}
           className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-md border cursor-pointer border-lightGray"
         >
           <InfoIcon fill="#9CA3AF" />

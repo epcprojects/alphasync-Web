@@ -15,10 +15,13 @@ import React, { Suspense, useEffect, useState } from "react";
 import ReactPaginate from "react-paginate";
 import { products } from "../../../../public/data/products";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import BrowserProductCard from "@/app/components/ui/cards/BrowserProductCard";
+import BrowserProductCard, {
+  Product,
+} from "@/app/components/ui/cards/BrowserProductCard";
 import RequestModel from "@/app/components/ui/modals/RequestModel";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import BrowseProductListView from "@/app/components/ui/cards/BrowseProductListView";
+import ProductDetails from "@/app/components/ui/modals/ProductDetails";
 
 const orderCategories = [
   { label: "All Categories" },
@@ -43,6 +46,8 @@ function InventoryContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>(
     orderCategories[0].label
   );
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
 
   const filteredProducts = products.filter((p) => {
     const matchesSearch =
@@ -78,6 +83,10 @@ function InventoryContent() {
     setIsOrderModalOpen(false);
     showSuccessToast("Order created successfully!");
   };
+  const handleCardClick = (product: Product) => {
+    setSelectedProduct(product);
+    setIsProductModalOpen(true);
+  };
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
@@ -90,7 +99,7 @@ function InventoryContent() {
           </h2>
           <div className="px-2.5 py-0.5 rounded-full bg-white border border-indigo-200">
             <p className="text-sm font-medium text-primary whitespace-nowrap">
-              {products.length}
+              {currentItems.length}
             </p>
           </div>
         </div>
@@ -181,7 +190,7 @@ function InventoryContent() {
                 key={product.id}
                 product={product}
                 onAddToCart={() => setIsOrderModalOpen(true)}
-                onCardClick={() => {}}
+                onCardClick={handleCardClick}
               />
             ))}
           </div>
@@ -204,7 +213,7 @@ function InventoryContent() {
                 onRowClick={() => {}}
                 key={product.id}
                 product={product}
-                onInfoBtn={(id) => console.log("Fav toggled", id)}
+                onInfoBtn={handleCardClick}
                 onAddToCart={() => setIsOrderModalOpen(true)}
               />
             ))}
@@ -262,6 +271,17 @@ function InventoryContent() {
         }}
         onClose={() => setIsOrderModalOpen(false)}
       />
+      {isProductModalOpen && selectedProduct && (
+        <ProductDetails
+          isOpen={isProductModalOpen}
+          product={selectedProduct}
+          onClose={() => setIsProductModalOpen(false)}
+          onClick={() => {
+            setIsProductModalOpen(false);
+            setIsOrderModalOpen(true);
+          }}
+        />
+      )}
     </div>
   );
 }

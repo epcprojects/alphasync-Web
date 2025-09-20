@@ -25,6 +25,7 @@ interface PrescriptionOrderCardProps {
   onDelete?: () => void;
   onPress?: (order: PrescriptionOrder) => void;
   onPay?: (order: PrescriptionOrder) => void;
+  btnTitle: string;
 }
 
 const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
@@ -32,6 +33,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   onDelete,
   onPress,
   onPay,
+  btnTitle,
 }) => {
   const getOrderTags = (status?: string) => {
     switch (status) {
@@ -132,7 +134,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
 
               <ThemeButton
                 variant="outline"
-                label="Pay Now"
+                label={btnTitle}
                 onClick={(e) => {
                   e.stopPropagation();
                   onPay?.(order);
