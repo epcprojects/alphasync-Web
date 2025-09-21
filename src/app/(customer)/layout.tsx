@@ -1,16 +1,14 @@
 "use client";
 import React, { ReactNode } from "react";
-import { DashboardStats, Header } from "../components";
 import {
   BubbleChatIcon,
   CreditCardOutlineIcon,
-  InventoryIcon,
   OrdersIcon,
   ShoppingCartIcon,
-  SyrupIcon,
 } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
+import { Header } from "../components";
 
 interface AuthLayoutProps {
   children: ReactNode;

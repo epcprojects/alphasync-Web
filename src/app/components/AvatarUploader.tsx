@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import React, { useRef, useState, useEffect } from "react";
 
 interface AvatarUploaderProps {
@@ -41,10 +42,10 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 
   return (
     <div className="col-span-6 flex items-center justify-between">
-      <img
+      <Image
         src={preview}
         alt="Avatar"
-        className="w-16 h-16 rounded-full object-cover"
+        className="rounded-full object-cover"
         width={64}
         height={64}
       />

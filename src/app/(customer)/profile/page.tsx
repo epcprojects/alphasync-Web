@@ -5,7 +5,6 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import React from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
-import Image from "next/image";
 import AvatarUploader from "@/app/components/AvatarUploader";
 const Page = () => {
   const profileSchema = Yup.object().shape({

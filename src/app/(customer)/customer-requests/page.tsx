@@ -9,9 +9,7 @@ import { PrecriptionDATA } from "../../../../public/data/PrescriptionRequest";
 import RequestDetails, {
   requestDetails,
 } from "@/app/components/ui/modals/RequestDetails";
-import CustomerOrderPayment, {
-  requestProps,
-} from "@/app/components/ui/modals/CustomerOrderPayment";
+import CustomerOrderPayment from "@/app/components/ui/modals/CustomerOrderPayment";
 import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
 
 const Page = () => {

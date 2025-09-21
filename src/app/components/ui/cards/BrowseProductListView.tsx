@@ -1,7 +1,5 @@
 "use client";
 import {
-  HeartFilledIcon,
-  HeartOutlineIcon,
   InfoIcon,
   ShopingCartIcon,
 } from "@/icons";

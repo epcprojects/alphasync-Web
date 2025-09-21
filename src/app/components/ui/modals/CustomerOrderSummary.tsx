@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import Image from "next/image";
 import { trackingSummary } from "../../../../../public/data/Summary";
 import { Tick } from "@/icons";
-import OrderItemCard from "../cards/OrderItemCards";
 
 type OrderItem = {
   id: string | number;

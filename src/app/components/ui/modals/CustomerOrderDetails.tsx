@@ -1,7 +1,6 @@
 import OrderDetail from "../../../../../public/icons/OrdeerDetail";
 import AppModal, { ModalPosition } from "./AppModal";
 import { useEffect } from "react";
-import Image from "next/image";
 import OrderItemCard from "../cards/OrderItemCards";
 
 type OrderItem = {

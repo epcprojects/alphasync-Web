@@ -1,6 +1,5 @@
 "use client";
 
-import { ProductListView } from "@/components";
 import {
   ArrowLeftIcon,
   FilterIcon,

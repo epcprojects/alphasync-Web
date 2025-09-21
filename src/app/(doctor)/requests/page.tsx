@@ -3,7 +3,6 @@
 import {
   ArrowDownIcon,
   ArrowLeftIcon,
-  PackageIcon,
   SearchIcon,
   UserAddFilledIcon,
 } from "@/icons";
