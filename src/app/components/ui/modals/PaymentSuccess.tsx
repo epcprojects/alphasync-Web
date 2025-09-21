@@ -7,12 +7,14 @@ interface PaymentSuccessProps {
   isOpen: boolean;
   onClose: () => void;
   viewOrder: () => void;
+  btnTitle: string;
 }
 
 const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
   isOpen,
   onClose,
   viewOrder,
+  btnTitle,
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -56,9 +58,9 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
           </p>
           <button
             onClick={viewOrder}
-            className="mt-6 w-40 self-center bg-white border border-gray-200 text-gray-700 px-8 py-3 rounded-full font-semibold text-base transition cursor-pointer"
+            className="mt-6 self-center bg-white border whitespace-nowrap border-gray-200 text-gray-700 px-8 py-3 rounded-full font-semibold text-base transition cursor-pointer"
           >
-            View Order
+            {btnTitle}
           </button>
         </div>
       </div>

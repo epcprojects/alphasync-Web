@@ -297,7 +297,7 @@ function PendingPayments() {
         onClose={() => setIsDetailModelOpen(false)}
         order={selectedOrder}
       />
-      {selectedOrder && (
+      {selectedOrder && isPaymentModelOpen && (
         <CustomerOrderPayment
           isOpen={isPaymentModelOpen}
           onClose={() => setIsPaymentModelOpen(false)}
@@ -315,6 +315,7 @@ function PendingPayments() {
           setIsSuccess(false);
           setIsSummaryModalOpen(true);
         }}
+         btnTitle={'View Order'}
       />
       <CustomerOrderSummary
         isOpen={isSummaryModalOpen}

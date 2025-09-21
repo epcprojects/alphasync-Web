@@ -2,7 +2,7 @@ import Image from "next/image";
 import Card from "../../../../../public/icons/Card";
 import ThemeButton from "../buttons/ThemeButton";
 
-interface OrderItemProps {
+export interface OrderItemProps {
   item: {
     id: string | number;
     medicineName: string;
@@ -30,6 +30,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
   requestStatus,
   onClick,
 }) => {
+  console.log(item)
   const details = requestStatus
     ? [
         { label: "Strength:", value: item.strength },
@@ -105,9 +106,9 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                 </span>
               </div>
             </div>
-            {/* <p className="text-xs font-normal text-gray-800">
+            {item.amount && <p className="text-xs font-normal text-gray-800">
               {item.amount}
-            </p> */}
+            </p>}
           </div>
           {/* Desktop version - hidden on mobile, shown on desktop */}
           <div className="hidden md:flex md:flex-col md:gap-2">

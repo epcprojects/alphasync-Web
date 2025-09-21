@@ -17,6 +17,7 @@ import {
   UnionPay,
   Visa,
 } from "@/icons";
+import OrderItemCard, { OrderItemProps } from "../cards/OrderItemCards";
 
 type OrderItem = {
   id: string | number;
@@ -36,11 +37,20 @@ type order = {
   orderItems: OrderItem[];
 };
 
+export type requestProps = {
+  id: string | number;
+  medicineName: string;
+  doctorName: string;
+  strength: string;
+  price: string;
+};
+
 interface CustomerOrderPaymentProps {
   isOpen: boolean;
   onClose: () => void;
-  order: order | null;
+  order?: order;
   onClick: () => void;
+  request?: requestProps;
 }
 
 const cardImages: Record<CardType, React.FC> = {
@@ -73,6 +83,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   onClose,
   order,
   onClick,
+  request,
 }) => {
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState<string>("");
@@ -93,6 +104,12 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
+  useEffect(() => {
+    if (request) {
+      setShowForm(true);
+    }
+  }, [request]);
+
   const handleContinue = () => {
     setShowForm(true);
   };
@@ -107,11 +124,14 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       document.body.style.overflow = "";
     };
   }, [isOpen]);
-  if (!order) return null;
-  const subTotal = order.orderItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
+  if (!order && !request) return null;
+
+  const subTotal =
+    order?.orderItems?.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0
+    ) ?? 0;
+
   const tax = (subTotal * 0.08).toFixed(2);
   const total = (subTotal + parseFloat(tax)).toFixed(2);
 
@@ -356,9 +376,21 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const SelectedCardIcon: React.FC =
     cardImages[cardType as keyof typeof cardImages] || cardImages.Default;
 
+  let transformedItem: OrderItemProps["item"] | undefined;
+
+  if (request) {
+    transformedItem = {
+      id: request.id,
+      medicineName: request.medicineName,
+      price: Number(request.price),
+      doctorName: request.doctorName,
+      strength: request.strength,
+    };
+  }
+
   return (
     <AppModal
-      isOpen={isOpen}
+      isOpen={true}
       onClose={onClose}
       icon={<Card />}
       title={isMobile && !showForm ? "Order Summary" : "Complete Payment"}
@@ -368,78 +400,85 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       position={ModalPosition.RIGHT}
       showFooter={false}
     >
-      {order && (
+      {(order || request) && (
         <div className="w-full max-w-2xl mx-auto gap-6">
-          <div className={`${showForm ? "hidden" : "block"} md:block`}>
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-950">
-                Order #{order.orderNumber}
-              </h2>
-              <span className="text-primary text-sm font-semibold">
-                {order.orderItems.length.toString().padStart(2, "0")} Items
-              </span>
-            </div>
-            <div className="flex flex-col gap-3 mt-4">
-              {order.orderItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex justify-between items-center bg-gray-100 rounded-xl p-1.5 gap-2"
-                >
-                  <div className="flex gap-3 items-center">
-                    <div className="w-12 h-12 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
-                      <Image
-                        alt="#"
-                        src={"/images/products/p1.png"}
-                        width={1024}
-                        height={1024}
-                      />
+          {order ? (
+            <div className={`${showForm ? "hidden" : "block"} md:block`}>
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-gray-950">
+                  Order #{order.orderNumber}
+                </h2>
+                <span className="text-primary text-sm font-semibold">
+                  {order.orderItems.length.toString().padStart(2, "0")} Items
+                </span>
+              </div>
+              <div className="flex flex-col gap-3 mt-4">
+                {order.orderItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex justify-between items-center bg-gray-100 rounded-xl p-1.5 gap-2"
+                  >
+                    <div className="flex gap-3 items-center">
+                      <div className="w-12 h-12 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
+                        <Image
+                          alt="#"
+                          src={"/images/products/p1.png"}
+                          width={1024}
+                          height={1024}
+                        />
+                      </div>
+                      <span className="text-sm font-normal text-gray-800">
+                        {item.medicineName}
+                      </span>
                     </div>
-                    <span className="text-sm font-normal text-gray-800">
-                      {item.medicineName}
-                    </span>
+                    <div className="flex gap-2 items-center">
+                      <span className="text-sm font-medium text-raven bg-white px-2.5 rounded-sm">
+                        x{item.quantity}
+                      </span>
+                      <span className="text-sm font-semibold text-primary">
+                        ${item.price.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex gap-2 items-center">
-                    <span className="text-sm font-medium text-raven bg-white px-2.5 rounded-sm">
-                      x{item.quantity}
-                    </span>
-                    <span className="text-sm font-semibold text-primary">
-                      ${item.price.toFixed(2)}
-                    </span>
-                  </div>
+                ))}
+              </div>
+              <hr className=" my-3 md:my-4 text-gray-200" />
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-normal text-gray-800">
+                    Sub total
+                  </span>
+                  <span className="text-sm font-medium text-gray-800">
+                    ${subTotal.toFixed(2)}
+                  </span>
                 </div>
-              ))}
-            </div>
-            <hr className=" my-3 md:my-4 text-gray-200" />
-            <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-normal text-gray-800">
+                    Tax (8%)
+                  </span>
+                  <span className="text-sm font-medium text-gray-800">
+                    ${tax}
+                  </span>
+                </div>
+              </div>
+              <hr className=" my-3 md:my-4 text-gray-200" />
               <div className="flex justify-between items-center">
-                <span className="text-sm font-normal text-gray-800">
-                  Sub total
+                <span className="text-base font-medium text-gray-800">
+                  Total
                 </span>
-                <span className="text-sm font-medium text-gray-800">
-                  ${subTotal.toFixed(2)}
+                <span className="text-base font-semibold text-primary">
+                  ${total}
                 </span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-normal text-gray-800">
-                  Tax (8%)
-                </span>
-                <span className="text-sm font-medium text-gray-800">
-                  ${tax}
-                </span>
-              </div>
+              <hr className=" my-3 md:my-4 text-gray-200" />
             </div>
-            <hr className=" my-3 md:my-4 text-gray-200" />
-            <div className="flex justify-between items-center">
-              <span className="text-base font-medium text-gray-800">Total</span>
-              <span className="text-base font-semibold text-primary">
-                ${total}
-              </span>
-            </div>
-            <hr className=" my-3 md:my-4 text-gray-200" />
-          </div>
+          ) : (
+            // <p>request</p>
+            transformedItem && <OrderItemCard item={transformedItem} requestStatus />
+          )}
           <form
             className={`${
-              showForm ? "block" : "hidden"
+              showForm || request ? "block" : "hidden"
             } md:flex mx-auto flex flex-col gap-4`}
           >
             <ThemeInput
@@ -540,6 +579,8 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     ? showForm
                       ? `Pay $${total}`
                       : "Continue"
+                    : request
+                    ? "Pay Now"
                     : `Pay $${total}`
                 }
                 variant="filled"

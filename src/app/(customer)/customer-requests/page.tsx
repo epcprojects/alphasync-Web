@@ -9,6 +9,10 @@ import { PrecriptionDATA } from "../../../../public/data/PrescriptionRequest";
 import RequestDetails, {
   requestDetails,
 } from "@/app/components/ui/modals/RequestDetails";
+import CustomerOrderPayment, {
+  requestProps,
+} from "@/app/components/ui/modals/CustomerOrderPayment";
+import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
 
 const Page = () => {
   const [search, setSearch] = useState("");
@@ -17,6 +21,8 @@ const Page = () => {
   const [selectedRequest, setSelectedRequest] = useState<requestDetails | null>(
     null
   );
+  const [isSucess, setIsSuccess] = useState(false);
+  const [isPaymentModel, setisPaymentModel] = useState(false);
   const handleApprove = (title: string) => {
     showSuccessToast("Patient request approved successfully.");
     console.log(title);
@@ -151,10 +157,36 @@ const Page = () => {
         onClose={() => setIsDetailModelOpen(false)}
         request={selectedRequest}
         onClick={() => {
-          if (selectedRequest) {
-            console.log("setIsDetailModelOpen");
-          }
+          setIsDetailModelOpen(false);
+          setisPaymentModel(true);
         }}
+      />
+      {isPaymentModel && (
+        <CustomerOrderPayment
+          isOpen={isPaymentModel}
+          onClose={() => {
+            setisPaymentModel(false);
+          }}
+          request={{
+            id: "123456",
+            medicineName: "Semaglutide",
+            doctorName: "Dr. Arina Baker",
+            strength: "5 mg vial",
+            price: "120",
+          }}
+          onClick={() => {
+            setisPaymentModel(false);
+            setIsSuccess(true);
+          }}
+        />
+      )}
+      <PaymentSuccess
+        isOpen={isSucess}
+        onClose={() => setIsSuccess(false)}
+        viewOrder={() => {
+          setIsSuccess(false);
+        }}
+        btnTitle={'View Requests'}
       />
       <AddNoteModal
         isOpen={isNoteModalOpen}
