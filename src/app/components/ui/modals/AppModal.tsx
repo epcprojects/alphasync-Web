@@ -16,7 +16,7 @@ interface AppModalProps {
   subtitle?: string;
   icon?: React.ReactNode;
   children: React.ReactNode;
-  onConfirm?: () => void;
+  onConfirm?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   confirmLabel?: string;
   cancelLabel?: string;
   size?: "small" | "medium" | "large" | "extraLarge";
@@ -26,6 +26,10 @@ interface AppModalProps {
   showFooter?: boolean;
   bodyPaddingClasses?: string;
   position?: ModalPosition;
+  confimBtnDisable?: boolean;
+  btnFullWidth?: boolean;
+  hideCancelBtn?: boolean;
+  btnIcon?: React.ReactNode,
 }
 
 const sizeClasses = {
@@ -52,6 +56,10 @@ const AppModal: React.FC<AppModalProps> = ({
   showFooter = true,
   bodyPaddingClasses = "p-3 md:p-5",
   position = ModalPosition.CENTER,
+  confimBtnDisable,
+  btnFullWidth,
+  hideCancelBtn,
+  btnIcon,
 }) => {
   if (!isOpen) return null;
 
@@ -108,23 +116,29 @@ const AppModal: React.FC<AppModalProps> = ({
           </div>
 
           {showFooter && (
-            <div className="border-t border-gray-200 bg-white flex items-center justify-between p-2 md:p-4">
-              <ThemeButton
+            <div
+              className={`${
+                btnFullWidth && "gap-6"
+              } border-t border-gray-200 bg-white flex items-center justify-between p-2 md:p-4`}
+            >
+              {!hideCancelBtn && <ThemeButton
                 label={cancelLabel}
                 onClick={onCancel ? onCancel : onClose}
                 size="medium"
-                className="min-w-36"
+                className={`${btnFullWidth ? "flex-1" : "min-w-36"}`}
                 variant="outline"
                 heightClass="h-10"
-              />
+              />}
               {onConfirm && (
                 <ThemeButton
                   label={confirmLabel}
-                  className="min-w-36"
+                  className={` ${btnFullWidth ? "flex-1" : "min-w-36"}`}
                   onClick={onConfirm}
                   size="medium"
                   heightClass="h-10"
                   variant={confirmBtnVarient}
+                  disabled={confimBtnDisable}
+                  icon={btnIcon}
                 />
               )}
             </div>

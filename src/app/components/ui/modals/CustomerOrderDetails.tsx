@@ -2,6 +2,7 @@ import OrderDetail from "../../../../../public/icons/OrdeerDetail";
 import AppModal, { ModalPosition } from "./AppModal";
 import { useEffect } from "react";
 import OrderItemCard from "../cards/OrderItemCards";
+import { pageVarient } from "../cards/PrescriptionOrderCard";
 
 type OrderItem = {
   id: string | number;
@@ -19,18 +20,21 @@ type order = {
   isDueToday?: string;
   totalPrice: string | number;
   orderItems: OrderItem[];
+  status?: string;
 };
 
 interface CustomerOrderDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   order: order | null;
+  type?: pageVarient;
 }
 
 const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
   isOpen,
   onClose,
   order,
+  type = "order",
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -47,6 +51,10 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
     switch (status) {
       case "Due Today":
         return "bg-red-50 border border-red-200 text-red-700";
+      case "Processing":
+        return "bg-amber-50 border border-amber-200 text-amber-700";
+      case "Ready for Pickup":
+        return "bg-blue-50 border border-blue-200 text-blue-700";
       default:
         return "bg-green-50 border border-green-200 text-green-700";
     }
@@ -74,10 +82,10 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               <div className="flex items-center justify-between">
                 <span
                   className={`${getOrderTags(
-                    order.isDueToday
+                    type === "order" ? order.status : order.isDueToday
                   )} px-3 py-0.5 rounded-full text-sm font-medium`}
                 >
-                  {order.isDueToday}
+                  {type === "order" ? order.status : order.isDueToday}
                 </span>
               </div>
             </div>

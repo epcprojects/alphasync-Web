@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import Verify from "../../../../../public/icons/Verify";
 import { CrossIcon } from "@/icons";
 import Portal from "../portal";
+import ThemeButton from "../buttons/ThemeButton";
 
 interface PaymentSuccessProps {
   isOpen: boolean;
@@ -37,31 +38,31 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
       w-full sm:max-w-lg 
       sm:mx-0 sm:w-auto
       h-screen sm:h-auto
-      flex flex-col justify-center
+      flex flex-col justify-center items-center gap-5
     "
         >
           <div
             onClick={onClose}
-            className="absolute top-4 right-4 p-1 rounded-full cursor-pointer"
+            className="absolute top-4 right-4  rounded-full cursor-pointer"
           >
             <CrossIcon fill="#000" />
           </div>
-          <div className="flex justify-center my-4">
+          <div>
             <Verify />
           </div>
           <h2 className="text-2xl font-semibold text-gray-950">
             Payment Successful
           </h2>
-          <p className="text-gray-900 mt-2 text-base font-normal">
+          <p className="text-gray-900 text-base font-normal">
             Your order has been confirmed. A receipt has been sent to your
             email.
           </p>
-          <button
+          <ThemeButton
+            label={btnTitle}
             onClick={viewOrder}
-            className="mt-6 self-center bg-white border whitespace-nowrap border-gray-200 text-gray-700 px-8 py-3 rounded-full font-semibold text-base transition cursor-pointer"
-          >
-            {btnTitle}
-          </button>
+            variant="outline"
+            className="px-8 py-3 whitespace-nowrap font-semibold text-base  outline-none transition cursor-pointer"
+          />
         </div>
       </div>
     </Portal>

@@ -13,7 +13,6 @@ import {
   Target,
   Thermometer,
 } from "@/icons";
-import ThemeButton from "../buttons/ThemeButton";
 
 interface ProductDetailsProps {
   isOpen: boolean;
@@ -126,7 +125,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       icon={<OrderDetail />}
       title="Product Details"
       position={ModalPosition.RIGHT}
-      showFooter={false}
+      showFooter={true}
+      onConfirm={onClick}
+      confirmLabel="Request from Doctor"
+      hideCancelBtn={true}
+      btnFullWidth={true}
+      btnIcon={<ShopingCartIcon fill="#fff" />}
     >
       <div className="flex flex-col gap-6 px-4 py-1">
         <div className="flex flex-col gap-4">
@@ -175,15 +179,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
             />
           ))}
         </div>
-      <div className="w-full mt-4">
-        <ThemeButton
-          label="Request from Doctor"
-          icon={<ShopingCartIcon fill="#fff" />}
-          className="w-full"
-          heightClass="h-10"
-          onClick={onClick}
-        />
-      </div>
       </div>
     </AppModal>
   );

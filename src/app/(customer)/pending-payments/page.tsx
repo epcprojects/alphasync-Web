@@ -5,6 +5,7 @@ import {
   DeliveryBoxIcon,
   FilterIcon,
   SearchIcon,
+  TrashBinIcon,
 } from "@/icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useRef, useState } from "react";
@@ -63,7 +64,7 @@ function PendingPayments() {
     params.set("page", "0");
     router.replace(`?${params.toString()}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, selectedFilter]);
 
   const handleFilterSelect = (filterId: string) => {
     setSelectedFilter(filterId);
@@ -82,45 +83,74 @@ function PendingPayments() {
     date1.getDate() === date2.getDate();
 
   const filteredOrders = paymentOrders.filter((order) => {
-    if (selectedFilter === "all") return true;
+    if (selectedFilter !== "all") {
+      const orderDate = toDate(order.orderedOn);
 
-    const orderDate = toDate(order.orderedOn);
+      switch (selectedFilter) {
+        case "due-today":
+          if (!isSameDay(orderDate, today)) return false;
+          break;
 
-    switch (selectedFilter) {
-      case "due-today":
-        return isSameDay(orderDate, today);
+        case "due-tomorrow": {
+          const tomorrow = new Date(today);
+          tomorrow.setDate(today.getDate() + 1);
+          if (!isSameDay(orderDate, tomorrow)) return false;
+          break;
+        }
 
-      case "due-tomorrow": {
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-        return isSameDay(orderDate, tomorrow);
+        case "due-three-days": {
+          const threeDaysLater = new Date(today);
+          threeDaysLater.setDate(today.getDate() + 3);
+          if (!(orderDate > today && orderDate <= threeDaysLater)) return false;
+          break;
+        }
+
+        case "due-week": {
+          const weekEnd = new Date(today);
+          weekEnd.setDate(today.getDate() + 7);
+          if (!(orderDate >= today && orderDate <= weekEnd)) return false;
+          break;
+        }
+
+        case "due-month":
+          if (
+            !(
+              orderDate.getFullYear() === today.getFullYear() &&
+              orderDate.getMonth() === today.getMonth() &&
+              orderDate >= today
+            )
+          )
+            return false;
+          break;
+
+        default:
+          break;
       }
-
-      case "due-three-days": {
-        const threeDaysLater = new Date(today);
-        threeDaysLater.setDate(today.getDate() + 3);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-        return orderDate > today && orderDate <= threeDaysLater;
-      }
-
-      case "due-week": {
-        const weekEnd = new Date(today);
-        weekEnd.setDate(today.getDate() + 7);
-        return orderDate >= today && orderDate <= weekEnd;
-      }
-
-      case "due-month":
-        return (
-          orderDate.getFullYear() === today.getFullYear() &&
-          orderDate.getMonth() === today.getMonth() &&
-          orderDate >= today
-        );
-
-      default:
-        return true;
     }
+
+    if (search.trim() !== "") {
+      const lowerSearch = search.toLowerCase();
+      const doctorMatch = order.doctorName.toLowerCase().includes(lowerSearch);
+      const medicineMatch = order.orderItems.some((item) =>
+        item.medicineName.toLowerCase().includes(lowerSearch)
+      );
+      const orderNumberMatch = order.orderNumber.toLowerCase().includes(lowerSearch);
+
+      if (!doctorMatch && !medicineMatch && !orderNumberMatch) return false;
+    }
+    return true;
   });
+
+  const pageCount = Math.ceil(filteredOrders.length / itemsPerPage);
+  const offset = currentPage * itemsPerPage;
+  const currentItems = filteredOrders.slice(offset, offset + itemsPerPage);
+
+  const handlePageChange = ({ selected }: { selected: number }) => {
+    setCurrentPage(selected);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(selected));
+    router.replace(`?${params.toString()}`);
+  };
 
   const handleOrderClick = (order: PrescriptionOrder) => {
     setSelectedOrder(order);
@@ -244,25 +274,30 @@ function PendingPayments() {
         </div>
       </div>
       <div className="flex flex-col gap-2 md:gap-4">
-        <PrescriptionOrderCard
-          orders={filteredOrders}
-          onPress={handleOrderClick}
-          btnTitle="Pay Now"
-          onPay={(order) => {
-            setSelectedOrder(order);
-            setIsPaymentModelOpen(true);
-          }}
-          onDelete={() => {
-            showErrorToast("Order Cancelled");
-          }}
-        />
+        {currentItems.map((order) => (
+          <PrescriptionOrderCard
+            key={order.id}
+            orders={[order]}
+            onPress={handleOrderClick}
+            btnTitle="Pay Now"
+            onPay={(o) => {
+              setSelectedOrder(o);
+              setIsPaymentModelOpen(true);
+            }}
+            onDelete={() => {
+              showErrorToast("Order Cancelled");
+            }}
+            icon={<TrashBinIcon />}
+            type="Pending-page"
+          />
+        ))}
       </div>
-      {filteredOrders.length > 0 && (
-        <div className="hidden md:flex justify-center ">
+      {currentItems.length > 0 && (
+        <div className="flex justify-center">
           <ReactPaginate
             breakLabel="..."
             nextLabel={
-              <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+              <span className="flex items-center gap-1 select-none font-semibold text-xs md:text-sm text-gray-600">
                 Next
                 <span className="block mb-0.5 rotate-180">
                   <ArrowLeftIcon />
@@ -270,24 +305,24 @@ function PendingPayments() {
               </span>
             }
             previousLabel={
-              <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+              <span className="flex items-center gap-1 select-none font-semibold text-xs md:text-sm text-gray-600">
                 <span className="mb-0.5">
                   <ArrowLeftIcon />
-                </span>{" "}
+                </span>
                 Previous
               </span>
             }
-            // onPageChange={handlePageChange}
+            onPageChange={handlePageChange}
             pageRangeDisplayed={3}
             marginPagesDisplayed={1}
-            pageCount={itemsPerPage}
+            pageCount={pageCount}
             forcePage={currentPage}
             pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer block"
             containerClassName="flex items-center relative w-full justify-center gap-2 px-4 py-3 rounded-2xl bg-white"
-            pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
+            pageClassName="rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
             activeClassName="bg-gray-200 text-gray-900 font-medium"
-            previousClassName="px-4 py-2 rounded-full  absolute left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-            nextClassName="px-4 py-2 rounded-full bg-gray-50  absolute end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
+            previousClassName="px-4 py-2 rounded-full absolute left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
+            nextClassName="px-4 py-2 rounded-full bg-gray-50 absolute end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
             breakClassName="px-3 py-1 font-semibold text-gray-400"
           />
         </div>

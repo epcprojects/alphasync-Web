@@ -2,8 +2,9 @@
 import {
   ArrowLeftIcon,
   CrossIcon,
-  DeliveryBoxIcon,
+  EyeIcon,
   FilterIcon,
+  OrderHistory,
   SearchIcon,
 } from "@/icons";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -12,13 +13,13 @@ import ReactPaginate from "react-paginate";
 import PrescriptionOrderCard, {
   PrescriptionOrder,
 } from "@/app/components/ui/cards/PrescriptionOrderCard";
-import { paymentOrders } from "../../../../public/data/orders";
-import { filterOptions } from "../../../../public/data/Filters";
+import { ordersHistory } from "../../../../public/data/orders";
+import { orderfilterOptions } from "../../../../public/data/Filters";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import CustomerOrderDetails from "@/app/components/ui/modals/CustomerOrderDetails";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
-function PendingPayments() {
+function History() {
   const [search, setSearch] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -30,7 +31,6 @@ function PendingPayments() {
   const [selectedOrder, setSelectedOrder] = useState<PrescriptionOrder | null>(
     null
   );
-  const today = new Date();
   const itemsPerPage = 9;
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -57,7 +57,7 @@ function PendingPayments() {
     params.set("page", "0");
     router.replace(`?${params.toString()}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, selectedFilter]);
 
   const handleFilterSelect = (filterId: string) => {
     setSelectedFilter(filterId);
@@ -65,56 +65,44 @@ function PendingPayments() {
     console.log("Selected filter:", filterId);
   };
 
-  const toDate = (dateString: string): Date => {
-    const [month, day, year] = dateString.split("/").map(Number);
-    return new Date(year, month - 1, day);
-  };
+  const normalizeStatus = (status: string) =>
+    status.toLowerCase().replace(/\s+/g, "-").replace(/_/g, "-");
 
-  const isSameDay = (date1: Date, date2: Date): boolean =>
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate();
-
-  const filteredOrders = paymentOrders.filter((order) => {
-    if (selectedFilter === "all") return true;
-
-    const orderDate = toDate(order.orderedOn);
-
-    switch (selectedFilter) {
-      case "due-today":
-        return isSameDay(orderDate, today);
-
-      case "due-tomorrow": {
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-        return isSameDay(orderDate, tomorrow);
+  const filteredOrders = ordersHistory.filter((order) => {
+    if (selectedFilter !== "all") {
+      if (
+        selectedFilter === "delivered" ||
+        selectedFilter === "processing" ||
+        selectedFilter === "ready-for-pickup"
+      ) {
+        if (normalizeStatus(order.status) !== selectedFilter) return false;
       }
-
-      case "due-three-days": {
-        const threeDaysLater = new Date(today);
-        threeDaysLater.setDate(today.getDate() + 3);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-        return orderDate > today && orderDate <= threeDaysLater;
-      }
-
-      case "due-week": {
-        const weekEnd = new Date(today);
-        weekEnd.setDate(today.getDate() + 7);
-        return orderDate >= today && orderDate <= weekEnd;
-      }
-
-      case "due-month":
-        return (
-          orderDate.getFullYear() === today.getFullYear() &&
-          orderDate.getMonth() === today.getMonth() &&
-          orderDate >= today
-        );
-
-      default:
-        return true;
     }
+    if (search.trim() !== "") {
+      const lowerSearch = search.toLowerCase();
+      const doctorMatch = order.doctorName.toLowerCase().includes(lowerSearch);
+      const medicineMatch = order.orderItems.some((item) =>
+        item.medicineName.toLowerCase().includes(lowerSearch)
+      );
+      const orderNumberMatch = order.orderNumber
+        .toLowerCase()
+        .includes(lowerSearch);
+
+      if (!doctorMatch && !medicineMatch && !orderNumberMatch) return false;
+    }
+    return true;
   });
+
+  const pageCount = Math.ceil(filteredOrders.length / itemsPerPage);
+  const offset = currentPage * itemsPerPage;
+  const currentItems = filteredOrders.slice(offset, offset + itemsPerPage);
+
+  const handlePageChange = ({ selected }: { selected: number }) => {
+    setCurrentPage(selected);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(selected));
+    router.replace(`?${params.toString()}`);
+  };
 
   const handleOrderClick = (order: PrescriptionOrder) => {
     setSelectedOrder(order);
@@ -126,7 +114,7 @@ function PendingPayments() {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
         <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
           <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-            <DeliveryBoxIcon />
+            <OrderHistory />
           </span>
           <h2 className="text-black font-semibold text-lg xl:text-2xl whitespace-nowrap">
             Your Order History
@@ -169,7 +157,7 @@ function PendingPayments() {
                   "absolute top-16 right-1 outline-none shadow-[0_14px_34px_0_rgba(0,0,0,0.1)] rounded-lg p-1 bg-white hidden w-48 md:block border border-gray-200 z-10"
                 }
               >
-                {filterOptions.map((option, index) => (
+                {orderfilterOptions.map((option, index) => (
                   <MenuItem key={index}>
                     <button
                       onClick={() => handleFilterSelect(option.id)}
@@ -214,7 +202,7 @@ function PendingPayments() {
                 </div>
 
                 <div className="flex flex-col">
-                  {filterOptions.map((option, index) => (
+                  {orderfilterOptions.map((option, index) => (
                     <button
                       key={index}
                       onClick={(e) => {
@@ -238,24 +226,29 @@ function PendingPayments() {
         </div>
       </div>
       <div className="flex flex-col gap-2 md:gap-4">
-        <PrescriptionOrderCard
-          orders={filteredOrders}
-          onPress={handleOrderClick}
-          btnTitle={"Reorder"}
-          onPay={() => {
-            showSuccessToast("Reorder Request Submitted");
-          }}
-          onDelete={() => {
-            showErrorToast("Order Cancelled");
-          }}
-        />
+        {currentItems.map((order) => (
+          <PrescriptionOrderCard
+            key={order.id}
+            orders={[order]}
+            onPress={handleOrderClick}
+            btnTitle={"Reorder"}
+            onPay={() => {
+              showSuccessToast("Reorder Request Submitted");
+            }}
+            onDelete={() => {
+              showErrorToast("Order Cancelled");
+            }}
+            icon={<EyeIcon />}
+            type="order"
+          />
+        ))}
       </div>
-      {filteredOrders.length > 0 && (
-        <div className="hidden md:flex justify-center">
+      {currentItems.length > 0 && (
+        <div className="flex justify-center">
           <ReactPaginate
             breakLabel="..."
             nextLabel={
-              <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+              <span className="flex items-center gap-1 select-none font-semibold text-xs md:text-sm text-gray-600">
                 Next
                 <span className="block mb-0.5 rotate-180">
                   <ArrowLeftIcon />
@@ -263,24 +256,24 @@ function PendingPayments() {
               </span>
             }
             previousLabel={
-              <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+              <span className="flex items-center gap-1 select-none font-semibold text-xs md:text-sm text-gray-600">
                 <span className="mb-0.5">
                   <ArrowLeftIcon />
-                </span>{" "}
+                </span>
                 Previous
               </span>
             }
-            // onPageChange={handlePageChange}
+            onPageChange={handlePageChange}
             pageRangeDisplayed={3}
             marginPagesDisplayed={1}
-            pageCount={itemsPerPage}
+            pageCount={pageCount}
             forcePage={currentPage}
             pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer block"
             containerClassName="flex items-center relative w-full justify-center gap-2 px-4 py-3 rounded-2xl bg-white"
-            pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
+            pageClassName="rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
             activeClassName="bg-gray-200 text-gray-900 font-medium"
-            previousClassName="px-4 py-2 rounded-full  absolute left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-            nextClassName="px-4 py-2 rounded-full bg-gray-50  absolute end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
+            previousClassName="px-4 py-2 rounded-full absolute left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
+            nextClassName="px-4 py-2 rounded-full bg-gray-50 absolute end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
             breakClassName="px-3 py-1 font-semibold text-gray-400"
           />
         </div>
@@ -289,6 +282,7 @@ function PendingPayments() {
         isOpen={isDetailModelOpen}
         onClose={() => setIsDetailModelOpen(false)}
         order={selectedOrder}
+        type="order"
       />
     </div>
   );
@@ -297,7 +291,7 @@ function PendingPayments() {
 export default function Page() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <PendingPayments />
+      <History />
     </Suspense>
   );
 }

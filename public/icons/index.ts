@@ -85,12 +85,15 @@ import Thermometer from "./Thermometer";
 import TickIcon from "./TickIcon";
 import RequestFilledIcon from "./RequestFilledIcon";
 import DashDoctor from "./DashDoctor";
+import Reload from "./Reload";
+import OrderHistory from "./OrderHIstory";
 export {
     DashDoctor,
     RequestFilledIcon,
     TickIcon,
     Alert,
     Calendar,
+    Reload,
     Doctor,
     File,
     Learning,
@@ -140,6 +143,7 @@ export {
     ReminderIcon,
     SettingsIcon,
     RequestIcon,
+    OrderHistory,
     SyrupIcon,
     DeliveryBoxIcon,
     SearchIcon,

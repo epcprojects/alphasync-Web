@@ -1,6 +1,4 @@
 import Image from "next/image";
-import Card from "../../../../../public/icons/Card";
-import ThemeButton from "../buttons/ThemeButton";
 
 export interface OrderItemProps {
   item: {
@@ -28,7 +26,6 @@ type Note = {
 const OrderItemCard: React.FC<OrderItemProps> = ({
   item,
   requestStatus,
-  onClick,
 }) => {
   console.log(item)
   const details = requestStatus
@@ -180,17 +177,6 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
           </div>
         ))}
       </div>
-      {requestStatus && item.status === "Approved" && (
-        <div className="w-full mt-auto border-t border-gray-200 pt-4">
-          <ThemeButton
-            label="Proceed to Payment"
-            icon={<Card fill="#fff" />}
-            className="w-full"
-            heightClass="h-10"
-            onClick={onClick}
-          />
-        </div>
-      )}
     </div>
   );
 };
