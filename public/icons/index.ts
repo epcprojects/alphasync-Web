@@ -84,7 +84,9 @@ import Target from "./Target";
 import Thermometer from "./Thermometer";
 import TickIcon from "./TickIcon";
 import RequestFilledIcon from "./RequestFilledIcon";
+import DashDoctor from "./DashDoctor";
 export {
+    DashDoctor,
     RequestFilledIcon,
     TickIcon,
     Alert,

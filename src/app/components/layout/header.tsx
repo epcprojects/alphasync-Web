@@ -54,6 +54,10 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
     item.href.includes("pending-payment")
   );
 
+  const isAdminHeader = menuItems.some((item) =>
+    item.label.includes("Doctors")
+  );
+
   return (
     <>
       <header
@@ -136,7 +140,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
               </Link>
             )}
 
-            <Notifications />
+            {!isAdminHeader && <Notifications />}
 
             <div className="text-right w-8 h-8 md:h-11 md:w-11">
               <Menu>
