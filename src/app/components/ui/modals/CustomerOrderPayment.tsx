@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Card from "../../../../../public/icons/Card";
 import ThemeInput from "../inputs/ThemeInput";
-import ThemeButton from "../buttons/ThemeButton";
 import { CardData } from "../../../../../public/data/CreditCard";
 import {
   Amex,
