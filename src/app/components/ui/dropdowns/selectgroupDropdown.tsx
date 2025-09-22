@@ -151,7 +151,7 @@ const SelectGroupDropdown = ({
   return (
     <>
       {showLabel && (
-        <label className="block mb-1 text-sm font-medium text-gray-900">
+        <label className="block mb-1 md:mb-1.5 text-sm font-medium text-gray-900">
           {name}
           {required && <span className="text-red-500">*</span>}
         </label>
@@ -233,8 +233,13 @@ const SelectGroupDropdown = ({
                     )}
                     onClick={() => handleSelect(group)}
                   >
-                    <span className="text-sm flex items-center gap-2 text-gray-900">
-                      {label} {email && email}
+                    <span className="text-sm flex font-medium items-center gap-2 text-gray-900">
+                      {label}
+                      {email && (
+                        <span className="text-gray-600 font-normal">
+                          {email}
+                        </span>
+                      )}
                     </span>
                     {isSelected(key) && (
                       <span className="text-green-500 font-bold">&#10003;</span>

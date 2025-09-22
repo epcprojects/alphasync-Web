@@ -87,7 +87,7 @@ function InventoryContent() {
     setIsProductModalOpen(true);
   };
   return (
-    <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
+    <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
           <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
@@ -103,9 +103,9 @@ function InventoryContent() {
           </div>
         </div>
 
-        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:p-2 shadow-lg lg:w-fit">
+        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] lg:w-fit">
           <div className="flex items-center relative w-full">
-            <span className="absolute left-2">
+            <span className="absolute left-3">
               <SearchIcon
                 height={isMobile ? "16" : "20"}
                 width={isMobile ? "16" : "20"}
@@ -115,7 +115,7 @@ function InventoryContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-7 md:ps-8 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
 
@@ -181,7 +181,7 @@ function InventoryContent() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 md:gap-4">
+      <div className="flex flex-col gap-2 md:gap-6">
         {showGridView ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
             {currentItems.map((product) => (

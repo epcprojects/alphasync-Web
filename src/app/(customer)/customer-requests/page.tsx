@@ -1,7 +1,7 @@
 "use client";
 import { PrescriptionRequestCard } from "@/app/components";
 import AddNoteModal from "@/app/components/ui/modals/AddNoteModal";
-import { SearchIcon, UserAddFilledIcon } from "@/icons";
+import { RequestFilledIcon, SearchIcon } from "@/icons";
 import { showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import React, { useState } from "react";
@@ -51,11 +51,11 @@ const Page = () => {
   };
 
   return (
-    <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
+    <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 md:gap-4">
           <span className="flex items-center text-primary justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-            <UserAddFilledIcon />
+            <RequestFilledIcon />
           </span>
           <h2 className="text-black font-semibold text-lg md:text-3xl">
             Requests
@@ -65,16 +65,16 @@ const Page = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-lg w-fit">
+        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] w-fit">
           <div className="flex items-center relative">
-            <span className="absolute left-2">
+            <span className="absolute left-3">
               <SearchIcon />
             </span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 py-2 bg-gray-100 min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
         </div>
@@ -184,7 +184,7 @@ const Page = () => {
         viewOrder={() => {
           setIsSuccess(false);
         }}
-        btnTitle={'View Requests'}
+        btnTitle={"View Requests"}
       />
       <AddNoteModal
         isOpen={isNoteModalOpen}

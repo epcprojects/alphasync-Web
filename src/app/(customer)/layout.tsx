@@ -94,7 +94,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             </h2>
           )}
           {hideStats && (
-            <h2 className="text-white text-2xl font-semibold md:text-4xl">
+            <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
               {heading}
             </h2>
           )}

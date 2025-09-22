@@ -18,7 +18,7 @@ const Page = () => {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   return (
-    <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
+    <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex items-center gap-2 md:gap-4">
         <button
           onClick={router.back}

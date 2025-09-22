@@ -3,7 +3,7 @@ import React, { useEffect, useState, MouseEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Images } from "@/app/ui/images";
-import { ProfileIcon, LogoutIcon, UserIcon, FileIcon } from "@/icons";
+import { ProfileIcon, LogoutIcon, UserIcon, RequestIcon } from "@/icons";
 import HeaderMenuNavItems from "./HeaderMenuNavItems";
 import Notifications from "../ui/Notifications";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
@@ -49,6 +49,10 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
     window.addEventListener("scroll", handleScroll);
     // return (): void => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const hasPendingPayment = menuItems.some((item) =>
+    item.href.includes("pending-payment")
+  );
 
   return (
     <>
@@ -122,13 +126,15 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
             <HeaderMenuNavItems items={menuItems} />
           </div>
 
-          <div className="items-center  gap-4 flex ">
-            <Link
-              href={"/customer-requests"}
-              className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
-            >
-              <FileIcon />
-            </Link>
+          <div className="items-center  gap-2.5 flex ">
+            {hasPendingPayment && (
+              <Link
+                href={"/customer-requests"}
+                className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
+              >
+                <RequestIcon fill="white" />
+              </Link>
+            )}
 
             <Notifications />
 
@@ -148,10 +154,10 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                   transition
                   anchor="bottom end"
                   className={`min-w-44  z-[400] origin-top-right rounded-xl border border-white/5 ${
-                    isSticky ? "md:bg-black/80" : "md:bg-black/30 bg-gray-800"
+                    isSticky ? "md:bg-black/80" : " bg-gray-800"
                   } p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
                 >
-                  <div className="bg-black/40 mb-1 py-2 px-3 rounded-lg">
+                  <div className="bg-black/45 mb-1 py-2 px-3 rounded-lg">
                     <span className="text-white whitespace-nowrap text-sm block">
                       Arina Baker
                     </span>
@@ -160,14 +166,20 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                     </span>
                   </div>
                   <MenuItem>
-                    <button className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10">
+                    <Link
+                      href={hasPendingPayment ? "/profile" : "/settings"}
+                      className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10"
+                    >
                       <ProfileIcon /> Profile
-                    </button>
+                    </Link>
                   </MenuItem>
                   <MenuItem>
-                    <button className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10">
+                    <Link
+                      href={"/login"}
+                      className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10"
+                    >
                       <LogoutIcon /> Logout
-                    </button>
+                    </Link>
                   </MenuItem>
                 </MenuItems>
               </Menu>

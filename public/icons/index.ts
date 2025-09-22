@@ -83,7 +83,9 @@ import Learning from "./Learning";
 import Target from "./Target";
 import Thermometer from "./Thermometer";
 import TickIcon from "./TickIcon";
+import RequestFilledIcon from "./RequestFilledIcon";
 export {
+    RequestFilledIcon,
     TickIcon,
     Alert,
     Calendar,

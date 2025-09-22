@@ -31,7 +31,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
           </h2>
         )}
 
-        <h3 className="text-white text-2xl font-semibold md:text-4xl">
+        <h3 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
           {heading}
         </h3>
       </div>

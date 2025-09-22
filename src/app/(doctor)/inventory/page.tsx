@@ -7,6 +7,7 @@ import {
   DeliveryBoxIcon,
   FavoriteIcon,
   GridViewIcon,
+  HeartFilledIcon,
   ListViewIcon,
   SearchIcon,
 } from "@/icons";
@@ -64,10 +65,10 @@ function InventoryContent() {
     showSuccessToast("Order created successfully!");
   };
   return (
-    <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
+    <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
-          <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
+          <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] md:w-11 md:h-11">
             <DeliveryBoxIcon />
           </span>
           <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
@@ -75,9 +76,9 @@ function InventoryContent() {
           </h2>
         </div>
 
-        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:p-2 shadow-lg lg:w-fit">
+        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] lg:w-fit">
           <div className="flex items-center relative w-full">
-            <span className="absolute left-2">
+            <span className="absolute left-3">
               <SearchIcon
                 height={isMobile ? "16" : "20"}
                 width={isMobile ? "16" : "20"}
@@ -87,7 +88,7 @@ function InventoryContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-7 md:ps-8 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
 
@@ -98,10 +99,17 @@ function InventoryContent() {
               "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
             }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
           >
-            <FavoriteIcon
-              height={isMobile ? "16" : "20"}
-              width={isMobile ? "16" : "20"}
-            />
+            {showFavourites ? (
+              <HeartFilledIcon
+                height={isMobile ? 16 : 20}
+                width={isMobile ? 16 : 20}
+              />
+            ) : (
+              <FavoriteIcon
+                height={isMobile ? "16" : "20"}
+                width={isMobile ? "16" : "20"}
+              />
+            )}
           </button>
 
           <button
@@ -136,7 +144,7 @@ function InventoryContent() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 md:gap-4">
+      <div className="flex flex-col gap-2 md:gap-6">
         {showGridView ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
             {currentItems.map((product) => (
@@ -151,7 +159,9 @@ function InventoryContent() {
         ) : (
           <div className="space-y-1">
             <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
-              <div className="col-span-5 md:col-span-4">Product</div>
+              <div className="col-span-5 md:col-span-4 lg:col-span-5">
+                Product
+              </div>
               <div className="col-span-3">Category</div>
               <div className="col-span-2">Stock</div>
               <div className="col-span-1">Price</div>
@@ -197,7 +207,7 @@ function InventoryContent() {
                 marginPagesDisplayed={1}
                 pageCount={pageCount}
                 forcePage={currentPage}
-                pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer  hidden md:block"
+                pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
                 containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
                 pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
                 activeClassName="bg-gray-200 text-gray-900 font-medium"

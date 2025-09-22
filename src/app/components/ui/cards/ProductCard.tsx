@@ -38,10 +38,10 @@ export default function ProductCard({
           <HeartOutlineIcon fill="#374151" />
         )}
       </button>
-      <div className="bg-[url(/images/productBgPattern.png)] !bg-center bg-cover h-52 md:h-60 flex items-center justify-center ">
+      <div className="bg-[url(/images/productBgPattern.png)] bg-cover h-52 md:h-60 pt-3 pb-2 bg-[position:0_20px] flex items-center justify-center ">
         <Image
           width={280}
-          className="h-full"
+          className="h-full object-contain"
           height={280}
           src={product.image}
           alt={product.title}
@@ -59,7 +59,7 @@ export default function ProductCard({
             </h3>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 md:gap-3">
             <div className="flex items-center justify-between gap-2">
               <span className="block w-fit rounded-full bg-gray-100 border border-gray-200 py-0.5 px-2.5 text-gray-700 font-medium text-xs md:text-sm">
                 {product.category}
@@ -83,7 +83,7 @@ export default function ProductCard({
                 heightClass="h-10 md:h-11"
               />
 
-              <h2 className="text-gray-950 font-semibold text-sm md:text-lg min-w-16 text-end">
+              <h2 className="text-gray-950 font-semibold text-sm md:text-lg lg:text-xl min-w-16 text-end">
                 {product.price}
               </h2>
             </div>

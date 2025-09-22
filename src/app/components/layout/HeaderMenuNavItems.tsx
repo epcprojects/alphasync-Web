@@ -26,7 +26,7 @@ function HeaderMenuNavItems({ items }: HeaderMenuNavItemsProps) {
           <li key={item.href}>
             <Link
               href={item.href}
-              className={`nav-link group  flex items-center gap-1 font-light rtl:leading-10 whitespace-nowrap text-base  py-1.5 lg:px-3 duration-300 hover:bg-primary/80 ${
+              className={`nav-link group  flex items-center gap-1 xl:gap-1.5 font-normal rtl:leading-10 whitespace-nowrap text-base  py-1.5 lg:px-3 duration-300 hover:bg-primary/80 ${
                 isActive && "bg-primary"
               } rounded-full text-white`}
               style={{ cursor: "pointer" }}

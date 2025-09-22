@@ -52,11 +52,11 @@ export default function PostDetail() {
     showSuccessToast("Order created successfully!");
   };
   return (
-    <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-8 pt-2 mx-auto">
+    <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex items-center gap-2 md:gap-4">
         <button
           onClick={router.back}
-          className="flex rotate-90 cursor-pointer bg-white rounded-full shadow items-center justify-center w-7 h-7 md:h-10 md:w-10"
+          className="flex rotate-90 cursor-pointer bg-white rounded-full shadow-lg items-center justify-center w-7 h-7 md:h-10 md:w-10"
         >
           <ArrowDownIcon />
         </button>
@@ -64,7 +64,7 @@ export default function PostDetail() {
           Back to Inventory
         </h2>
       </div>
-      <div className="bg-white shadow p-3 md:p-6 rounded-2xl ">
+      <div className="bg-white shadow p-3 md:p-6 rounded-3xl ">
         <div className="grid grid-cols-1 md:grid-cols-[410px_1fr] gap-4 md:gap-6">
           <div className="bg-white flex flex-col gap-4 h-fit shadow relative border border-gray-200 p-4 rounded-xl overflow-hidden">
             <button className="absolute top-4 end-4 z-10 cursor-pointer">
@@ -88,11 +88,11 @@ export default function PostDetail() {
           </div>
           <div className="flex flex-col gap-2.5 md:gap-5">
             <div>
-              <h2 className="text-gray-900 font-semibold text-xl md:text-3xl">
+              <h2 className="text-gray-900 font-semibold text-xl md:text-3xl xl:text-4xl">
                 2X Blend CJC-1295 No DAC (5mg) / Ipamorelin (5mg)
               </h2>
 
-              <span className="text-primary font-semibold text-sm md:text-lg ">
+              <span className="text-primary font-semibold text-sm md:text-lg xl:text-xl">
                 $89.99
               </span>
             </div>
@@ -109,15 +109,15 @@ export default function PostDetail() {
                   $
                 </div>
                 <input
-                  type="text"
+                  type="number"
                   inputMode="numeric"
                   value={price}
                   maxLength={8}
                   onChange={(e) => setPrice(e.target.value)}
-                  className={`border border-gray-200  outline-none bg-white text-gray-900 text-sm rounded-lg focus:ring-gray-200 focus:ring-1 block w-full ps-8 p-1.5 max-w-44`}
+                  className={`border border-gray-200 [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none  outline-none bg-white text-gray-900 text-sm rounded-lg focus:ring-gray-200 focus:ring-1 block w-full ps-8 pe-16 p-1.5 max-w-44`}
                   placeholder=""
                 />
-                <button className="rounded-md py-1.5 cursor-pointer hover:bg-gray-300 px-3 absolute bg-porcelan text-xs  end-1">
+                <button className="rounded-md py-1.5 cursor-pointer text-primary font-semibold hover:bg-gray-300 px-3 absolute bg-porcelan text-xs  end-1">
                   Save
                 </button>
               </div>
@@ -177,8 +177,10 @@ export default function PostDetail() {
             <div className="flex items-center justify-end gap-2 md:gap-4">
               <div>
                 <h2 className="text-xs md:text-sm text-gray-600 font-normal">
-                  Current Stock:{" "}
-                  <span className="text-primary font-semibold">45</span>
+                  Current Stock:
+                  <span className="text-primary ps-2 font-semibold">
+                    45 units
+                  </span>
                 </h2>
               </div>
 
@@ -187,18 +189,18 @@ export default function PostDetail() {
                 icon={<ShopingCartIcon fill="white" height={20} width={20} />}
                 onClick={() => setIsOrderModalOpen(true)}
                 className="w-fit min-w-40"
-                size="small"
+                heightClass="h-11"
               />
             </div>
 
             <div className="bg-gray-50 rounded-xl">
-              <div className="p-2 md:p-4">
+              <div className="p-2 md:p-4 border-b border-b-gray-200">
                 <h2 className="text-black font-medium text-sm md:text-base">
                   Details:
                 </h2>
               </div>
-              <div className="p-2 md:p-4 pt-0 md:pt-0">
-                <ul className="list-disc list-inside text-xs md:text-sm text-gray-800 flex flex-col gap-1 md:gap-2">
+              <div className="p-2 md:p-4">
+                <ul className="list-disc list-outside pl-5 md:pl-8 text-xs md:text-sm text-gray-800 flex flex-col gap-1 md:gap-2">
                   <li>
                     A 1:1 blend of CJC-1295 No DAC (5mg) and Ipamorelin (5mg)
                     designed to optimize growth hormone (GH) release, promoting
@@ -237,8 +239,9 @@ export default function PostDetail() {
           {
             name: "John Smith",
             displayName: "John Smith",
-            email: "john.smith@email.com john.smith@email.com",
+            email: "john.smith@email.com",
           },
+
           {
             name: "Sarah J",
             displayName: "Sarah J",

@@ -29,16 +29,17 @@ export default function BrowserProductCard({
   onCardClick,
 }: BrowserProductCardProps) {
   return (
-    <div
-      className="rounded-2xl pb-2 cursor-pointer flex-col bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] border relative border-gray-200 px-2 flex items-center justify-center"
-    >
-      <button className="absolute top-4 end-4 cursor-pointer" onClick={() => onCardClick(product)}>
+    <div className="rounded-2xl pb-2 cursor-pointer flex-col bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] border relative border-gray-200 px-2 flex items-center justify-center">
+      <button
+        className="absolute top-4 end-4 cursor-pointer"
+        onClick={() => onCardClick(product)}
+      >
         <InfoIcon fill="#374151" width={28} height={28} />
       </button>
-      <div className="bg-[url(/images/productBgPattern.png)] !bg-center bg-cover h-52 md:h-60 flex items-center justify-center ">
+      <div className="bg-[url(/images/productBgPattern.png)] bg-[position:0_20px] bg-cover h-52 md:h-60 pt-3 pb-2 flex items-center justify-center ">
         <Image
           width={280}
-          className="h-full"
+          className="h-full object-contain"
           height={280}
           src={product.image}
           alt={product.title}
@@ -61,7 +62,7 @@ export default function BrowserProductCard({
             </h3>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 md:gap-3">
             <div className="flex items-center justify-between gap-2">
               <span className="text-gray-600 text-xs md:text-sm font-normal">
                 {product.productForm}

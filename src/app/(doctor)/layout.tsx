@@ -81,7 +81,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
   return (
     <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
-      <div className="px-2 py-3 md:p-4 md:pb-6 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-2xl !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
+      <div className="px-2 py-3 md:p-4 md:pb-6 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-2xl !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
         <Header menuItems={menuItems} />
 
         {!hideStats && (
@@ -110,7 +110,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                     width={isMobile ? "16" : "32"}
                   />
                 ),
-                bgColor: "bg-emerald-500",
+                bgColor: "bg-emerald-400",
               },
               {
                 label: "Sales This Week",
@@ -121,7 +121,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                     width={isMobile ? "16" : "32"}
                   />
                 ),
-                bgColor: "bg-pink-500",
+                bgColor: "bg-pink-400",
               },
               {
                 label: "Top Ordered Product",
@@ -140,7 +140,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         {hideStats && (
           <div className="flex items-center flex-col">
             {hideStats && (
-              <h2 className="text-white text-2xl font-semibold md:text-4xl">
+              <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
                 {heading}
               </h2>
             )}

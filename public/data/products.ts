@@ -72,4 +72,40 @@ export const products = [
      prescription: true,
      productForm: "Injectable"
   },
+   {
+    id: 7,
+    title: "BPC-157 (5mg)",
+    description: "Promotes recovery and healing of tissues.",
+    category: "Regenerative Peptide",
+    stock: 60,
+    price: "$59.99",
+    image: "/images/products/p2.png",
+    isFavourite: true,
+     prescription: true,
+     productForm: "Topical/Injectable"
+  },
+  {
+    id: 8,
+    title: "TB-500 (5mg)",
+    description: "Supports repair and flexibility of tissues.",
+    category: "Performance Peptide",
+    stock: 30,
+    price: "$74.99",
+    image: "/images/products/p3.png",
+    isFavourite: false,
+     prescription: true,
+     productForm: "Injectable"
+  },
+  {
+    id: 9,
+    title: "2X Blend CJC-1295 No DAC (5mg) / Ipamorelin (5mg)",
+    description: "A 1:1 blend of CJC-1295 No DAC (5mg) and Ipamorelin (5mg)",
+    category: "Healing Peptide",
+    stock: 45,
+    price: "$89.99",
+    image: "/images/products/p4.png",
+    isFavourite: true,
+     prescription: true,
+     productForm: "Injectable"
+  },
 ];

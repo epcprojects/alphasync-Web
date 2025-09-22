@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AppModal, SelectGroupDropdown } from "@/components";
 
 type Customer = {
@@ -25,8 +25,9 @@ const OrderModal: React.FC<OrderModalProps> = ({
   const [errors, setErrors] = useState<{ user?: string; price?: string }>({});
 
   const handleGroupSelect = (user: string | string[]) => {
-    const lang = Array.isArray(user) ? user[0] : user;
-    setSelectedUser(lang);
+    const userSelected = Array.isArray(user) ? user[0] : user;
+    setErrors({});
+    setSelectedUser(userSelected);
   };
 
   const handleClose = () => {
@@ -57,6 +58,17 @@ const OrderModal: React.FC<OrderModalProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -81,10 +93,11 @@ const OrderModal: React.FC<OrderModalProps> = ({
             searchTerm={""}
             setSearchTerm={() => {}}
             isShowDrop={true}
-            required={true}
+            required={false}
             paddingClasses="py-1 px-2"
             optionPaddingClasses="p-1"
             showLabel={true}
+            showIcon
           />
           {errors.user && (
             <p className="text-red-500 text-xs mt-1">{errors.user}</p>
@@ -107,7 +120,10 @@ const OrderModal: React.FC<OrderModalProps> = ({
               type="number"
               id="input-group-1"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={(e) => {
+                setPrice(e.target.value);
+                setErrors({});
+              }}
               className={`border ${
                 errors.price ? "border-red-500" : "border-gray-200"
               } outline-none bg-white text-gray-900 text-sm rounded-lg focus:ring-gray-200 focus:ring-1 block w-full ps-8 p-2.5`}
