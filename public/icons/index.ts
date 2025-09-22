@@ -82,7 +82,9 @@ import File from "./FIle";
 import Learning from "./Learning";
 import Target from "./Target";
 import Thermometer from "./Thermometer";
+import TickIcon from "./TickIcon";
 export {
+    TickIcon,
     Alert,
     Calendar,
     Doctor,

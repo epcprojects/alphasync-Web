@@ -84,25 +84,21 @@ function Content() {
           />
         </div>
         <ThemeButton
-          disabled={formik.isSubmitting}
+          disabled={
+            formik.isSubmitting ||
+            !formik.values.confirmPassword ||
+            !formik.values.confirmPassword
+          }
           label="Update Password"
           onClick={() => {}}
           type="submit"
           heightClass="h-11"
         />
       </form>
-      <div className="flex items-center gap-1">
-        <h2 className="text-xs md:text-sm ">Didn’t receive the OTP?</h2>
-        <button
-          onClick={() => {}}
-          className="text-primary cursor-pointer text-xs md:text-sm font-semibold"
-        >
-          Click to resend
-        </button>
-      </div>
+
       <InfoModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        // onClose={() => setIsModalOpen(false)}
         onClick={() => {
           router.push("/login");
         }}

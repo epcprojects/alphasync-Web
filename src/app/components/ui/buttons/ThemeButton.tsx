@@ -57,14 +57,14 @@ const ThemeButton: React.FC<ThemeButtonProps> = ({
     <div
       className={`group  flex items-center ${heightClass && heightClass} ${
         variant === "filled" && !disabled
-          ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] hover:from-[#3C85F5] hover:to-[#1A407A] hover:bg-gradient-to-l p-[1px]"
+          ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] hover:from-[#3C85F5] hover:to-[#1A407A] hover:bg-gradient-to-l p-[0px]"
           : "p-0"
       } rounded-full  ${className}`}
     >
       <div
         className={`rounded-3xl p-0.5 w-full h-full  ${
           variant === "filled"
-            ? " bg-gradient-to-t from-[#ffffff12] to-[#ffffff00]"
+            ? " bg-gradient-to-b from-[#ffffff12] to-transparent"
             : variant === "outline"
             ? "bg-white border !p-0 border-gray-200 group-hover:!bg-gray-100"
             : variant === "primaryOutline"

@@ -6,6 +6,8 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
+import { Checkbox } from "@headlessui/react";
+import { TickIcon } from "@/icons";
 
 type LoginType = "Customer" | "Doctor";
 
@@ -21,9 +23,10 @@ const Page = () => {
     password:
       loginType === "Doctor"
         ? Yup.string()
-            .min(6, "Password must be at least 6 characters.")
+            .min(8, "Password must be at least 8 characters.")
             .required("Password is required.")
         : Yup.string().notRequired(),
+    rememberMe: Yup.boolean(),
   });
 
   const formik = useFormik({
@@ -31,11 +34,14 @@ const Page = () => {
       email: "",
       password: "",
       loginType,
+      rememberMe: false,
     },
     validationSchema,
     onSubmit: (values) => {
       console.log("Form submitted:", values);
-      router.push(`/otp?loginType=${values.loginType}&email=${values.email}`);
+      router.push(
+        `/otp?loginType=${values.loginType}&email=${values.email}&rememberMe=${values.rememberMe}`
+      );
     },
     enableReinitialize: true,
   });
@@ -94,12 +100,15 @@ const Page = () => {
 
         <div className="flex justify-between   aling-center">
           <div className="flex items-center ">
-            <input
-              id="default-checkbox"
-              type="checkbox"
-              value=""
-              className="w-4 h-4 rounded accent-primary focus:ring-0 focus:ring-primarylight"
-            />
+            <Checkbox
+              checked={formik.values.rememberMe}
+              onChange={(val) => formik.setFieldValue("rememberMe", val)}
+              className="group size-6 rounded-sm bg-white/10 p-1 ring-1 ring-lightGray ring-inset focus:not-data-focus:outline-none data-checked:bg-primary  data-checked:ring-primary data-focus:outline data-focus:outline-offset-2 data-focus:outline-white"
+            >
+              <span className="hidden h-4 w-4 items-center justify-center  group-data-checked:flex">
+                <TickIcon />
+              </span>
+            </Checkbox>
             <label
               htmlFor="default-checkbox"
               className="text-xs select-none font-medium text-gray-700 ms-2 md:text-sm "

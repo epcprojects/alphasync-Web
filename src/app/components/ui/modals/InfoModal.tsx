@@ -6,7 +6,7 @@ type InfoModalType = "success" | "danger";
 
 interface InfoModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   onClick: () => void;
   title?: string;
   subtitle?: string;
@@ -36,14 +36,16 @@ const InfoModal: React.FC<InfoModalProps> = ({
           className="bg-white  relative rounded-2xl max-w-xs md:max-w-lg w-full    md:m-auto md:p-8 p-5 pt-8 container md:mx-4 shadow-xl"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-end ">
-            <button
-              onClick={onClose}
-              className="md:p-1 p-1 hover:bg-gray-100 absolute top-2 end-2 rounded-md cursor-pointer"
-            >
-              <CrossIcon fill="black" />
-            </button>
-          </div>
+          {onClose && (
+            <div className="flex items-center justify-end ">
+              <button
+                onClick={onClose}
+                className="md:p-1 p-1 hover:bg-gray-100 absolute top-2 end-2 rounded-md cursor-pointer"
+              >
+                <CrossIcon fill="black" />
+              </button>
+            </div>
+          )}
 
           <div className="flex items-center flex-col gap-3 md:gap-5 justify-center">
             {icon}
