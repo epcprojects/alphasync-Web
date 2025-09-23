@@ -19,6 +19,7 @@ type ThemeInputProps = {
   name?: string;
   value?: string;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
   className?: string;
   error?: boolean;
   showErrorIcon?: boolean;
@@ -44,6 +45,7 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
   autoComplete,
   icon,
   maxLength,
+  onBlur,
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -88,6 +90,7 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
             }
             ${className}`}
           name={name}
+          onBlur={onBlur}
           placeholder={placeholder}
           required={required}
           value={value}

@@ -206,9 +206,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     }
 
     setCardNumber(formatted);
-    const detectedType = matchedCard ? matchedCard.name : "Default";
     detectCardType(digitsOnly);
-    validateCardNumber(formatted, detectedType as CardType);
   };
 
   const getCardFormat = (
@@ -287,7 +285,6 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     }
 
     setExpiryDate(formatted);
-    validateExpiry(formatted);
   };
 
   const validateExpiry = (date: string) => {
@@ -393,7 +390,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
 
   return (
     <AppModal
-      isOpen={true}
+      isOpen={isOpen}
       onClose={onClose}
       icon={<Card />}
       title={isMobile && !showForm ? "Order Summary" : "Complete Payment"}
@@ -531,6 +528,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
               placeholder="1234 1234 1234 1234"
               value={cardNumber}
               onChange={(e) => formatCardNumber(e.target.value)}
+              onBlur={() =>
+                validateCardNumber(cardNumber, cardType as CardType)
+              }
               icon={<SelectedCardIcon />}
               maxLength={maxCardLength}
               error={!!cardNumberError}
@@ -546,6 +546,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   placeholder="MM / YY"
                   value={expiryDate}
                   onChange={handleExpiryChange}
+                  onBlur={() => validateExpiry(expiryDate)}
                   maxLength={5}
                   error={!!expiryError}
                   errorMessage={expiryError}

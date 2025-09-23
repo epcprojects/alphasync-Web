@@ -122,7 +122,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       btnFullWidth={true}
       btnIcon={<ShopingCartIcon fill="#fff" />}
     >
-      <div className="flex flex-col gap-6 px-4 py-1">
+      <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4">
           <div className="flex items-start gap-3">
             <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -199,7 +199,7 @@ const InfoBlock: React.FC<InfoBlockProps> = ({
         <p className="text-sm font-normal text-gray-700">{description}</p>
       )}
       {list && (
-        <ul className="list-disc list-inside text-sm font-normal text-gray-700 flex flex-col gap-2">
+        <ul className="list-disc list-inside sm:ml-2.5 text-sm font-normal text-gray-700 flex flex-col gap-2">
           {list.map((item, index) => (
             <li key={index}>{item}</li>
           ))}

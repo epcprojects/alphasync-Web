@@ -34,6 +34,7 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
   onClick,
 }) => {
   if (!request) return null;
+  console.log("request in model", request)
   const transformedItem =
     request && request.price
       ? {
@@ -48,6 +49,7 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
           requestedOn: request.requestedDate,
           userNotes: request.userNotes,
           physicianNotes: request.physicianNotes,
+          denialReason: request.denialReason,
         }
       : null;
 
@@ -56,7 +58,7 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       icon={<ShopingCartIcon fill="#374151" />}
-      title="Product Details"
+      title="Request details"
       position={ModalPosition.RIGHT}
       showFooter={request.status === "Approved" ? true : false}
       hideCancelBtn={true}

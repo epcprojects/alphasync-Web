@@ -1,3 +1,4 @@
+import { Label } from "@headlessui/react";
 import Image from "next/image";
 
 export interface OrderItemProps {
@@ -13,6 +14,7 @@ export interface OrderItemProps {
     requestedOn?: string;
     userNotes?: string;
     physicianNotes?: string;
+    denialReason?: string;
   };
   requestStatus?: boolean;
   onClick?: () => void;
@@ -42,6 +44,9 @@ const OrderItemCard: React.FC<OrderItemProps> = ({ item, requestStatus }) => {
     item.physicianNotes
       ? { label: "Physician Notes:", value: item.physicianNotes }
       : null,
+    item.denialReason
+      ? { label: "Reason for Denial", value: item.denialReason }
+      : null,
   ].filter((note): note is Note => note !== null);
 
   function getStatusClasses(status: string) {
@@ -58,8 +63,8 @@ const OrderItemCard: React.FC<OrderItemProps> = ({ item, requestStatus }) => {
   }
   return (
     <div key={item.id} className="flex flex-col h-full">
-      <div className="flex items-start gap-6 p-2">
-        <div className="w-72-px h-72 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="flex items-start gap-3 border-b border-gray-200 pb-4">
+        <div className="w-18 h-18 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
           <Image
             alt="#"
             src={"/images/products/p1.png"}
@@ -67,7 +72,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({ item, requestStatus }) => {
             height={1024}
           />
         </div>
-        <div className="flex-1 flex flex-col gap-3 md:gap-1.5">
+        <div className="flex-1 flex flex-col gap-3 md:gap-1.5 ">
           <h3 className=" text-gray-800 font-semibold text-base">
             {item.medicineName}
           </h3>
@@ -94,7 +99,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({ item, requestStatus }) => {
               )}
               <div>
                 <span
-                  className={`inline-block whitespace-nowrap rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium`}
+                  className={`inline-block whitespace-nowrap border border-gray-200 rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium`}
                 >
                   Recovery & Healing
                 </span>
@@ -154,14 +159,14 @@ const OrderItemCard: React.FC<OrderItemProps> = ({ item, requestStatus }) => {
           </div>
         </div>
       </div>
-      <hr className=" my-3 md:my-4 text-gray-200" />
-      <div className="flex flex-col gap-1.5">
+      {/* <hr className=" my-3 md:my-4 text-gray-200" /> */}
+      <div className="flex flex-col gap-1.5 mt-4">
         {notes.map((note, index) => (
           <div key={index}>
             <p className="text-base font-medium text-gray-900">{note.label}</p>
             <div
               className={`${
-                item.status === "Denied" && note.label === "Physician Notes:"
+                note.label === "Reason for Denial"
                   ? "bg-red-100"
                   : "bg-porcelan"
               } p-3 rounded-lg mt-1`}
