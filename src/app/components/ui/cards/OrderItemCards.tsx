@@ -1,4 +1,3 @@
-import { Label } from "@headlessui/react";
 import Image from "next/image";
 
 export interface OrderItemProps {

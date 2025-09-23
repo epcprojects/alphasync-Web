@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Verify from "../../../../../public/icons/Verify";
 import { CrossIcon } from "@/icons";
 import Portal from "../portal";
