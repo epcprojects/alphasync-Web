@@ -30,7 +30,7 @@ interface AppModalProps {
   confimBtnDisable?: boolean;
   btnFullWidth?: boolean;
   hideCancelBtn?: boolean;
-  btnIcon?: React.ReactNode,
+  btnIcon?: React.ReactNode;
 }
 
 const sizeClasses = {
@@ -93,7 +93,11 @@ const AppModal: React.FC<AppModalProps> = ({
                 {icon}
               </div>
               <div>
-                <h2 className="text-sm md:text-lg text-black font-semibold">
+                <h2
+                  className={`text-sm ${
+                    subtitle ? "md:text-lg" : "md:text-xl"
+                  }  text-black font-semibold`}
+                >
                   {title}
                 </h2>
                 {subtitle && (
@@ -124,14 +128,16 @@ const AppModal: React.FC<AppModalProps> = ({
                 btnFullWidth && "gap-6"
               } border-t border-gray-200 bg-white flex items-center justify-between p-2 md:p-4`}
             >
-              {!hideCancelBtn && <ThemeButton
-                label={cancelLabel}
-                onClick={onCancel ? onCancel : onClose}
-                size="medium"
-                className={`${btnFullWidth ? "flex-1" : "min-w-36"}`}
-                variant="outline"
-                heightClass="h-10"
-              />}
+              {!hideCancelBtn && (
+                <ThemeButton
+                  label={cancelLabel}
+                  onClick={onCancel ? onCancel : onClose}
+                  size="medium"
+                  className={`${btnFullWidth ? "flex-1" : "min-w-36"}`}
+                  variant="outline"
+                  heightClass="h-10"
+                />
+              )}
               {onConfirm && (
                 <ThemeButton
                   label={confirmLabel}

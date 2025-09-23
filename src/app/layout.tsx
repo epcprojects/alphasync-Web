@@ -12,7 +12,7 @@ const poppins_init = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "alpha Sync",
+  title: "Alpha Sync",
   description: "alpha Sync Peptide",
 };
 

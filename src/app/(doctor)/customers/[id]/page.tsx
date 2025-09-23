@@ -59,7 +59,7 @@ export default function CustomerDetail() {
   const [toggle, setToggle] = useState(true);
   const chatRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
+  const [selectedIndex, setSelectedIndex] = useState(0);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -126,7 +126,7 @@ export default function CustomerDetail() {
 
       <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)]">
         <div className="p-3 md:p-6 flex items-center justify-between gap-3 md:gap-5">
-          <div className="flex items-center gap-3 md:gap-5">
+          <div className="flex items-start gap-3 md:gap-5">
             <div className="rounded-full h-10 w-10 text-red-500 bg-red-100 text-3xl font-medium flex items-center justify-center shrink-0 md:h-19 md:w-19">
               {getInitials("John Smith")}
               {/* <Image
@@ -166,7 +166,7 @@ export default function CustomerDetail() {
 
                 <div className="border-r px-3 md:px-5 h border-gray-200">
                   <h2 className="text-xs md:text-sm text-gray-500 ">
-                    Date of Birth
+                    Date of Birth:
                   </h2>
                   <h3 className="text-xs md:text-sm text-gray-800 font-medium">
                     3/15/1985
@@ -207,7 +207,7 @@ export default function CustomerDetail() {
 
             <ThemeButton
               label="Quick Chat"
-              onClick={() => {}}
+              onClick={() => setSelectedIndex(1)}
               icon={<BubbleChatIcon />}
               heightClass="h-10"
             />
@@ -215,46 +215,40 @@ export default function CustomerDetail() {
         </div>
 
         <div className=" ">
-          <TabGroup>
-            <TabList
-              className={
-                "flex items-center border-t border-b bg-gray-50 border-b-mercury border-t-mercury px-4 md:px-6"
-              }
-            >
-              <Tab
-                as="button"
-                className={
-                  "flex items-center gap-1 md:gap-2 text-xs md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 md:py-4 md:px-6"
-                }
-              >
-                <PackageOutlineIcon fill="currentColor" /> Order History
-              </Tab>
-              <Tab
-                as="button"
-                className={
-                  "flex items-center gap-1 md:gap-2 outline-none text-xs md:text-sm border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 md:py-4 md:px-6"
-                }
-              >
-                <BubbleChatIcon fill="currentColor" height="18" width="18" />
-                Chat Messages
-              </Tab>
-              <Tab
-                as="button"
-                className={
-                  "flex items-center gap-1 md:gap-2 outline-none text-xs md:text-sm border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 md:py-4 md:px-6"
-                }
-              >
-                <NoteIcon fill="currentColor" /> Patient Notes
-              </Tab>
-
-              <Tab
-                as="button"
-                className={
-                  "flex items-center gap-1 md:gap-2 outline-none text-xs md:text-sm border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 md:py-4 md:px-6"
-                }
-              >
-                <RequestTabIcon fill="currentColor" /> Requests
-              </Tab>
+          <TabGroup selectedIndex={selectedIndex} onChange={setSelectedIndex}>
+            <TabList className="flex items-center border-t border-b bg-gray-50 border-b-mercury border-t-mercury px-4 md:px-6">
+              {[
+                {
+                  icon: <PackageOutlineIcon fill="currentColor" />,
+                  label: "Order History",
+                },
+                {
+                  icon: (
+                    <BubbleChatIcon
+                      fill="currentColor"
+                      height="18"
+                      width="18"
+                    />
+                  ),
+                  label: "Chat Messages",
+                },
+                {
+                  icon: <NoteIcon fill="currentColor" />,
+                  label: "Patient Notes",
+                },
+                {
+                  icon: <RequestTabIcon fill="currentColor" />,
+                  label: "Requests",
+                },
+              ].map((tab, index) => (
+                <Tab
+                  key={index}
+                  as="button"
+                  className="flex items-center gap-1 md:gap-2 text-xs md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 md:py-4 md:px-6"
+                >
+                  {tab.icon} {tab.label}
+                </Tab>
+              ))}
             </TabList>
             <TabPanels className={"p-4 md:p-6"}>
               <TabPanel className={""}>
@@ -280,37 +274,76 @@ export default function CustomerDetail() {
                   ))}
                 </div>
                 {currentItems.length > 0 && (
-                  <ReactPaginate
-                    breakLabel="..."
-                    nextLabel={
-                      <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
-                        Next
-                        <span className="block mb-0.5 rotate-180">
-                          <ArrowLeftIcon />
+                  // <ReactPaginate
+                  //   breakLabel="..."
+                  //   nextLabel={
+                  //     <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                  //       Next
+                  //       <span className="block mb-0.5 rotate-180">
+                  //         <ArrowLeftIcon />
+                  //       </span>
+                  //     </span>
+                  //   }
+                  //   previousLabel={
+                  //     <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                  //       <span className="mb-0.5">
+                  //         <ArrowLeftIcon />
+                  //       </span>{" "}
+                  //       Previous
+                  //     </span>
+                  //   }
+                  //   onPageChange={handlePageChange}
+                  //   pageRangeDisplayed={3}
+                  //   marginPagesDisplayed={1}
+                  //   pageCount={pageCount}
+                  //   forcePage={currentPage}
+                  //   pageLinkClassName="px-4 py-2 rounded-lg  text-gray-600 hover:bg-gray-100 cursor-pointer block"
+                  //   containerClassName="flex items-center relative w-full justify-center gap-2  pt-3 rounded-2xl bg-white"
+                  //   pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
+                  //   activeClassName="bg-gray-200 text-gray-900 font-medium"
+                  //   previousClassName="px-4 py-2 rounded-full absolute left-0 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                  //   nextClassName="px-4 py-2 rounded-full  bg-gray-50  absolute end-0 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
+                  //   breakClassName="px-3 py-1 font-semibold text-gray-400"
+                  // />
+                  <div className="w-full flex items-center justify-center">
+                    <ReactPaginate
+                      breakLabel="..."
+                      nextLabel={
+                        <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                          <span className="hidden md:inline-block">Next</span>
+                          <span className="block mb-0.5 rotate-180">
+                            <ArrowLeftIcon />
+                          </span>
                         </span>
-                      </span>
-                    }
-                    previousLabel={
-                      <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
-                        <span className="mb-0.5">
-                          <ArrowLeftIcon />
-                        </span>{" "}
-                        Previous
-                      </span>
-                    }
-                    onPageChange={handlePageChange}
-                    pageRangeDisplayed={3}
-                    marginPagesDisplayed={1}
-                    pageCount={pageCount}
-                    forcePage={currentPage}
-                    pageLinkClassName="px-4 py-2 rounded-lg  text-gray-600 hover:bg-gray-100 cursor-pointer block"
-                    containerClassName="flex items-center relative w-full justify-center gap-2  pt-3 rounded-2xl bg-white"
-                    pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
-                    activeClassName="bg-gray-200 text-gray-900 font-medium"
-                    previousClassName="px-4 py-2 rounded-full absolute left-0 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-                    nextClassName="px-4 py-2 rounded-full  bg-gray-50  absolute end-0 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-                    breakClassName="px-3 py-1 font-semibold text-gray-400"
-                  />
+                      }
+                      previousLabel={
+                        <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                          <span className="md:mb-0.5">
+                            <ArrowLeftIcon />
+                          </span>
+                          <span className="hidden md:inline-block">
+                            Previous
+                          </span>
+                        </span>
+                      }
+                      onPageChange={handlePageChange}
+                      pageRangeDisplayed={3}
+                      marginPagesDisplayed={1}
+                      pageCount={pageCount}
+                      forcePage={currentPage}
+                      pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
+                      containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
+                      pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
+                      activeClassName="bg-gray-200 text-gray-900 font-medium"
+                      previousClassName="md:px-4 md:py-2 rounded-full  absolute left-0 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                      nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-0 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
+                      breakClassName="px-3 py-1 font-semibold text-gray-400"
+                    />
+
+                    <h2 className="absolute md:hidden text-gravel font-medium text-sm">
+                      Page {currentPage + 1} of {pageCount}
+                    </h2>
+                  </div>
                 )}
               </TabPanel>
               <TabPanel className={"flex flex-col gap-1 md:gap-3"}>

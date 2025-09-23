@@ -23,11 +23,8 @@ type Note = {
   value: string;
 };
 
-const OrderItemCard: React.FC<OrderItemProps> = ({
-  item,
-  requestStatus,
-}) => {
-  console.log(item)
+const OrderItemCard: React.FC<OrderItemProps> = ({ item, requestStatus }) => {
+  console.log(item);
   const details = requestStatus
     ? [
         { label: "Strength:", value: item.strength },
@@ -62,7 +59,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
   return (
     <div key={item.id} className="flex flex-col h-full">
       <div className="flex items-start gap-6 p-2">
-        <div className="w-72 h-72 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
+        <div className="w-72-px h-72 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
           <Image
             alt="#"
             src={"/images/products/p1.png"}
@@ -103,9 +100,9 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                 </span>
               </div>
             </div>
-            {item.amount && <p className="text-xs font-normal text-gray-800">
-              {item.amount}
-            </p>}
+            {item.amount && (
+              <p className="text-xs font-normal text-gray-800">{item.amount}</p>
+            )}
           </div>
           {/* Desktop version - hidden on mobile, shown on desktop */}
           <div className="hidden md:flex md:flex-col md:gap-2">
@@ -164,7 +161,9 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
             <p className="text-base font-medium text-gray-900">{note.label}</p>
             <div
               className={`${
-                item.status === "Denied" && note.label === 'Physician Notes:' ? "bg-red-100" : "bg-porcelan"
+                item.status === "Denied" && note.label === "Physician Notes:"
+                  ? "bg-red-100"
+                  : "bg-porcelan"
               } p-3 rounded-lg mt-1`}
             >
               <p className="text-base font-normal text-gray-600">

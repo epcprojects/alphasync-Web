@@ -24,7 +24,8 @@ const Stepper: React.FC<StepperProps> = ({ activeStep, steps }) => {
           <li
             key={index}
             className={clsx(
-              "flex relative items-center w-full",
+              "flex relative items-center w-full ",
+              index === 1 ? "min-w-72" : "",
               !isLast &&
                 "after:content-[''] after:w-full after:border after:inline-block after:border-dashed after:border-gray-200"
             )}
@@ -34,7 +35,7 @@ const Stepper: React.FC<StepperProps> = ({ activeStep, steps }) => {
                 "flex items-center justify-center shrink-0 w-3 h-3 md:w-6 md:h-6 lg:w-6 lg:h-6 rounded-full text-xs",
                 isCurrent
                   ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-                  : "bg-gray-100 text-gray-500"
+                  : "bg-white border border-gray-200 text-gray-500"
               )}
             >
               {isPrev ? (
