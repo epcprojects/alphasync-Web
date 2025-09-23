@@ -114,16 +114,6 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     setShowForm(true);
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
   if (!order && !request) return null;
 
   const subTotal =
@@ -474,7 +464,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
             </div>
           ) : (
             // <p>request</p>
-            transformedItem && <OrderItemCard item={transformedItem} requestStatus />
+            transformedItem && (
+              <OrderItemCard item={transformedItem} requestStatus />
+            )
           )}
           <form
             className={`${

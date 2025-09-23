@@ -1,6 +1,5 @@
 import OrderDetail from "../../../../../public/icons/OrdeerDetail";
 import AppModal, { ModalPosition } from "./AppModal";
-import { useEffect } from "react";
 import OrderItemCard from "../cards/OrderItemCards";
 
 type OrderItem = {
@@ -32,16 +31,6 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
   onClose,
   order,
 }) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
   if (!order) return null;
   const getOrderTags = (status?: string) => {
     switch (status) {

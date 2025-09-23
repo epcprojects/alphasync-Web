@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { AppModal, SelectGroupDropdown } from "@/components";
 
 type Customer = {
@@ -57,17 +57,6 @@ const OrderModal: React.FC<OrderModalProps> = ({
       handleClose();
     }
   };
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
 
   if (!isOpen) return null;
 

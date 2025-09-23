@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import Verify from "../../../../../public/icons/Verify";
 import { CrossIcon } from "@/icons";
 import Portal from "../portal";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 interface PaymentSuccessProps {
   isOpen: boolean;
@@ -16,16 +17,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
   viewOrder,
   btnTitle,
 }) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
   if (!isOpen) return null;
 
   return (

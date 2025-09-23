@@ -36,16 +36,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   product,
   onClick,
 }) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
   if (!product) return null;
   const infoSections = [
     {
@@ -175,15 +165,15 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
             />
           ))}
         </div>
-      <div className="w-full mt-4">
-        <ThemeButton
-          label="Request from Doctor"
-          icon={<ShopingCartIcon fill="#fff" />}
-          className="w-full"
-          heightClass="h-10"
-          onClick={onClick}
-        />
-      </div>
+        <div className="w-full mt-4">
+          <ThemeButton
+            label="Request from Doctor"
+            icon={<ShopingCartIcon fill="#fff" />}
+            className="w-full"
+            heightClass="h-10"
+            onClick={onClick}
+          />
+        </div>
       </div>
     </AppModal>
   );

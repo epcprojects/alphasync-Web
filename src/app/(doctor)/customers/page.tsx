@@ -101,37 +101,43 @@ function CustomerContent() {
       </div>
       <div className="flex justify-center ">
         {currentItems.length > 0 && (
-          <ReactPaginate
-            breakLabel="..."
-            nextLabel={
-              <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
-                Next
-                <span className="block mb-0.5 rotate-180">
-                  <ArrowLeftIcon />
+          <div className="w-full flex items-center justify-center">
+            <ReactPaginate
+              breakLabel="..."
+              nextLabel={
+                <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                  <span className="hidden md:inline-block">Next</span>
+                  <span className="block mb-0.5 rotate-180">
+                    <ArrowLeftIcon />
+                  </span>
                 </span>
-              </span>
-            }
-            previousLabel={
-              <span className="flex items-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
-                <span className="mb-0.5">
-                  <ArrowLeftIcon />
-                </span>{" "}
-                Previous
-              </span>
-            }
-            onPageChange={handlePageChange}
-            pageRangeDisplayed={3}
-            marginPagesDisplayed={1}
-            pageCount={pageCount}
-            forcePage={currentPage}
-            pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer block"
-            containerClassName="flex items-center relative w-full justify-center gap-2 px-4 py-3 rounded-2xl bg-white"
-            pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
-            activeClassName="bg-gray-200 text-gray-900 font-medium"
-            previousClassName="px-4 py-2 rounded-full  absolute left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-            nextClassName="px-4 py-2 rounded-full bg-gray-50  absolute end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-            breakClassName="px-3 py-1 font-semibold text-gray-400"
-          />
+              }
+              previousLabel={
+                <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                  <span className="md:mb-0.5">
+                    <ArrowLeftIcon />
+                  </span>
+                  <span className="hidden md:inline-block">Previous</span>
+                </span>
+              }
+              onPageChange={handlePageChange}
+              pageRangeDisplayed={3}
+              marginPagesDisplayed={1}
+              pageCount={pageCount}
+              forcePage={currentPage}
+              pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
+              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
+              pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
+              activeClassName="bg-gray-200 text-gray-900 font-medium"
+              previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
+              nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
+              breakClassName="px-3 py-1 font-semibold text-gray-400"
+            />
+
+            <h2 className="absolute md:hidden text-gravel font-medium text-sm">
+              Page {currentPage + 1} of {pageCount}
+            </h2>
+          </div>
         )}
       </div>
 

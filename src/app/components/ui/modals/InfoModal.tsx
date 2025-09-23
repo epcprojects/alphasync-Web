@@ -1,6 +1,7 @@
 import React from "react";
 import { Portal, ThemeButton } from "@/components";
 import { CrossIcon, SuccessCheckIcon } from "@/icons";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 type InfoModalType = "success" | "danger";
 
@@ -28,6 +29,9 @@ const InfoModal: React.FC<InfoModalProps> = ({
   buttonLabel = "Back to Login",
 }) => {
   const icon = type === "success" ? <SuccessCheckIcon /> : <CrossIcon />;
+
+  useBodyScrollLock(isOpen);
+
   if (!isOpen) return null;
   return (
     <Portal>

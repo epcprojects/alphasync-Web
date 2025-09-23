@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import AppModal, { ModalPosition } from "./AppModal";
 import { ShopingCartIcon } from "@/icons";
 import OrderItemCard from "../cards/OrderItemCards";
@@ -32,16 +32,6 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
   request,
   onClick,
 }) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
   if (!request) return null;
   const transformedItem =
     request && request.price
@@ -70,7 +60,12 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
       showFooter={false}
     >
       {transformedItem && (
-        <OrderItemCard key={transformedItem.id} item={transformedItem} requestStatus={true} onClick={onClick} />
+        <OrderItemCard
+          key={transformedItem.id}
+          item={transformedItem}
+          requestStatus={true}
+          onClick={onClick}
+        />
       )}
     </AppModal>
   );

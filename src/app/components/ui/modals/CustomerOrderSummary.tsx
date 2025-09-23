@@ -34,16 +34,6 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
   onClose,
   order,
 }) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
   if (!order) return null;
   return (
     <AppModal

@@ -76,7 +76,9 @@ export default function CustomerDatabaseView({
           </h3>
         </div>
       </div>
-      <div className="col-span-2">{customer.contact}</div>
+      <div className="col-span-2 text-gray-800 text-xs md:text-sm font-normal">
+        {customer.contact}
+      </div>
 
       <div className="col-span-2">
         <button className="text-gray-800 text-xs md:text-sm font-medium">
@@ -93,7 +95,7 @@ export default function CustomerDatabaseView({
       </div>
 
       <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
-        <span className="inline-block rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-xs md:text-sm font-medium text-gray-700">
+        <span className="inline-block rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-xs  font-medium text-gray-700">
           {customer.totalOrder}
         </span>
       </div>

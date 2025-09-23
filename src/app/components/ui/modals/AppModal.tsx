@@ -3,6 +3,7 @@ import React from "react";
 import { CrossIcon, ShoppingCartIcon } from "@/icons";
 import ThemeButton, { buttonVariant } from "../buttons/ThemeButton";
 import Portal from "../portal";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 export enum ModalPosition {
   CENTER = "center",
@@ -53,6 +54,8 @@ const AppModal: React.FC<AppModalProps> = ({
   bodyPaddingClasses = "p-3 md:p-5",
   position = ModalPosition.CENTER,
 }) => {
+  useBodyScrollLock(isOpen);
+
   if (!isOpen) return null;
 
   const baseModalClasses = "bg-white shadow-xl flex flex-col";
