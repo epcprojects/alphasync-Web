@@ -1,6 +1,8 @@
 import React from "react";
 import ThemeButton from "../buttons/ThemeButton";
-import { MedicineIcon, TrashBinIcon } from "@/icons";
+import { MedicineIcon, Reload } from "@/icons";
+
+export type pageVarient = "order" | "Pending-page";
 
 interface OrderItem {
   id: string;
@@ -18,6 +20,7 @@ export interface PrescriptionOrder {
   orderedOn: string;
   totalPrice: number;
   isDueToday?: string;
+  status?: string;
 }
 
 interface PrescriptionOrderCardProps {
@@ -26,6 +29,8 @@ interface PrescriptionOrderCardProps {
   onPress?: (order: PrescriptionOrder) => void;
   onPay?: (order: PrescriptionOrder) => void;
   btnTitle: string;
+  icon: React.ReactNode;
+  type: pageVarient;
 }
 
 const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
@@ -34,18 +39,24 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   onPress,
   onPay,
   btnTitle,
+  icon,
+  type = "order",
 }) => {
   const getOrderTags = (status?: string) => {
     switch (status) {
       case "Due Today":
         return "bg-red-50 border border-red-200 text-red-700";
+      case "Processing":
+        return "bg-amber-50 border border-amber-200 text-amber-700";
+      case "Ready for Pickup":
+        return "bg-blue-50 border border-blue-200 text-blue-700";
       default:
         return "bg-green-50 border border-green-200 text-green-700";
     }
   };
 
   return (
-    <div className="flex flex-col gap-4 cursor-pointer">
+    <div className="flex flex-col gap-4 cursor-pointer  ">
       {orders?.map((order) => (
         <div
           key={order.id}
@@ -59,10 +70,10 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
             </h2>
             <span
               className={`${getOrderTags(
-                order.isDueToday
+                type === "order" ? order.status : order.isDueToday
               )} px-3 py-0.5 rounded-full text-sm font-medium whitespace-nowrap`}
             >
-              {order.isDueToday}
+              {type === "order" ? order.status : order.isDueToday}
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-8 mt-4 md:mt-0 mb-2">
@@ -121,17 +132,27 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
             ))}
           </div>
           <div className="flex items-center justify-end w-full">
-            <div className="flex items-center space-x-2 w-full sm:w-auto sm:justify-end justify-between">
+            <div className="flex items-center gap-2 w-full sm:w-auto sm:justify-end justify-between">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDelete?.();
+                  if (type === "Pending-page") {
+                    onDelete?.();
+                  } else {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                    onPress && onPress(order);
+                  }
                 }}
-                className="w-11 h-11 hover:bg-red-50 cursor-pointer rounded-full flex items-center justify-center border border-red-200"
+                className={`w-11 h-11 ${
+                  type === "Pending-page" && "hover:bg-red-50"
+                } cursor-pointer rounded-full flex items-center justify-center border ${
+                  type === "Pending-page"
+                    ? "border-red-200"
+                    : "border-lightGray"
+                }`}
               >
-                <TrashBinIcon />
+                {icon}
               </button>
-
               <ThemeButton
                 variant="outline"
                 label={btnTitle}
@@ -141,8 +162,8 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                 }}
                 className="flex-1 sm:flex-none sm:min-w-32"
                 heightClass="h-11"
+                icon={type === "order" && <Reload />}
               />
-
               <span className="text-xl font-semibold text-primary text-left sm:text-right">
                 ${order.totalPrice.toFixed(2)}
               </span>

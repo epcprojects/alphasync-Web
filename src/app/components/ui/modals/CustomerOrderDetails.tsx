@@ -1,6 +1,7 @@
 import OrderDetail from "../../../../../public/icons/OrdeerDetail";
 import AppModal, { ModalPosition } from "./AppModal";
 import OrderItemCard from "../cards/OrderItemCards";
+import { pageVarient } from "../cards/PrescriptionOrderCard";
 
 type OrderItem = {
   id: string | number;
@@ -18,24 +19,31 @@ type order = {
   isDueToday?: string;
   totalPrice: string | number;
   orderItems: OrderItem[];
+  status?: string;
 };
 
 interface CustomerOrderDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   order: order | null;
+  type?: pageVarient;
 }
 
 const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
   isOpen,
   onClose,
   order,
+  type = "order",
 }) => {
   if (!order) return null;
   const getOrderTags = (status?: string) => {
     switch (status) {
       case "Due Today":
         return "bg-red-50 border border-red-200 text-red-700";
+      case "Processing":
+        return "bg-amber-50 border border-amber-200 text-amber-700";
+      case "Ready for Pickup":
+        return "bg-blue-50 border border-blue-200 text-blue-700";
       default:
         return "bg-green-50 border border-green-200 text-green-700";
     }
@@ -51,11 +59,11 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
       showFooter={false}
     >
       {order && (
-        <div>
+        <div className="flex flex-col gap-4">
           {order.orderItems.map((item) => (
             <OrderItemCard key={item.id} item={item} />
           ))}
-          <div className="mt-6 flex flex-col gap-4 px-2.5 md:px-0 ">
+          <div className="flex flex-col gap-4 px-2.5 md:px-0 ">
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Due days
@@ -63,10 +71,10 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               <div className="flex items-center justify-between">
                 <span
                   className={`${getOrderTags(
-                    order.isDueToday
+                    type === "order" ? order.status : order.isDueToday
                   )} px-3 py-0.5 rounded-full text-sm font-medium`}
                 >
-                  {order.isDueToday}
+                  {type === "order" ? order.status : order.isDueToday}
                 </span>
               </div>
             </div>
@@ -93,7 +101,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               </span>
             </div>
           </div>
-          <hr className=" my-3 md:my-4 text-gray-200" />
+          <hr className=" text-gray-200" />
           <div className="flex justify-between items-center px-2.5 md:px-0">
             <span className="text-lg font-semibold text-gray-800">
               Total Order
@@ -102,7 +110,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               ${order?.totalPrice}
             </span>
           </div>
-          <hr className="hidden md:block my-3 md:my-4 text-gray-200" />
+          <hr className="hidden md:block text-gray-200" />
         </div>
       )}
     </AppModal>

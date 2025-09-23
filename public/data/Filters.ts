@@ -6,3 +6,10 @@ export const filterOptions = [
   { id: "due-week", label: "Due this Week" },
   { id: "due-month", label: "Due this month" },
 ];
+
+export const orderfilterOptions = [
+  { id: "all", label: "All" },
+  { id: "delivered", label: "Delivered" },
+  { id: "processing", label: "Processing" },
+  { id: "ready-for-pickup", label: "Ready for Pickup" },
+];

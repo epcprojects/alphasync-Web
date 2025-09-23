@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Card from "../../../../../public/icons/Card";
 import ThemeInput from "../inputs/ThemeInput";
-import ThemeButton from "../buttons/ThemeButton";
 import { CardData } from "../../../../../public/data/CreditCard";
 import {
   Amex,
@@ -96,6 +95,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const [showForm, setShowForm] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [expiryError, setExpiryError] = useState("");
+  const [cardNumberError, setCardNumberError] = useState("");
 
   useEffect(() => {
     const checkScreenSize = () => setIsMobile(window.innerWidth < 768); // md breakpoint
@@ -160,24 +160,17 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   };
 
   const formatCardNumber = (text: string) => {
-    // Keep track if user removed last character
     const isBackspacing =
       cardNumber.length > text.length && cardNumber.endsWith(" ");
-
-    // Clean the input first
     // eslint-disable-next-line prefer-const
     let cleaned = text
       .replace(/[^\d\s]/g, "")
       .replace(/\s+/g, " ")
       .trim();
     let digitsOnly = cleaned.replace(/\s/g, "");
-
-    // If backspacing and last char was space, remove the last digit group too
     if (isBackspacing) {
       digitsOnly = digitsOnly.slice(0, -1);
     }
-
-    // Find matched card based on prefix
     const matchedCard = CardData.cards.find((card) =>
       card.start_digits.some((prefix) => {
         if (prefix.includes("-")) {
@@ -190,8 +183,6 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
         return digitsOnly.startsWith(prefix);
       })
     );
-
-    // Get format pattern
     const formatPattern = matchedCard
       ? getCardFormat(matchedCard.name as CardType, digitsOnly.length)
       : getCardFormat("Default", digitsOnly.length);
@@ -215,7 +206,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     }
 
     setCardNumber(formatted);
+    const detectedType = matchedCard ? matchedCard.name : "Default";
     detectCardType(digitsOnly);
+    validateCardNumber(formatted, detectedType as CardType);
   };
 
   const getCardFormat = (
@@ -327,6 +320,26 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     setExpiryError("");
   };
 
+  const validateCardNumber = (number: string, detectedType: CardType) => {
+    if (!number) {
+      setCardNumberError("Card number is required");
+      return;
+    }
+
+    const cleanCardNumber = number.replace(/\s/g, "");
+    if (cleanCardNumber.length < 13 || cleanCardNumber.length > 19) {
+      setCardNumberError("Card number must be between 13 and 19 digits");
+      return;
+    }
+
+    if (detectedType === "Default") {
+      setCardNumberError("Please enter a valid card number");
+      return;
+    }
+
+    setCardNumberError("");
+  };
+
   const isAnyFieldValid = () => {
     const cleanCardNumber = cardNumber.replace(/\s/g, "");
     if (cleanCardNumber.length < 13 || cleanCardNumber.length > 19)
@@ -388,7 +401,36 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
         isMobile ? "" : "Your payment information is secure and encrypted"
       }
       position={ModalPosition.RIGHT}
-      showFooter={false}
+      showFooter={true}
+      onConfirm={(e) => {
+        e.preventDefault();
+        if (!showForm && window.innerWidth < 768) {
+          handleContinue();
+        } else {
+          onClick();
+        }
+      }}
+      onCancel={() => {
+        if (isMobile && showForm) {
+          setShowForm(false);
+        } else {
+          onClose();
+        }
+      }}
+      confimBtnDisable={
+        (showForm || !isMobile) &&
+        (!isAnyFieldValid() || cardType === "Default")
+      }
+      confirmLabel={
+        isMobile
+          ? showForm
+            ? `Pay $${total}`
+            : "Continue"
+          : request
+          ? "Pay Now"
+          : `Pay $${total}`
+      }
+      btnFullWidth={true}
     >
       {(order || request) && (
         <div className="w-full max-w-2xl mx-auto gap-6">
@@ -463,7 +505,6 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
               <hr className=" my-3 md:my-4 text-gray-200" />
             </div>
           ) : (
-            // <p>request</p>
             transformedItem && (
               <OrderItemCard item={transformedItem} requestStatus />
             )
@@ -492,6 +533,8 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
               onChange={(e) => formatCardNumber(e.target.value)}
               icon={<SelectedCardIcon />}
               maxLength={maxCardLength}
+              error={!!cardNumberError}
+              errorMessage={cardNumberError}
             />
             <div className="flex gap-4">
               <div className="flex-1">
@@ -516,7 +559,10 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   type="text"
                   placeholder="..."
                   value={cvv}
-                  onChange={(e) => setCvv(e.target.value)}
+                  onChange={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                    setCvv(e.target.value);
+                  }}
                   maxLength={4}
                 />
               </div>
@@ -541,54 +587,6 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
               onChange={(e) => setBillingAddress(e.target.value)}
             />
           </form>
-          <div
-            className="
-    flex gap-6 border-t border-gray-200 pt-4
-    md:mt-4
-    md:static md:bg-transparent
-    fixed bottom-0 left-0 right-0 bg-white p-4 md:px-0 md:pb-0
-  "
-          >
-            <div className="flex-1">
-              <ThemeButton
-                label={"Cancel"}
-                variant="outline"
-                heightClass="h-11"
-                onClick={() => {
-                  if (isMobile && showForm) {
-                    setShowForm(false);
-                  } else {
-                    onClose();
-                  }
-                }}
-              />
-            </div>
-
-            <div className="flex-1">
-              <ThemeButton
-                label={
-                  isMobile
-                    ? showForm
-                      ? `Pay $${total}`
-                      : "Continue"
-                    : request
-                    ? "Pay Now"
-                    : `Pay $${total}`
-                }
-                variant="filled"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (!showForm && window.innerWidth < 768) {
-                    handleContinue();
-                  } else {
-                    onClick();
-                  }
-                }}
-                heightClass="h-11"
-                disabled={(showForm || !isMobile) && !isAnyFieldValid()}
-              />
-            </div>
-          </div>
         </div>
       )}
     </AppModal>

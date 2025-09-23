@@ -2,6 +2,7 @@ import React from "react";
 import AppModal, { ModalPosition } from "./AppModal";
 import { ShopingCartIcon } from "@/icons";
 import OrderItemCard from "../cards/OrderItemCards";
+import Card from "../../../../../public/icons/Card";
 
 interface requestDetailsProps {
   isOpen: boolean;
@@ -57,14 +58,18 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
       icon={<ShopingCartIcon fill="#374151" />}
       title="Product Details"
       position={ModalPosition.RIGHT}
-      showFooter={false}
+      showFooter={request.status === "Approved" ? true : false}
+      hideCancelBtn={true}
+      onConfirm={onClick}
+      btnIcon={<Card fill="#fff" />}
+      confirmLabel="Proceed to Payment"
+      btnFullWidth={true}
     >
       {transformedItem && (
         <OrderItemCard
           key={transformedItem.id}
           item={transformedItem}
           requestStatus={true}
-          onClick={onClick}
         />
       )}
     </AppModal>
