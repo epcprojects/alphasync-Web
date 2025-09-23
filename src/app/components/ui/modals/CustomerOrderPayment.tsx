@@ -78,7 +78,6 @@ type CardType =
   | "UnionPay";
 
 const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
-  isOpen,
   onClose,
   order,
   onClick,

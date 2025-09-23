@@ -1,6 +1,5 @@
 import OrderDetail from "../../../../../public/icons/OrdeerDetail";
 import AppModal, { ModalPosition } from "./AppModal";
-import { useEffect } from "react";
 import { trackingSummary } from "../../../../../public/data/Summary";
 import { Tick } from "@/icons";
 import OrderSummaryCard from "../cards/OrderSummaryCards";

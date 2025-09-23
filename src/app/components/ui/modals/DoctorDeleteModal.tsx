@@ -1,6 +1,6 @@
 import React from "react";
 import { Portal, ThemeButton } from "@/components";
-import { CrossIcon, UserRemoveIcon } from "@/icons";
+import { UserRemoveIcon } from "@/icons";
 
 interface DoctorDeleteModalProps {
   isOpen: boolean;

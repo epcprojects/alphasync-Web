@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import AppModal, { ModalPosition } from "./AppModal";
 import OrderDetail from "../../../../../public/icons/OrdeerDetail";
 import Image from "next/image";
