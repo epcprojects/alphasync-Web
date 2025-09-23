@@ -331,6 +331,7 @@ function PendingPayments() {
         isOpen={isDetailModelOpen}
         onClose={() => setIsDetailModelOpen(false)}
         order={selectedOrder}
+        type = "Pending-page"
       />
       {selectedOrder && isPaymentModelOpen && (
         <CustomerOrderPayment

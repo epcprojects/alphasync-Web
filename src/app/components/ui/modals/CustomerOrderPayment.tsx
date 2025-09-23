@@ -569,7 +569,10 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   type="text"
                   placeholder="..."
                   value={cvv}
-                  onChange={(e) => setCvv(e.target.value)}
+                  onChange={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                    setCvv(e.target.value);
+                  }}
                   maxLength={4}
                 />
               </div>
