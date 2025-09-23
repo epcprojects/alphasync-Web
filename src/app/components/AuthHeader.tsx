@@ -40,7 +40,11 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({
         )}
 
         {subtitle && (
-          <p className="mb-3 text-sm font-normal text-center text-gray-600 md:mb-6">
+          <p
+            className={`mb-3 text-sm font-normal text-center text-gray-600 md:mb-6 ${
+              !options && "mt-3"
+            } `}
+          >
             {subtitle}
           </p>
         )}

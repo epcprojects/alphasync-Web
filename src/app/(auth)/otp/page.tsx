@@ -25,8 +25,12 @@ function OTPContent() {
       console.log("OTP Verified");
       if (loginType === "Doctor") {
         router.push("/inventory");
-      } else {
+      } else if (loginType === "Customer") {
         router.push(`/verify-info?email=${email}`);
+      } else if (loginType === "admin") {
+        router.push(`/admin/doctors`);
+      } else {
+        router.push("/login");
       }
     } else {
       setError(true);

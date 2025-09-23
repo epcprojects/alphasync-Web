@@ -85,7 +85,16 @@ import Thermometer from "./Thermometer";
 import TickIcon from "./TickIcon";
 import RequestFilledIcon from "./RequestFilledIcon";
 import DashDoctor from "./DashDoctor";
+import PencilEditIcon from "./PencilEditIcon";
+import DoctorFilledIcon from "./DoctorFilledIcon";
+import DoctorIcon from "./DoctorIcon";
+import UserRemoveIcon from "./UserRemoveIcon";
+
 export {
+    UserRemoveIcon,
+    DoctorIcon,
+    DoctorFilledIcon,
+    PencilEditIcon,
     DashDoctor,
     RequestFilledIcon,
     TickIcon,

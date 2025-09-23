@@ -5,7 +5,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "@headlessui/react";
 import { TickIcon } from "@/icons";
 
@@ -14,6 +14,10 @@ type LoginType = "Customer" | "Doctor";
 const Page = () => {
   const [loginType, setLoginType] = useState("Doctor");
   const router = useRouter();
+  const params = useSearchParams();
+  const redirectedFrom = params.get("redirectedFrom");
+
+  console.log(redirectedFrom);
 
   const validationSchema = Yup.object().shape({
     loginType: Yup.mixed<LoginType>().oneOf(["Customer", "Doctor"]).required(),
@@ -39,8 +43,12 @@ const Page = () => {
     validationSchema,
     onSubmit: (values) => {
       console.log("Form submitted:", values);
+
+      const loginTypeIs =
+        redirectedFrom === "admin" ? redirectedFrom : values.loginType;
+
       router.push(
-        `/otp?loginType=${values.loginType}&email=${values.email}&rememberMe=${values.rememberMe}`
+        `/otp?loginType=${loginTypeIs}&email=${values.email}&rememberMe=${values.rememberMe}`
       );
     },
     enableReinitialize: true,
@@ -48,22 +56,41 @@ const Page = () => {
 
   return (
     <div className="relative flex flex-col items-center justify-center h-screen">
-      <AuthHeader
-        logo={Images.auth.logo}
-        defaultValue={loginType}
-        options={["Customer", "Doctor"]}
-        onToggleChange={(val) => {
-          setLoginType(val);
-          formik.setFieldValue("loginType", val);
-          if (val !== "Doctor") {
-            formik.setFieldValue("password", "");
-            formik.setFieldTouched("password", false);
-          }
-          formik.validateForm();
-        }}
-        subtitle="Please enter your details to log in"
-        title="Welcome back"
-      />
+      {redirectedFrom === "admin" ? (
+        <AuthHeader
+          logo={Images.auth.logo}
+          // defaultValue={loginType}
+          // options={["Customer", "Doctor"]}
+          // onToggleChange={(val) => {
+          //   setLoginType(val);
+          //   formik.setFieldValue("loginType", val);
+          //   if (val !== "Doctor") {
+          //     formik.setFieldValue("password", "");
+          //     formik.setFieldTouched("password", false);
+          //   }
+          //   formik.validateForm();
+          // }}
+          subtitle="Please enter your details to log in"
+          title="Welcome back"
+        />
+      ) : (
+        <AuthHeader
+          logo={Images.auth.logo}
+          defaultValue={loginType}
+          options={["Customer", "Doctor"]}
+          onToggleChange={(val) => {
+            setLoginType(val);
+            formik.setFieldValue("loginType", val);
+            if (val !== "Doctor") {
+              formik.setFieldValue("password", "");
+              formik.setFieldTouched("password", false);
+            }
+            formik.validateForm();
+          }}
+          subtitle="Please enter your details to log in"
+          title="Welcome back"
+        />
+      )}
 
       <form
         onSubmit={formik.handleSubmit}
