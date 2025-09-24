@@ -16,6 +16,7 @@ export interface OrderItemProps {
     denialReason?: string;
   };
   requestStatus?: boolean;
+  paymentRequest?: boolean;
   onClick?: () => void;
 }
 
@@ -24,19 +25,31 @@ type Note = {
   value: string;
 };
 
-const OrderItemCard: React.FC<OrderItemProps> = ({ item, requestStatus }) => {
+const OrderItemCard: React.FC<OrderItemProps> = ({
+  item,
+  requestStatus,
+  paymentRequest,
+}) => {
   console.log(item);
-  const details = requestStatus
-    ? [
-        { label: "Strength:", value: item.strength },
-        { label: "Dosage Form:", value: "Injectable" },
-        { label: "Doctor Name:", value: item.doctorName },
-        { label: "Requested:", value: item.requestedOn },
-      ]
-    : [
-        { label: "Quantity", value: item.quantity },
-        { label: "Price", value: item.price.toFixed(2) },
-      ];
+  const details =
+    requestStatus && !paymentRequest
+      ? [
+          { label: "Strength:", value: item.strength },
+          { label: "Dosage Form:", value: "Injectable" },
+          { label: "Doctor Name:", value: item.doctorName },
+          { label: "Requested:", value: item.requestedOn },
+        ]
+      : paymentRequest
+      ? [
+          { label: "Strength", value: item.strength },
+          { label: "Dosage Form:", value: "Injectable" },
+          { label: "Subtotal:", value: "$125.99" },
+          { label: "Tax (8%):", value: "$12.00" },
+        ]
+      : [
+          { label: "Quantity", value: item.quantity },
+          { label: "Price", value: item.price.toFixed(2) },
+        ];
 
   const notes: Note[] = [
     item.userNotes ? { label: "Your Notes:", value: item.userNotes } : null,
@@ -61,7 +74,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({ item, requestStatus }) => {
     }
   }
   return (
-    <div key={item.id} className="flex flex-col h-full">
+    <div key={item.id} className="flex flex-col h-full gap-6">
       <div className="flex items-start gap-3 border-b border-gray-200 pb-4">
         <div className="w-18 h-18 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
           <Image
@@ -122,11 +135,16 @@ const OrderItemCard: React.FC<OrderItemProps> = ({ item, requestStatus }) => {
             ))}
             <div className="flex justify-between">
               <span className="text-base font-medium text-gray-800">
-                {requestStatus ? "Price" : "Total"}
+                {requestStatus && !paymentRequest ? "Price" : "Total"}
               </span>
               {item.quantity && (
                 <span className="text-base font-semibold text-primary">
                   ${(item.price * item.quantity).toFixed(2)}
+                </span>
+              )}
+              {requestStatus && paymentRequest && (
+                <span className="text-base font-semibold text-primary">
+                  ${(item.price).toFixed(2)}
                 </span>
               )}
             </div>
@@ -145,7 +163,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({ item, requestStatus }) => {
           <div className="flex justify-between">
             <span className="text-xs font-normal text-gray-800">Price</span>
             <span className="text-xs font-medium text-gray-800">
-              ${item.price.toFixed(2)}
+              ${item.price.toFixed(2)} || ${item.price.toFixed(2)}
             </span>
           </div>
           <div className="flex justify-between">
@@ -159,27 +177,31 @@ const OrderItemCard: React.FC<OrderItemProps> = ({ item, requestStatus }) => {
         </div>
       </div>
       {/* <hr className=" my-3 md:my-4 text-gray-200" /> */}
-      <div className="flex flex-col gap-1.5 mt-4">
-        {notes.map((note, index) => (
-          <div key={index}>
-            <p className="text-base font-medium text-gray-900">{note.label}</p>
-            <div
-              className={`${
-                note.label === "Reason for Denial"
-                  ? "bg-red-100"
-                  : "bg-porcelan"
-              } p-3 rounded-lg mt-1`}
-            >
-              <p className="text-base font-normal text-gray-600">
-                {note.value}
+      {notes.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          {notes.map((note, index) => (
+            <div key={index}>
+              <p className="text-base font-medium text-gray-900">
+                {note.label}
               </p>
+              <div
+                className={`${
+                  note.label === "Reason for Denial"
+                    ? "bg-red-100"
+                    : "bg-porcelan"
+                } p-3 rounded-lg mt-1`}
+              >
+                <p className="text-base font-normal text-gray-600">
+                  {note.value}
+                </p>
+              </div>
+              {index !== notes.length - 1 && (
+                <hr className="mb-2 mt-4 text-gray-200" />
+              )}
             </div>
-            {index !== notes.length - 1 && (
-              <hr className="mb-2 mt-4 text-gray-200" />
-            )}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

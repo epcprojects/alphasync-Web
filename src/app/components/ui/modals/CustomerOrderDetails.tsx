@@ -63,7 +63,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
           {order.orderItems.map((item) => (
             <OrderItemCard key={item.id} item={item} />
           ))}
-          <div className="flex flex-col gap-4 px-2.5 md:px-0 ">
+          <div className="flex flex-col gap-4 px-2.5 md:px-0 border-b border-gray-200 pb-4 ">
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Due days
@@ -101,8 +101,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               </span>
             </div>
           </div>
-          <hr className=" text-gray-200" />
-          <div className="flex justify-between items-center px-2.5 md:px-0">
+          <div className="flex justify-between items-center px-2.5 md:px-0 border-b border-gray-200 pb-4">
             <span className="text-lg font-semibold text-gray-800">
               Total Order
             </span>
@@ -110,7 +109,6 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               ${order?.totalPrice}
             </span>
           </div>
-          <hr className="hidden md:block text-gray-200" />
         </div>
       )}
     </AppModal>

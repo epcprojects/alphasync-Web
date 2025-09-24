@@ -28,6 +28,7 @@ interface PrescriptionRequestCardProps {
   onApprove?: () => void;
   onReject?: () => void;
   onChat?: () => void;
+  onPayment?:() => void;
   onViewDetails?: () => void;
   onAddNote?: () => void;
   category?: string;
@@ -54,6 +55,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   onAddNote,
   category,
   cardVarient = "Doctor",
+  onPayment,
 }) => {
   function getStatusClasses(status: string) {
     switch (status) {
@@ -247,7 +249,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
           <ThemeButton
             label="Proceed to Payment"
             icon={<CreditCardOutlineIcon />}
-            onClick={onChat}
+            onClick={onPayment}
             heightClass="h-10"
           />
         )}

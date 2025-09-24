@@ -26,7 +26,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
         <div
           className="
-      relative bg-green-100 sm:rounded-2xl shadow-lg p-6 text-center
+      relative bg-green-100 sm:rounded-2xl shadow-lg py-12 px-10 text-center
       w-full sm:max-w-lg 
       sm:mx-0 sm:w-auto
       h-screen sm:h-auto
@@ -39,22 +39,24 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
           >
             <CrossIcon fill="#000" />
           </div>
-          <div>
-            <Verify />
+          <Verify />
+          <div className="flex flex-col gap-4 items-center">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-2xl font-semibold text-gray-950">
+                Payment Successful
+              </h2>
+              <p className="text-gray-900 text-base font-normal">
+                Your order has been confirmed. A receipt has been sent to your
+                email.
+              </p>
+            </div>
+            <ThemeButton
+              label={btnTitle}
+              onClick={viewOrder}
+              variant="outline"
+              className="px-8 w-fit py-3 whitespace-nowrap font-semibold text-base outline-none transition cursor-pointer"
+            />
           </div>
-          <h2 className="text-2xl font-semibold text-gray-950">
-            Payment Successful
-          </h2>
-          <p className="text-gray-900 text-base font-normal">
-            Your order has been confirmed. A receipt has been sent to your
-            email.
-          </p>
-          <ThemeButton
-            label={btnTitle}
-            onClick={viewOrder}
-            variant="outline"
-            className="px-8 py-3 whitespace-nowrap font-semibold text-base  outline-none transition cursor-pointer"
-          />
         </div>
       </div>
     </Portal>

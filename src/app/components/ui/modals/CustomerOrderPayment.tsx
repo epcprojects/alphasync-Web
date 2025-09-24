@@ -41,7 +41,7 @@ export type requestProps = {
   medicineName: string;
   doctorName: string;
   strength: string;
-  price: string;
+  price: number;
 };
 
 interface CustomerOrderPaymentProps {
@@ -368,7 +368,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
 
     if (!billingAddress || billingAddress.trim() === "") return false;
 
-    if (!zipCode || !/^\d{4,10}$/.test(zipCode)) return false;
+    if (!zipCode || !/^[A-Za-z0-9\s]{1,10}$/.test(zipCode)) return false;
 
     return true;
   };
@@ -382,7 +382,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     transformedItem = {
       id: request.id,
       medicineName: request.medicineName,
-      price: Number(request.price),
+      price: request.price,
       doctorName: request.doctorName,
       strength: request.strength,
     };
@@ -430,7 +430,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       btnFullWidth={true}
     >
       {(order || request) && (
-        <div className="w-full max-w-2xl mx-auto gap-6">
+        <div className="w-full max-w-2xl mx-auto flex flex-col gap-6">
           {order ? (
             <div className={`${showForm ? "hidden" : "block"} md:block`}>
               <div className="flex justify-between items-center">
@@ -503,13 +503,13 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
             </div>
           ) : (
             transformedItem && (
-              <OrderItemCard item={transformedItem} requestStatus />
+              <OrderItemCard item={transformedItem} requestStatus paymentRequest={true}  />
             )
           )}
           <form
             className={`${
               showForm || request ? "block" : "hidden"
-            } md:flex mx-auto flex flex-col gap-4`}
+            } md:flex flex-col gap-4`}
           >
             <ThemeInput
               id="Name"
