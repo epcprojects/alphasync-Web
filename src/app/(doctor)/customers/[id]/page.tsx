@@ -262,13 +262,11 @@ export default function CustomerDetail() {
                   </div>
                   {currentItems.map((order) => (
                     <CustomerOrderHistroyView
-                      onRowClick={() =>
-                        router.push(`/customers/${order.orderId}`)
-                      }
+                      onRowClick={() => router.push(`/orders/${order.orderId}`)}
                       key={order.orderId}
                       order={order}
                       onViewCustomer={() =>
-                        router.push(`/customers/${order.orderId}`)
+                        router.push(`/orders/${order.orderId}`)
                       }
                     />
                   ))}
@@ -278,7 +276,7 @@ export default function CustomerDetail() {
                     <ReactPaginate
                       breakLabel="..."
                       nextLabel={
-                        <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                        <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
                           <span className="hidden md:inline-block">Next</span>
                           <span className="block mb-0.5 rotate-180">
                             <ArrowLeftIcon />
@@ -286,7 +284,7 @@ export default function CustomerDetail() {
                         </span>
                       }
                       previousLabel={
-                        <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                        <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
                           <span className="md:mb-0.5">
                             <ArrowLeftIcon />
                           </span>
@@ -300,10 +298,10 @@ export default function CustomerDetail() {
                       marginPagesDisplayed={1}
                       pageCount={pageCount}
                       forcePage={currentPage}
-                      pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
+                      pageLinkClassName="px-4 py-2 rounded-lg text-gray-500 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
                       containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
                       pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
-                      activeClassName="bg-gray-200 text-gray-900 font-medium"
+                      activeClassName="bg-gray-200 text-gray-900 font-medium text-gray-700"
                       previousClassName="md:px-4 md:py-2 rounded-full  absolute left-0 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
                       nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-0 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
                       breakClassName="px-3 py-1 font-semibold text-gray-400"
@@ -327,7 +325,7 @@ export default function CustomerDetail() {
                   />
 
                   <div
-                    className="flex-1 flex flex-col gap-2 overflow-y-scroll h-full"
+                    className="flex-1 flex flex-col gap-2 overflow-y-auto h-full"
                     ref={chatRef}
                   >
                     {messages.map((msg, i) => (

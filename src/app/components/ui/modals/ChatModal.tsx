@@ -39,7 +39,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
       size="small"
     >
       <div
-        className="flex-1 flex flex-col gap-2 overflow-y-scroll  h-full min-h-[400px] max-h-[50dvh]"
+        className="flex-1 flex flex-col gap-2 overflow-y-auto  h-full min-h-[400px] max-h-[50dvh]"
         ref={chatRef}
       >
         {messages.map((msg, i) => (

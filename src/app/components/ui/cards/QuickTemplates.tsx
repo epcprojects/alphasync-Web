@@ -26,7 +26,7 @@ const QuickTemplates: React.FC<QuickTemplatesProps> = ({ templates }) => {
         {templates.map((template, index) => (
           <button
             key={index}
-            className="text-xs md:text-sm bg-white text-gray-700 font-medium rounded-md px-2 md:px-4 py-1 md:py-2 border border-gray-200"
+            className="text-xs md:text-sm bg-white cursor-pointer hover:bg-gray-50 text-gray-700 font-medium rounded-md px-2 md:px-4 py-1 md:py-2 border border-gray-200"
           >
             {template}
           </button>

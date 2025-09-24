@@ -248,7 +248,7 @@ function History() {
           <ReactPaginate
             breakLabel="..."
             nextLabel={
-              <span className="flex items-center gap-1 select-none font-semibold text-xs md:text-sm text-gray-600">
+              <span className="flex items-center gap-1 select-none font-semibold text-xs md:text-sm text-gray-700">
                 Next
                 <span className="block mb-0.5 rotate-180">
                   <ArrowLeftIcon />
@@ -256,7 +256,7 @@ function History() {
               </span>
             }
             previousLabel={
-              <span className="flex items-center gap-1 select-none font-semibold text-xs md:text-sm text-gray-600">
+              <span className="flex items-center gap-1 select-none font-semibold text-xs md:text-sm text-gray-700">
                 <span className="mb-0.5">
                   <ArrowLeftIcon />
                 </span>
@@ -270,7 +270,7 @@ function History() {
             forcePage={currentPage}
             pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer block"
             containerClassName="flex items-center relative w-full justify-center gap-2 px-4 py-3 rounded-2xl bg-white"
-            pageClassName="rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
+            pageClassName="rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
             activeClassName="bg-gray-200 text-gray-900 font-medium"
             previousClassName="px-4 py-2 rounded-full absolute left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
             nextClassName="px-4 py-2 rounded-full bg-gray-50 absolute end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"

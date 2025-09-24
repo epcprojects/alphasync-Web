@@ -225,7 +225,7 @@ function InventoryContent() {
               <ReactPaginate
                 breakLabel="..."
                 nextLabel={
-                  <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                  <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
                     <span className="hidden md:inline-block">Next</span>
                     <span className="block mb-0.5 rotate-180">
                       <ArrowLeftIcon />
@@ -233,7 +233,7 @@ function InventoryContent() {
                   </span>
                 }
                 previousLabel={
-                  <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-600 gap-1">
+                  <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
                     <span className="md:mb-0.5">
                       <ArrowLeftIcon />
                     </span>
@@ -247,7 +247,7 @@ function InventoryContent() {
                 forcePage={currentPage}
                 pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer  hidden md:block"
                 containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
-                pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
+                pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
                 activeClassName="bg-gray-200 text-gray-900 font-medium"
                 previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
                 nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"

@@ -79,7 +79,7 @@ const Page = () => {
 
         <div className="overflow-hidden flex flex-col gap-2  p-1.5 md:p-3 max-h-[470px]  min-h-[470px]">
           <div
-            className="flex-1 flex flex-col gap-2 overflow-y-scroll h-full"
+            className="flex-1 flex flex-col gap-2 overflow-y-auto h-full"
             ref={chatRef}
           >
             {messages.map((msg, i) => (

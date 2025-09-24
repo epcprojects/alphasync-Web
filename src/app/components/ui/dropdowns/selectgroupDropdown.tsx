@@ -251,13 +251,6 @@ const SelectGroupDropdown = ({
           </div>
         </Transition>
       </div>
-
-      {/* {errors && (
-        <div className="flex items-center gap-1 mt-2 text-red-500">
-          <WarnIconFilled className="w-4 h-4" />
-          <p className="text-xs">{errors}</p>
-        </div>
-      )} */}
     </>
   );
 };
