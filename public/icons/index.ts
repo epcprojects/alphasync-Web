@@ -91,7 +91,7 @@ import PencilEditIcon from "./PencilEditIcon";
 import DoctorFilledIcon from "./DoctorFilledIcon";
 import DoctorIcon from "./DoctorIcon";
 import UserRemoveIcon from "./UserRemoveIcon";
-
+import Lock from "./Lock";
 export {
     UserRemoveIcon,
     DoctorIcon,
@@ -120,6 +120,7 @@ export {
     CalendarIcon,
     SecurityLock,
     LockIcon,
+    Lock,
     AccountSettingsIcon,
     MessageSquareIcon,
     AlertIcon,

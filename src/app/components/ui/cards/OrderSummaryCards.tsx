@@ -17,7 +17,7 @@ const OrderSummaryCard: React.FC<OrderItemCardProps> = ({ item }) => {
   return (
     <div key={item.id} className="px-4 pt-4 flex flex-col gap-2">
       <div className="flex items-start gap-3">
-        <div className="w-20 h-20 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
+        <div className="w-18 h-18 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
           <Image
             alt="#"
             src={"/images/products/p1.png"}

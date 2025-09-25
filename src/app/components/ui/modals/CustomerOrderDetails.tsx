@@ -93,7 +93,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm font-normal text-gray-800">
+              <span className="text-sm font-normal text-gray-800 flex-1">
                 Shipping Address
               </span>
               <span className="text-sm font-medium text-gray-800">

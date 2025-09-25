@@ -74,8 +74,8 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
     }
   }
   return (
-    <div key={item.id} className="flex flex-col h-full gap-6">
-      <div className="flex items-start gap-3 border-b border-gray-200 pb-4">
+    <div key={item.id} className={`flex flex-col h-full ${requestStatus ? "gap-2 md:gap-6" : "gap-2"}`}>
+      <div className="flex items-start gap-3 md:border-b md:border-gray-200 md:pb-4">
         <div className="w-18 h-18 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
           <Image
             alt="#"
@@ -152,7 +152,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
         </div>
       </div>
       {/* Mobile version - full width, aligned from start */}
-      <div className="w-full px-2 md:hidden">
+      <div className="w-full px-2 border-b border-gray-200 pb-4 md:hidden">
         <div className="flex flex-col gap-2">
           <div className="flex justify-between">
             <span className="text-xs font-normal text-gray-800">Quantity</span>
@@ -163,7 +163,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
           <div className="flex justify-between">
             <span className="text-xs font-normal text-gray-800">Price</span>
             <span className="text-xs font-medium text-gray-800">
-              ${item.price.toFixed(2)} || ${item.price.toFixed(2)}
+              ${item.price.toFixed(2)}
             </span>
           </div>
           <div className="flex justify-between">

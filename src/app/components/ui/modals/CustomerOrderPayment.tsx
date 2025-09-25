@@ -10,6 +10,7 @@ import {
   Dinners,
   Discover,
   JCB,
+  Lock,
   Maestro,
   Master,
   RuPay,
@@ -509,8 +510,14 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
           <form
             className={`${
               showForm || request ? "block" : "hidden"
-            } md:flex flex-col gap-4`}
+            } flex flex-col gap-4`}
           >
+            <div className="flex justify-between items-center gap-3 py-2 px-4 bg-blue-50 md:hidden rounded-xl">
+              <Lock />
+              <span className="text-sm font-medium text-blue-900">
+                Your payment information is secure and encrypted
+              </span>
+            </div>
             <ThemeInput
               id="Name"
               label="Name on card"
