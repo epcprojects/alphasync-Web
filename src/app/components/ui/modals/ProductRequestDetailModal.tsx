@@ -25,6 +25,7 @@ const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
       title="Request details"
       icon={<ShopingCartIcon fill="#374151" width={16} height={16} />}
       subtitle={`Request ID #${itemTitle}`}
+      outSideClickClose={false}
       showFooter={false}
       size="large"
     >
@@ -39,7 +40,7 @@ const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
               alt={""}
             />
           </div>
-          <div className="flex items-start gap-0.5 md:gap-1 flex-col">
+          <div className="flex items-start gap-0.5 md:gap-2 flex-col">
             <h2 className="text-gray-800 font-semibold text-xs md:text-sm">
               2X Blend CJC-1295 No DAC (5mg) / Ipamorelin (5mg)
             </h2>
@@ -102,7 +103,7 @@ const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
         <hr className=" text-gray-200" />
 
         <div className="w-full">
-          <h2 className="text-gray-900 mb-1 font-medium text-xs md:text-sm">
+          <h2 className="text-gray-900 mb-1.5 font-medium text-xs md:text-sm">
             Your Notes:
           </h2>
           <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">

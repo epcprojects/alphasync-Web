@@ -77,7 +77,7 @@ function RequestContent() {
           </h2>
         </div>
 
-        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] w-fit">
+        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] w-fit">
           <div className="flex items-center relative w-full">
             <span className="absolute left-3">
               <SearchIcon
@@ -101,7 +101,7 @@ function RequestContent() {
             <MenuItems
               transition
               anchor="bottom end"
-              className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+              className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
             >
               <MenuItem>
                 <button
@@ -132,7 +132,7 @@ function RequestContent() {
         </div>
       </div>
 
-      <div className="space-y-4 md:gap-6">
+      <div className=" flex flex-col md:gap-6">
         <div className="flex flex-col gap-1">
           <div className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
             <div>
@@ -163,9 +163,9 @@ function RequestContent() {
               onRowClick={() => router.push(`/orders/${order.requestID}`)}
               key={order.requestID}
               request={order}
-              onProfileBtn={() => {}}
+              onProfileBtn={() => router.push(`/customers/${order.requestID}`)}
               onAcceptBtn={() => {
-                showSuccessToast("Request accepted successfully");
+                showSuccessToast("'Patient request approved successfully.");
               }}
               onRejectBtn={() => {
                 setIsRejectModalOpen(true);

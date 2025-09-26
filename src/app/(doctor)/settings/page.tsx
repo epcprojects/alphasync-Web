@@ -1,7 +1,6 @@
 "use client";
 import { NotificationToggle, ThemeButton, ThemeInput } from "@/app/components";
 import {
-  AccountSettingsIcon,
   AlertIcon,
   LockIcon,
   MailIcon,
@@ -17,6 +16,7 @@ import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
 import AvatarUploader from "@/app/components/AvatarUploader";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { showSuccessToast } from "@/lib/toast";
 
 const Page = () => {
   const [toggles, setToggles] = useState({
@@ -92,21 +92,12 @@ const Page = () => {
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
-      <div className="flex items-center gap-2 md:gap-4">
-        <span className="flex items-center text-primary justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-          <AccountSettingsIcon />
-        </span>
-        <h2 className="text-black font-semibold text-lg md:text-3xl">
-          Settings
-        </h2>
-      </div>
-
       <div className="bg-white rounded-xl ">
         <div className=" ">
           <TabGroup>
             <TabList
               className={
-                "flex items-center border-b border-b-gray-200  md:justify-start  justify-between md:px-6"
+                "flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start  justify-between md:px-6"
               }
             >
               <Tab
@@ -151,7 +142,7 @@ const Page = () => {
             </TabList>
             <TabPanels className={"pb-4 lg:p-6"}>
               <TabPanel className={"px-5 lg:px-8"}>
-                <div className="grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200">
+                <div className="grid grid-cols-12 py-3 md:py-5 lg:gap-8 border-b border-b-gray-200">
                   <div className="col-span-12 mb-3 sm:mb-0 md:col-span-4 lg:col-span-3">
                     <label className="text-xs md:text-sm text-gray-700 font-semibold">
                       Your photo
@@ -183,11 +174,12 @@ const Page = () => {
                   validationSchema={profileSchema}
                   onSubmit={(values) => {
                     console.log("Profile Values:", values);
+                    showSuccessToast("Changes saved successfully");
                   }}
                 >
                   {({ handleChange, values }) => (
                     <Form>
-                      <div className="grid grid-cols-12 gap-1.5 py-3 md:py-5 border-b border-b-gray-200">
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 py-3 md:py-5 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label className="text-xs md:text-sm text-gray-700 font-semibold">
                             Full Name
@@ -207,7 +199,7 @@ const Page = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-12 gap-1.5 items-center py-3 md:py-6 border-b border-b-gray-200">
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label className="text-xs md:text-sm text-gray-700 font-semibold">
                             Email Address
@@ -227,7 +219,7 @@ const Page = () => {
                           />
                         </div>
                       </div>
-                      <div className="grid grid-cols-12 gap-1.5 items-center py-3 md:py-6 border-b border-b-gray-200">
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
@@ -238,7 +230,7 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="phone"
+                            type="number"
                             name="phone"
                             value={values.phone}
                             onChange={handleChange}
@@ -251,7 +243,7 @@ const Page = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-12 gap-1.5 items-center py-3 md:py-6 border-b border-b-gray-200">
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
@@ -275,7 +267,7 @@ const Page = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-12 gap-1.5 items-center py-3 md:py-6 border-b border-b-gray-200">
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
@@ -304,6 +296,7 @@ const Page = () => {
                           heightClass="h-10"
                           type="submit"
                           className="w-full md:w-fit"
+                          disabled
                         />
                       </div>
                     </Form>
@@ -341,6 +334,7 @@ const Page = () => {
                             placeholder="Current Password"
                             value={values.currentPassword}
                             onChange={handleChange}
+                            required
                           />
                           <ErrorMessage
                             name="currentPassword"
@@ -389,24 +383,27 @@ const Page = () => {
                           heightClass="h-10 "
                           type="submit"
                           className="w-full md:w-fit"
+                          disabled
                         />
                       </div>
                     </Form>
                   )}
                 </Formik>
-                <div className="p-4 md:p-8 bg-gray-50 rounded-xl border-gray-100 border ">
-                  <h2 className="text-black text-sm md:text-lg font-medium">
+                <div className="p-4 md:p-8 bg-gray-50 rounded-xl flex flex-col gap-2 md:gap-3 border-gray-100 border ">
+                  <h2 className="text-black text-xl font-medium">
                     Two-Factor Authentication
                   </h2>
 
                   <div className="px-3 md:px-6 flex flex-col items-center justify-center gap-1.5 md:gap-3">
                     <SecurityLock />
-                    <h2 className="text-gray-900 font-medium text-sm md:text-lg text-center">
-                      Enable 2FA
-                    </h2>
-                    <p className="text-sm md:text-base text-gray-800 text-center">
-                      Add an extra layer of security to your account
-                    </p>
+                    <div>
+                      <h2 className="text-gray-900 mb-1.5 font-medium text-sm md:text-xl text-center">
+                        Enable 2FA
+                      </h2>
+                      <p className="text-sm md:text-base text-gray-800 text-center">
+                        Add an extra layer of security to your account
+                      </p>
+                    </div>
 
                     <div className="flex">
                       <ThemeButton

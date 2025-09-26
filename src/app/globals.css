@@ -148,6 +148,9 @@ body {
   rotate: 180deg;
 }
 
+.Toastify__toast-icon {
+width: 16px !important;
+}
 
 /* .rdrMonthAndYearWrapper {
   padding-top: 0px !important;

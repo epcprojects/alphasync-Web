@@ -22,13 +22,13 @@ type OrderListViewProps = {
 };
 
 const colorPairs = [
-  { bg: "bg-red-50", text: "text-red-500" },
-  { bg: "bg-blue-50", text: "text-blue-500" },
-  { bg: "bg-green-50", text: "text-green-500" },
-  { bg: "bg-yellow-50", text: "text-yellow-600" },
-  { bg: "bg-purple-50", text: "text-purple-500" },
-  { bg: "bg-pink-50", text: "text-pink-500" },
-  { bg: "bg-indigo-50", text: "text-indigo-500" },
+  { bg: "bg-red-100", text: "text-red-600" },
+  { bg: "bg-blue-100", text: "text-blue-600" },
+  { bg: "bg-green-100", text: "text-green-600" },
+  { bg: "bg-yellow-100", text: "text-yellow-600" },
+  { bg: "bg-purple-100", text: "text-purple-600" },
+  { bg: "bg-pink-100", text: "text-pink-600" },
+  { bg: "bg-indigo-100", text: "text-indigo-600" },
 ];
 
 function getColorPair(seed: number) {
@@ -71,7 +71,7 @@ export default function OrderListView({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 ">
             <span
-              className={`w-10 h-10 ${bg} ${text} flex items-center justify-center rounded-full`}
+              className={`w-10 h-10 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
             >
               {getInitials(order.customer)}
             </span>
@@ -156,16 +156,16 @@ export default function OrderListView({
     <div
       onClick={onRowClick}
       key={order.id}
-      className="hidden sm:grid  md:grid-cols-[4rem_10rem_4rem_6rem_1fr_1fr_1fr_1fr_3rem] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] gap-4 items-center rounded-xl bg-white p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
+      className="hidden sm:grid  md:grid-cols-[4rem_10rem_4rem_6rem_1fr_1fr_1fr_1fr_3rem] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] gap-4 items-center rounded-xl bg-white p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
     >
       <div className="sm:block hidden">
         <h2 className="text-gray-800 text-xs md:text-sm font-normal">
           {order.orderId}
         </h2>
       </div>
-      <div className="flex items-center gap-2 ">
+      <div className="flex items-center gap-2 md:gap-3">
         <span
-          className={`w-10 h-10 ${bg} ${text} flex items-center justify-center rounded-full`}
+          className={`w-10 h-10 ${bg} ${text} flex items-center  font-medium  justify-center rounded-full`}
         >
           {getInitials(order.customer)}
         </span>
@@ -193,7 +193,7 @@ export default function OrderListView({
       </div>
 
       <div className=" font-medium text-xs md:text-sm text-gray-800">
-        <span className="inline-block rounded-full px-2 py-0.5 text-xs md:text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200">
+        <span className="inline-block rounded-full px-2 py-0.5 text-xs  font-medium text-gray-700 bg-gray-50 border border-gray-200">
           {order.items}
         </span>
       </div>

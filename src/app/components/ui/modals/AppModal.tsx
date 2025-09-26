@@ -90,7 +90,7 @@ const AppModal: React.FC<AppModalProps> = ({
       >
         <div className={modalClasses} onClick={(e) => e.stopPropagation()}>
           <div className="px-4 py-3 bg-gray-100 flex sm:rounded-t-2xl items-center justify-between border-b border-gray-200">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="h-9 w-9 shrink-0 rounded-xl bg-white flex items-center justify-center border border-lightGray">
                 {icon}
               </div>

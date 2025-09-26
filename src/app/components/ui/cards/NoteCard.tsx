@@ -17,7 +17,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
 }) => {
   return (
     <div className="py-3 md:py-5 flex items-center justify-between gap-2.5 md:gap-5 last:border-b-0 border-b border-b-gray-200">
-      <div>
+      <div className="flex flex-col gap-0.5">
         <div className="flex items-center gap-1.5 md:gap-3">
           <h2 className="text-sm md:text-base text-gray-800 font-semibold">
             {doctor}

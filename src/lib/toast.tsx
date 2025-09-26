@@ -23,7 +23,7 @@ export const showSuccessToast = (message: string) => {
 
 export const showErrorToast = (message: string) => {
   toast.error(
-    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "0px" }}>
       <Cross />
       <span>{message}</span>
     </div>,

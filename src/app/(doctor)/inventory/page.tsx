@@ -76,7 +76,7 @@ function InventoryContent() {
           </h2>
         </div>
 
-        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] lg:w-fit">
+        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] lg:w-fit">
           <div className="flex items-center relative w-full">
             <span className="absolute left-3">
               <SearchIcon

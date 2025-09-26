@@ -176,7 +176,7 @@ function PendingPayments() {
           </div>
         </div>
         <div className="relative">
-          <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] w-full md:w-fit">
+          <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] w-full md:w-fit">
             <div className="flex items-center relative flex-1">
               <span className="absolute left-3">
                 <SearchIcon />

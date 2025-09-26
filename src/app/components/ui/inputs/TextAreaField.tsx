@@ -21,7 +21,7 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
 }) => {
   return (
     <div>
-      <label className="block mb-1 text-sm text-gray-700 font-medium text-start">
+      <label className="block mb-1.5 text-sm text-gray-700 font-medium text-start">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <textarea

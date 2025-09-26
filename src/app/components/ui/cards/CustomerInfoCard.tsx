@@ -32,7 +32,7 @@ const CustomerInfoCard: React.FC<CustomerInfoCardProps> = ({
       <div className="sm:hidden p-3 flex flex-col gap-2 border-b border-gray-200">
         <div className="flex items-start gap-2 justify-between">
           <div className="flex items-start gap-2">
-            <div className="rounded-full h-10 w-10 text-red-500 bg-red-100 text-base md:text-3xl font-medium flex items-center justify-center shrink-0 md:h-19 md:w-19">
+            <div className="rounded-full h-10 w-10 text-red-600 bg-red-100 text-base md:text-3xl font-medium flex items-center justify-center shrink-0 md:h-19 md:w-19">
               {getInitials(name)}
             </div>
             <div className="flex flex-col gap-1 md:gap-2">
@@ -77,8 +77,8 @@ const CustomerInfoCard: React.FC<CustomerInfoCardProps> = ({
 
       {/* Desktop View */}
       <div className="p-3 md:p-6 hidden sm:flex items-start lg:items-center justify-between border-b border-gray-200 gap-3 md:gap-5">
-        <div className="flex items-start lg:items-center gap-3 md:gap-5">
-          <div className="rounded-full h-10 w-10 text-red-500 bg-red-100 text-3xl font-medium flex items-center justify-center shrink-0 md:h-19 md:w-19">
+        <div className="flex items-start  gap-3 md:gap-5">
+          <div className="rounded-full h-10 w-10 text-red-600 bg-red-100 text-3xl font-medium flex items-center justify-center shrink-0 md:h-19 md:w-19">
             {getInitials(name)}
           </div>
           <div className="flex gap-3 lg:gap-6 justify-between flex-col">

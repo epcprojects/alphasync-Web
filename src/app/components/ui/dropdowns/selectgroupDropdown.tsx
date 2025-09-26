@@ -153,7 +153,7 @@ const SelectGroupDropdown = ({
       {showLabel && (
         <label className="block mb-1 md:mb-1.5 text-sm font-medium text-gray-900">
           {name}
-          {required && <span className="text-red-500">*</span>}
+          {required && <span className="text-red-500 ps-2">*</span>}
         </label>
       )}
       <div className="relative" ref={dropdownRef}>
@@ -182,7 +182,7 @@ const SelectGroupDropdown = ({
                 <UserIcon />
               </span>
             )}
-            <span className="line-clamp-1  pe-3 text-sm">
+            <span className="line-clamp-1 text-gray-900 text-sm md:text-base pe-3 ">
               {selectedDisplay()}
             </span>
           </span>

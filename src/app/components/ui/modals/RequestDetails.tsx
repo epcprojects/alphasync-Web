@@ -34,7 +34,7 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
   onClick,
 }) => {
   if (!request) return null;
-  console.log("request in model", request)
+  console.log("request in model", request);
   const transformedItem =
     request && request.price
       ? {
@@ -63,6 +63,7 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
       showFooter={request.status === "Approved" ? true : false}
       hideCancelBtn={true}
       onConfirm={onClick}
+      outSideClickClose={false}
       btnIcon={<Card fill="#fff" />}
       confirmLabel="Proceed to Payment"
       btnFullWidth={true}

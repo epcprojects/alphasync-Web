@@ -61,9 +61,10 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           <Image
             src={preview}
             alt="Avatar"
-            className={`${roundedClass} w-[${width}px] h-[${height}px] h-full min-h-[${height}px] max-h-[${height}px] object-cover bg-gray-200`}
+            className={`${roundedClass} w-[${width}px] h-[${height}px] h-full !min-h-[${height}px] max-h-[${height}px] object-cover bg-gray-200`}
             width={width}
             height={height}
+            style={{ height: "64px" }}
           />
 
           {preview === placeholder && (

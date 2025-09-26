@@ -7,6 +7,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { showSuccessToast } from "@/lib/toast";
 
 interface OrderItem {
   product: string;
@@ -70,6 +71,7 @@ const Page = () => {
     setLockedCustomer(null);
     setOrderItems([]);
     setCustomerDraft("");
+    showSuccessToast("Order created successfully");
   };
 
   const products = [
@@ -118,7 +120,7 @@ const Page = () => {
         </h2>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 bg-white rounded-xl">
-        <div className="flex flex-col gap-4 py-4 px-3 md:p-5 border-e border-gray-200">
+        <div className="flex flex-col gap-4 py-4 px-3 md:p-5 xl:p-6 border-e border-gray-200">
           <h2 className="text-black font-medium text-xl">Order Details</h2>
 
           <Formik
@@ -183,7 +185,7 @@ const Page = () => {
                     }}
                     groups={products}
                     errors={errors.product || ""}
-                    name="Product"
+                    name="Product:"
                     multiple={false}
                     placeholder="Select a product"
                     searchTerm={""}
@@ -252,7 +254,7 @@ const Page = () => {
 
           <div className="h-full">
             {orderItems.length === 0 ? (
-              <div className="flex items-center flex-col gap-4 p-5 justify-center h-full text-gray-500">
+              <div className="flex items-center flex-col gap-4 p-5 justify-center h-full text-gray-900">
                 <Image
                   src={"/images/fallbackImages/noItemIllu.svg"}
                   alt=""
@@ -275,7 +277,7 @@ const Page = () => {
                 {orderItems.map((item, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-6 bg-gray-50 items-center py-2 px-3"
+                    className="grid grid-cols-6 bg-gray-50 items-center py-2 mb-0.5 px-3"
                   >
                     <div className="col-span-2 text-xs md:text-sm">
                       {item.product}
@@ -292,7 +294,7 @@ const Page = () => {
                             Number(e.target.value)
                           )
                         }
-                        className="rounded-md border border-gray-200 w-full max-w-12 sm:max-w-14 py-0.5 px-2 outline-none text-xs md:text-sm"
+                        className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs"
                       />
                     </div>
 
@@ -307,7 +309,7 @@ const Page = () => {
                             Number(e.target.value)
                           )
                         }
-                        className="rounded-md border border-gray-200 w-full  max-w-12 sm:max-w-14 py-0.5 px-2 outline-none text-xs md:text-sm"
+                        className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs"
                       />
                     </div>
 
@@ -318,7 +320,7 @@ const Page = () => {
                     <div className="flex justify-end">
                       <button
                         onClick={() => handleDeleteItem(index)}
-                        className="rounded-md w-8 h-8 flex items-center border border-gray-200 justify-center hover:bg-red-100"
+                        className="rounded-md w-8 h-8 flex items-center border bg-white border-gray-200 justify-center hover:bg-red-100"
                       >
                         <TrashBinIcon width="12" height="12" />
                       </button>
@@ -338,9 +340,9 @@ const Page = () => {
                   <div className="flex justify-end">
                     <ThemeButton
                       label="Create Order"
-                      icon={<PlusIcon />}
                       onClick={handleCreateOrder}
-                      size="small"
+                      size="medium"
+                      icon={<PlusIcon height="18" width="18" />}
                       heightClass="h-10"
                       className="w-full sm:w-fit"
                       // disabled={true}

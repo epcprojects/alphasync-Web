@@ -397,6 +397,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       icon={<Card />}
+      outSideClickClose={false}
       title={isMobile && !showForm ? "Order Summary" : "Complete Payment"}
       subtitle={
         isMobile ? "" : "Your payment information is secure and encrypted"

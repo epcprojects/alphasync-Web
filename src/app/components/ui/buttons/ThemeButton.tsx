@@ -31,7 +31,7 @@ const ThemeButton: React.FC<ThemeButtonProps> = ({
   size = "medium",
   variant = "filled",
   heightClass,
-  minWidthClass
+  minWidthClass,
 }) => {
   const sizeClasses: Record<buttonSize, string> = {
     small: "px-3 py-1 text-xs",
@@ -40,7 +40,7 @@ const ThemeButton: React.FC<ThemeButtonProps> = ({
   };
 
   const baseClasses =
-    "flex items-center group gap-1 md:gap-2 whitespace-nowrap h-full justify-center w-full cursor-pointer font-semibold rounded-full transition-colors duration-300 ease-in-out disabled:cursor-not-allowed";
+    "flex items-center group gap-1 whitespace-nowrap h-full justify-center w-full cursor-pointer font-semibold rounded-full transition-colors duration-300 ease-in-out disabled:cursor-not-allowed";
 
   const variantClasses: Record<buttonVariant, string> = {
     filled: disabled

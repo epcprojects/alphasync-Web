@@ -151,7 +151,7 @@ function OrderContent() {
               className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
-          <div className="flex items-center w-fit gap-1 md:gap-2 md:bg-transparent md:p-0 md:shadow-none bg-white rounded-full p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center w-fit gap-1 md:gap-2 md:bg-transparent md:p-0 md:shadow-none bg-white rounded-full p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
             <DateRangeSelector
               value={range}
               onApply={(next) => {
@@ -167,7 +167,7 @@ function OrderContent() {
               <MenuItems
                 transition
                 anchor="bottom end"
-                className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow p-1 text-sm text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+                className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
               >
                 <MenuItem>
                   <button
@@ -251,7 +251,7 @@ function OrderContent() {
             <h2>Profit</h2>
           </div>
           <div>
-            <h2>Actions</h2>
+            <h2 className="text-center">Actions</h2>
           </div>
         </div>
 
@@ -263,47 +263,47 @@ function OrderContent() {
             onViewCustomer={() => router.push(`/orders/${order.orderId}`)}
           />
         ))}
-        <div className="flex justify-center ">
-          {currentItems.length > 0 && (
-            <div className="w-full flex items-center justify-center">
-              <ReactPaginate
-                breakLabel="..."
-                nextLabel={
-                  <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                    <span className="hidden md:inline-block">Next</span>
-                    <span className="block mb-0.5 rotate-180">
-                      <ArrowLeftIcon />
-                    </span>
+      </div>
+      <div className="flex justify-center ">
+        {currentItems.length > 0 && (
+          <div className="w-full flex items-center justify-center">
+            <ReactPaginate
+              breakLabel="..."
+              nextLabel={
+                <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
+                  <span className="hidden md:inline-block">Next</span>
+                  <span className="block mb-0.5 rotate-180">
+                    <ArrowLeftIcon />
                   </span>
-                }
-                previousLabel={
-                  <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                    <span className="md:mb-0.5">
-                      <ArrowLeftIcon />
-                    </span>
-                    <span className="hidden md:inline-block">Previous</span>
+                </span>
+              }
+              previousLabel={
+                <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
+                  <span className="md:mb-0.5">
+                    <ArrowLeftIcon />
                   </span>
-                }
-                onPageChange={handlePageChange}
-                pageRangeDisplayed={3}
-                marginPagesDisplayed={1}
-                pageCount={pageCount}
-                forcePage={currentPage}
-                pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-                containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
-                pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-                activeClassName="bg-gray-200 text-gray-900 font-medium"
-                previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-                nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-                breakClassName="px-3 py-1 font-semibold text-gray-400"
-              />
+                  <span className="hidden md:inline-block">Previous</span>
+                </span>
+              }
+              onPageChange={handlePageChange}
+              pageRangeDisplayed={3}
+              marginPagesDisplayed={1}
+              pageCount={pageCount}
+              forcePage={currentPage}
+              pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
+              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
+              pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
+              activeClassName="bg-gray-200 text-gray-900 font-medium"
+              previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
+              nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
+              breakClassName="px-3 py-1 font-semibold text-gray-400"
+            />
 
-              <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-                Page {currentPage + 1} of {pageCount}
-              </h2>
-            </div>
-          )}
-        </div>
+            <h2 className="absolute md:hidden text-gravel font-medium text-sm">
+              Page {currentPage + 1} of {pageCount}
+            </h2>
+          </div>
+        )}
       </div>
       <NewOrderModal
         isOpen={isOrderModalOpen}

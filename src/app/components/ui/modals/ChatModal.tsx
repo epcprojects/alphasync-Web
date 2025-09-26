@@ -33,10 +33,11 @@ const ChatModal: React.FC<ChatModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Chat Messages"
+      outSideClickClose={false}
       icon={<BubbleChatIcon fill="#374151" />}
       showFooter={false}
-      subtitle={`Request ID #${itemTitle}`}
-      size="small"
+      subtitle={itemTitle ? `Request ID #${itemTitle}` : ""}
+      size="medium"
     >
       <div
         className="flex-1 flex flex-col gap-2 overflow-y-auto  h-full min-h-[400px] max-h-[50dvh]"
@@ -49,7 +50,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
             time={msg.time}
             isUser={msg.isUser}
             message={msg.text}
-            width="w-full"
+            width="w-full max-w-lg"
           />
         ))}
         <div ref={messagesEndRef}></div>

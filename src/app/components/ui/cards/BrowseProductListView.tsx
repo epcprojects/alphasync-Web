@@ -33,7 +33,7 @@ export default function BrowseProductListView({
 
   if (isMobile) {
     return (
-      <div className="bg-white flex flex-col gap-5 p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] rounded-xl">
+      <div className="bg-white flex flex-col gap-5 p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] rounded-xl">
         <div className="flex flex-col gap-3">
           <div className=" flex items-center gap-3">
             <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
@@ -116,7 +116,7 @@ export default function BrowseProductListView({
     <div
       onClick={onRowClick}
       key={product.id}
-      className="grid cursor-pointer grid-cols-2  md:grid-cols-12  md:gap-4 items-center rounded-xl bg-white p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
+      className="grid cursor-pointer grid-cols-2  md:grid-cols-12  md:gap-4 items-center rounded-xl bg-white p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
     >
       <div className="lg:col-span-3 col-span-4 flex items-center gap-3">
         <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">

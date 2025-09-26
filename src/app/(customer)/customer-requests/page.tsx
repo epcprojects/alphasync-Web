@@ -70,7 +70,7 @@ const Page = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] w-full md:w-fit">
+        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] w-full md:w-fit">
           <div className="flex items-center relative w-full">
             <span className="absolute left-3">
               <SearchIcon
@@ -90,7 +90,11 @@ const Page = () => {
 
       <div className="rounded-xl bg-white sm:p-4 lg:p-8 pt-0 sm:pt-0 lg:pt-0">
         <TabGroup>
-          <TabList className="flex items-center border-b border-b-gray-200 md:justify-start  justify-between sm:px-4 lg:px-6">
+          <TabList
+            className={
+              "flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start  justify-between md:px-6"
+            }
+          >
             {["All", "Pending", "Approved", "Denied"].map((tab) => (
               <Tab
                 key={tab}

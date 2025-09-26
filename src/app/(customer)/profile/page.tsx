@@ -56,7 +56,7 @@ const Page = () => {
           <TabGroup>
             <TabList
               className={
-                "flex items-center border-b border-b-gray-200  md:justify-start  justify-between md:px-6"
+                "flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start  justify-between md:px-6"
               }
             >
               <Tab

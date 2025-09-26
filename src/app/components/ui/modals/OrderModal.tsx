@@ -66,6 +66,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
       onClose={handleClose}
       title="Order"
       onConfirm={handleConfirm}
+      outSideClickClose={false}
       confirmLabel="Create Order"
       scrollNeeded={false}
     >

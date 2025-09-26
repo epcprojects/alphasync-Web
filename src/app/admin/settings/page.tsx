@@ -159,6 +159,7 @@ const Page = () => {
                       placeholder="Current Password"
                       value={values.currentPassword}
                       onChange={handleChange}
+                      required
                     />
                     <ErrorMessage
                       name="currentPassword"

@@ -62,11 +62,11 @@ export default function Notifications() {
         leaveTo="opacity-0 translate-y-1"
       >
         <PopoverPanel className="absolute right-0 mt-2 w-96 rounded-xl shadow-lg bg-white">
-          <div className="px-3 py-4 md:min-w-96 space-y-3">
+          <div className="px-3 py-4 md:min-w-96 space-y-3 lg:space-y-4">
             {notifications.map((n) => (
               <div
                 key={n.id}
-                className="  pb-2.5 border-b border-mercury last:!border-b-0"
+                className="  pb-2.5 lg:pb-4 border-b border-mercury last:!border-b-0"
               >
                 <div className="flex items-start gap-2 justify-between">
                   <div className="flex items-start gap-2">
@@ -81,7 +81,7 @@ export default function Notifications() {
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <h2 className="text-xs md:text-sm text-gray-800 font-semibold">
+                      <h2 className="text-xs md:text-base text-gray-800 font-semibold">
                         {n.title}
                       </h2>
                       <div className="flex items-center gap-2">
@@ -127,16 +127,18 @@ export default function Notifications() {
                       <div className="mt-2 flex items-center gap-2">
                         <ThemeButton
                           label="View Details"
-                          size="small"
+                          size="medium"
                           variant="outline"
                           className="w-fit"
+                          heightClass="h-9"
                         />
 
                         <ThemeButton
                           label="Approve"
-                          size="small"
+                          size="medium"
                           variant="success"
                           className="w-fit"
+                          heightClass="h-9"
                         />
                       </div>
                     </div>

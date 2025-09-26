@@ -40,6 +40,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
       onClose={onClose}
       icon={<OrderDetail />}
       title="Order Details"
+      outSideClickClose={false}
       subtitle={order ? `Order #${order.orderNumber}` : ""}
       position={ModalPosition.RIGHT}
       showFooter={false}

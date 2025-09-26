@@ -8,6 +8,7 @@ import ThemeButton from "../buttons/ThemeButton";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import Image from "next/image";
+import { showSuccessToast } from "@/lib/toast";
 
 type DropdownItem = {
   name: string;
@@ -74,6 +75,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     };
 
     setOrderItems((prev) => [...prev, newItem]);
+    showSuccessToast("Order created successfully");
   };
 
   const handleUpdateItem = (
@@ -122,11 +124,12 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       title="Create New Order"
       showFooter={false}
       size="extraLarge"
+      outSideClickClose={false}
       icon={<ShopingCartIcon fill="#374151" height={16} width={16} />}
       bodyPaddingClasses="p-0"
     >
       <div className="grid grid-cols-2">
-        <div className="flex flex-col gap-4 p-5 border-e border-gray-200">
+        <div className="flex flex-col gap-4 p-5 xl:p-6 border-e border-gray-200">
           <h2 className="text-black font-medium text-xl">Order Details</h2>
 
           <Formik
@@ -193,7 +196,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     }}
                     groups={products}
                     errors={errors.product || ""}
-                    name="Product"
+                    name="Product:"
                     multiple={false}
                     placeholder="Select a product"
                     searchTerm={""}
@@ -266,7 +269,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
 
           <div className="h-full">
             {orderItems.length === 0 ? (
-              <div className="flex items-center flex-col gap-4 justify-center h-full text-gray-500">
+              <div className="flex items-center flex-col gap-4 justify-center h-full text-gray-900">
                 <Image
                   src={"/images/fallbackImages/noItemIllu.svg"}
                   alt=""
@@ -289,7 +292,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                 {orderItems.map((item, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-6 bg-gray-50 items-center py-2 px-3"
+                    className="grid grid-cols-6 bg-gray-50 items-center py-2 mb-0.5 px-3"
                   >
                     <div className="col-span-2 text-xs md:text-sm">
                       {item.product}
@@ -306,7 +309,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                             Number(e.target.value)
                           )
                         }
-                        className="rounded-md border border-gray-200 w-full max-w-14 py-0.5 px-2 outline-none text-xs md:text-sm"
+                        className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs"
                       />
                     </div>
 
@@ -321,7 +324,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                             Number(e.target.value)
                           )
                         }
-                        className="rounded-md border border-gray-200 w-full max-w-14 py-0.5 px-2 outline-none text-xs md:text-sm"
+                        className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 h-7 px-2 outline-none text-xs "
                       />
                     </div>
 
@@ -332,7 +335,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     <div>
                       <button
                         onClick={() => handleDeleteItem(index)}
-                        className="rounded-md w-8 h-8 flex items-center border border-gray-200 justify-center hover:bg-red-100"
+                        className="rounded-md w-8 h-8 flex items-center border bg-white border-gray-200 justify-center hover:bg-red-100"
                       >
                         <TrashBinIcon width="12" height="12" />
                       </button>
@@ -352,9 +355,9 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                   <div className="flex justify-end">
                     <ThemeButton
                       label="Create Order"
-                      icon={<PlusIcon />}
+                      icon={<PlusIcon height="18" width="18" />}
                       onClick={handleCreateOrder}
-                      size="small"
+                      size="medium"
                       heightClass="h-10"
                       // disabled={true}
                     />

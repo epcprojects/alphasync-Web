@@ -20,13 +20,13 @@ type DoctorListingProps = {
 };
 
 const colorPairs = [
-  { bg: "bg-red-50", text: "text-red-500" },
-  { bg: "bg-blue-50", text: "text-blue-500" },
-  { bg: "bg-green-50", text: "text-green-500" },
-  { bg: "bg-yellow-50", text: "text-yellow-600" },
-  { bg: "bg-purple-50", text: "text-purple-500" },
-  { bg: "bg-pink-50", text: "text-pink-500" },
-  { bg: "bg-indigo-50", text: "text-indigo-500" },
+  { bg: "bg-red-100", text: "text-red-600" },
+  { bg: "bg-blue-100", text: "text-blue-600" },
+  { bg: "bg-green-100", text: "text-green-600" },
+  { bg: "bg-yellow-100", text: "text-yellow-600" },
+  { bg: "bg-purple-100", text: "text-purple-600" },
+  { bg: "bg-pink-100", text: "text-pink-600" },
+  { bg: "bg-indigo-100", text: "text-indigo-600" },
 ];
 
 function getColorPair(seed: number) {
@@ -55,7 +55,7 @@ export default function DoctorListView({
     <div
       onClick={onRowClick}
       key={doctor.id}
-      className="grid cursor-pointer grid-cols-12 gap-4 items-center rounded-xl bg-white p-1 md:p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
+      className="grid cursor-pointer grid-cols-12 gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
     >
       <div className="flex items-center gap-2 col-span-3">
         <span

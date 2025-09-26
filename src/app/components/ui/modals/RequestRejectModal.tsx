@@ -40,6 +40,7 @@ const RequestRejectModal: React.FC<RequestRejectModalProps> = ({
       confirmLabel="Deny Request"
       icon={<UserRejectIcon />}
       confirmBtnVarient="danger"
+      outSideClickClose={false}
       subtitle={`Please provide a reason for denying request ${itemTitle}`}
     >
       <TextAreaField

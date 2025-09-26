@@ -20,13 +20,13 @@ type RefillViewProps = {
 };
 
 const colorPairs = [
-  { bg: "bg-red-50", text: "text-red-500" },
-  { bg: "bg-blue-50", text: "text-blue-500" },
-  { bg: "bg-green-50", text: "text-green-500" },
-  { bg: "bg-yellow-50", text: "text-yellow-600" },
-  { bg: "bg-purple-50", text: "text-purple-500" },
-  { bg: "bg-pink-50", text: "text-pink-500" },
-  { bg: "bg-indigo-50", text: "text-indigo-500" },
+  { bg: "bg-red-100", text: "text-red-600" },
+  { bg: "bg-blue-100", text: "text-blue-600" },
+  { bg: "bg-green-100", text: "text-green-600" },
+  { bg: "bg-yellow-100", text: "text-yellow-600" },
+  { bg: "bg-purple-100", text: "text-purple-600" },
+  { bg: "bg-pink-100", text: "text-pink-600" },
+  { bg: "bg-indigo-100", text: "text-indigo-600" },
 ];
 
 function getColorPair(seed: number) {
@@ -45,7 +45,7 @@ export default function RefillView({
 
   if (isMobile)
     return (
-      <div className="bg-white rounded-lg flex flex-col gap-1.5 p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
+      <div className="bg-white rounded-lg flex flex-col gap-1.5 p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
         <div className="flex items-center gap-2">
           <span
             className={`w-10 h-10 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
@@ -92,7 +92,7 @@ export default function RefillView({
               e.stopPropagation();
               onContactClick();
             }}
-            className="flex px-3 py-2 gap-1 md:gap-2 w-full text-xs md:text-sm bg-blue-500 text-white  items-center justify-center rounded-md border cursor-pointer border-blue-500"
+            className="flex px-3 py-2 gap-1 md:gap-2 w-full text-xs md:text-sm bg-blue-500  text-white  items-center justify-center rounded-md border cursor-pointer border-blue-500"
           >
             <svg
               width="15"
@@ -139,7 +139,7 @@ export default function RefillView({
     <div
       onClick={onRowClick}
       key={order.id}
-      className="grid cursor-pointer  sm:grid-cols-[4fr_2fr_1fr_1fr_3fr] lg:grid-cols-[1fr_1fr_1fr_1fr_400px] gap-4 items-center rounded-xl bg-white p-1 md:p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
+      className="grid cursor-pointer  sm:grid-cols-[4fr_2fr_1fr_1fr_3fr] lg:grid-cols-[1fr_1fr_1fr_1fr_460px] gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
     >
       <div className="flex items-center gap-2">
         <span
@@ -166,13 +166,13 @@ export default function RefillView({
         </span>
       </div>
 
-      <div className=" flex items-center justify-center gap-2">
+      <div className=" flex items-center justify-end gap-2 xl:gap-3">
         <button
           onClick={(e) => {
             e.stopPropagation();
             onContactClick();
           }}
-          className="flex px-3 py-2 gap-1 md:gap-2 md:h-8  h-6 text-xs md:text-sm bg-blue-500 text-white  items-center justify-center rounded-md border cursor-pointer border-blue-500"
+          className="flex px-3 py-2 gap-1 md:gap-2 md:h-8  h-6 text-xs md:text-sm bg-blue-500 hover:bg-blue-700 text-white  items-center justify-center rounded-md border cursor-pointer border-blue-500"
         >
           <svg
             width="15"
@@ -197,7 +197,7 @@ export default function RefillView({
             e.stopPropagation();
             onReOrderClick();
           }}
-          className="flex px-3 py-2 gap-1 md:gap-2 md:h-8  h-6 text-xs md:text-sm bg-green-600 text-white  items-center justify-center rounded-md border cursor-pointer border-green-600"
+          className="flex px-3 py-2 gap-1 md:gap-2 md:h-8  h-6 text-xs md:text-sm bg-green-600 hover:bg-green-700 text-white  items-center justify-center rounded-md border cursor-pointer border-green-600"
         >
           <ReloadIcon />
           <span className="lg:block hidden">Reorder</span>
@@ -208,11 +208,21 @@ export default function RefillView({
             e.stopPropagation();
             onAutoReOrderClick();
           }}
-          className="flex px-3 py-2 gap-1 md:gap-2 md:h-8  h-6 text-xs md:text-sm bg-primary text-white  items-center justify-center rounded-md border cursor-pointer border-primary"
+          className={`flex px-3 py-2 gap-1 md:gap-2 md:h-8  h-6 text-xs md:text-sm ${
+            order.id === 1
+              ? "bg-red-500 hover:bg-red-800 border-red-500"
+              : "bg-primary hover:bg-blue-800 border-primary"
+          } text-white  items-center justify-center rounded-md border cursor-pointer `}
         >
           <AutoReloadIcon />
-
-          <span className="lg:block hidden">Auto-Reorder</span>
+          {/* just to show the cancel auto order */}
+          {order.id === 1 ? (
+            <span className="lg:block hidden whitespace-nowrap">
+              Cancel Auto-Reorder
+            </span>
+          ) : (
+            <span className="lg:block hidden">Auto-Reorder</span>
+          )}
         </button>
       </div>
     </div>

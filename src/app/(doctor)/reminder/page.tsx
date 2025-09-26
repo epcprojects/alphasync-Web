@@ -1,18 +1,19 @@
 "use client";
 
 import { ArrowLeftIcon, ReminderFilledIcon, SearchIcon } from "@/icons";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { reminders } from "../../../../public/data/reminders";
 import ReactPaginate from "react-paginate";
 import RefillView from "@/app/components/ui/cards/RefillView";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import ChatModal from "@/app/components/ui/modals/ChatModal";
 
 function ReminderContent() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const searchParams = useSearchParams();
-
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const itemsPerPage = 9;
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -43,6 +44,38 @@ function ReminderContent() {
     router.replace(`?${params.toString()}`);
   };
 
+  const [messages, setMessages] = useState<
+    { sender: string; time: string; text: string; isUser: boolean }[]
+  >([]);
+  const [toggle, setToggle] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSend = (msg: string) => {
+    if (!msg.trim()) return;
+
+    const now = new Date();
+    const time = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        sender: toggle ? "You" : "John Smith",
+        time,
+        text: msg,
+        isUser: toggle,
+      },
+    ]);
+
+    setToggle(!toggle);
+  };
+
   const isMobile = useIsMobile();
 
   return (
@@ -58,6 +91,11 @@ function ReminderContent() {
           <h2 className="text-black font-semibold text-lg md:text-3xl">
             Customers Due for Refills
           </h2>
+          <div className="px-3 py-1 rounded-full bg-white border border-indigo-200">
+            <p className="text-sm font-medium text-primary whitespace-nowrap">
+              {reminders.length}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center relative w-full lg:w-fit  bg-white  p-2 rounded-full shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
@@ -102,7 +140,7 @@ function ReminderContent() {
               key={order.id}
               order={order}
               onAutoReOrderClick={() => {}}
-              onContactClick={() => {}}
+              onContactClick={() => setIsChatModalOpen(true)}
               onReOrderClick={() => {}}
             />
           ))}
@@ -149,6 +187,15 @@ function ReminderContent() {
           )}
         </div>
       </div>
+      <ChatModal
+        isOpen={isChatModalOpen}
+        onClose={() => setIsChatModalOpen(false)}
+        // itemTitle="REQ-001"
+        messages={messages}
+        onSend={(msg) => {
+          handleSend(msg);
+        }}
+      />
     </div>
   );
 }

@@ -40,6 +40,7 @@ const MessageSendModal: React.FC<MessageSendModalProps> = ({
       title="Chat with Patient"
       subtitle={`Send a message to ${userName} about their request ${orderId}`}
       onConfirm={handleConfirm}
+      outSideClickClose={false}
       confirmLabel="Send Message"
       icon={<BubbleChatIcon fill="#374151" />}
     >

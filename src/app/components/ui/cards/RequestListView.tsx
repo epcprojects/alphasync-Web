@@ -24,15 +24,14 @@ type RequestListViewProps = {
 };
 
 const colorPairs = [
-  { bg: "bg-red-50", text: "text-red-500" },
-  { bg: "bg-blue-50", text: "text-blue-500" },
-  { bg: "bg-green-50", text: "text-green-500" },
-  { bg: "bg-yellow-50", text: "text-yellow-600" },
-  { bg: "bg-purple-50", text: "text-purple-500" },
-  { bg: "bg-pink-50", text: "text-pink-500" },
-  { bg: "bg-indigo-50", text: "text-indigo-500" },
+  { bg: "bg-red-100", text: "text-red-600" },
+  { bg: "bg-blue-100", text: "text-blue-600" },
+  { bg: "bg-green-100", text: "text-green-600" },
+  { bg: "bg-yellow-100", text: "text-yellow-600" },
+  { bg: "bg-purple-100", text: "text-purple-600" },
+  { bg: "bg-pink-100", text: "text-pink-600" },
+  { bg: "bg-indigo-100", text: "text-indigo-600" },
 ];
-
 function getColorPair(seed: number) {
   return colorPairs[seed % colorPairs.length];
 }
@@ -42,11 +41,11 @@ function getStatusClasses(status: Request["status"]) {
     case "Requested":
       return "bg-amber-50 border border-amber-200 text-amber-700";
     case "Approved":
-      return "bg-green-100 border border-green-200 text-green-700";
+      return "bg-green-50 border border-green-200 text-green-700";
     case "Denied":
-      return "bg-red-100 border border-red-200 text-red-700";
+      return "bg-red-50 border border-red-200 text-red-700";
     default:
-      return "bg-gray-100 border border-gray-200 text-gray-700";
+      return "bg-gray-50 border border-gray-200 text-gray-700";
   }
 }
 
@@ -64,7 +63,7 @@ export default function RequestListView({
 
   if (isMobile) {
     return (
-      <div className="p-2 bg-white rounded-lg flex flex-col gap-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
+      <div className="p-2 bg-white rounded-lg flex flex-col gap-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             <span
@@ -120,15 +119,6 @@ export default function RequestListView({
           </div>
 
           <div className=" flex items-center justify-end gap-1">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onProfileBtn();
-              }}
-              className="bg-primary cursor-pointer rounded-md h-6 w-6 flex items-center justify-center"
-            >
-              <UserFilledIcon width={14} height={14} />
-            </button>
             {onAcceptBtn && request.status !== "Approved" && (
               <button
                 onClick={(e) => {
@@ -153,6 +143,16 @@ export default function RequestListView({
                 </span>
               </button>
             )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onProfileBtn();
+              }}
+              className="bg-primary cursor-pointer rounded-md h-6 w-6 flex items-center justify-center"
+            >
+              <UserFilledIcon width={14} height={14} />
+            </button>
+
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -185,7 +185,7 @@ export default function RequestListView({
     <div
       onClick={onRowClick}
       key={request.id}
-      className="hidden sm:grid cursor-pointer grid-cols-[1fr_14rem_1fr_1fr_160px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] gap-4 items-center rounded-xl bg-white p-1 md:p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
+      className="hidden sm:grid cursor-pointer grid-cols-[1fr_14rem_1fr_1fr_160px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
     >
       <div>
         <h2 className="text-gray-800 text-xs md:text-sm font-normal whitespace-nowrap">
@@ -234,22 +234,13 @@ export default function RequestListView({
       </div>
 
       <div className=" flex items-center justify-end gap-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onProfileBtn();
-          }}
-          className="bg-primary cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
-        >
-          <UserFilledIcon />
-        </button>
         {onAcceptBtn && request.status !== "Approved" && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onAcceptBtn();
             }}
-            className="bg-green-500 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
+            className="bg-green-500 hover:bg-green-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
           >
             <CheckMarkCircle />
           </button>
@@ -260,7 +251,7 @@ export default function RequestListView({
               e.stopPropagation();
               onRejectBtn();
             }}
-            className="bg-red-500 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
+            className="bg-red-500 hover:bg-red-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
           >
             <span className="bg-white rounded-full w-4 h-4 flex items-center justify-center">
               <CrossIcon fill="red" width="14" height="14" />
@@ -270,9 +261,19 @@ export default function RequestListView({
         <button
           onClick={(e) => {
             e.stopPropagation();
+            onProfileBtn();
+          }}
+          className="bg-primary hover:bg-blue-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
+        >
+          <UserFilledIcon />
+        </button>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
             onChatBtn();
           }}
-          className="flex  md:h-8 md:w-8 h-6 w-6 cursor-pointer bg-blue-500 items-center justify-center rounded-md border  border-blue-500"
+          className="flex  md:h-8 md:w-8 h-6 w-6 cursor-pointer bg-blue-500 hover:bg-blue-700 items-center justify-center rounded-md border  border-blue-500"
         >
           <svg
             width="19"

@@ -145,7 +145,11 @@ export default function CustomerDetail() {
 
         <div className=" ">
           <TabGroup selectedIndex={selectedIndex} onChange={setSelectedIndex}>
-            <TabList className="flex items-center border-t border-b bg-gray-50 border-b-mercury border-t-mercury px-4 md:px-6">
+            <TabList
+              className={
+                "flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start  justify-between md:px-6"
+              }
+            >
               {[
                 {
                   icon: <PackageOutlineIcon fill="currentColor" />,
@@ -291,7 +295,9 @@ export default function CustomerDetail() {
                     variant="outline"
                     label="Add New"
                     icon={<PlusIcon />}
-                    onClick={() => {}}
+                    onClick={() => {
+                      setIsNoteModalOpen(true);
+                    }}
                   />
                 </div>
                 <NoteCard

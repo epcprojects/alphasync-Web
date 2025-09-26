@@ -119,6 +119,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       onConfirm={onClick}
       confirmLabel="Request from Doctor"
       hideCancelBtn={true}
+      outSideClickClose={false}
       btnFullWidth={true}
       btnIcon={<ShopingCartIcon fill="#fff" />}
     >

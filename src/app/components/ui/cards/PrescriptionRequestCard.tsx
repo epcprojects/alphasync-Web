@@ -30,7 +30,7 @@ interface PrescriptionRequestCardProps {
   onApprove?: () => void;
   onReject?: () => void;
   onChat?: () => void;
-  onPayment?:() => void;
+  onPayment?: () => void;
   onViewDetails?: () => void;
   onAddNote?: () => void;
   category?: string;
@@ -85,12 +85,12 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   return (
     <div className={`${baseClasses} ${variantClasses[cardVarient]}`}>
       <div className="w-full">
-        <div className="w-full flex items-start gap-2.5 md:gap-5">
+        <div className="w-full flex items-start gap-2.5 md:gap-4">
           <div className="w-14 shrink-0 h-14 md:w-20 md:h-20 rounded-lg bg-gray-100 flex items-center justify-center">
             <Image
               width={1080}
               height={1080}
-              className="h-12 md:h-18 md:w-18 w-12"
+              className="h-12 md:h-18 md:w-18 w-12 object-cover"
               src={imageSrc}
               alt={title ? title : ""}
             />
@@ -106,7 +106,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
                   )}
                 </h2>
                 {description && (
-                  <p className="text-[10px] md:text-sm text-gray-800">
+                  <p className="text-[10px] md:text-xs mb-1.5 text-gray-800">
                     {description}
                   </p>
                 )}
@@ -148,7 +148,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
 
       {userNotes && (
         <div className="w-full">
-          <h2 className="text-gray-900 mb-1 font-medium text-xs md:text-sm">
+          <h2 className="text-gray-900 mb-1.5 font-medium text-xs md:text-sm">
             Your Notes:
           </h2>
           <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
@@ -161,8 +161,8 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
 
       {physicianNotes && (
         <div className="w-full">
-          <h2 className="text-gray-900 mb-1 font-medium text-xs md:text-sm">
-            Physician Notes
+          <h2 className="text-gray-900  mb-1.5 font-medium text-xs md:text-sm">
+            Physician Notes:
           </h2>
           <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
             <p className="text-xs sm:text-sm md:text-base text-gray-600">
@@ -174,11 +174,11 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
 
       {denialReason && (
         <div className="w-full">
-          <h2 className="text-gray-900 mb-1 font-medium text-xs md:text-sm">
-            Reason for Denial
+          <h2 className="text-gray-900  mb-1.5 font-medium text-xs md:text-sm">
+            Reason for Denial:
           </h2>
           <div className="bg-red-100 p-1.5 md:p-3 rounded-lg w-full">
-            <p className="text-xs sm:text-sm md:text-base text-gray-900">
+            <p className="text-xs sm:text-sm md:text-base font-medium text-red-900">
               {denialReason}
             </p>
           </div>
@@ -196,16 +196,19 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             className="w-full sm:w-fit"
           />
         )}
-        {onReject && !denialReason && cardVarient === "Doctor" && (
-          <ThemeButton
-            label="Reject"
-            icon={<RejectIcon />}
-            onClick={onReject}
-            variant="outline"
-            heightClass="h-10"
-            className="w-full sm:w-fit"
-          />
-        )}
+        {onReject &&
+          !denialReason &&
+          cardVarient === "Doctor" &&
+          status !== "Approved" && (
+            <ThemeButton
+              label="Reject"
+              icon={<RejectIcon />}
+              onClick={onReject}
+              variant="outline"
+              heightClass="h-10"
+              className="w-full sm:w-fit"
+            />
+          )}
         {onChat &&
           !(
             cardVarient === "Customer" &&
@@ -241,16 +244,18 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             className="w-full sm:w-fit"
           />
         )}
-        {onAddNote && !(denialReason && cardVarient !== "Customer") && (
-          <ThemeButton
-            label="Add note"
-            icon={<NoteIcon />}
-            onClick={onAddNote}
-            variant="outline"
-            heightClass="h-10"
-            className="w-full sm:w-fit"
-          />
-        )}
+        {onAddNote &&
+          status !== "Approved" &&
+          !(denialReason && cardVarient !== "Customer") && (
+            <ThemeButton
+              label="Add note"
+              icon={<NoteIcon />}
+              onClick={onAddNote}
+              variant="outline"
+              heightClass="h-10"
+              className="w-full sm:w-fit"
+            />
+          )}
       </div>
     </div>
   );

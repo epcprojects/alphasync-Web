@@ -41,7 +41,7 @@ const Page = () => {
             lastOrder="1/15/2024"
             address="321 Elm St, Nowhere, ST 98765"
             onBack={() => console.log("Go back")}
-            onViewProfile={() => console.log("View profile")}
+            onViewProfile={() => router.push("/customers/123")}
             getInitials={(name) =>
               name
                 .split(" ")
@@ -154,7 +154,7 @@ const Page = () => {
               label="Cancel Order"
               variant="outline"
               size="medium"
-              icon={<CrossIcon fill="#EF4444" />}
+              icon={<CrossIcon fill="#EF4444" height="18" width="18" />}
               onClick={() => {}}
               className="w-full sm:w-fit"
               heightClass="md:h-11 h-10"

@@ -35,6 +35,7 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Add New Note"
+      outSideClickClose={false}
       onConfirm={handleConfirm}
       confirmLabel="Save"
       icon={<NoteIcon />}
