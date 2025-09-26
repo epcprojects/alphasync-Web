@@ -117,8 +117,8 @@ const Page = () => {
           Create New Order
         </h2>
       </div>
-      <div className="grid grid-cols-2 bg-white rounded-xl">
-        <div className="flex flex-col gap-4 p-5 border-e border-gray-200">
+      <div className="grid grid-cols-1 sm:grid-cols-2 bg-white rounded-xl">
+        <div className="flex flex-col gap-4 py-4 px-3 md:p-5 border-e border-gray-200">
           <h2 className="text-black font-medium text-xl">Order Details</h2>
 
           <Formik
@@ -143,7 +143,7 @@ const Page = () => {
             }}
           >
             {({ values, setFieldValue, errors, touched }) => (
-              <Form className="flex flex-col gap-5">
+              <Form className="flex flex-col gap-4 md:gap-5">
                 <div>
                   <SelectGroupDropdown
                     selectedGroup={values.customer}
@@ -252,13 +252,13 @@ const Page = () => {
 
           <div className="h-full">
             {orderItems.length === 0 ? (
-              <div className="flex items-center flex-col gap-4 justify-center h-full text-gray-500">
+              <div className="flex items-center flex-col gap-4 p-5 justify-center h-full text-gray-500">
                 <Image
                   src={"/images/fallbackImages/noItemIllu.svg"}
                   alt=""
                   width={720}
                   height={720}
-                  className="w-40 h-40"
+                  className="md:w-40 w-32 h-32 md:h-40"
                 />
                 No item added to order yet
               </div>
@@ -292,7 +292,7 @@ const Page = () => {
                             Number(e.target.value)
                           )
                         }
-                        className="rounded-md border border-gray-200 w-full max-w-14 py-0.5 px-2 outline-none text-xs md:text-sm"
+                        className="rounded-md border border-gray-200 w-full max-w-12 sm:max-w-14 py-0.5 px-2 outline-none text-xs md:text-sm"
                       />
                     </div>
 
@@ -307,7 +307,7 @@ const Page = () => {
                             Number(e.target.value)
                           )
                         }
-                        className="rounded-md border border-gray-200 w-full max-w-14 py-0.5 px-2 outline-none text-xs md:text-sm"
+                        className="rounded-md border border-gray-200 w-full  max-w-12 sm:max-w-14 py-0.5 px-2 outline-none text-xs md:text-sm"
                       />
                     </div>
 
@@ -315,7 +315,7 @@ const Page = () => {
                       ${(item.quantity * item.price).toFixed(2)}
                     </div>
 
-                    <div>
+                    <div className="flex justify-end">
                       <button
                         onClick={() => handleDeleteItem(index)}
                         className="rounded-md w-8 h-8 flex items-center border border-gray-200 justify-center hover:bg-red-100"
@@ -326,12 +326,12 @@ const Page = () => {
                   </div>
                 ))}
 
-                <div className="py-2 px-4 flex flex-col gap-2">
+                <div className="py-2 px-3 md:px-4 flex flex-col gap-2">
                   <div className="flex justify-between">
-                    <span className="text-black text-lg font-semibold">
+                    <span className="text-black text-base md:text-lg font-semibold">
                       Total Amount:
                     </span>
-                    <span className="text-primary text-lg font-semibold">
+                    <span className="text-primary text-base md:text-lg font-semibold">
                       ${totalAmount.toFixed(2)}
                     </span>
                   </div>
@@ -342,6 +342,7 @@ const Page = () => {
                       onClick={handleCreateOrder}
                       size="small"
                       heightClass="h-10"
+                      className="w-full sm:w-fit"
                       // disabled={true}
                     />
                   </div>

@@ -1,4 +1,5 @@
 "use client";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { CheckMarkCircle, CrossIcon, UserFilledIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
 
@@ -58,20 +59,142 @@ export default function RequestListView({
   onRowClick,
 }: RequestListViewProps) {
   const { bg, text } = getColorPair(request.id);
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <div className="p-2 bg-white rounded-lg flex flex-col gap-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            <span
+              className={`w-10 h-10 ${bg} ${text} flex items-center text-sm font-medium justify-center rounded-full`}
+            >
+              {getInitials(request.customer)}
+            </span>
+            <div className="flex flex-col">
+              <h2 className="text-gray-800 text-sm font-semibold">
+                {request.requestID}
+              </h2>
+              <h2 className="text-gray-800 text-xs font-normal">
+                {request.customer}
+              </h2>
+              <h3 className="text-gray-800 text-xs font-normal">
+                {request.email}
+              </h3>
+            </div>
+          </div>
+          <div className=" font-medium text-xs md:text-sm ">
+            <span
+              className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+                request.status
+              )}`}
+            >
+              {request.status}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-black font-medium text-xs pe-1">Date:</span>
+            <span className="text-gray-800 font-normal text-xs">
+              {request.date}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-black font-medium text-xs pe-1">Total:</span>
+            <span className="text-gray-800 font-normal text-xs">
+              {request.amount}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-black font-medium text-xs pe-1">Items:</span>
+            <span className="text-gray-800 font-normal text-xs">
+              {request.items}
+            </span>
+          </div>
+
+          <div className=" flex items-center justify-end gap-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onProfileBtn();
+              }}
+              className="bg-primary cursor-pointer rounded-md h-6 w-6 flex items-center justify-center"
+            >
+              <UserFilledIcon width={14} height={14} />
+            </button>
+            {onAcceptBtn && request.status !== "Approved" && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAcceptBtn();
+                }}
+                className="bg-green-500 cursor-pointer rounded-md h-6 w-6 flex items-center justify-center"
+              >
+                <CheckMarkCircle width={14} height={14} />
+              </button>
+            )}
+            {onRejectBtn && request.status !== "Approved" && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRejectBtn();
+                }}
+                className="bg-red-500 cursor-pointer rounded-md h-6 w-6 flex items-center justify-center"
+              >
+                <span className="bg-white rounded-full w-3 h-3 flex items-center justify-center">
+                  <CrossIcon fill="red" width="12" height="12" />
+                </span>
+              </button>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onChatBtn();
+              }}
+              className="flex  md:h-8 md:w-8 h-6 w-6 cursor-pointer bg-blue-500 items-center justify-center rounded-md border  border-blue-500"
+            >
+              <svg
+                width="14s"
+                height="14"
+                viewBox="0 0 19 18"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M1.4375 8.67504C1.4375 4.37879 5.07142 0.9375 9.5 0.9375C13.9286 0.9375 17.5625 4.37879 17.5625 8.67504C17.5625 12.9713 13.9286 16.4126 9.5 16.4126C8.9781 16.4132 8.45776 16.3649 7.94524 16.2687C7.76734 16.2353 7.65432 16.2142 7.57022 16.2027C7.5075 16.1931 7.44448 16.2164 7.42081 16.2293C7.33492 16.2701 7.22051 16.3308 7.04535 16.4239C5.97156 16.995 4.71878 17.1975 3.51047 16.9727C3.31535 16.9365 3.1538 16.8 3.08535 16.6137C3.0169 16.4275 3.05168 16.2189 3.17688 16.0649C3.52773 15.6333 3.76897 15.1135 3.87566 14.5539C3.90453 14.4 3.8392 14.191 3.63838 13.987C2.27729 12.6049 1.4375 10.7358 1.4375 8.67504ZM6.5 8.25C6.08579 8.25 5.75 8.58579 5.75 9C5.75 9.41421 6.08579 9.75 6.5 9.75H6.50673C6.92094 9.75 7.25673 9.41421 7.25673 9C7.25673 8.58579 6.92094 8.25 6.50673 8.25H6.5ZM9.49664 8.25C9.08242 8.25 8.74664 8.58579 8.74664 9C8.74664 9.41421 9.08242 9.75 9.49664 9.75H9.50337C9.91758 9.75 10.2534 9.41421 10.2534 9C10.2534 8.58579 9.91758 8.25 9.50337 8.25H9.49664ZM11.7433 9C11.7433 8.58579 12.0791 8.25 12.4933 8.25H12.5C12.9142 8.25 13.25 8.58579 13.25 9C13.25 9.41421 12.9142 9.75 12.5 9.75H12.4933C12.0791 9.75 11.7433 9.41421 11.7433 9Z"
+                  fill="white"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       onClick={onRowClick}
       key={request.id}
-      className="grid cursor-pointer grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] gap-4 items-center rounded-xl bg-white p-1 md:p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
+      className="hidden sm:grid cursor-pointer grid-cols-[1fr_14rem_1fr_1fr_160px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] gap-4 items-center rounded-xl bg-white p-1 md:p-2 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
     >
       <div>
-        <h2 className="text-gray-800 text-xs md:text-sm font-normal">
+        <h2 className="text-gray-800 text-xs md:text-sm font-normal whitespace-nowrap">
           {request.requestID}
         </h2>
       </div>
       <div className="flex items-center gap-2">
         <span
-          className={`md:w-10 md:h-10 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
+          className={`md:w-10 md:h-10 ${bg} ${text} shrink-0 flex items-center font-medium justify-center rounded-full`}
         >
           {getInitials(request.customer)}
         </span>
@@ -82,11 +205,11 @@ export default function RequestListView({
           <h3 className="text-gray-800 text-xs font-normal">{request.email}</h3>
         </div>
       </div>
-      <div className="text-xs md:text-sm font-normal text-gray-600 ">
+      <div className="text-xs lg:block hidden md:text-sm font-normal text-gray-600 ">
         {request.date}
       </div>
 
-      <div className=" font-normal text-xs md:text-sm text-gray-800">
+      <div className="lg:block hidden font-normal text-xs md:text-sm text-gray-800">
         <ul>
           {request.items.map((item, index) => (
             <li key={index} className="line-clamp-1">
@@ -100,7 +223,7 @@ export default function RequestListView({
         ${request.amount}
       </div>
 
-      <div className=" font-medium text-xs md:text-sm text-gray-800">
+      <div className=" font-medium text-xs md:text-sm ">
         <span
           className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
             request.status

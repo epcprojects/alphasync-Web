@@ -16,6 +16,7 @@ import React, { useState } from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
 import AvatarUploader from "@/app/components/AvatarUploader";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const Page = () => {
   const [toggles, setToggles] = useState({
@@ -25,28 +26,43 @@ const Page = () => {
     stock: true,
   });
 
+  const isMobile = useIsMobile();
+
   const notifications = [
     {
       key: "email",
-      icon: <MailIcon />,
+      icon: <MailIcon height={isMobile ? 18 : 24} width={isMobile ? 18 : 24} />,
       title: "Email Notifications",
       subtitle: "Receive notifications via email",
     },
     {
       key: "sms",
-      icon: <MessageSquareIcon />,
+      icon: (
+        <MessageSquareIcon
+          height={isMobile ? 18 : 24}
+          width={isMobile ? 18 : 24}
+        />
+      ),
       title: "SMS Notifications",
       subtitle: "Receive urgent notifications via SMS",
     },
     {
       key: "orders",
-      icon: <PackageOutlineIcon fill="#6B7280" height="22" width="22" />,
+      icon: (
+        <PackageOutlineIcon
+          fill="#6B7280"
+          height={isMobile ? "18" : "24"}
+          width={isMobile ? "18" : "22"}
+        />
+      ),
       title: "Order Updates",
       subtitle: "Get notified about order status changes",
     },
     {
       key: "stock",
-      icon: <AlertIcon />,
+      icon: (
+        <AlertIcon height={isMobile ? 18 : 24} width={isMobile ? 18 : 24} />
+      ),
       title: "Low Stock Alerts",
       subtitle: "Get alerts when inventory is running low",
     },
@@ -90,41 +106,53 @@ const Page = () => {
           <TabGroup>
             <TabList
               className={
-                "flex items-center border-b border-b-gray-200  px-4 md:px-6"
+                "flex items-center border-b border-b-gray-200  md:justify-start  justify-between md:px-6"
               }
             >
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 text-xs md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 md:py-4 md:px-6"
+                  "flex items-center gap-1 md:gap-2 text-[11px] whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
                 }
               >
-                <UserIcon fill="currentColor" width="20" height="20" />
+                <UserIcon
+                  fill="currentColor"
+                  width={isMobile ? "16" : "20"}
+                  height={isMobile ? "16" : "20"}
+                />
                 My Profile
               </Tab>
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 outline-none text-xs md:text-sm border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 md:py-4 md:px-6"
+                  "flex items-center gap-1 md:gap-2 outline-none text-xs md:text-sm border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
                 }
               >
-                <LockIcon fill="currentColor" />
+                <LockIcon
+                  fill="currentColor"
+                  width={isMobile ? "16" : "20"}
+                  height={isMobile ? "16" : "20"}
+                />
                 Change Password
               </Tab>
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 outline-none text-xs md:text-sm border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 md:py-4 md:px-6"
+                  "flex items-center gap-1 md:gap-2 outline-none text-xs md:text-sm border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
                 }
               >
-                <ReminderIcon fill="currentColor" />
+                <ReminderIcon
+                  fill="currentColor"
+                  width={isMobile ? "16" : "20"}
+                  height={isMobile ? "16" : "20"}
+                />
                 Notifications
               </Tab>
             </TabList>
-            <TabPanels className={"p-4 md:p-6"}>
-              <TabPanel className={"px-4 md:px-8"}>
+            <TabPanels className={"pb-4 lg:p-6"}>
+              <TabPanel className={"px-5 lg:px-8"}>
                 <div className="grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200">
-                  <div className="col-span-3">
+                  <div className="col-span-12 mb-3 sm:mb-0 md:col-span-4 lg:col-span-3">
                     <label className="text-xs md:text-sm text-gray-700 font-semibold">
                       Your photo
                     </label>
@@ -159,13 +187,13 @@ const Page = () => {
                 >
                   {({ handleChange, values }) => (
                     <Form>
-                      <div className="grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                      <div className="grid grid-cols-12 gap-1.5 py-3 md:py-5 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label className="text-xs md:text-sm text-gray-700 font-semibold">
                             Full Name
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             name="fullName"
                             value={values.fullName}
@@ -179,13 +207,13 @@ const Page = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                      <div className="grid grid-cols-12 gap-1.5 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label className="text-xs md:text-sm text-gray-700 font-semibold">
                             Email Address
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="email"
                             name="email"
@@ -199,8 +227,8 @@ const Page = () => {
                           />
                         </div>
                       </div>
-                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                      <div className="grid grid-cols-12 gap-1.5 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -208,7 +236,7 @@ const Page = () => {
                             Phone Number
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="phone"
                             name="phone"
@@ -223,8 +251,8 @@ const Page = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                      <div className="grid grid-cols-12 gap-1.5 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -232,7 +260,7 @@ const Page = () => {
                             Medical License
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="license"
                             name="license"
@@ -247,8 +275,8 @@ const Page = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                      <div className="grid grid-cols-12 gap-1.5 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -256,7 +284,7 @@ const Page = () => {
                             Specialty
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="specialty"
                             name="specialty"
@@ -282,7 +310,11 @@ const Page = () => {
                 </Formik>
               </TabPanel>
 
-              <TabPanel className={"grid grid-cols-2 gap-4 md:gap-8"}>
+              <TabPanel
+                className={
+                  "grid grid-cols-1 md:grid-cols-2 p-5 lg:py-0 gap-4 md:gap-8"
+                }
+              >
                 <Formik
                   initialValues={{
                     currentPassword: "",
@@ -353,8 +385,9 @@ const Page = () => {
                       <div className="flex justify-end">
                         <ThemeButton
                           label="Update Password"
-                          heightClass="h-10"
+                          heightClass="h-10 "
                           type="submit"
+                          className="px-4"
                         />
                       </div>
                     </Form>
@@ -384,7 +417,7 @@ const Page = () => {
                   </div>
                 </div>
               </TabPanel>
-              <TabPanel className={"flex flex-col gap-4 md:gap-6"}>
+              <TabPanel className={"flex flex-col p-5 lg:py-0 gap-4 md:gap-6"}>
                 {notifications.map((item) => (
                   <NotificationToggle
                     key={item.key}

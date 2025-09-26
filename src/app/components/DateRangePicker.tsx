@@ -202,6 +202,7 @@ import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import ThemeButton from "./ui/buttons/ThemeButton";
 import { CalendarIcon } from "@/icons";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type Selection = {
   startDate: Date;
@@ -346,14 +347,16 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     tempRange[0].endDate.toDateString() ===
       quickRanges[label].endDate.toDateString();
 
+  const isMobile = useIsMobile();
+
   return (
     <div className="relative inline-block">
       <button
         ref={buttonRef}
-        className="h-10 w-10 flex items-center justify-center cursor-pointer bg-gray-100  text-raven rounded-full"
+        className="h-9 w-9 md:h-10 md:w-10 flex items-center justify-center cursor-pointer bg-gray-100  text-raven rounded-full"
         onClick={() => setOpen((v) => !v)}
       >
-        <CalendarIcon />
+        <CalendarIcon height={isMobile ? 16 : 20} width={isMobile ? 16 : 20} />
       </button>
 
       {open && (

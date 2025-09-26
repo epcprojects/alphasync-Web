@@ -1,10 +1,10 @@
 import React from "react";
 
-const PackageIcon = ({ fill = "#F79009" }) => {
+const PackageIcon = ({ fill = "#F79009", width = 23, height = 23 }) => {
   return (
     <svg
-      width="22"
-      height="23"
+      width={width}
+      height={height}
       viewBox="0 0 22 23"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

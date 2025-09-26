@@ -145,7 +145,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
               </h2>
             )}
             {showSubHeads && (
-              <h2 className="text-white/80 mt-1 text-base  md:text-xl">
+              <h2 className="text-white/80 mt-1 text-base text-center md:text-xl">
                 {subheading}
               </h2>
             )}

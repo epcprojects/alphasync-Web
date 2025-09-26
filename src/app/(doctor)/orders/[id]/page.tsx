@@ -1,5 +1,6 @@
 "use client";
 import { ThemeButton } from "@/app/components";
+import CustomerInfoCard from "@/app/components/ui/cards/CustomerInfoCard";
 import { getStatusClasses } from "@/app/components/ui/cards/OrderListView";
 import {
   ArrowDownIcon,
@@ -10,7 +11,6 @@ import {
   PrinterIcon,
   ShipmentTrackingIcon,
 } from "@/icons";
-import { getInitials } from "@/lib/helpers";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
 
@@ -33,84 +33,27 @@ const Page = () => {
 
       <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)]">
         <div>
-          <div className="p-3 md:p-6 flex items-center justify-between border-b border-gray-200 gap-3 md:gap-5">
-            <div className="flex items-center gap-3 md:gap-5">
-              <div className="rounded-full h-10 w-10 text-red-500 bg-red-100 text-3xl font-medium flex items-center justify-center shrink-0 md:h-19 md:w-19">
-                {getInitials("John Smith")}
-                {/* <Image
-                      alt=""
-                      width={256}
-                      height={256}
-                      src={"/images/arinaProfile.png"}
-                      className="rounded-full w-full h-full"
-                    /> */}
-              </div>
-              <div className="flex gap-3 md:gap-6 justify-between flex-col ">
-                <div className="flex items-center gap-1 md:gap-2">
-                  <h2 className="text-slate-900 text-sm md:text-lg font-semibold">
-                    John Smith
-                  </h2>
-                </div>
+          <CustomerInfoCard
+            name="John Smith"
+            email="john.smith@email.com"
+            phone="(555) 123-4567"
+            totalOrders={8}
+            lastOrder="1/15/2024"
+            address="321 Elm St, Nowhere, ST 98765"
+            onBack={() => console.log("Go back")}
+            onViewProfile={() => console.log("View profile")}
+            getInitials={(name) =>
+              name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+            }
+          />
 
-                <div className="flex items-center">
-                  <div className="border-r pe-3 md:pe-5 h border-gray-200">
-                    <h2 className="text-xs md:text-sm text-gray-500 ">
-                      Email:
-                    </h2>
-                    <h3 className="text-xs md:text-sm text-gray-800 font-medium">
-                      john.smith@email.com
-                    </h3>
-                  </div>
-
-                  <div className="border-r px-3 md:px-5 h border-gray-200">
-                    <h2 className="text-xs md:text-sm text-gray-500 ">
-                      Phone:
-                    </h2>
-                    <h3 className="text-xs md:text-sm text-gray-800 font-medium">
-                      (555) 123-4567
-                    </h3>
-                  </div>
-
-                  <div className="border-r px-3 md:px-5 max-w-80 border-gray-200">
-                    <h2 className="text-xs md:text-sm text-gray-500 ">
-                      Shipping Address:
-                    </h2>
-                    <h3 className="text-xs md:text-sm line-clamp-1 text-gray-800 font-medium">
-                      321 Elm St, Nowhere, ST 98765
-                    </h3>
-                  </div>
-
-                  <div className="border-r px-3 md:px-5 h border-gray-200">
-                    <h2 className="text-xs md:text-sm text-gray-500 ">
-                      Total Orders:
-                    </h2>
-                    <h3 className="text-xs md:text-sm text-gray-800 font-medium">
-                      08
-                    </h3>
-                  </div>
-
-                  <div className=" ps-3 md:ps-5">
-                    <h2 className="text-xs md:text-sm text-gray-500 ">
-                      Last Order:
-                    </h2>
-                    <h3 className="text-xs md:text-sm text-gray-800 font-medium">
-                      1/15/2024
-                    </h3>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <ThemeButton
-              label="View Profile"
-              onClick={() => {}}
-              heightClass="h-10"
-            />
-          </div>
           <div className="p-3 md:p-6 flex flex-col gap-1.5 md:gap-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-4">
-                <h2 className="text-sm md:text-lg font-semibold text-black">
+                <h2 className="text-base md:text-lg font-semibold text-black">
                   Order {params.id}
                 </h2>
                 <span className="text-gray-700 font-medium text-xs md:text-sm py-0.5 px-2.5 rounded-full bg-gray-100 border border-gray-200">
@@ -127,45 +70,42 @@ const Page = () => {
             </div>
 
             <div className="flex flex-col gap-1">
-              <div className="grid grid-cols-4 text-xs font-medium text-black rounded-xl bg-gray-50 p-1.5 md:p-3">
+              <div className="hidden sm:grid grid-cols-4 text-xs font-medium text-black rounded-xl bg-gray-50 p-1.5 md:p-3">
                 <div>Product</div>
                 <div>Quantity</div>
                 <div>Unit Price</div>
                 <div>Total</div>
               </div>
-              <div className="grid grid-cols-4 rounded-xl bg-gray-50 p-1.5 md:py-2 md:px-3">
-                <div className="text-gray-800 text-xs md:text-sm">CJC-1295</div>
-                <div>
-                  <span className="inline-block rounded-full px-2 py-0.5 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 items-start rounded-lg sm:rounded-xl bg-gray-50 p-1.5 md:py-2 md:px-3">
+                <div className="text-gray-800 text-xs md:text-sm sm:order-1 order-1">
+                  <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                    Product:
+                  </span>
+                  CJC-1295
+                </div>
+                <div className="flex  sm:order-2 order-3">
+                  <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                    Quantity:
+                  </span>
+                  <span className="inline-block rounded-full sm:px-2 sm:py-0.5 text-xs sm:font-medium text-gray-800 sm:text-gray-700 sm:bg-gray-50 sm:border sm:border-gray-200">
                     1
                   </span>
                 </div>
-                <div className="text-gray-800 text-xs md:text-sm font-normal">
-                  $95.25
-                </div>
-                <div className="text-gray-800 text-xs md:text-sm font-medium">
-                  $95.25
-                </div>
-              </div>
-
-              <div className="grid grid-cols-4 rounded-xl bg-gray-50 p-1.5 md:py-2 md:px-3">
-                <div className="text-gray-800 text-xs md:text-sm">
-                  Sermorelin
-                </div>
-                <div>
-                  <span className="inline-block rounded-full px-2 py-0.5 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200">
-                    2
+                <div className="text-gray-800 flex sm:justify-start justify-end text-xs md:text-sm font-normal sm:order-3 order-2">
+                  <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                    Unit Price:
                   </span>
+                  $95.25
                 </div>
-                <div className="text-gray-800 text-xs md:text-sm font-normal">
-                  $112.50
-                </div>
-                <div className="text-gray-800 text-xs md:text-sm font-medium">
-                  $222.5
+                <div className="text-gray-800 text-xs flex sm:justify-start justify-end md:text-sm sm:font-medium sm:order-4 order-4">
+                  <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                    Total:
+                  </span>
+                  $95.25
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 bg-sky-50 p-1.5 md:py-2 md:px-3 rounded-xl">
+              <div className="grid grid-cols-4 bg-sky-50 p-1.5 md:py-2 md:px-3 rounded-lg md:rounded-xl">
                 <div className="col-span-3 text-gray-800 font-semibold text-sm md:text-lg">
                   Order Total
                 </div>
@@ -178,10 +118,10 @@ const Page = () => {
         </div>
 
         <div className="p-3 md:p-6 !pt-0 flex flex-col gap-1.5 md:gap-3">
-          <h2 className="font-semibold text-sm md:text-lg text-black ">
+          <h2 className="font-semibold text-base md:text-lg text-black ">
             Shipping Information
           </h2>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1 md:gap-4">
             <div className="rounded-lg flex items-center gap-1 md:gap-2 p-2 bg-gray-50 ">
               <div className="rounded-lg bg-white border border-gray-200 flex items-center justify-center w-10 h-10">
                 <DeliveryTruckIcon />
@@ -209,13 +149,15 @@ const Page = () => {
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-end gap-1.5 md:gap-3">
+          <div className="flex items-center flex-col md:flex-row flex-wrap justify-end gap-1.5 md:gap-3">
             <ThemeButton
               label="Cancel Order"
               variant="outline"
               size="medium"
               icon={<CrossIcon fill="#EF4444" />}
               onClick={() => {}}
+              className="w-full sm:w-fit"
+              heightClass="md:h-11 h-10"
             />
 
             <ThemeButton
@@ -224,6 +166,8 @@ const Page = () => {
               size="medium"
               icon={<ShipmentTrackingIcon />}
               onClick={() => {}}
+              className="w-full sm:w-fit"
+              heightClass="md:h-11 h-10"
             />
 
             <ThemeButton
@@ -232,6 +176,8 @@ const Page = () => {
               size="medium"
               icon={<PrinterIcon />}
               onClick={() => {}}
+              className="w-full sm:w-fit"
+              heightClass="md:h-11 h-10"
             />
 
             <ThemeButton
@@ -240,6 +186,8 @@ const Page = () => {
               size="medium"
               icon={<MessageOutgoingIcon />}
               onClick={() => {}}
+              className="w-full sm:w-fit"
+              heightClass="md:h-11 h-10"
             />
           </div>
         </div>

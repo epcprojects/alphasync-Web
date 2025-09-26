@@ -50,7 +50,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
   };
 
   return (
-    <div className="col-span-6 flex items-center justify-between">
+    <div className="col-span-12 md:col-span-6 flex items-center justify-between">
       <div>
         {showTitle && (
           <span className="font-medium text-gray-700 text-xs md:text-sm mb-1">
