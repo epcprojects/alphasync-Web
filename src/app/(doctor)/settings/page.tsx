@@ -328,7 +328,7 @@ const Page = () => {
                 >
                   {({ handleChange, values }) => (
                     <Form className="flex flex-col gap-2 md:gap-4">
-                      <h2 className="text-black font-medium text-sm md:text-lg">
+                      <h2 className="text-black font-medium text-xl ">
                         Change Password
                       </h2>
                       <div className="flex flex-col gap-3 md:gap-5">
