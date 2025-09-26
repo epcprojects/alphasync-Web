@@ -18,6 +18,7 @@ interface ThemeButtonProps {
   size?: buttonSize;
   variant?: buttonVariant;
   heightClass?: string;
+  minWidthClass?: string;
 }
 
 const ThemeButton: React.FC<ThemeButtonProps> = ({
@@ -30,6 +31,7 @@ const ThemeButton: React.FC<ThemeButtonProps> = ({
   size = "medium",
   variant = "filled",
   heightClass,
+  minWidthClass
 }) => {
   const sizeClasses: Record<buttonSize, string> = {
     small: "px-3 py-1 text-xs",
@@ -78,7 +80,7 @@ const ThemeButton: React.FC<ThemeButtonProps> = ({
           disabled={disabled}
           onClick={onClick}
           type={type}
-          className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]}`}
+          className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${minWidthClass}`}
         >
           {icon && <span className="flex items-center ">{icon}</span>} {label}
         </button>

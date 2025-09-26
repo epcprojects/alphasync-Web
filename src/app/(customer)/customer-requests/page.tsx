@@ -11,6 +11,7 @@ import RequestDetails, {
 } from "@/app/components/ui/modals/RequestDetails";
 import CustomerOrderPayment from "@/app/components/ui/modals/CustomerOrderPayment";
 import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
+import CustomerOrderSummary from "@/app/components/ui/modals/CustomerOrderSummary";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 const Page = () => {
@@ -22,6 +23,7 @@ const Page = () => {
   );
   const [isSucess, setIsSuccess] = useState(false);
   const [isPaymentModel, setisPaymentModel] = useState(false);
+  const [isSummaryModel, setIsSummaryModel] = useState(false);
   const handleApprove = (title: string) => {
     showSuccessToast("Patient request approved successfully.");
     console.log(title);
@@ -112,6 +114,10 @@ const Page = () => {
                   onAddNote={() => handleAddNote(item.title)}
                   onViewDetails={() => handleRequests(item)}
                   onChat={() => {}}
+                  onPayment={() => {
+                    console.log("opening payment Model");
+                    setisPaymentModel(true);
+                  }}
                   {...item}
                 />
               ))}
@@ -125,6 +131,10 @@ const Page = () => {
                   onApprove={() => handleApprove(item.title)}
                   onReject={() => handleReject(item.title)}
                   onAddNote={() => handleAddNote(item.title)}
+                  onPayment={() => {
+                    console.log("opening payment Model");
+                    setisPaymentModel(true);
+                  }}
                   {...item}
                 />
               ))}
@@ -138,6 +148,10 @@ const Page = () => {
                   onApprove={() => handleApprove(item.title)}
                   onReject={() => handleReject(item.title)}
                   onAddNote={() => handleAddNote(item.title)}
+                  onPayment={() => {
+                    console.log("opening payment Model");
+                    setisPaymentModel(true);
+                  }}
                   {...item}
                 />
               ))}
@@ -152,6 +166,10 @@ const Page = () => {
                   onReject={() => handleReject(item.title)}
                   onAddNote={() => handleAddNote(item.title)}
                   {...item}
+                  onPayment={() => {
+                    console.log("opening payment Model");
+                    setisPaymentModel(true);
+                  }}
                 />
               ))}
             </TabPanel>
@@ -178,7 +196,7 @@ const Page = () => {
             medicineName: "Semaglutide",
             doctorName: "Dr. Arina Baker",
             strength: "5 mg vial",
-            price: "120",
+            price: 120,
           }}
           onClick={() => {
             setisPaymentModel(false);
@@ -191,8 +209,28 @@ const Page = () => {
         onClose={() => setIsSuccess(false)}
         viewOrder={() => {
           setIsSuccess(false);
+          setIsSummaryModel(true);
         }}
         btnTitle={"View Requests"}
+      />
+      <CustomerOrderSummary
+        isOpen={isSummaryModel}
+        onClose={() => setIsSummaryModel(false)}
+        order={{
+          orderNumber: "123456",
+          orderedOn: "8/8/2025",
+          doctorName: "Dr. Arina Baker",
+          totalPrice: 120,
+          orderItems: [
+            {
+              id: 123456,
+              medicineName: "Semaglutide",
+              quantity: 1,
+              amount: "120",
+              price: 89.99,
+            },
+          ],
+        }}
       />
       <AddNoteModal
         isOpen={isNoteModalOpen}

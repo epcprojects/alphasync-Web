@@ -10,13 +10,17 @@ import {
   Dinners,
   Discover,
   JCB,
+  Lock,
   Maestro,
   Master,
   RuPay,
   UnionPay,
   Visa,
 } from "@/icons";
-import OrderItemCard, { OrderItemProps } from "../cards/OrderItemCards";
+import OrderItemCard, {
+  getStatusClasses,
+  OrderItemProps,
+} from "../cards/OrderItemCards";
 
 type OrderItem = {
   id: string | number;
@@ -41,7 +45,7 @@ export type requestProps = {
   medicineName: string;
   doctorName: string;
   strength: string;
-  price: string;
+  price: number;
 };
 
 interface CustomerOrderPaymentProps {
@@ -205,9 +209,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     }
 
     setCardNumber(formatted);
-    const detectedType = matchedCard ? matchedCard.name : "Default";
     detectCardType(digitsOnly);
-    validateCardNumber(formatted, detectedType as CardType);
   };
 
   const getCardFormat = (
@@ -286,7 +288,6 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     }
 
     setExpiryDate(formatted);
-    validateExpiry(formatted);
   };
 
   const validateExpiry = (date: string) => {
@@ -370,7 +371,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
 
     if (!billingAddress || billingAddress.trim() === "") return false;
 
-    if (!zipCode || !/^\d{4,10}$/.test(zipCode)) return false;
+    if (!zipCode || !/^[A-Za-z0-9\s]{1,10}$/.test(zipCode)) return false;
 
     return true;
   };
@@ -384,7 +385,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     transformedItem = {
       id: request.id,
       medicineName: request.medicineName,
-      price: Number(request.price),
+      price: request.price,
       doctorName: request.doctorName,
       strength: request.strength,
     };
@@ -392,7 +393,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
 
   return (
     <AppModal
-      isOpen={true}
+      isOpen={isOpen}
       onClose={onClose}
       icon={<Card />}
       title={isMobile && !showForm ? "Order Summary" : "Complete Payment"}
@@ -421,18 +422,18 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
         (!isAnyFieldValid() || cardType === "Default")
       }
       confirmLabel={
-        isMobile
+        isMobile && !request
           ? showForm
             ? `Pay $${total}`
             : "Continue"
-          : request
+          : request || isMobile
           ? "Pay Now"
           : `Pay $${total}`
       }
       btnFullWidth={true}
     >
       {(order || request) && (
-        <div className="w-full max-w-2xl mx-auto gap-6">
+        <div className="w-full max-w-2xl mx-auto flex flex-col gap-6">
           {order ? (
             <div className={`${showForm ? "hidden" : "block"} md:block`}>
               <div className="flex justify-between items-center">
@@ -443,7 +444,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   {order.orderItems.length.toString().padStart(2, "0")} Items
                 </span>
               </div>
-              <div className="flex flex-col gap-3 mt-4">
+              <div className="flex flex-col gap-3 mt-4 border-b border-gray-200 pb-3 md:pb-4">
                 {order.orderItems.map((item) => (
                   <div
                     key={item.id}
@@ -473,8 +474,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   </div>
                 ))}
               </div>
-              <hr className=" my-3 md:my-4 text-gray-200" />
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 border-b border-gray-200 py-3 md:py-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-normal text-gray-800">
                     Sub total
@@ -492,8 +492,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   </span>
                 </div>
               </div>
-              <hr className=" my-3 md:my-4 text-gray-200" />
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center border-b border-gray-200 py-3 md:py-4">
                 <span className="text-base font-medium text-gray-800">
                   Total
                 </span>
@@ -501,18 +500,115 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   ${total}
                 </span>
               </div>
-              <hr className=" my-3 md:my-4 text-gray-200" />
             </div>
           ) : (
-            transformedItem && (
-              <OrderItemCard item={transformedItem} requestStatus />
+            transformedItem &&
+            !isMobile && (
+              <OrderItemCard
+                item={transformedItem}
+                requestStatus
+                paymentRequest={true}
+              />
             )
           )}
+          {request && isMobile && (
+            <>
+              <div className="flex items-start gap-3 md:border-b md:border-gray-200 md:pb-4">
+                <div className="w-18 h-18 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <Image
+                    alt="#"
+                    src={"/images/products/p1.png"}
+                    width={1024}
+                    height={1024}
+                  />
+                </div>
+                <div className="flex-1 flex flex-col gap-3 md:gap-1.5 ">
+                  <h3 className=" text-gray-800 font-semibold text-base">
+                    {transformedItem?.medicineName}
+                  </h3>
+                  <div>
+                    <p className="text-sm font-normal text-gray-800 line-clamp-2">
+                      A synthetic peptide known for its healing properties.
+                      BPC-157 promotes tissue...
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center text-sm text-gray-500">
+                    <div
+                      className={`flex items-center w-full ${
+                        transformedItem?.status ? "gap-2" : "gap-0"
+                      }`}
+                    >
+                      <div>
+                        {transformedItem?.status && (
+                          <span
+                            className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+                              transformedItem?.status
+                            )}`}
+                          >
+                            {transformedItem?.status}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <span
+                          className={`inline-block whitespace-nowrap border border-gray-200 rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium`}
+                        >
+                          Recovery & Healing
+                        </span>
+                      </div>
+                      <div className="flex ml-auto gap-3">
+                        <span className="text-xs font-normal text-gray-800">
+                          5 mg vial
+                        </span>
+                        <span className="text-xs font-normal text-gray-800">
+                          |
+                        </span>
+                        <span className="text-xs font-normal text-gray-800">
+                          Injectable
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-normal text-gray-800">
+                    Sub total
+                  </span>
+                  <span className="text-sm font-medium text-gray-800">
+                    $125.99
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-normal text-gray-800">
+                    Tax (8%)
+                  </span>
+                  <span className="text-sm font-medium text-gray-800">
+                    $12.00
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-base font-medium text-gray-800">
+                    Total
+                  </span>
+                  <span className="text-base font-semibold text-primary">
+                    $137.99
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
           <form
-            className={`${
-              showForm || request ? "block" : "hidden"
-            } md:flex mx-auto flex flex-col gap-4`}
+            className={`${!showForm && isMobile ? "hidden" : "block"}
+            flex flex-col gap-4`}
           >
+            <div className="flex items-center gap-3 py-2 px-4 bg-blue-50 md:hidden rounded-xl">
+              <Lock />
+              <span className="text-sm font-medium text-blue-900">
+                Your payment information is secure and encrypted
+              </span>
+            </div>
             <ThemeInput
               id="Name"
               label="Name on card"
@@ -530,6 +626,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
               placeholder="1234 1234 1234 1234"
               value={cardNumber}
               onChange={(e) => formatCardNumber(e.target.value)}
+              onBlur={() =>
+                validateCardNumber(cardNumber, cardType as CardType)
+              }
               icon={<SelectedCardIcon />}
               maxLength={maxCardLength}
               error={!!cardNumberError}
@@ -545,6 +644,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   placeholder="MM / YY"
                   value={expiryDate}
                   onChange={handleExpiryChange}
+                  onBlur={() => validateExpiry(expiryDate)}
                   maxLength={5}
                   error={!!expiryError}
                   errorMessage={expiryError}

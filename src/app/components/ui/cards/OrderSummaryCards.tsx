@@ -15,9 +15,9 @@ interface OrderItemCardProps {
 
 const OrderSummaryCard: React.FC<OrderItemCardProps> = ({ item }) => {
   return (
-    <div key={item.id} className="px-4 pt-4">
+    <div key={item.id} className="px-4 pt-4 flex flex-col gap-2">
       <div className="flex items-start gap-3">
-        <div className="w-20 h-20 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
+        <div className="w-18 h-18 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
           <Image
             alt="#"
             src={"/images/products/p1.png"}
@@ -29,10 +29,14 @@ const OrderSummaryCard: React.FC<OrderItemCardProps> = ({ item }) => {
           <h3 className=" text-gray-800 font-semibold text-base">
             {item.medicineName}
           </h3>
-          <p className="text-sm font-normal text-gray-800 hidden md:block">
-            A synthetic peptide known for its healing properties. BPC-157 promotes
-            tissue...
-          </p>
+          <div className="hidden md:flex">
+            <p className="text-sm font-normal text-gray-800 line-clamp-2">
+              A synthetic peptide known for its healing properties. BPC-157
+              promotes tissue.A synthetic peptide known for its healing properties. BPC-157
+              promotes tissue.A synthetic peptide known for its healing properties. BPC-157
+              promotes tissue
+            </p>
+          </div>
           <div className="flex justify-between items-center text-sm text-gray-500">
             <div className="px-2.5 py-0.5 rounded-full bg-gray-100 border border-gray-200 mb-1.5">
               <p className="text-sm font-medium text-gray-700 whitespace-nowrap">
@@ -43,8 +47,7 @@ const OrderSummaryCard: React.FC<OrderItemCardProps> = ({ item }) => {
           </div>
         </div>
       </div>
-
-      <div className="flex flex-col gap-2 mt-2 md:mt-0">
+      <div className="flex flex-col gap-2 md:mt-0 border-b border-gray-200 pb-4">
         <div className="flex justify-between">
           <span className="text-xs font-normal text-gray-800">Quantity</span>
           <span className="text-xs font-medium text-gray-800">
@@ -64,8 +67,6 @@ const OrderSummaryCard: React.FC<OrderItemCardProps> = ({ item }) => {
           </span>
         </div>
       </div>
-
-      <hr className=" text-gray-200 mt-3" />
     </div>
   );
 };
