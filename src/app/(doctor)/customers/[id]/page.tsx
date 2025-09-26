@@ -17,7 +17,6 @@ import {
   PlusIcon,
   RequestTabIcon,
 } from "@/icons";
-import { getInitials } from "@/lib/helpers";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -134,7 +133,6 @@ export default function CustomerDetail() {
           statusActive={true}
           lastOrder="1/15/2024"
           dob="3/15/1985"
-          onBack={() => console.log("Go back")}
           onQuickChat={() => setSelectedIndex(1)}
           onCreateOrder={() => setIsOrderModalOpen(true)}
           getInitials={(name) =>

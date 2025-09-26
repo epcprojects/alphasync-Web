@@ -86,6 +86,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   order,
   onClick,
   request,
+  isOpen,
 }) => {
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState<string>("");

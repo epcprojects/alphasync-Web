@@ -3,7 +3,7 @@ import React, { useEffect, useState, MouseEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Images } from "@/app/ui/images";
-import { ProfileIcon, LogoutIcon, UserIcon, RequestIcon } from "@/icons";
+import { ProfileIcon, LogoutIcon, RequestIcon } from "@/icons";
 import HeaderMenuNavItems from "./HeaderMenuNavItems";
 import Notifications from "../ui/Notifications";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";

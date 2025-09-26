@@ -2,7 +2,7 @@
 import { AuthHeader, ThemeButton, ThemeInput } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,7 +11,7 @@ import { TickIcon } from "@/icons";
 
 type LoginType = "Customer" | "Doctor";
 
-const Page = () => {
+function LoginContext() {
   const [loginType, setLoginType] = useState("Doctor");
   const router = useRouter();
   const params = useSearchParams();
@@ -161,6 +161,12 @@ const Page = () => {
       </form>
     </div>
   );
-};
+}
 
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginContext />
+    </Suspense>
+  );
+}

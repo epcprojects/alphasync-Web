@@ -1,5 +1,5 @@
 "use client";
-import { ArrowLeftIcon, BubbleChatIcon, PlusIcon } from "@/icons";
+import { BubbleChatIcon, PlusIcon } from "@/icons";
 import React from "react";
 import ThemeButton from "../buttons/ThemeButton";
 
@@ -11,7 +11,6 @@ interface CustomerProfileHeaderCardProps {
   totalOrders: number | string;
   lastOrder: string;
   dob: string;
-  onBack?: () => void;
   onCreateOrder: () => void;
   onQuickChat: () => void;
   getInitials: (name: string) => string;
@@ -24,7 +23,6 @@ const CustomerProfileHeaderCard: React.FC<CustomerProfileHeaderCardProps> = ({
   totalOrders,
   lastOrder,
   dob,
-  onBack,
   onCreateOrder,
   onQuickChat,
   getInitials,
