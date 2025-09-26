@@ -1,6 +1,6 @@
 "use client";
 import { TextAreaField, ThemeButton, ThemeInput } from "@/app/components";
-import { AccountSettingsIcon, InfoIcon, UserIcon } from "@/icons";
+import { InfoIcon, UserIcon } from "@/icons";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import React from "react";
 import * as Yup from "yup";

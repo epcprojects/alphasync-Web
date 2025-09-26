@@ -1,6 +1,5 @@
 "use client";
 import { ChatMessage, ThemeButton } from "@/app/components";
-import { BubbleChatFilledIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
 import React, { useEffect, useRef, useState } from "react";
 
