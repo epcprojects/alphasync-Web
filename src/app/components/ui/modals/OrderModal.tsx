@@ -69,7 +69,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
       confirmLabel="Create Order"
       scrollNeeded={false}
     >
-      <div className="w-full flex flex-col justify-between min-h-20 gap-4">
+      <div className="w-full flex flex-col justify-between  md:min-h-20 gap-4">
         {/* Customer Selection */}
         <div>
           <SelectGroupDropdown

@@ -35,10 +35,10 @@ interface AppModalProps {
 }
 
 const sizeClasses = {
-  small: "max-w-lg", // ~512px
-  medium: "max-w-[600px]", // ~600x
-  large: "max-w-3xl", // ~768px
-  extraLarge: "max-w-5xl", // ~1024
+  small: "sm:max-w-lg", // ~512px
+  medium: "sm:max-w-[600px]", // ~600x
+  large: "sm:max-w-3xl", // ~768px
+  extraLarge: "sm:max-w-5xl", // ~1024
 };
 
 const AppModal: React.FC<AppModalProps> = ({
@@ -68,14 +68,14 @@ const AppModal: React.FC<AppModalProps> = ({
 
   if (!isOpen) return null;
 
-  const baseModalClasses = " shadow-xl flex flex-col";
+  const baseModalClasses = " shadow-xl h-full flex flex-col";
   const baseWrapperClasses =
     "fixed inset-0 z-[100] bg-black/50 backdrop-blur-xs flex";
 
   const modalClasses =
     position === ModalPosition.RIGHT
-      ? `${baseModalClasses} h-full w-full md:w-[600px] md:rounded-xl overflow-hidden`
-      : `${baseModalClasses}  relative w-full  md:m-auto container md:mx-4 ${sizeClasses[size]}`;
+      ? `${baseModalClasses} w-full md:w-[600px] md:rounded-xl overflow-hidden`
+      : `${baseModalClasses} sm:h-fit relative w-full   md:m-auto container md:mx-4 ${sizeClasses[size]}`;
 
   const wrapperClasses =
     position === ModalPosition.RIGHT
@@ -89,9 +89,9 @@ const AppModal: React.FC<AppModalProps> = ({
         onClick={outSideClickClose ? onClose : undefined}
       >
         <div className={modalClasses} onClick={(e) => e.stopPropagation()}>
-          <div className="px-4 py-3 bg-gray-100 flex rounded-t-2xl items-center justify-between border-b border-gray-200">
+          <div className="px-4 py-3 bg-gray-100 flex sm:rounded-t-2xl items-center justify-between border-b border-gray-200">
             <div className="flex items-center gap-2">
-              <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center border border-lightGray">
+              <div className="h-9 w-9 shrink-0 rounded-xl bg-white flex items-center justify-center border border-lightGray">
                 {icon}
               </div>
               <div>
@@ -130,7 +130,7 @@ const AppModal: React.FC<AppModalProps> = ({
             <div
               className={`${
                 btnFullWidth && "gap-6"
-              } border-t border-gray-200 bg-white flex  rounded-b-2xl items-center justify-between p-2 md:p-4`}
+              } border-t border-gray-200 bg-white flex  sm:rounded-b-2xl items-center justify-between p-2 md:p-4`}
             >
               {!hideCancelBtn && (
                 <ThemeButton
