@@ -29,6 +29,7 @@ import AddNoteModal from "@/app/components/ui/modals/AddNoteModal";
 import ProductRequestDetailModal from "@/app/components/ui/modals/ProductRequestDetailModal";
 import ChatModal from "@/app/components/ui/modals/ChatModal";
 import NewOrderModal from "@/app/components/ui/modals/NewOrderModal";
+import CustomerProfileHeaderCard from "@/app/components/ui/cards/CustomerProfileHeaderCard";
 
 export default function CustomerDetail() {
   const router = useRouter();
@@ -125,94 +126,24 @@ export default function CustomerDetail() {
       </div>
 
       <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)]">
-        <div className="p-3 md:p-6 flex items-center justify-between gap-3 md:gap-5">
-          <div className="flex items-start gap-3 md:gap-5">
-            <div className="rounded-full h-10 w-10 text-red-500 bg-red-100 text-3xl font-medium flex items-center justify-center shrink-0 md:h-19 md:w-19">
-              {getInitials("John Smith")}
-              {/* <Image
-                alt=""
-                width={256}
-                height={256}
-                src={"/images/arinaProfile.png"}
-                className="rounded-full w-full h-full"
-              /> */}
-            </div>
-            <div className="flex gap-3 md:gap-6 justify-between flex-col ">
-              <div className="flex items-center gap-1 md:gap-2">
-                <h2 className="text-slate-900 text-sm md:text-lg font-semibold">
-                  John Smith
-                </h2>
-                <span
-                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium bg-green-50 text-green-700 border border-green-200`}
-                >
-                  Active
-                </span>
-              </div>
-
-              <div className="flex items-center">
-                <div className="border-r pe-3 md:pe-5 h border-gray-200">
-                  <h2 className="text-xs md:text-sm text-gray-500 ">Email:</h2>
-                  <h3 className="text-xs md:text-sm text-gray-800 font-medium">
-                    john.smith@email.com
-                  </h3>
-                </div>
-
-                <div className="border-r px-3 md:px-5 h border-gray-200">
-                  <h2 className="text-xs md:text-sm text-gray-500 ">Phone:</h2>
-                  <h3 className="text-xs md:text-sm text-gray-800 font-medium">
-                    (555) 123-4567
-                  </h3>
-                </div>
-
-                <div className="border-r px-3 md:px-5 h border-gray-200">
-                  <h2 className="text-xs md:text-sm text-gray-500 ">
-                    Date of Birth:
-                  </h2>
-                  <h3 className="text-xs md:text-sm text-gray-800 font-medium">
-                    3/15/1985
-                  </h3>
-                </div>
-
-                <div className="border-r px-3 md:px-5 h border-gray-200">
-                  <h2 className="text-xs md:text-sm text-gray-500 ">
-                    Total Orders:
-                  </h2>
-                  <h3 className="text-xs md:text-sm text-gray-800 font-medium">
-                    08
-                  </h3>
-                </div>
-
-                <div className=" ps-3 md:ps-5">
-                  <h2 className="text-xs md:text-sm text-gray-500 ">
-                    Last Order:
-                  </h2>
-                  <h3 className="text-xs md:text-sm text-gray-800 font-medium">
-                    1/15/2024
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 md:gap-3">
-            <ThemeButton
-              label="Create Order"
-              onClick={() => {
-                setIsOrderModalOpen(true);
-              }}
-              icon={<PlusIcon />}
-              variant="primaryOutline"
-              heightClass="h-10"
-            />
-
-            <ThemeButton
-              label="Quick Chat"
-              onClick={() => setSelectedIndex(1)}
-              icon={<BubbleChatIcon />}
-              heightClass="h-10"
-            />
-          </div>
-        </div>
+        <CustomerProfileHeaderCard
+          name="John Smith"
+          email="john.smith@email.com"
+          phone="(555) 123-4567"
+          totalOrders={8}
+          statusActive={true}
+          lastOrder="1/15/2024"
+          dob="3/15/1985"
+          onBack={() => console.log("Go back")}
+          onQuickChat={() => setSelectedIndex(1)}
+          onCreateOrder={() => setIsOrderModalOpen(true)}
+          getInitials={(name) =>
+            name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+          }
+        />
 
         <div className=" ">
           <TabGroup selectedIndex={selectedIndex} onChange={setSelectedIndex}>
