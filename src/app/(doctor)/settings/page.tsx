@@ -303,6 +303,7 @@ const Page = () => {
                           label="Save Changes"
                           heightClass="h-10"
                           type="submit"
+                          className="w-full md:w-fit"
                         />
                       </div>
                     </Form>
@@ -387,7 +388,7 @@ const Page = () => {
                           label="Update Password"
                           heightClass="h-10 "
                           type="submit"
-                          className="px-4"
+                          className="w-full md:w-fit"
                         />
                       </div>
                     </Form>
@@ -412,6 +413,7 @@ const Page = () => {
                         variant="outline"
                         label="Configure"
                         onClick={() => {}}
+                        className="w-full md:w-fit"
                       />
                     </div>
                   </div>

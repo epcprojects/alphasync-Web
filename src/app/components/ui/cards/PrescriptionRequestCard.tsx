@@ -10,6 +10,8 @@ import {
   NoteIcon,
   CreditCardOutlineIcon,
 } from "@/icons";
+import InfoGrid from "./InfoGrid";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 export type cardVariantType = "Customer" | "Doctor";
 interface PrescriptionRequestCardProps {
@@ -69,110 +71,77 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   }
 
   const baseClasses =
-    " flex-col flex items-start gap-1.5 md:gap-3  bg-white p-2 md:p-4";
+    " flex-col flex items-start gap-1.5 md:gap-3  bg-white p-2 lg:p-4";
 
   const variantClasses: Record<cardVariantType, string> = {
-    Customer: "border-b border-b-gray-200 ",
+    Customer: "border-b border-b-gray-200 last:border-b-0",
     Doctor: "border border-gray-200 rounded-xl",
   };
 
+  const isMobile = useIsMobile();
+
   return (
     <div className={`${baseClasses} ${variantClasses[cardVarient]}`}>
-      <div className="w-full flex items-start gap-2.5 md:gap-5">
-        <div className="w-14 shrink-0 h-14 md:w-20 md:h-20 rounded-lg bg-gray-100 flex items-center justify-center">
-          <Image
-            width={1080}
-            height={1080}
-            className="h-12 md:h-18 md:w-18 w-12"
-            src={imageSrc}
-            alt={title ? title : ""}
-          />
-        </div>
+      <div className="w-full">
+        <div className="w-full flex items-start gap-2.5 md:gap-5">
+          <div className="w-14 shrink-0 h-14 md:w-20 md:h-20 rounded-lg bg-gray-100 flex items-center justify-center">
+            <Image
+              width={1080}
+              height={1080}
+              className="h-12 md:h-18 md:w-18 w-12"
+              src={imageSrc}
+              alt={title ? title : ""}
+            />
+          </div>
 
-        <div className="w-full flex flex-col gap-0.5 md:gap-1">
-          <div className="flex items-start justify-between gap-0.5 md:gap-1 ">
-            <div>
-              <h2 className="text-gray-800 font-semibold text-sm md:text-base">
-                {title}{" "}
-                {subtitle && (
-                  <span className="font-normal text-xs">{subtitle}</span>
+          <div className="w-full flex flex-col gap-0.5 md:gap-1">
+            <div className="flex items-start sm:flex-row flex-col justify-between gap-1.5 md:gap-3 ">
+              <div>
+                <h2 className="text-gray-800 font-semibold text-sm mb-1 md:text-base">
+                  {title}{" "}
+                  {subtitle && (
+                    <span className="font-normal text-xs">{subtitle}</span>
+                  )}
+                </h2>
+                {description && (
+                  <p className="text-[10px] md:text-sm text-gray-800">
+                    {description}
+                  </p>
                 )}
-              </h2>
-              {description && (
-                <p className="text-[10px] text-gray-800">{description}</p>
+              </div>
+
+              {status && (
+                <div>
+                  <span
+                    className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+                      status
+                    )}`}
+                  >
+                    {status}
+                  </span>
+                </div>
               )}
             </div>
-
-            {status && (
-              <div>
-                <span
-                  className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
-                    status
-                  )}`}
-                >
-                  {status}
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="grid gird-cols-1 md:grid-cols-5">
-            {category && (
-              <div>
-                <span className="block mb-1 text-gray-800 text-xs md:text-sm">
-                  Category
-                </span>
-                <span className="block text-gray-800 text-xs md:text-sm font-semibold">
-                  {category}
-                </span>
-              </div>
-            )}
-
-            {requestedDate && (
-              <div>
-                <span className="block mb-1 text-gray-800 text-xs md:text-sm">
-                  Requested
-                </span>
-                <span className="block text-gray-800 text-xs md:text-sm font-semibold">
-                  {requestedDate}
-                </span>
-              </div>
-            )}
-
-            {reviewedDate && (
-              <div>
-                <span className="block mb-1 text-gray-800 text-xs md:text-sm">
-                  Reviewed
-                </span>
-                <span className="block text-gray-800 text-xs md:text-sm font-semibold">
-                  {reviewedDate}
-                </span>
-              </div>
-            )}
-
-            {doctorName && (
-              <div>
-                <span className="block mb-1 text-gray-800 text-xs md:text-sm">
-                  Doctor Name
-                </span>
-                <span className="block text-gray-800 text-xs md:text-sm font-semibold">
-                  {doctorName}
-                </span>
-              </div>
-            )}
-
-            {price && (
-              <div>
-                <span className="block mb-1 text-gray-800 text-xs md:text-sm">
-                  Price
-                </span>
-                <span className="block text-primary text-xs md:text-sm font-semibold">
-                  {price}
-                </span>
-              </div>
+            {!isMobile && (
+              <InfoGrid
+                category={category}
+                requestedDate={requestedDate}
+                reviewedDate={reviewedDate}
+                doctorName={doctorName}
+                price={price}
+              />
             )}
           </div>
         </div>
+        {isMobile && (
+          <InfoGrid
+            category={category}
+            requestedDate={requestedDate}
+            reviewedDate={reviewedDate}
+            doctorName={doctorName}
+            price={price}
+          />
+        )}
       </div>
 
       {userNotes && (
@@ -181,7 +150,9 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             Your Notes:
           </h2>
           <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
-            <p className="text-sm md:text-base text-gray-600">{userNotes}</p>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600">
+              {userNotes}
+            </p>
           </div>
         </div>
       )}
@@ -192,7 +163,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             Physician Notes
           </h2>
           <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
-            <p className="text-sm md:text-base text-gray-600">
+            <p className="text-xs sm:text-sm md:text-base text-gray-600">
               {physicianNotes}
             </p>
           </div>
@@ -205,12 +176,14 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             Reason for Denial
           </h2>
           <div className="bg-red-100 p-1.5 md:p-3 rounded-lg w-full">
-            <p className="text-sm md:text-base text-gray-900">{denialReason}</p>
+            <p className="text-xs sm:text-sm md:text-base text-gray-900">
+              {denialReason}
+            </p>
           </div>
         </div>
       )}
 
-      <div className="flex items-center justify-end gap-1 w-full md:gap-2">
+      <div className="flex items-center flex-col sm:flex-row justify-end gap-1 w-full md:gap-2">
         {onApprove && status !== "Approved" && cardVarient === "Doctor" && (
           <ThemeButton
             label="Approve"
@@ -218,6 +191,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             onClick={onApprove}
             variant="outline"
             heightClass="h-10"
+            className="w-full sm:w-fit"
           />
         )}
         {onReject && !denialReason && cardVarient === "Doctor" && (
@@ -227,6 +201,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             onClick={onReject}
             variant="outline"
             heightClass="h-10"
+            className="w-full sm:w-fit"
           />
         )}
         {onChat &&
@@ -240,6 +215,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
               onClick={onChat}
               variant="outline"
               heightClass="h-10"
+              className="w-full sm:w-fit"
             />
           )}
 
@@ -249,6 +225,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             icon={<CreditCardOutlineIcon />}
             onClick={onChat}
             heightClass="h-10"
+            className="w-full sm:w-fit"
           />
         )}
 
@@ -259,6 +236,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             onClick={onViewDetails}
             variant="outline"
             heightClass="h-10"
+            className="w-full sm:w-fit"
           />
         )}
         {onAddNote && !(denialReason && cardVarient !== "Customer") && (
@@ -268,6 +246,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             onClick={onAddNote}
             variant="outline"
             heightClass="h-10"
+            className="w-full sm:w-fit"
           />
         )}
       </div>

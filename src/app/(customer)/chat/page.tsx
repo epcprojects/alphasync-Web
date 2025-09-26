@@ -49,8 +49,8 @@ const Page = () => {
       </div>
 
       <div className="bg-white w-full rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)]">
-        <div className="p-4 md:p-6 border-b border-b-gray-200 flex items-center gap-3 md:gap-5">
-          <div className="rounded-full h-10 w-10 text-red-500 bg-red-100 text-3xl font-medium flex items-center justify-center shrink-0 md:h-19 md:w-19">
+        <div className="p-3 md:p-4 lg:p-6 border-b border-b-gray-200 flex items-center gap-3 md:gap-5">
+          <div className="rounded-full h-10 w-10 text-red-500 bg-red-100 text-sm md:text-2xl lg:text-3xl font-medium flex items-center justify-center shrink-0 md:h-14 md:w-14 lg:w-19 lg:h-19">
             {getInitials("Sarah Wilson")}
             {/* <Image
                           alt=""
@@ -89,7 +89,7 @@ const Page = () => {
                 time={msg.time}
                 isUser={msg.isUser}
                 message={msg.text}
-                width="min-w-[60%] max-w-[60%]"
+                width="min-w-[90%] max-w-[90%] sm:min-w-[60%] sm:max-w-[60%]"
               />
             ))}
             <div ref={messagesEndRef}></div>

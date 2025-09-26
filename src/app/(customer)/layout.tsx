@@ -46,6 +46,7 @@ const headings: Record<string, string> = {
   "/order-history": "Order History",
   "/browse-products": "Browse Products",
   "/chat": "",
+  "/profile": "settings",
 };
 
 const subHeadings: Record<string, string> = {
@@ -58,6 +59,7 @@ const noStatsRoutes = [
   "/order-history",
   "/browse-products",
   "/chat",
+  "/profile",
 ];
 
 const showSubHeading = ["/reminder", "/requests"];
@@ -83,8 +85,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   );
 
   return (
-    <div className={`w-full min-h-screen p-4 ${poppins_init.className}`}>
-      <div className="p-4 pb-6 h-fit mb-2 md:mb-4 flex flex-col gap-6 md:gap-10 relative  items-center justify-center bg-black/40  rounded-2xl !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
+    <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
+      <div className="px-2 py-3 md:p-4 md:pb-6 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-2xl !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
         <Header menuItems={menuItems} />
 
         <div className="flex items-center flex-col">
@@ -105,7 +107,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           )}
         </div>
       </div>
-      {children}
+      <div className="px-3  pb-3">{children}</div>
     </div>
   );
 }

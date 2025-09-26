@@ -93,7 +93,7 @@ function InventoryContent() {
           <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
             <ShopingCartFilledicon />
           </span>
-          <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
+          <h2 className="lg:w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
             Browse Products
           </h2>
           <div className="px-2.5 py-0.5 rounded-full bg-white border border-indigo-200">
@@ -120,7 +120,7 @@ function InventoryContent() {
           </div>
 
           <Menu>
-            <MenuButton className="h-11 w-11 shrink-0 flex justify-center cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full  text-sm/6 font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+            <MenuButton className="h-8 w-8 md:h-11 md:w-11 shrink-0 flex justify-center cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full  text-sm/6 font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
               <FilterIcon />
             </MenuButton>
 
@@ -195,12 +195,12 @@ function InventoryContent() {
           </div>
         ) : (
           <div className="space-y-1">
-            <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
-              <div className="col-span-3">Product</div>
-              <div className="col-span-2">Category</div>
+            <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
+              <div className="lg:col-span-3 sm:col-span-4">Product</div>
+              <div className="lg:col-span-2 sm:col-span-3">Category</div>
               <div className="col-span-2">Form</div>
-              <div className="col-span-2">Prescription</div>
-              <div className="col-span-1">Stock</div>
+              <div className="col-span-2 lg:block hidden">Prescription</div>
+              <div className="xl:block hidden col-span-1">Stock</div>
               <div className="col-span-1">Price</div>
 
               <div className="col-span-1 md:col-span-2 lg:col-span-1 text-center">

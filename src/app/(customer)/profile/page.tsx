@@ -6,6 +6,7 @@ import React from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
 import AvatarUploader from "@/app/components/AvatarUploader";
+import { useIsMobile } from "@/hooks/useIsMobile";
 const Page = () => {
   const profileSchema = Yup.object().shape({
     fullName: Yup.string().required("Full name is required"),
@@ -37,6 +38,8 @@ const Page = () => {
     return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
   }
 
+  const isMobile = useIsMobile();
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex items-center gap-2 md:gap-4">
@@ -53,32 +56,40 @@ const Page = () => {
           <TabGroup>
             <TabList
               className={
-                "flex items-center border-b border-b-gray-200  px-4 md:px-6"
+                "flex items-center border-b border-b-gray-200  md:justify-start  justify-between md:px-6"
               }
             >
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 text-xs md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 md:py-4 md:px-6"
+                  "flex items-center gap-1 sm:w-fit w-full justify-center md:gap-2 text-[11px] whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
                 }
               >
-                <UserIcon fill="currentColor" width="20" height="20" />
+                <UserIcon
+                  fill="currentColor"
+                  width={isMobile ? "16" : "20"}
+                  height={isMobile ? "16" : "20"}
+                />
                 My Profile
               </Tab>
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 outline-none text-xs md:text-sm border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 md:py-4 md:px-6"
+                  "flex items-center gap-1 md:gap-2 text-[11px] sm:w-fit w-full justify-center whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
                 }
               >
-                <InfoIcon fill="currentColor" />
+                <InfoIcon
+                  fill="currentColor"
+                  width={isMobile ? 16 : 20}
+                  height={isMobile ? 16 : 20}
+                />
                 Other Information
               </Tab>
             </TabList>
-            <TabPanels className={"p-4 md:p-6"}>
-              <TabPanel className={"px-4 md:px-8"}>
+            <TabPanels className={"pb-4 lg:p-6"}>
+              <TabPanel className={"px-5 lg:px-8"}>
                 <div className="grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200">
-                  <div className="col-span-3">
+                  <div className="col-span-12 mb-3 sm:mb-0 md:col-span-4 lg:col-span-3">
                     <label className="text-xs md:text-sm text-gray-700 font-semibold">
                       Your photo
                     </label>
@@ -118,12 +129,12 @@ const Page = () => {
                   {({ handleChange, values }) => (
                     <Form>
                       <div className="grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label className="text-xs md:text-sm text-gray-700 font-semibold">
                             Full Name
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             name="fullName"
                             value={values.fullName}
@@ -138,12 +149,12 @@ const Page = () => {
                       </div>
 
                       <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label className="text-xs md:text-sm text-gray-700 font-semibold">
                             Email Address
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="email"
                             name="email"
@@ -158,7 +169,7 @@ const Page = () => {
                         </div>
                       </div>
                       <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -166,7 +177,7 @@ const Page = () => {
                             Phone Number
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="phone"
                             name="phone"
@@ -182,7 +193,7 @@ const Page = () => {
                       </div>
 
                       <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -190,7 +201,7 @@ const Page = () => {
                             Date of Birth
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="date"
                             name="dob"
@@ -206,7 +217,7 @@ const Page = () => {
                       </div>
 
                       <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -214,7 +225,7 @@ const Page = () => {
                             Address
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="address"
                             name="address"
@@ -230,7 +241,7 @@ const Page = () => {
                       </div>
 
                       <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -238,7 +249,7 @@ const Page = () => {
                             Emergency Contact Name
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="ename"
                             name="ename"
@@ -254,7 +265,7 @@ const Page = () => {
                       </div>
 
                       <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -262,7 +273,7 @@ const Page = () => {
                             Emergency Contact Phone
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="ephone"
                             name="ephone"
@@ -281,6 +292,7 @@ const Page = () => {
                           label="Save Changes"
                           heightClass="h-10"
                           type="submit"
+                          className="w-full md:w-fit"
                         />
                       </div>
                     </Form>
@@ -304,7 +316,7 @@ const Page = () => {
                   {({ handleChange, values }) => (
                     <Form className="flex flex-col w-full">
                       <div className="grid grid-cols-12 items-start py-3 w-full md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -312,7 +324,7 @@ const Page = () => {
                             Medical History
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <TextAreaField
                             name="medicalHistory"
                             onChange={handleChange}
@@ -328,7 +340,7 @@ const Page = () => {
                         </div>
                       </div>
                       <div className="grid grid-cols-12 items-start py-3 w-full md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -336,7 +348,7 @@ const Page = () => {
                             Known Allergies
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <TextAreaField
                             name="knownAllergies"
                             onChange={handleChange}
@@ -352,7 +364,7 @@ const Page = () => {
                         </div>
                       </div>
                       <div className="grid grid-cols-12 items-start py-3 w-full md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -360,7 +372,7 @@ const Page = () => {
                             Current Medications
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <TextAreaField
                             name="currentMedications"
                             onChange={handleChange}
@@ -376,7 +388,7 @@ const Page = () => {
                         </div>
                       </div>
                       <div className="grid grid-cols-12 items-start py-3 w-full md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-3">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -384,7 +396,7 @@ const Page = () => {
                             Additional Notes
                           </label>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <TextAreaField
                             name="additionalNotes"
                             onChange={handleChange}
@@ -405,6 +417,7 @@ const Page = () => {
                           label="Update Password"
                           heightClass="h-10"
                           type="submit"
+                          className="w-full md:w-fit"
                         />
                       </div>
                     </Form>
