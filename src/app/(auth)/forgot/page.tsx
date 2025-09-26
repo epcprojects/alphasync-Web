@@ -63,15 +63,6 @@ const Page = () => {
           heightClass="h-11"
         />
       </form>
-      <div className="flex items-center gap-1">
-        <h2 className="text-xs md:text-sm ">Didn’t receive the OTP?</h2>
-        <button
-          onClick={() => {}}
-          className="text-primary cursor-pointer text-xs md:text-sm font-semibold"
-        >
-          Click to resend
-        </button>
-      </div>
 
       <InfoModal
         isOpen={isCheckEmailModalOpen}

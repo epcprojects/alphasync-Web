@@ -42,15 +42,6 @@ const Page = () => {
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
-      <div className="flex items-center gap-2 md:gap-4">
-        <span className="flex items-center text-primary justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-          <AccountSettingsIcon />
-        </span>
-        <h2 className="text-black font-semibold text-lg md:text-3xl">
-          Profile
-        </h2>
-      </div>
-
       <div className="bg-white rounded-xl ">
         <div className=" ">
           <TabGroup>
@@ -418,6 +409,7 @@ const Page = () => {
                           heightClass="h-10"
                           type="submit"
                           className="w-full md:w-fit"
+                          disabled
                         />
                       </div>
                     </Form>

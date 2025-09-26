@@ -65,7 +65,7 @@ const Page = () => {
           <h2 className="text-black font-semibold text-lg md:text-3xl">
             Requests
           </h2>
-          <div className="md:px-3 text-xs py-0.5 px-2 md:py-1 rounded-full  bg-white whitespace-nowrap text-blue-700 border border-blue-200 md:text-sm ">
+          <div className="md:px-3 py-0.5 px-2 md:py-1 rounded-full  bg-white whitespace-nowrap text-blue-700 border border-blue-200 text-sm ">
             4 Requests
           </div>
         </div>

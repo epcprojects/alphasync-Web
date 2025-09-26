@@ -69,7 +69,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
         ? "fixed w-full md:w-[98%] pt-2.5 md:pt-4 px-2 md:px-4 md:rounded-2xl top-0 md:top-4 !bg-[url(/images/bannerImage.png)] !bg-top !bg-cover !bg-no-repeat"
         : "relative w-full border-b border-white/20 top-0"
     } 
-    pb-2.5 md:pb-3.5 z-[99]`}
+    pb-2.5 md:pb-5 z-[99]`}
       >
         <nav className=" xl:px-4 flex items-center justify-between  mx-auto ">
           <div className="flex items-center gap-2 justify-start w-fit">

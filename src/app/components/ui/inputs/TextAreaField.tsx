@@ -29,7 +29,7 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
         name={name}
         onChange={onChange}
         placeholder={placeholder}
-        className={`${heightClasses} w-full focus:ring p-2 md:px-3 md:py-2.5  border rounded-lg outline-none text-gray-900 placeholder:text-neutral-300 border-lightGray focus:ring-gray-200`}
+        className={`${heightClasses} w-full focus:ring p-2 md:px-3 md:py-2.5  border rounded-lg outline-none text-gray-900 placeholder:text-gravel border-lightGray focus:ring-gray-200`}
       ></textarea>
     </div>
   );

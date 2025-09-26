@@ -17,7 +17,7 @@ function VerifyInfoContent() {
         logo={Images.auth.logo}
         title="Please verify below information"
       />
-      <div className="w-80 flex flex-col gap-3 md:gap-5 md:w-[480px]">
+      <div className="w-80 flex flex-col gap-3 md:gap-5 lg:gap-8 md:w-[480px]">
         <div className="rounded-xl flex flex-col gap-1 md:gap-3 bg-gray-100  w-full p-3 md:p-4">
           <h2 className="text-gray-900 text-sm md:text-base mb-0 font-semibold ">
             Personal Information
@@ -48,9 +48,9 @@ function VerifyInfoContent() {
         />
       </div>
       <div className="flex items-center gap-1">
-        <h2 className="text-xs md:text-sm ">Incorrect information?</h2>
+        <h2 className="text-sm md:text-base ">Incorrect information?</h2>
         <button
-          onClick={() => {}}
+          onClick={() => router.push("/profile")}
           className="text-primary cursor-pointer text-xs md:text-sm font-semibold"
         >
           Edit now

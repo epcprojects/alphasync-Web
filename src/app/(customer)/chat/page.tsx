@@ -39,15 +39,6 @@ const Page = () => {
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
-      <div className="flex items-center gap-2 md:gap-4">
-        <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-          <BubbleChatFilledIcon />
-        </span>
-        <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
-          Chat with Your Physician
-        </h2>
-      </div>
-
       <div className="bg-white w-full rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)]">
         <div className="p-3 md:p-4 lg:p-6 border-b border-b-gray-200 flex items-center gap-3 md:gap-5">
           <div className="rounded-full h-10 w-10 text-red-600 bg-red-100 text-sm md:text-2xl lg:text-3xl font-medium flex items-center justify-center shrink-0 md:h-14 md:w-14 lg:w-19 lg:h-19">
