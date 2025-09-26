@@ -167,8 +167,8 @@ function PendingPayments() {
           <h2 className="text-black font-semibold text-lg xl:text-2xl whitespace-nowrap">
             Pending Payments
           </h2>
-          <div className="px-3 py-1 rounded-full bg-white border border-indigo-200">
-            <p className="text-sm font-medium text-primary whitespace-nowrap">
+          <div className=" px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-white border border-indigo-200">
+            <p className=" text-xs md:text-sm font-medium text-primary whitespace-nowrap">
               3 Pending Order
             </p>
           </div>
@@ -183,7 +183,7 @@ function PendingPayments() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search"
-                className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 w-full md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+                className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 w-full md:min-w-68 outline-none focus:ring focus:ring-gray-200 rounded-full"
               />
             </div>
             <Menu>

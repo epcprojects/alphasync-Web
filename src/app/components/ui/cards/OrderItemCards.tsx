@@ -25,6 +25,19 @@ type Note = {
   value: string;
 };
 
+export function getStatusClasses(status: string) {
+    switch (status) {
+      case "Pending Review":
+        return "bg-amber-50 border border-amber-200 text-amber-700";
+      case "Approved":
+        return "bg-green-50 border border-green-200 text-green-700";
+      case "Denied":
+        return "bg-red-50 border border-red-200 text-red-500";
+      default:
+        return "bg-gray-50 border border-gray-200 text-gray-700";
+    }
+  }
+
 const OrderItemCard: React.FC<OrderItemProps> = ({
   item,
   requestStatus,
@@ -61,20 +74,13 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
       : null,
   ].filter((note): note is Note => note !== null);
 
-  function getStatusClasses(status: string) {
-    switch (status) {
-      case "Pending Review":
-        return "bg-amber-50 border border-amber-200 text-amber-700";
-      case "Approved":
-        return "bg-green-50 border border-green-200 text-green-700";
-      case "Denied":
-        return "bg-red-50 border border-red-200 text-red-500";
-      default:
-        return "bg-gray-50 border border-gray-200 text-gray-700";
-    }
-  }
   return (
-    <div key={item.id} className={`flex flex-col h-full ${requestStatus ? "gap-2 md:gap-6" : "gap-2"}`}>
+    <div
+      key={item.id}
+      className={`flex flex-col h-full ${
+        requestStatus ? "gap-2 md:gap-6" : "gap-2"
+      }`}
+    >
       <div className="flex items-start gap-3 md:border-b md:border-gray-200 md:pb-4">
         <div className="w-18 h-18 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
           <Image
@@ -88,14 +94,16 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
           <h3 className=" text-gray-800 font-semibold text-base">
             {item.medicineName}
           </h3>
-          <div className="hidden md:flex">
+          <div className={`${requestStatus ? "block" : "hidden"} md:flex`}>
             <p className="text-sm font-normal text-gray-800 line-clamp-2">
               A synthetic peptide known for its healing properties. BPC-157
               promotes tissue...
             </p>
           </div>
           <div className="flex justify-between items-center text-sm text-gray-500">
-            <div className="flex items-center gap-2">
+            <div
+              className={`flex items-center ${item.status ? "gap-2" : "gap-0"}`}
+            >
               {requestStatus && (
                 <div>
                   {item.status && (
@@ -117,7 +125,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                 </span>
               </div>
             </div>
-            {item.amount && (
+            {item.amount && !requestStatus && (
               <p className="text-xs font-normal text-gray-800">{item.amount}</p>
             )}
           </div>
@@ -144,7 +152,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
               )}
               {requestStatus && paymentRequest && (
                 <span className="text-base font-semibold text-primary">
-                  ${(item.price).toFixed(2)}
+                  ${item.price.toFixed(2)}
                 </span>
               )}
             </div>
@@ -155,19 +163,45 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
       <div className="w-full px-2 border-b border-gray-200 pb-4 md:hidden">
         <div className="flex flex-col gap-2">
           <div className="flex justify-between">
-            <span className="text-xs font-normal text-gray-800">Quantity</span>
+            <span className="text-xs font-normal text-gray-800">
+              {requestStatus ? "Strength:" : "Quantity"}
+            </span>
             <span className="text-xs font-medium text-gray-800">
-              {item.quantity}
+              {requestStatus ? item.strength : item.quantity}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-xs font-normal text-gray-800">Price</span>
+            <span className="text-xs font-normal text-gray-800">
+              {requestStatus ? "Dosage Form:" : "Price"}
+            </span>
             <span className="text-xs font-medium text-gray-800">
-              ${item.price.toFixed(2)}
+              {requestStatus ? "Injectable" : `${item.price.toFixed(2)}`}
             </span>
           </div>
+          {requestStatus && (
+            <>
+              <div className="flex justify-between">
+                <span className="text-xs font-normal text-gray-800">
+                  Doctor Name:
+                </span>
+                <span className="text-xs font-medium text-gray-800">
+                  {item.doctorName}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-xs font-normal text-gray-800">
+                  Requested:
+                </span>
+                <span className="text-xs font-medium text-gray-800">
+                  {item.requestedOn}
+                </span>
+              </div>
+            </>
+          )}
           <div className="flex justify-between">
-            <span className="text-base font-medium text-gray-800">Total</span>
+            <span className="text-base font-medium text-gray-800">
+              {requestStatus ? "Price" : "Total"}
+            </span>
             {item.quantity && (
               <span className="text-base font-semibold text-primary">
                 ${(item.price * item.quantity).toFixed(2)}
