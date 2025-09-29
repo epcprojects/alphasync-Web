@@ -43,6 +43,7 @@ const MessageSendModal: React.FC<MessageSendModalProps> = ({
       outSideClickClose={false}
       confirmLabel="Send Message"
       icon={<BubbleChatIcon fill="#374151" />}
+      confimBtnDisable={!msg.trim()}
     >
       <TextAreaField
         label="Message"

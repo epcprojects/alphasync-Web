@@ -17,7 +17,7 @@ function HeaderMenuNavItems({ items }: HeaderMenuNavItemsProps) {
   const pathname = usePathname();
 
   return (
-    <ul className="flex-row items-center justify-center flex-grow hidden lg:gap-4 rtl:flex-row-reverse md:flex ">
+    <ul className="flex-row items-center justify-center flex-grow hidden lg:gap-2 rtl:flex-row-reverse md:flex ">
       {items.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(`${item.href}/`);

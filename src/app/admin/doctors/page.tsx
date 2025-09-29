@@ -19,6 +19,7 @@ import DoctorListView, {
 import { doctors } from "../../../../public/data/Doctors";
 import AddEditDoctorModal from "@/app/components/ui/modals/AddEditDoctorModal";
 import DoctorDeleteModal from "@/app/components/ui/modals/DoctorDeleteModal";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 function DoctorContent() {
   const router = useRouter();
@@ -33,7 +34,7 @@ function DoctorContent() {
     { label: "Inactive" },
   ];
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const [selectedStatus, setSelectedStatus] = useState<string>("All Status");
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -77,19 +78,24 @@ function DoctorContent() {
     console.log(doctor);
   };
 
+  const isMobile = useIsMobile();
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 md:gap-4">
           <span className="flex items-center text-primary justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-            <DoctorFilledIcon />
+            <DoctorFilledIcon
+              height={isMobile ? 16 : 24}
+              width={isMobile ? 16 : 24}
+            />
           </span>
           <h2 className="text-black font-semibold text-lg md:text-3xl">
             Doctors
           </h2>
         </div>
 
-        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] w-fit">
+        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-table w-fit">
           <div className="flex items-center relative">
             <span className="absolute left-3">
               <SearchIcon />
@@ -98,7 +104,7 @@ function DoctorContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 min-w-80 focus:bg-white outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
 
@@ -137,7 +143,7 @@ function DoctorContent() {
       </div>
 
       <div className="space-y-1">
-        <div className="grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
+        <div className="grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
           <div className="col-span-3">
             <h2>Name</h2>
           </div>
@@ -194,7 +200,7 @@ function DoctorContent() {
                 pageCount={pageCount}
                 forcePage={currentPage}
                 pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-                containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
+                containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
                 pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
                 activeClassName="bg-gray-200 text-gray-900 font-medium"
                 previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"

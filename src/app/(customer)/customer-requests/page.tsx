@@ -60,7 +60,10 @@ const Page = () => {
       <div className="flex md:flex-row flex-col lg:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
           <span className="flex items-center text-primary justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-            <RequestFilledIcon />
+            <RequestFilledIcon
+              height={isMobile ? 16 : 24}
+              width={isMobile ? 16 : 24}
+            />
           </span>
           <h2 className="text-black font-semibold text-lg md:text-3xl">
             Requests
@@ -70,7 +73,7 @@ const Page = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] w-full md:w-fit">
+        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2  md:px-2 md:py-2 p-1.5  shadow-table w-full md:w-fit">
           <div className="flex items-center relative w-full">
             <span className="absolute left-3">
               <SearchIcon
@@ -82,7 +85,7 @@ const Page = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full focus:bg-white md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
         </div>
@@ -92,7 +95,7 @@ const Page = () => {
         <TabGroup>
           <TabList
             className={
-              "flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start  justify-between md:px-6"
+              "flex items-center border-b border-b-gray-200 gap-2 md:gap-3  md:justify-start  justify-between md:px-6"
             }
           >
             {["All", "Pending", "Approved", "Denied"].map((tab) => (
@@ -100,7 +103,7 @@ const Page = () => {
                 key={tab}
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 w-full justify-center text-[11px] whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
+                  "flex items-center gap-1 md:gap-2 w-full justify-center text-[11px] hover:bg-gray-50 whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
                 }
               >
                 {tab}

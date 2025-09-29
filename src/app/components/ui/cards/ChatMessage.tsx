@@ -16,12 +16,16 @@ export default function ChatMessage({
   message,
   time,
   isUser = false,
-  width = "min-w-lg max-w-lg",
+  width = "min-w-20 w-fit max-w-[75%]",
 }: ChatMessageProps) {
   return (
-    <div className={`w-full flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div className={`${width} w-full flex flex-col gap-1.5`}>
-        <div className="flex items-center justify-between gap-1">
+    <div className={` flex ${isUser ? "justify-end " : "justify-start"}`}>
+      <div
+        className={` ${width}  flex flex-col gap-1.5  ${
+          isUser ? "  items-end" : "items-start"
+        }`}
+      >
+        <div className="flex items-center w-full md:gap-3 justify-between gap-1">
           <div className="flex gap-1 md:gap-2 items-center">
             {!isUser && (
               <span className="bg-red-100 text-red-600 h-7 w-7 justify-center font-medium rounded-full text-xs shrink-0  flex items-center">

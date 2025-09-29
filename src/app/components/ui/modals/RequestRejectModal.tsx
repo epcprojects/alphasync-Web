@@ -42,6 +42,7 @@ const RequestRejectModal: React.FC<RequestRejectModalProps> = ({
       confirmBtnVarient="danger"
       outSideClickClose={false}
       subtitle={`Please provide a reason for denying request ${itemTitle}`}
+      confimBtnDisable={!reason.trim()}
     >
       <TextAreaField
         label="Denial Reason"

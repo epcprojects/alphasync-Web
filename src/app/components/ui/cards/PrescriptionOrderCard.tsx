@@ -60,7 +60,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
       {orders?.map((order) => (
         <div
           key={order.id}
-          className="bg-white rounded-2xl shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] border border-gray-200 p-4 2xl:p-6 
+          className="bg-white rounded-2xl shadow-table border border-gray-200 p-4 2xl:p-6 
           w-full max-w-7xl"
           onClick={() => onPress && onPress(order)}
         >

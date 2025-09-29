@@ -2,6 +2,7 @@
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { InfoIcon, ShopingCartIcon } from "@/icons";
 import Image from "next/image";
+import Tooltip from "../tooltip";
 
 type Product = {
   id: number;
@@ -33,7 +34,7 @@ export default function BrowseProductListView({
 
   if (isMobile) {
     return (
-      <div className="bg-white flex flex-col gap-5 p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] rounded-xl">
+      <div className="bg-white flex flex-col gap-5 p-3 shadow-table rounded-xl">
         <div className="flex flex-col gap-3">
           <div className=" flex items-center gap-3">
             <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
@@ -116,7 +117,7 @@ export default function BrowseProductListView({
     <div
       onClick={onRowClick}
       key={product.id}
-      className="grid cursor-pointer grid-cols-2  md:grid-cols-12  md:gap-4 items-center rounded-xl bg-white p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
+      className="grid cursor-pointer grid-cols-2  md:grid-cols-12  md:gap-4 items-center rounded-xl bg-white p-3 shadow-table"
     >
       <div className="lg:col-span-3 col-span-4 flex items-center gap-3">
         <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
@@ -180,22 +181,26 @@ export default function BrowseProductListView({
       </div>
 
       <div className="col-span-1 md:col-span-2 lg:col-span-1 flex items-center justify-end md:justify-center gap-2">
-        <button
-          onClick={() => onInfoBtn(product)}
-          className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-md border cursor-pointer border-lightGray"
-        >
-          <InfoIcon fill="#9CA3AF" />
-        </button>
+        <Tooltip content="View Detail">
+          <button
+            onClick={() => onInfoBtn(product)}
+            className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-md border cursor-pointer border-lightGray"
+          >
+            <InfoIcon fill="#9CA3AF" />
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddToCart?.(product.id);
-          }}
-          className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-md border cursor-pointer border-lightGray"
-        >
-          <ShopingCartIcon width={16} height={16} />
-        </button>
+        <Tooltip content="Request from Doctor">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart?.(product.id);
+            }}
+            className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-md border cursor-pointer border-lightGray"
+          >
+            <ShopingCartIcon width={16} height={16} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

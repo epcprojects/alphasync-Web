@@ -2,6 +2,7 @@
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ArrowLeftIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
+import Tooltip from "../tooltip";
 
 type Order = {
   id: number;
@@ -17,7 +18,7 @@ type Order = {
 
 type OrderListViewProps = {
   order: Order;
-  onViewCustomer?: (id: number) => void;
+  onViewOrderDetail?: (id: number) => void;
   onRowClick?: () => void;
 };
 
@@ -54,7 +55,7 @@ export function getStatusClasses(status: Order["status"]) {
 
 export default function OrderListView({
   order: order,
-  onViewCustomer,
+  onViewOrderDetail,
   onRowClick,
 }: OrderListViewProps) {
   const { bg, text } = getColorPair(order.id);
@@ -66,7 +67,7 @@ export default function OrderListView({
       <div
         onClick={onRowClick}
         key={order.id}
-        className="bg-white flex flex-col gap-2 p-2 rounded-xl "
+        className="bg-white flex flex-col gap-2 p-2  cursor-pointer  rounded-xl "
       >
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 ">
@@ -142,9 +143,9 @@ export default function OrderListView({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onViewCustomer?.(order.id);
+                onViewOrderDetail?.(order.id);
               }}
-              className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+              className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
             >
               <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
             </button>
@@ -156,7 +157,7 @@ export default function OrderListView({
     <div
       onClick={onRowClick}
       key={order.id}
-      className="hidden sm:grid  md:grid-cols-[4rem_10rem_4rem_6rem_1fr_1fr_1fr_1fr_3rem] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] gap-4 items-center rounded-xl bg-white p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
+      className="hidden sm:grid hover:bg-gray-100 group  md:grid-cols-[4rem_10rem_4rem_6rem_1fr_1fr_1fr_1fr_3rem] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] gap-4 items-center rounded-xl bg-white p-3 shadow-table"
     >
       <div className="sm:block hidden">
         <h2 className="text-gray-800 text-xs md:text-sm font-normal">
@@ -211,15 +212,17 @@ export default function OrderListView({
       </div>
 
       <div className=" flex items-center justify-center gap-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewCustomer?.(order.id);
-          }}
-          className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
-        >
-          <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
-        </button>
+        <Tooltip content="View Order">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewOrderDetail?.(order.id);
+            }}
+            className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+          >
+            <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import ThemeInput from "../inputs/ThemeInput";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
 import * as Yup from "yup";
 import { Doctor } from "../cards/DoctorListView";
+import { showSuccessToast } from "@/lib/toast";
 
 interface AddEditDoctorModalProps {
   isOpen: boolean;
@@ -34,12 +35,12 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-
+  const [isFormValid, setIsFormValid] = useState(false);
   const schema = Yup.object().shape({
     name: Yup.string().required("Doctor name is required"),
     phone: Yup.string().required("Phone number is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
-    medicalLicense: Yup.string().required("Medical License is required"),
+    medicalLicenseNumber: Yup.string().required("Medical License is required"),
     specialty: Yup.string().required("Specialty is required"),
     status: Yup.string().oneOf(["Active", "Inactive"]).required(),
   });
@@ -73,6 +74,9 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     const valid = await validateForm();
     if (valid) {
       onConfirm(formData);
+      showSuccessToast(
+        `Doctor ${initialData ? "Updated" : "Added"} Successfully`
+      );
       onClose();
     }
   };
@@ -102,16 +106,27 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     }
   }, [isOpen, initialData]);
 
+  useEffect(() => {
+    const { name, phone, email, medicalLicenseNumber, specialty, status } =
+      formData;
+    if (name && phone && email && medicalLicenseNumber && specialty && status) {
+      setIsFormValid(true);
+    } else {
+      setIsFormValid(false);
+    }
+  }, [formData]);
+
   return (
     <AppModal
       isOpen={isOpen}
       onClose={onClose}
       title={initialData ? "Edit Doctor" : "Add New Doctor"}
       onConfirm={handleConfirm}
-      confirmLabel={"Save"}
+      confirmLabel={initialData ? "Save" : "Add New"}
       icon={<DoctorIcon />}
       size="large"
       outSideClickClose={false}
+      confimBtnDisable={!isFormValid}
       onCancel={handleCancel}
       cancelLabel={"Cancel"}
     >
@@ -177,7 +192,9 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
               error={!!errors.medicalLicense}
               errorMessage={errors.medicalLicense}
               id="medicalLicense"
-              onChange={(e) => handleChange("medicalLicense", e.target.value)}
+              onChange={(e) =>
+                handleChange("medicalLicenseNumber", e.target.value)
+              }
               type="text"
               value={formData.medicalLicenseNumber}
             />
@@ -192,14 +209,14 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
                 { name: "Orthopedics", displayName: "Orthopedics" },
                 { name: "Dermatology", displayName: "Dermatology" },
               ]}
-              name="specialty"
+              name="Specialty"
               multiple={false}
               placeholder="Select specialty"
               searchTerm={""}
               setSearchTerm={() => {}}
               isShowDrop={true}
               required
-              paddingClasses="py-2.5 px-2"
+              paddingClasses="py-2.5 px-3"
               optionPaddingClasses="p-1"
               showLabel={true}
             />

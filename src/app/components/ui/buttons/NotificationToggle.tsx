@@ -23,7 +23,7 @@ const NotificationToggle: React.FC<NotificationToggleProps> = ({
           {icon}
         </span>
         <div>
-          <h2 className="font-medium text-sm md:text-xl mb-0.5 text-gray-900">
+          <h2 className="font-medium text-sm md:text-lg mb-0.5 text-gray-900">
             {title}
           </h2>
           <h3 className="text-xs md:text-base text-gray-800">{subtitle}</h3>

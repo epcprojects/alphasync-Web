@@ -15,7 +15,7 @@ function CustomerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const itemsPerPage = 9;
+  const itemsPerPage = 10;
 
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -59,7 +59,7 @@ function CustomerContent() {
           </h2>
         </div>
 
-        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] w-fit">
+        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-table w-fit">
           <div className="flex items-center relative">
             <span className="absolute left-3">
               <SearchIcon />
@@ -68,7 +68,7 @@ function CustomerContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2.5 bg-gray-100 min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2.5 bg-gray-100 min-w-80 outline-none focus:bg-white focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
           <ThemeButton
@@ -80,7 +80,7 @@ function CustomerContent() {
       </div>
 
       <div className="space-y-1">
-        <div className="grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black">
+        <div className="grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium shadow-table bg-white rounded-xl text-black">
           <div className="col-span-3">Name</div>
           <div className="col-span-2">Contact</div>
           <div className="col-span-2">Email</div>
@@ -126,7 +126,7 @@ function CustomerContent() {
               pageCount={pageCount}
               forcePage={currentPage}
               pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
+              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
               pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
               activeClassName="bg-gray-200 text-gray-900 font-medium"
               previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"

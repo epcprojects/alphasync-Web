@@ -38,6 +38,7 @@ const RequestModel: React.FC<RequestModelProps> = ({
       confirmLabel="Send Request"
       outSideClickClose={false}
       icon={<CreditCardOutlineIcon />}
+      confimBtnDisable={!reason.trim()}
     >
       <TextAreaField
         value={reason}

@@ -1,5 +1,6 @@
 "use client";
 import { ArrowLeftIcon, PackageOutlineIcon } from "@/icons";
+import Tooltip from "../tooltip";
 
 type Order = {
   orderId: string;
@@ -10,7 +11,7 @@ type Order = {
 
 type CustomerOrderHistroyViewProps = {
   order: Order;
-  onViewCustomer?: (id: string) => void;
+  onViewOrderDetails?: (id: string) => void;
   onRowClick?: () => void;
 };
 
@@ -23,14 +24,14 @@ const statusStyles: Record<string, string> = {
 
 export default function CustomerOrderHistroyView({
   order: customer,
-  onViewCustomer,
+  onViewOrderDetails,
   onRowClick,
 }: CustomerOrderHistroyViewProps) {
   return (
     <div
       onClick={onRowClick}
       key={customer.orderId}
-      className="grid cursor-pointer grid-cols-[1fr_1fr_1fr_1fr_5rem] gap-4 items-center rounded-lg bg-gray-50 p-1 md:p-2 "
+      className="grid cursor-pointer hover:bg-gray-100 group grid-cols-[1fr_1fr_1fr_1fr_5rem] gap-4 items-center rounded-lg bg-gray-50 p-1 md:p-2 "
     >
       <div className="flex items-center gap-3">
         <span className="w-6 h-6 md:h-8 text-gray-700 md:w-8 rounded-lg bg-white border border-lightGray flex items-center justify-center">
@@ -59,15 +60,17 @@ export default function CustomerOrderHistroyView({
       </div>
 
       <div className=" flex items-center justify-center gap-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewCustomer?.(customer.orderId);
-          }}
-          className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
-        >
-          <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
-        </button>
+        <Tooltip content="View Order Details">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewOrderDetails?.(customer.orderId);
+            }}
+            className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+          >
+            <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

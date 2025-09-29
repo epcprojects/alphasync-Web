@@ -64,7 +64,7 @@ function OrderContent() {
   //     month: "short",
   //     day: "numeric",
   //   });
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const [selectedStatus, setSelectedStatus] = useState<string>("All Status");
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -136,8 +136,8 @@ function OrderContent() {
           </h2>
         </div>
 
-        <div className="md:bg-white rounded-full flex md:flex-row flex-col w-full items-center gap-2 md:p-2  md:shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] lg:w-fit">
-          <div className="flex items-center relative w-full md:shadow-none bg-white md:bg-transparent md:p-0  p-2 rounded-full shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
+        <div className="md:bg-white rounded-full flex md:flex-row flex-col w-full items-center gap-2 md:p-2  md:shadow-table lg:w-fit">
+          <div className="flex items-center relative w-full md:shadow-none bg-white md:bg-transparent md:p-0  p-2 rounded-full shadow-table">
             <span className="absolute left-3">
               <SearchIcon
                 height={isMobile ? "16" : "20"}
@@ -148,10 +148,10 @@ function OrderContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
-          <div className="flex items-center w-fit gap-1 md:gap-2 md:bg-transparent md:p-0 md:shadow-none bg-white rounded-full p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center w-fit gap-1 md:gap-2 md:bg-transparent md:p-0 md:shadow-none bg-white rounded-full p-2 w-full shadow-table">
             <DateRangeSelector
               value={range}
               onApply={(next) => {
@@ -160,7 +160,7 @@ function OrderContent() {
               }}
             />
             <Menu>
-              <MenuButton className="inline-flex whitespace-nowrap py-1.5 md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+              <MenuButton className="inline-flex whitespace-nowrap py-1.5 md:w-fit w-full md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline justify-between data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
                 {selectedStatus} <ArrowDownIcon fill="#717680" />
               </MenuButton>
 
@@ -225,7 +225,7 @@ function OrderContent() {
       </div>
 
       <div className="space-y-1">
-        <div className="hidden md:grid md:grid-cols-[4rem_10rem_4rem_6rem_1fr_1fr_1fr_1fr_3rem]  lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
+        <div className="hidden md:grid md:grid-cols-[4rem_10rem_4rem_6rem_1fr_1fr_1fr_1fr_3rem]  lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
           <div>
             <h2 className="whitespace-nowrap">Order ID</h2>
           </div>
@@ -260,7 +260,7 @@ function OrderContent() {
             onRowClick={() => router.push(`/orders/${order.orderId}`)}
             key={order.orderId}
             order={order}
-            onViewCustomer={() => router.push(`/orders/${order.orderId}`)}
+            onViewOrderDetail={() => router.push(`/orders/${order.orderId}`)}
           />
         ))}
       </div>
@@ -291,7 +291,7 @@ function OrderContent() {
               pageCount={pageCount}
               forcePage={currentPage}
               pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
+              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
               pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
               activeClassName="bg-gray-200 text-gray-900 font-medium"
               previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"

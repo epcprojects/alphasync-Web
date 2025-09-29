@@ -131,6 +131,15 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     }
   }, [isOpen]);
 
+  const isStepValid = () => {
+    try {
+      schemas[step - 1].validateSync(formData, { abortEarly: false });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   return (
     <AppModal
       isOpen={isOpen}
@@ -143,6 +152,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       outSideClickClose={false}
       onCancel={handleCancel}
       cancelLabel={step === 1 ? "Cancel" : "Back"}
+      confimBtnDisable={!isStepValid()}
     >
       <div className="flex flex-col gap-8">
         <Stepper activeStep={step} steps={steps} />

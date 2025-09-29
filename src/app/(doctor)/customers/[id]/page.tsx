@@ -40,7 +40,7 @@ export default function CustomerDetail() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
-  const itemsPerPage = 9;
+  const itemsPerPage = 10;
 
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -177,7 +177,7 @@ export default function CustomerDetail() {
                 <Tab
                   key={index}
                   as="button"
-                  className="flex items-center gap-1 md:gap-2 text-xs md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 md:py-4 md:px-6"
+                  className="flex items-center gap-1 md:gap-2 text-xs md:text-sm outline-none hover:bg-gray-50 border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 md:py-4 md:px-6"
                 >
                   {tab.icon} {tab.label}
                 </Tab>
@@ -198,7 +198,7 @@ export default function CustomerDetail() {
                       onRowClick={() => router.push(`/orders/${order.orderId}`)}
                       key={order.orderId}
                       order={order}
-                      onViewCustomer={() =>
+                      onViewOrderDetails={() =>
                         router.push(`/orders/${order.orderId}`)
                       }
                     />
@@ -232,7 +232,7 @@ export default function CustomerDetail() {
                       pageCount={pageCount}
                       forcePage={currentPage}
                       pageLinkClassName="px-4 py-2 rounded-lg text-gray-500 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-                      containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
+                      containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
                       pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
                       activeClassName="bg-gray-200 text-gray-900 font-medium text-gray-700"
                       previousClassName="md:px-4 md:py-2 rounded-full  absolute left-0 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
@@ -304,19 +304,19 @@ export default function CustomerDetail() {
                   doctor="Dr. Smith"
                   date="1/15/2024"
                   text="Allergic to penicillin. Prefers generic medications when available."
-                  onDelete={() => console.log("Delete clicked")}
+                  onDelete={() => showSuccessToast("Note Deleted Successfully")}
                 />
                 <NoteCard
                   doctor="Dr. Lee"
                   date="2/10/2024"
                   text="Patient reports occasional headaches. Recommended hydration and regular sleep."
-                  onDelete={() => console.log("Delete clicked")}
+                  onDelete={() => showSuccessToast("Note Deleted Successfully")}
                 />
                 <NoteCard
                   doctor="Dr. Brown"
                   date="3/05/2024"
                   text="History of seasonal allergies. Advised over-the-counter antihistamines during spring."
-                  onDelete={() => console.log("Delete clicked")}
+                  onDelete={() => showSuccessToast("Note Deleted Successfully")}
                 />
               </TabPanel>
 

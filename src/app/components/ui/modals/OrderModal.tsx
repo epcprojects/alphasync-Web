@@ -68,6 +68,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
       onConfirm={handleConfirm}
       outSideClickClose={false}
       confirmLabel="Create Order"
+      confimBtnDisable={!selectedUser || !price || Number(price) <= 0}
       scrollNeeded={false}
     >
       <div className="w-full flex flex-col justify-between  md:min-h-20 gap-4">
@@ -80,7 +81,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
             errors={errors.user || ""}
             name="Select Customer"
             multiple={false}
-            placeholder="Select User:"
+            placeholder="Select User"
             searchTerm={""}
             setSearchTerm={() => {}}
             isShowDrop={true}

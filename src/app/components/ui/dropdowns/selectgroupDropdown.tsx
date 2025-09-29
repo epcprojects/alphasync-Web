@@ -153,14 +153,14 @@ const SelectGroupDropdown = ({
       {showLabel && (
         <label className="block mb-1 md:mb-1.5 text-sm font-medium text-gray-900">
           {name}
-          {required && <span className="text-red-500 ps-2">*</span>}
+          {required && <span className="text-red-500 ps-1">*</span>}
         </label>
       )}
       <div className="relative" ref={dropdownRef}>
         <div
           ref={refs.setReference}
           className={cn(
-            "relative z-10 w-full rounded-lg py-2 border cursor-pointer bg-white text-left",
+            "relative z-10 w-full h-11 rounded-lg py-2 border cursor-pointer bg-white text-left",
             errors ? "border-red-500" : "border-lightGray",
             disabled && "!bg-gray-200 text-gray-400 cursor-not-allowed",
             paddingClasses
@@ -182,7 +182,7 @@ const SelectGroupDropdown = ({
                 <UserIcon />
               </span>
             )}
-            <span className="line-clamp-1 text-gray-900 text-sm md:text-base pe-3 ">
+            <span className="line-clamp-1 text-gray-900 text-sm md:text- pe-3 ">
               {selectedDisplay()}
             </span>
           </span>

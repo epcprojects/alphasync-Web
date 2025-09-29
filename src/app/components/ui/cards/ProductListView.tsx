@@ -1,6 +1,7 @@
 "use client";
 import { HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon } from "@/icons";
 import Image from "next/image";
+import Tooltip from "../tooltip";
 
 type Product = {
   id: number;
@@ -30,7 +31,7 @@ export default function ProductListView({
     <div
       onClick={onRowClick}
       key={product.id}
-      className="grid cursor-pointer grid-cols-2 md:grid-cols-12 gap-2 md:gap-4 items-center rounded-xl bg-white p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
+      className="grid cursor-pointer grid-cols-2 hover:bg-gray-100 md:grid-cols-12 gap-2 md:gap-4 items-center rounded-xl bg-white p-3 shadow-table"
     >
       <div className="col-span-2 md:col-span-4 lg:col-span-5 flex items-center gap-3">
         <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
@@ -73,29 +74,35 @@ export default function ProductListView({
       </div>
 
       <div className="col-span-1 flex items-center justify-end md:justify-center gap-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFavourite?.(product.id);
-          }}
-          className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary"
+        <Tooltip
+          content={product.isFavourite ? "Remove Favourite" : "Mark Favourite"}
         >
-          {product.isFavourite ? (
-            <HeartFilledIcon fill="#2862A9" width={16} height={16} />
-          ) : (
-            <HeartOutlineIcon fill="#2862A9" width={16} height={16} />
-          )}
-        </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavourite?.(product.id);
+            }}
+            className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary"
+          >
+            {product.isFavourite ? (
+              <HeartFilledIcon fill="#2862A9" width={16} height={16} />
+            ) : (
+              <HeartOutlineIcon fill="#2862A9" width={16} height={16} />
+            )}
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddToCart?.(product.id);
-          }}
-          className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary"
-        >
-          <ShopingCartIcon width={16} height={16} />
-        </button>
+        <Tooltip content="Order Now">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart?.(product.id);
+            }}
+            className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary"
+          >
+            <ShopingCartIcon width={16} height={16} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

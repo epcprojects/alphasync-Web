@@ -46,7 +46,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 
   const handleDeleteClick = () => {
     setPreview(placeholder);
-    onChange?.(null); // notify parent that image is deleted
+    onChange?.(null);
   };
 
   return (
@@ -64,7 +64,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
             className={`${roundedClass} w-[${width}px] h-[${height}px] h-full !min-h-[${height}px] max-h-[${height}px] object-cover bg-gray-200`}
             width={width}
             height={height}
-            style={{ height: "64px" }}
+            style={{ height: height }}
           />
 
           {preview === placeholder && (
@@ -78,11 +78,11 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
         </div>
       </div>
 
-      <div className="flex gap-4 items-center">
+      <div className="flex gap-3 items-center">
         {preview !== placeholder && (
           <button
             onClick={handleDeleteClick}
-            className="text-red-500 cursor-pointer text-xs md:text-sm font-semibold"
+            className="text-red-500 hover:bg-red-100 px-3 py-1.5 rounded-lg cursor-pointer text-xs md:text-sm font-semibold"
           >
             Delete
           </button>
@@ -90,7 +90,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 
         <button
           onClick={handleUpdateClick}
-          className="text-gray-600 cursor-pointer text-xs md:text-sm font-semibold"
+          className="text-gray-600 cursor-pointer hover:bg-gray-100 px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold"
         >
           {preview !== placeholder ? "Update" : "Upload"}
         </button>

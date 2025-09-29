@@ -50,7 +50,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
             time={msg.time}
             isUser={msg.isUser}
             message={msg.text}
-            width="w-full max-w-lg"
+            // width="w-full max-w-lg"
           />
         ))}
         <div ref={messagesEndRef}></div>

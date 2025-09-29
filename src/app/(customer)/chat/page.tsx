@@ -79,7 +79,7 @@ const Page = () => {
                 time={msg.time}
                 isUser={msg.isUser}
                 message={msg.text}
-                width="min-w-[90%] max-w-[90%] sm:min-w-[60%] sm:max-w-[60%]"
+                // width="min-w-[90%] max-w-[90%] sm:min-w-[60%] sm:max-w-[60%]"
               />
             ))}
             <div ref={messagesEndRef}></div>

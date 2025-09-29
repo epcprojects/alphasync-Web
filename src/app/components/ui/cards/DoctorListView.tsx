@@ -1,6 +1,7 @@
 "use client";
 import { PencilEditIcon, TrashBinIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
+import Tooltip from "../tooltip";
 
 export type Doctor = {
   id: number;
@@ -55,7 +56,7 @@ export default function DoctorListView({
     <div
       onClick={onRowClick}
       key={doctor.id}
-      className="grid cursor-pointer grid-cols-12 gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
+      className="grid cursor-pointer grid-cols-12 gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div className="flex items-center gap-2 col-span-3">
         <span
@@ -63,17 +64,20 @@ export default function DoctorListView({
         >
           {getInitials(doctor.name)}
         </span>
-        <h2 className="text-gray-800 text-xs md:text-sm font-medium">
-          {doctor.email}
-        </h2>
+        <div className="">
+          <h2 className="text-gray-800 text-xs md:text-sm font-medium">
+            {doctor.name}
+          </h2>
+          <h2 className="text-gray-800 text-xs  font-normal">{doctor.email}</h2>
+        </div>
       </div>
-      <div className="text-xs md:text-sm font-normal text-gray-600 col-span-2">
+      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
         {doctor.specialty}
       </div>
-      <div className="text-xs md:text-sm font-normal text-gray-600 col-span-2">
+      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
         {doctor.phone}
       </div>
-      <div className="text-xs md:text-sm font-normal text-gray-600 col-span-2">
+      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
         {doctor.medicalLicenseNumber}
       </div>
 
@@ -88,24 +92,28 @@ export default function DoctorListView({
       </div>
 
       <div className=" flex items-center justify-starts gap-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onEditDoctor?.(doctor.id);
-          }}
-          className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
-        >
-          <PencilEditIcon width="15" height="15" fill={"currentColor"} />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDeleteDoctor?.(doctor.id);
-          }}
-          className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-red-50 hover:border-red-500 hover:text-white  text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
-        >
-          <TrashBinIcon width="15" height="15" />
-        </button>
+        <Tooltip content="Edit">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditDoctor?.(doctor.id);
+            }}
+            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+          >
+            <PencilEditIcon width="15" height="15" fill={"currentColor"} />
+          </button>
+        </Tooltip>
+        <Tooltip content="Delete">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteDoctor?.(doctor.id);
+            }}
+            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-red-50 hover:border-red-500 hover:text-white  text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+          >
+            <TrashBinIcon width="15" height="15" />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

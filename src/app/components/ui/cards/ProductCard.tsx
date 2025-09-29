@@ -29,7 +29,7 @@ export default function ProductCard({
   return (
     <div
       onClick={onCardClick}
-      className="rounded-2xl pb-2 cursor-pointer flex-col bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] border relative border-gray-200 px-2 flex items-center justify-center"
+      className="rounded-2xl pb-2 cursor-pointer flex-col bg-white shadow-table border relative border-gray-200 px-2 flex items-center justify-center"
     >
       <button className="absolute top-4 end-4 cursor-pointer">
         {product.isFavourite ? (

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { InfoIcon, ShopingCartIcon } from "@/icons";
 import ThemeButton from "../buttons/ThemeButton";
+import Tooltip from "../tooltip";
 
 export type Product = {
   id: number;
@@ -29,13 +30,17 @@ export default function BrowserProductCard({
   onCardClick,
 }: BrowserProductCardProps) {
   return (
-    <div className="rounded-2xl pb-2 cursor-pointer flex-col bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] border relative border-gray-200 px-2 flex items-center justify-center">
-      <button
-        className="absolute top-4 end-4 cursor-pointer"
-        onClick={() => onCardClick(product)}
-      >
-        <InfoIcon fill="#374151" width={28} height={28} />
-      </button>
+    <div className="rounded-2xl pb-2  flex-col bg-white shadow-table border relative border-gray-200 px-2 flex items-center justify-center">
+      <div className="absolute top-4  end-4">
+        <Tooltip className="" content="View Detail">
+          <button
+            className="pb-1 cursor-pointer rotate-180"
+            onClick={() => onCardClick(product)}
+          >
+            <InfoIcon fill="#374151" width={28} height={28} />
+          </button>
+        </Tooltip>
+      </div>
       <div className="bg-[url(/images/productBgPattern.png)] bg-[position:0_20px] bg-cover h-52 md:h-60 pt-3 pb-2 flex items-center justify-center ">
         <Image
           width={280}

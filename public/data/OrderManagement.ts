@@ -108,5 +108,225 @@ export const orders = [
     total: 115.49,
     netCost: 107.75,
     profit: 107.74
-  }
+  },
+  {
+  id: 11,
+  orderId: "ORD-011",
+  customer: "Ava Johnson",
+  date: "12/15/2016",
+  status: "Pending",
+  items: 7,
+  total: 89.99,
+  netCost: 45.50,
+  profit: 44.49
+},
+{
+  id: 12,
+  orderId: "ORD-012",
+  customer: "William Brown",
+  date: "5/8/2019",
+  status: "Processing",
+  items: 4,
+  total: 145.25,
+  netCost: 80.00,
+  profit: 65.25
+},
+{
+  id: 13,
+  orderId: "ORD-013",
+  customer: "Olivia Davis",
+  date: "3/19/2022",
+  status: "Delivered",
+  items: 10,
+  total: 299.50,
+  netCost: 200.00,
+  profit: 99.50
+},
+{
+  id: 14,
+  orderId: "ORD-014",
+  customer: "James Wilson",
+  date: "7/4/2015",
+  status: "Shipped",
+  items: 6,
+  total: 125.75,
+  netCost: 70.00,
+  profit: 55.75
+},
+{
+  id: 15,
+  orderId: "ORD-015",
+  customer: "Sophia Taylor",
+  date: "9/27/2020",
+  status: "Pending",
+  items: 8,
+  total: 185.00,
+  netCost: 95.00,
+  profit: 90.00
+},
+{
+  id: 16,
+  orderId: "ORD-016",
+  customer: "Benjamin Moore",
+  date: "6/12/2018",
+  status: "Processing",
+  items: 14,
+  total: 210.40,
+  netCost: 140.20,
+  profit: 70.20
+},
+{
+  id: 17,
+  orderId: "ORD-017",
+  customer: "Emma Anderson",
+  date: "11/3/2014",
+  status: "Delivered",
+  items: 20,
+  total: 350.00,
+  netCost: 200.00,
+  profit: 150.00
+},
+{
+  id: 18,
+  orderId: "ORD-018",
+  customer: "Michael Thomas",
+  date: "2/14/2021",
+  status: "Shipped",
+  items: 5,
+  total: 110.75,
+  netCost: 65.00,
+  profit: 45.75
+},
+{
+  id: 19,
+  orderId: "ORD-019",
+  customer: "Emily Martin",
+  date: "8/30/2017",
+  status: "Processing",
+  items: 9,
+  total: 175.99,
+  netCost: 120.00,
+  profit: 55.99
+},
+{
+  id: 20,
+  orderId: "ORD-020",
+  customer: "Daniel Lee",
+  date: "4/5/2013",
+  status: "Shipped",
+  items: 11,
+  total: 250.00,
+  netCost: 150.00,
+  profit: 100.00
+},
+{
+  id: 21,
+  orderId: "ORD-021",
+  customer: "Grace Harris",
+  date: "10/19/2016",
+  status: "Pending",
+  items: 13,
+  total: 280.60,
+  netCost: 180.00,
+  profit: 100.60
+},
+{
+  id: 22,
+  orderId: "ORD-022",
+  customer: "Matthew Clark",
+  date: "7/23/2019",
+  status: "Delivered",
+  items: 16,
+  total: 325.00,
+  netCost: 210.00,
+  profit: 115.00
+},
+{
+  id: 23,
+  orderId: "ORD-023",
+  customer: "Chloe Lewis",
+  date: "1/9/2020",
+  status: "Processing",
+  items: 18,
+  total: 400.00,
+  netCost: 300.00,
+  profit: 100.00
+},
+{
+  id: 24,
+  orderId: "ORD-024",
+  customer: "Lucas Walker",
+  date: "9/14/2012",
+  status: "Shipped",
+  items: 7,
+  total: 160.75,
+  netCost: 100.00,
+  profit: 60.75
+},
+{
+  id: 25,
+  orderId: "ORD-025",
+  customer: "Amelia Hall",
+  date: "5/2/2017",
+  status: "Delivered",
+  items: 9,
+  total: 210.20,
+  netCost: 140.00,
+  profit: 70.20
+},
+{
+  id: 26,
+  orderId: "ORD-026",
+  customer: "Jack Allen",
+  date: "12/8/2014",
+  status: "Shipped",
+  items: 6,
+  total: 125.00,
+  netCost: 80.00,
+  profit: 45.00
+},
+{
+  id: 27,
+  orderId: "ORD-027",
+  customer: "Ella Young",
+  date: "3/11/2016",
+  status: "Processing",
+  items: 15,
+  total: 340.00,
+  netCost: 200.00,
+  profit: 140.00
+},
+{
+  id: 28,
+  orderId: "ORD-028",
+  customer: "Henry King",
+  date: "7/21/2018",
+  status: "Delivered",
+  items: 22,
+  total: 500.00,
+  netCost: 300.00,
+  profit: 200.00
+},
+{
+  id: 29,
+  orderId: "ORD-029",
+  customer: "Scarlett Wright",
+  date: "6/17/2015",
+  status: "Shipped",
+  items: 4,
+  total: 99.99,
+  netCost: 55.00,
+  profit: 44.99
+},
+{
+  id: 30,
+  orderId: "ORD-030",
+  customer: "Nathan Scott",
+  date: "10/26/2022",
+  status: "Pending",
+  items: 12,
+  total: 275.49,
+  netCost: 190.00,
+  profit: 85.49
+}
 ];

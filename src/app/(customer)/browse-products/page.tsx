@@ -21,6 +21,7 @@ import RequestModel from "@/app/components/ui/modals/RequestModel";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import BrowseProductListView from "@/app/components/ui/cards/BrowseProductListView";
 import ProductDetails from "@/app/components/ui/modals/ProductDetails";
+import Tooltip from "@/app/components/ui/tooltip";
 
 const orderCategories = [
   { label: "All Categories" },
@@ -39,7 +40,7 @@ function InventoryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
-  const itemsPerPage = 9;
+  const itemsPerPage = 10;
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [selectedCategory, setSelectedCategory] = useState<string>(
@@ -91,19 +92,22 @@ function InventoryContent() {
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
           <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-            <ShopingCartFilledicon />
+            <ShopingCartFilledicon
+              height={isMobile ? 16 : 24}
+              width={isMobile ? 16 : 24}
+            />
           </span>
           <h2 className="lg:w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
             Browse Products
           </h2>
           <div className="px-2.5 py-0.5 rounded-full bg-white border border-indigo-200">
             <p className="text-sm font-medium text-primary whitespace-nowrap">
-              {currentItems.length}
+              {products.length}
             </p>
           </div>
         </div>
 
-        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] lg:w-fit">
+        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5  md:px-2.5 md:py-2 shadow-table lg:w-fit">
           <div className="flex items-center relative w-full">
             <span className="absolute left-3">
               <SearchIcon
@@ -115,14 +119,16 @@ function InventoryContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full focus:bg-white md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
 
           <Menu>
-            <MenuButton className="h-8 w-8 md:h-11 md:w-11 shrink-0 flex justify-center cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full  text-sm/6 font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-              <FilterIcon />
-            </MenuButton>
+            <Tooltip content="Filter by category">
+              <MenuButton className="h-8 w-8 md:h-11 md:w-11 shrink-0 flex justify-center cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full  text-sm/6 font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+                <FilterIcon />
+              </MenuButton>
+            </Tooltip>
 
             <MenuItems
               transition
@@ -149,35 +155,39 @@ function InventoryContent() {
             </MenuItems>
           </Menu>
 
-          <button
-            onClick={() => {
-              setShowGridView(true);
-            }}
-            className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-              showGridView &&
-              "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-            }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-          >
-            <GridViewIcon
-              height={isMobile ? "15" : "20"}
-              width={isMobile ? "15" : "20"}
-            />
-          </button>
+          <Tooltip content="Griw View">
+            <button
+              onClick={() => {
+                setShowGridView(true);
+              }}
+              className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
+                showGridView &&
+                "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+              }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+            >
+              <GridViewIcon
+                height={isMobile ? "15" : "20"}
+                width={isMobile ? "15" : "20"}
+              />
+            </button>
+          </Tooltip>
 
-          <button
-            onClick={() => {
-              setShowGridView(false);
-            }}
-            className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-              !showGridView &&
-              "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-            }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-          >
-            <ListViewIcon
-              height={isMobile ? "15" : "20"}
-              width={isMobile ? "15" : "20"}
-            />
-          </button>
+          <Tooltip content="List View">
+            <button
+              onClick={() => {
+                setShowGridView(false);
+              }}
+              className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
+                !showGridView &&
+                "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+              }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+            >
+              <ListViewIcon
+                height={isMobile ? "15" : "20"}
+                width={isMobile ? "15" : "20"}
+              />
+            </button>
+          </Tooltip>
         </div>
       </div>
 
@@ -195,7 +205,7 @@ function InventoryContent() {
           </div>
         ) : (
           <div className="space-y-1">
-            <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]">
+            <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-table">
               <div className="lg:col-span-3 sm:col-span-4">Product</div>
               <div className="lg:col-span-2 sm:col-span-3">Category</div>
               <div className="col-span-2">Form</div>
@@ -221,7 +231,7 @@ function InventoryContent() {
 
         <div className="flex justify-center ">
           {currentItems.length > 0 && (
-            <div className="w-full flex items-center justify-center">
+            <div className="w-full flex items-center justify-center ">
               <ReactPaginate
                 breakLabel="..."
                 nextLabel={
@@ -246,7 +256,7 @@ function InventoryContent() {
                 pageCount={pageCount}
                 forcePage={currentPage}
                 pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer  hidden md:block"
-                containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white"
+                containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
                 pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
                 activeClassName="bg-gray-200 text-gray-900 font-medium"
                 previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"

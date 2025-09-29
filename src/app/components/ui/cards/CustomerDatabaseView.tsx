@@ -1,6 +1,7 @@
 "use client";
 import { ArrowLeftIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
+import Tooltip from "../tooltip";
 
 type Customer = {
   id: number;
@@ -38,7 +39,7 @@ function getStatusClasses(status: Customer["status"]) {
     case "Active":
       return "bg-green-50 border border-green-200 text-green-700";
     case "Inactive":
-      return "bg-gray-100 border border-gray-200 text-gray-700";
+      return "bg-red-50 border border-red-200 text-red-700";
     default:
       return "bg-gray-100 border border-gray-200 text-gray-700";
   }
@@ -54,7 +55,7 @@ export default function CustomerDatabaseView({
     <div
       onClick={onRowClick}
       key={customer.id}
-      className="grid cursor-pointer grid-cols-12 gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)]"
+      className="grid cursor-pointer grid-cols-12 hover:bg-gray-100 group gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div className="col-span-3 flex items-center gap-3">
         <div className="flex items-center gap-1 md:gap-2">
@@ -111,15 +112,17 @@ export default function CustomerDatabaseView({
       </div>
 
       <div className="col-span-1 flex items-center justify-center gap-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewCustomer?.(customer.id);
-          }}
-          className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
-        >
-          <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
-        </button>
+        <Tooltip content="View Customer">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewCustomer?.(customer.id);
+            }}
+            className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+          >
+            <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
 import React from "react";
 
-const DeliveryBoxIcon = () => {
+const DeliveryBoxIcon = ({ width = 18, height = 18 }) => {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <svg width={width} height={height} viewBox="0 0 18 18" fill="none">
       <path
         opacity="0.4"
         d="M1.5 10.0714L1.5 6L16.5 6V10.0714C16.5 13.1019 16.5 14.6171 15.5237 15.5586C14.5474 16.5 12.976 16.5 9.83333 16.5L8.16667 16.5C5.02397 16.5 3.45262 16.5 2.47631 15.5586C1.5 14.6171 1.5 13.1019 1.5 10.0714Z"

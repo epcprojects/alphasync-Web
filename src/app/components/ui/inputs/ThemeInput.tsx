@@ -72,7 +72,7 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
     <label className="block ">
       {label && (
         <span className="block mb-1 text-sm text-gray-700 font-medium text-start">
-          {label}: {required && <span className="text-red-500"> *</span>}
+          {label} {required && <span className="text-red-500"> *</span>}
         </span>
       )}
 

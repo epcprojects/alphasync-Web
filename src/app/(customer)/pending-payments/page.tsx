@@ -21,6 +21,8 @@ import CustomerOrderPayment from "@/app/components/ui/modals/CustomerOrderPaymen
 import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
 import CustomerOrderSummary from "@/app/components/ui/modals/CustomerOrderSummary";
 import { showErrorToast } from "@/lib/toast";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import Tooltip from "@/app/components/ui/tooltip";
 
 function PendingPayments() {
   const [search, setSearch] = useState("");
@@ -38,7 +40,7 @@ function PendingPayments() {
     null
   );
   const today = new Date();
-  const itemsPerPage = 9;
+  const itemsPerPage = 10;
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
 
@@ -159,12 +161,17 @@ function PendingPayments() {
     setIsDetailModelOpen(true);
   };
 
+  const isMobile = useIsMobile();
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
         <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
           <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-            <DeliveryBoxIcon />
+            <DeliveryBoxIcon
+              height={isMobile ? 16 : 24}
+              width={isMobile ? 16 : 24}
+            />
           </span>
           <h2 className="text-black font-semibold text-lg xl:text-2xl whitespace-nowrap">
             Pending Payments
@@ -176,7 +183,7 @@ function PendingPayments() {
           </div>
         </div>
         <div className="relative">
-          <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-3 shadow-[0px_1px_3px_rgba(0,0,0,0.1),_0px_1px_2px_rgba(0,0,0,0.06)] w-full md:w-fit">
+          <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-table w-full md:w-fit">
             <div className="flex items-center relative flex-1">
               <span className="absolute left-3">
                 <SearchIcon />
@@ -185,22 +192,24 @@ function PendingPayments() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search"
-                className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 w-full md:min-w-68 outline-none focus:ring focus:ring-gray-200 rounded-full"
+                className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 w-full md:min-w-68 outline-none focus:bg-white focus:ring focus:ring-gray-200 rounded-full"
               />
             </div>
             <Menu>
-              <MenuButton
-                onClick={() => {
-                  console.log(
-                    "Toggling filter dropdown, current:",
-                    showFilterDropdown
-                  );
-                  setShowFilterDropdown(!showFilterDropdown);
-                }}
-                className="w-10 h-10 md:h-10 md:w-10 outline-none bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
-              >
-                <FilterIcon />
-              </MenuButton>
+              <Tooltip content="Filters">
+                <MenuButton
+                  onClick={() => {
+                    console.log(
+                      "Toggling filter dropdown, current:",
+                      showFilterDropdown
+                    );
+                    setShowFilterDropdown(!showFilterDropdown);
+                  }}
+                  className="w-10 h-10 md:h-10 md:w-10 outline-none bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
+                >
+                  <FilterIcon />
+                </MenuButton>
+              </Tooltip>
 
               <MenuItems
                 className={
@@ -320,7 +329,7 @@ function PendingPayments() {
             pageCount={pageCount}
             forcePage={currentPage}
             pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 cursor-pointer block"
-            containerClassName="flex items-center relative w-full justify-center gap-2 px-4 py-3 rounded-2xl bg-white"
+            containerClassName="flex items-center relative w-full justify-center gap-2 px-4 py-3 rounded-2xl bg-white shadow-table"
             pageClassName="rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
             activeClassName="bg-gray-200 text-gray-900 font-medium"
             previousClassName="px-4 py-2 rounded-full absolute left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"

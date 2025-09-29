@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { TrashBinIcon } from "@/icons";
+import Tooltip from "../tooltip";
 
 interface NoteCardProps {
   doctor: string;
@@ -30,12 +31,14 @@ const NoteCard: React.FC<NoteCardProps> = ({
         <p className="text-sm md:text-lg text-gray-800 font-normal">{text}</p>
       </div>
 
-      <button
-        onClick={onDelete}
-        className="rounded-lg hover:bg-red-100 flex items-center justify-center w-6 h-6 md:w-8 md:h-8 cursor-pointer"
-      >
-        <TrashBinIcon />
-      </button>
+      <Tooltip content="Delete Note">
+        <button
+          onClick={onDelete}
+          className="rounded-lg hover:bg-red-100 flex items-center justify-center w-6 h-6 md:w-8 md:h-8 cursor-pointer"
+        >
+          <TrashBinIcon />
+        </button>
+      </Tooltip>
     </div>
   );
 };

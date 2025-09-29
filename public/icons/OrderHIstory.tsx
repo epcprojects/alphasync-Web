@@ -1,8 +1,8 @@
 import * as React from "react";
-const OrderHistory = () => (
+const OrderHistory = ({ width = 18, height = 18 }) => (
   <svg
-    width={18}
-    height={18}
+    width={width}
+    height={height}
     viewBox="0 0 18 18"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"

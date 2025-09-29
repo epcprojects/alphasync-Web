@@ -39,6 +39,7 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
       onConfirm={handleConfirm}
       confirmLabel="Save"
       icon={<NoteIcon />}
+      confimBtnDisable={!note.trim()}
     >
       <TextAreaField
         label=""
