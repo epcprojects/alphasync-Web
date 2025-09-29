@@ -3,6 +3,7 @@ import AppModal, { ModalPosition } from "./AppModal";
 import { trackingSummary } from "../../../../../public/data/Summary";
 import { Tick } from "@/icons";
 import OrderSummaryCard from "../cards/OrderSummaryCards";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 type OrderItem = {
   id: string | number;
@@ -33,6 +34,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
   onClose,
   order,
 }) => {
+   useBodyScrollLock(isOpen);
   if (!order) return null;
   return (
     <AppModal
@@ -56,8 +58,8 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
             </div>
           </div>
           <div className="bg-gray-100 rounded-xl">
-            {order.orderItems.map((item) => (
-              <OrderSummaryCard key={item.id} item={item} />
+            {order.orderItems.map((item, idx) => (
+              <OrderSummaryCard key={item.id} item={item} isLast={idx === order.orderItems.length - 1} />
             ))}
           </div>
           <h2 className="text-lg font-semibold text-primary">Order Summary</h2>
@@ -128,7 +130,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
             </div>
             <div className="flex justify-between item">
               <span className="text-sm font-normal text-gray-800">
-                Service Type:
+                Service Type
               </span>
               <span className="text-sm font-medium text-gray-800">
                 FedEx Ground
@@ -144,7 +146,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
             </div>
             <div className="flex justify-between item">
               <span className="text-sm font-normal text-gray-800">
-                Estimated Delivery:
+                Estimated Delivery
               </span>
               <span className="text-sm font-medium text-gray-800">
                 Aug 28, 2025

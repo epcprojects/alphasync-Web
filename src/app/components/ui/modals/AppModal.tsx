@@ -32,6 +32,8 @@ interface AppModalProps {
   hideCancelBtn?: boolean;
   btnIcon?: React.ReactNode;
   scrollNeeded?: boolean;
+  hideConfirmButton?: boolean;
+  cancelBtnIcon?: React.ReactNode;
 }
 
 const sizeClasses = {
@@ -61,8 +63,10 @@ const AppModal: React.FC<AppModalProps> = ({
   confimBtnDisable,
   btnFullWidth,
   hideCancelBtn,
+  hideConfirmButton,
   btnIcon,
   scrollNeeded = true,
+  cancelBtnIcon,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -140,9 +144,10 @@ const AppModal: React.FC<AppModalProps> = ({
                   className={`${btnFullWidth ? "flex-1" : "min-w-36"}`}
                   variant="outline"
                   heightClass="h-10"
+                  icon={cancelBtnIcon}
                 />
               )}
-              {onConfirm && (
+              {onConfirm && !hideConfirmButton && (
                 <ThemeButton
                   label={confirmLabel}
                   className={` ${btnFullWidth ? "flex-1" : "min-w-36"}`}

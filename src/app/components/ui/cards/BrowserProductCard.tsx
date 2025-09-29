@@ -51,7 +51,7 @@ export default function BrowserProductCard({
         />
       </div>
 
-      <div className="bg-gray-50 border border-gray-100 p-2 md:p-4 md:min-h-56 md:max-h-56 w-full rounded-lg">
+      <div className="bg-gray-50 border border-gray-100 p-2 md:p-5 md:min-h-48 md:max-h-48 w-full rounded-lg">
         <div className="flex flex-col gap-2 h-full justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex justify-between items-start">
@@ -76,12 +76,12 @@ export default function BrowserProductCard({
               <div className="flex items-center gap-2">
                 {product.prescription && (
                   <span
-                    className={`inline-block rounded-full  border  px-2.5 py-0.5 text-xs md:text-sm font-mediumbg-amber-50 border-amber-200 text-amber-700`}
+                    className={`inline-block rounded-full  border  px-2.5 py-0.5 text-xs md:text-sm font-medium  font-mediumbg-amber-50 border-amber-200 text-amber-700`}
                   >
                     Rx Required
                   </span>
                 )}
-                <span className="block text-blue-700 border-blue-200 border bg-blue-50 text-xs md:text-sm py-0.5 px-2.5 rounded-full">
+                <span className="block text-blue-700 border-blue-200 border bg-blue-50 text-xs md:text-sm font-medium py-0.5 px-2.5 rounded-full">
                   {product.stock ? "In Stock" : "Out Stock"}
                 </span>
               </div>
@@ -100,7 +100,7 @@ export default function BrowserProductCard({
                 heightClass="h-10 md:h-11"
               />
 
-              <h2 className="text-primary font-semibold text-sm md:text-lg min-w-16 text-end">
+              <h2 className="text-primary font-semibold text-sm md:text-xl min-w-16 text-end">
                 {product.price}
               </h2>
             </div>

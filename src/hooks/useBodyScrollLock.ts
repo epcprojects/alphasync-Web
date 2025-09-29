@@ -1,17 +1,27 @@
+// utils/useBodyScrollLock.ts
 import { useEffect } from "react";
+
+let openModalsCount = 0;
 
 export const useBodyScrollLock = (isOpen: boolean) => {
   useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-
     if (isOpen) {
+      openModalsCount++;
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = originalOverflow;
+      openModalsCount = Math.max(0, openModalsCount - 1);
+      if (openModalsCount === 0) {
+        document.body.style.overflow = "auto";
+      }
     }
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      if (isOpen) {
+        openModalsCount = Math.max(0, openModalsCount - 1);
+        if (openModalsCount === 0) {
+          document.body.style.overflow = "auto";
+        }
+      }
     };
   }, [isOpen]);
 };

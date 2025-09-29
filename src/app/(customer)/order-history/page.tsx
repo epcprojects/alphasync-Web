@@ -170,7 +170,7 @@ function History() {
                   <MenuItem key={index}>
                     <button
                       onClick={() => handleFilterSelect(option.id)}
-                      className={`w-full text-sm text-left p-2.5 my-0.5 rounded-md hover:bg-gray-50 transition-colors duration-150 ${
+                      className={`w-full text-sm text-left p-3 my-0.5 rounded-md hover:bg-gray-50 transition-colors duration-150 ${
                         selectedFilter === option.id
                           ? "bg-gray-100 text-gray-900"
                           : "text-gray-500"

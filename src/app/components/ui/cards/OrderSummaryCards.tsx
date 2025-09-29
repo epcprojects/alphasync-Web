@@ -11,9 +11,10 @@ interface OrderSummaryItem {
 
 interface OrderItemCardProps {
   item: OrderSummaryItem;
+  isLast?: boolean;
 }
 
-const OrderSummaryCard: React.FC<OrderItemCardProps> = ({ item }) => {
+const OrderSummaryCard: React.FC<OrderItemCardProps> = ({ item, isLast }) => {
   return (
     <div key={item.id} className="px-4 pt-4 flex flex-col gap-2">
       <div className="flex items-start gap-3">
@@ -25,16 +26,16 @@ const OrderSummaryCard: React.FC<OrderItemCardProps> = ({ item }) => {
             height={1024}
           />
         </div>
-        <div className="flex-1 flex flex-col gap-3 md:gap-1.5">
+        <div className="flex-1 flex flex-col gap-3">
           <h3 className=" text-gray-800 font-semibold text-base">
             {item.medicineName}
           </h3>
           <div className="hidden md:flex">
             <p className="text-sm font-normal text-gray-800 line-clamp-2">
               A synthetic peptide known for its healing properties. BPC-157
-              promotes tissue.A synthetic peptide known for its healing properties. BPC-157
-              promotes tissue.A synthetic peptide known for its healing properties. BPC-157
-              promotes tissue
+              promotes tissue.A synthetic peptide known for its healing
+              properties. BPC-157 promotes tissue.A synthetic peptide known for
+              its healing properties. BPC-157 promotes tissue
             </p>
           </div>
           <div className="flex justify-between items-center text-sm text-gray-500">
@@ -47,7 +48,11 @@ const OrderSummaryCard: React.FC<OrderItemCardProps> = ({ item }) => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-2 md:mt-0 border-b border-gray-200 pb-4">
+      <div
+        className={`flex flex-col gap-2 md:mt-0  ${
+          isLast ? "" : "border-b border-gray-200"
+        } pb-4`}
+      >
         <div className="flex justify-between">
           <span className="text-xs font-normal text-gray-800">Quantity</span>
           <span className="text-xs font-medium text-gray-800">

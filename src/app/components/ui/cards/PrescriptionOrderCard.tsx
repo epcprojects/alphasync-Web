@@ -56,7 +56,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 cursor-pointer  ">
+    <div className="flex flex-col gap-4 cursor-pointer">
       {orders?.map((order) => (
         <div
           key={order.id}
@@ -132,7 +132,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
             ))}
           </div>
           <div className="flex items-center justify-end w-full">
-            <div className="flex items-center gap-2 w-full sm:w-auto sm:justify-end justify-between">
+            <div className="flex items-center gap-2 md:gap-4 w-full sm:w-auto sm:justify-end justify-between">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -144,7 +144,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                   }
                 }}
                 className={`w-11 h-11 ${
-                  type === "Pending-page" && "hover:bg-red-50"
+                  type === "Pending-page" ? "hover:bg-red-50" : "hover:bg-gray-50"
                 } cursor-pointer rounded-full flex items-center justify-center border ${
                   type === "Pending-page"
                     ? "border-red-200"

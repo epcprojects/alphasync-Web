@@ -1,6 +1,6 @@
 import React from "react";
 import AppModal, { ModalPosition } from "./AppModal";
-import { ShopingCartIcon } from "@/icons";
+import { BubbleChatIcon, ShopingCartIcon } from "@/icons";
 import OrderItemCard from "../cards/OrderItemCards";
 import Card from "../../../../../public/icons/Card";
 
@@ -59,14 +59,18 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
       onClose={onClose}
       icon={<ShopingCartIcon fill="#374151" />}
       title="Request details"
+      subtitle="Request ID #REQ-001"
       position={ModalPosition.RIGHT}
-      showFooter={request.status === "Approved" ? true : false}
-      hideCancelBtn={true}
+      showFooter={true}
+      hideConfirmButton={request.status === "Approved" ? false : true} 
+      hideCancelBtn={request.status === "Approved" ? true : false}
+      cancelLabel="Follow up with Physician"
       onConfirm={onClick}
       outSideClickClose={false}
       btnIcon={<Card fill="#fff" />}
       confirmLabel="Proceed to Payment"
       btnFullWidth={true}
+      cancelBtnIcon={<BubbleChatIcon fill="#000" />}
     >
       {transformedItem && (
         <OrderItemCard

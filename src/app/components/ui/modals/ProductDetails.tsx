@@ -136,10 +136,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
             </div>
             <div className="flex flex-col md:flex-row md:items-start md:justify-between flex-1 gap-2 md:gap-4">
               <div className="flex flex-col gap-1">
-                <h2 className="text-base md:text-lg font-semibold line-clamp-1 text-gray-900">
+                <h2 className="text-base font-semibold line-clamp-1 text-gray-800">
                   {product.title}
                 </h2>
-                <p className="text-base md:text-lg font-semibold text-gray-800">
+                <p className="text-base font-semibold text-gray-800">
                   {product.price}
                 </p>
                 <div className="flex items-center gap-2 md:gap-3 text-xs font-normal text-gray-800">
@@ -195,7 +195,7 @@ const InfoBlock: React.FC<InfoBlockProps> = ({
     <div className="flex flex-col gap-3 border-b border-gray-200 pb-4">
       <div className="flex items-center gap-2">
         {icon}
-        <h3 className="text-base font-medium text-gray-800">{title}</h3>
+        <h3 className="text-lg font-medium text-gray-800">{title}</h3>
       </div>
       {description && (
         <p className="text-sm font-normal text-gray-700">{description}</p>

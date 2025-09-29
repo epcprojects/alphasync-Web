@@ -21,6 +21,7 @@ import OrderItemCard, {
   getStatusClasses,
   OrderItemProps,
 } from "../cards/OrderItemCards";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 type OrderItem = {
   id: string | number;
@@ -100,6 +101,8 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const [expiryError, setExpiryError] = useState("");
   const [cardNumberError, setCardNumberError] = useState("");
+
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     const checkScreenSize = () => setIsMobile(window.innerWidth < 768); // md breakpoint
@@ -446,11 +449,11 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   {order.orderItems.length.toString().padStart(2, "0")} Items
                 </span>
               </div>
-              <div className="flex flex-col gap-3 mt-4 border-b border-gray-200 pb-3 md:pb-4">
+              <div className="flex flex-col gap-4 mt-4 border-b border-gray-200 pb-3 md:pb-4 ">
                 {order.orderItems.map((item) => (
                   <div
                     key={item.id}
-                    className="flex justify-between items-center bg-gray-100 rounded-xl p-1.5 gap-2"
+                    className="flex justify-between items-center bg-gray-100 rounded-md p-1.5 gap-2"
                   >
                     <div className="flex gap-3 items-center">
                       <div className="w-12 h-12 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">

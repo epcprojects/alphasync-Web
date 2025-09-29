@@ -2,6 +2,7 @@ import OrderDetail from "../../../../../public/icons/OrdeerDetail";
 import AppModal, { ModalPosition } from "./AppModal";
 import OrderItemCard from "../cards/OrderItemCards";
 import { pageVarient } from "../cards/PrescriptionOrderCard";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 type OrderItem = {
   id: string | number;
@@ -35,6 +36,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
   order,
   type = "order",
 }) => {
+  useBodyScrollLock(isOpen);
   if (!order) return null;
   const getOrderTags = (status?: string) => {
     switch (status) {

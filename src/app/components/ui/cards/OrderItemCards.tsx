@@ -130,13 +130,13 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
             )}
           </div>
           {/* Desktop version - hidden on mobile, shown on desktop */}
-          <div className="hidden md:flex md:flex-col md:gap-2">
+          <div className="hidden md:flex md:flex-col md:gap-2 mt-2">
             {details.map((detail, index) => (
               <div key={index} className="flex justify-between">
-                <span className="text-xs font-normal text-gray-800">
+                <span className="text-sm font-normal text-gray-800">
                   {detail.label}
                 </span>
-                <span className="text-xs font-medium text-gray-800">
+                <span className="text-sm font-medium text-gray-800">
                   {detail.value}
                 </span>
               </div>
