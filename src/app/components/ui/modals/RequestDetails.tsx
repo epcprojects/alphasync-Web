@@ -63,7 +63,7 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
       position={ModalPosition.RIGHT}
       showFooter={true}
       hideConfirmButton={request.status === "Approved" ? false : true} 
-      hideCancelBtn={request.status === "Approved" ? true : false}
+      hideCancelBtn={request.status === "Approved" || request.status === "Denied" ? true : false}
       cancelLabel="Follow up with Physician"
       onConfirm={onClick}
       outSideClickClose={false}

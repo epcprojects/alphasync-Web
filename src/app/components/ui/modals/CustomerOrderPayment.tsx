@@ -47,6 +47,8 @@ export type requestProps = {
   doctorName: string;
   strength: string;
   price: number;
+  status?: string;
+  requestedOn? : string;
 };
 
 interface CustomerOrderPaymentProps {
@@ -260,38 +262,73 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   };
 
   const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value;
-    let formatted = expiryDate;
-    const isBackSpace = input.length < expiryDate.length;
-
+    const raw = e.target.value;
+    const prev = expiryDate;
+    const isBackSpace = raw.length < prev.length;
+    let inputText = raw;
     if (!isBackSpace) {
-      const newChar = input.slice(-1);
-
-      if (expiryDate.length === 0) {
+      const added = raw.slice(prev.length);
+      const addedDigits = added.replace(/[^0-9]/g, "");
+      if (addedDigits.length === 0) return;
+      inputText = (prev + addedDigits).slice(0, 5);
+    } else {
+      inputText = raw.replace(/[^0-9/]/g, "");
+    }
+    let enteredText = inputText;
+    let newKey = "";
+    if (!isBackSpace) {
+      newKey = inputText.slice(prev.length);
+    }
+    if (newKey.length > 0) {
+      const newChar = newKey.charAt(0);
+      if (prev.length === 0) {
         if (newChar === "0" || newChar === "1") {
-          formatted = newChar;
+          enteredText = newChar;
         } else {
-          formatted = "0" + newChar + "/";
+          enteredText = "0" + newChar + "/";
         }
-      } else if (expiryDate.length === 1) {
-        const month = parseInt(expiryDate + newChar, 10);
-        if (month <= 12) {
-          formatted = expiryDate + newChar + "/";
+      } else if (prev.length === 1) {
+        const month = parseInt(prev + newChar, 10);
+        if (!isNaN(month) && month <= 12) {
+          enteredText = prev + newChar + "/";
         } else {
-          formatted = "0" + expiryDate + "/" + newChar;
+          enteredText = "0" + prev + "/" + newChar;
         }
       } else {
-        formatted = input;
+        enteredText = inputText;
+        const [month] = enteredText.split("/");
+        if (month && month.length > 2) {
+          enteredText = prev;
+        }
       }
     } else {
-      if (expiryDate.length === 3) {
-        formatted = expiryDate.slice(0, 2);
-      } else {
-        formatted = input;
+      if (prev.length === 3) {
+        enteredText = prev.slice(0, 2);
+      } else if (prev.length === 4 || prev.length === 5) {
+        if (enteredText.includes("/")) {
+          const rawText = enteredText.replace("/", "");
+          const first = rawText.charAt(0) || "";
+          const second = rawText.charAt(1) || "";
+          const third = rawText.charAt(2) || "";
+          const monthString = first + second;
+          const month = parseInt(monthString || "0", 10);
+          if (!isNaN(month) && month <= 12) {
+            if (prev.length === 4) {
+              enteredText = rawText + "/";
+            } else {
+              enteredText = monthString + "/";
+              if (third) enteredText += third;
+            }
+          } else {
+            enteredText = "0" + first + "/" + second;
+            if (third) enteredText += third;
+          }
+        } else {
+          enteredText = prev;
+        }
       }
     }
-
-    setExpiryDate(formatted);
+    setExpiryDate(enteredText);
   };
 
   const validateExpiry = (date: string) => {
@@ -392,6 +429,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       price: request.price,
       doctorName: request.doctorName,
       strength: request.strength,
+      status: request.status,
     };
   }
 
@@ -502,13 +540,12 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   Total
                 </span>
                 <span className="text-base font-semibold text-primary">
-                  ${total}
+                  ${total} 
                 </span>
               </div>
             </div>
           ) : (
-            transformedItem &&
-            !isMobile && (
+            transformedItem && (
               <OrderItemCard
                 item={transformedItem}
                 requestStatus
@@ -516,7 +553,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
               />
             )
           )}
-          {request && isMobile && (
+          {/* {request && isMobile && (
             <>
               <div className="flex items-start gap-3 md:border-b md:border-gray-200 md:pb-4">
                 <div className="w-18 h-18 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -554,24 +591,6 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                           </span>
                         )}
                       </div>
-                      <div>
-                        <span
-                          className={`inline-block whitespace-nowrap border border-gray-200 rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium`}
-                        >
-                          Recovery & Healing
-                        </span>
-                      </div>
-                      <div className="flex ml-auto gap-3">
-                        <span className="text-xs font-normal text-gray-800">
-                          5 mg vial
-                        </span>
-                        <span className="text-xs font-normal text-gray-800">
-                          |
-                        </span>
-                        <span className="text-xs font-normal text-gray-800">
-                          Injectable
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -603,7 +622,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                 </div>
               </div>
             </>
-          )}
+          )} */}
           <form
             className={`${!showForm && isMobile ? "hidden" : "block"}
             flex flex-col gap-4`}

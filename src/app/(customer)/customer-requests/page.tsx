@@ -13,6 +13,7 @@ import CustomerOrderPayment from "@/app/components/ui/modals/CustomerOrderPaymen
 import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
 import CustomerOrderSummary from "@/app/components/ui/modals/CustomerOrderSummary";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import ChatWithPhysician from "@/app/components/ui/modals/CharWithPyhsicianModel";
 
 const Page = () => {
   const [search, setSearch] = useState("");
@@ -24,6 +25,8 @@ const Page = () => {
   const [isSucess, setIsSuccess] = useState(false);
   const [isPaymentModel, setisPaymentModel] = useState(false);
   const [isSummaryModel, setIsSummaryModel] = useState(false);
+  const [isChatModel, setIsChatModel] = useState(false);
+  const [status, setStatus] = useState("");
   const handleApprove = (title: string) => {
     showSuccessToast("Patient request approved successfully.");
     console.log(title);
@@ -51,6 +54,11 @@ const Page = () => {
   const handleRequests = (request: requestDetails) => {
     setSelectedRequest(request);
     setIsDetailModelOpen(true);
+  };
+
+  const handlePayment = (status: string) => {
+    setStatus(status);
+    setisPaymentModel(true);
   };
 
   const isMobile = useIsMobile();
@@ -120,10 +128,11 @@ const Page = () => {
                   onReject={() => handleReject(item.title)}
                   onAddNote={() => handleAddNote(item.title)}
                   onViewDetails={() => handleRequests(item)}
-                  onChat={() => {}}
+                  onChat={() => {
+                    setIsChatModel(true);
+                  }}
                   onPayment={() => {
-                    console.log("opening payment Model");
-                    setisPaymentModel(true);
+                    handlePayment(item.status);
                   }}
                   {...item}
                 />
@@ -138,9 +147,12 @@ const Page = () => {
                   onApprove={() => handleApprove(item.title)}
                   onReject={() => handleReject(item.title)}
                   onAddNote={() => handleAddNote(item.title)}
+                  onViewDetails={() => handleRequests(item)}
+                  onChat={() => {
+                    setIsChatModel(true);
+                  }}
                   onPayment={() => {
-                    console.log("opening payment Model");
-                    setisPaymentModel(true);
+                    handlePayment(item.status);
                   }}
                   {...item}
                 />
@@ -155,9 +167,9 @@ const Page = () => {
                   onApprove={() => handleApprove(item.title)}
                   onReject={() => handleReject(item.title)}
                   onAddNote={() => handleAddNote(item.title)}
+                  onViewDetails={() => handleRequests(item)}
                   onPayment={() => {
-                    console.log("opening payment Model");
-                    setisPaymentModel(true);
+                    handlePayment(item.status);
                   }}
                   {...item}
                 />
@@ -172,10 +184,10 @@ const Page = () => {
                   onApprove={() => handleApprove(item.title)}
                   onReject={() => handleReject(item.title)}
                   onAddNote={() => handleAddNote(item.title)}
+                  onViewDetails={() => handleRequests(item)}
                   {...item}
                   onPayment={() => {
-                    console.log("opening payment Model");
-                    setisPaymentModel(true);
+                    handlePayment(item.status);
                   }}
                 />
               ))}
@@ -183,15 +195,17 @@ const Page = () => {
           </TabPanels>
         </TabGroup>
       </div>
-      <RequestDetails
-        isOpen={isDetailModelOpen}
-        onClose={() => setIsDetailModelOpen(false)}
-        request={selectedRequest}
-        onClick={() => {
-          setIsDetailModelOpen(false);
-          setisPaymentModel(true);
-        }}
-      />
+      {isDetailModelOpen && (
+        <RequestDetails
+          isOpen={isDetailModelOpen}
+          onClose={() => setIsDetailModelOpen(false)}
+          request={selectedRequest}
+          onClick={() => {
+            setIsDetailModelOpen(false);
+            setisPaymentModel(true);
+          }}
+        />
+      )}
       {isPaymentModel && (
         <CustomerOrderPayment
           isOpen={isPaymentModel}
@@ -203,7 +217,9 @@ const Page = () => {
             medicineName: "Semaglutide",
             doctorName: "Dr. Arina Baker",
             strength: "5 mg vial",
+            requestedOn: "08/08/2025",
             price: 120,
+            status: status,
           }}
           onClick={() => {
             setisPaymentModel(false);
@@ -211,6 +227,10 @@ const Page = () => {
           }}
         />
       )}
+      <ChatWithPhysician
+        isOpen={isChatModel}
+        onClose={() => setIsChatModel(false)}
+      />
       <PaymentSuccess
         isOpen={isSucess}
         onClose={() => setIsSuccess(false)}

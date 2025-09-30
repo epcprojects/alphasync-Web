@@ -26,17 +26,17 @@ type Note = {
 };
 
 export function getStatusClasses(status: string) {
-    switch (status) {
-      case "Pending Review":
-        return "bg-amber-50 border border-amber-200 text-amber-700";
-      case "Approved":
-        return "bg-green-50 border border-green-200 text-green-700";
-      case "Denied":
-        return "bg-red-50 border border-red-200 text-red-500";
-      default:
-        return "bg-gray-50 border border-gray-200 text-gray-700";
-    }
+  switch (status) {
+    case "Pending Review":
+      return "bg-amber-50 border border-amber-200 text-amber-700";
+    case "Approved":
+      return "bg-green-50 border border-green-200 text-green-700";
+    case "Denied":
+      return "bg-red-50 border border-red-200 text-red-500";
+    default:
+      return "bg-gray-50 border border-gray-200 text-gray-700";
   }
+}
 
 const OrderItemCard: React.FC<OrderItemProps> = ({
   item,
@@ -51,17 +51,21 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
           { label: "Dosage Form:", value: "Injectable" },
           { label: "Doctor Name:", value: item.doctorName },
           { label: "Requested:", value: item.requestedOn },
+          { label: "Category:", value: "Recovery" },
         ]
       : paymentRequest
       ? [
           { label: "Strength", value: item.strength },
           { label: "Dosage Form:", value: "Injectable" },
+          { label: "Doctor Name:", value: item.doctorName },
+          { label: "Requested:", value: "8/8/2025" },
+          { label: "Category:", value: "Recovery" },
           { label: "Subtotal:", value: "$125.99" },
           { label: "Tax (8%):", value: "$12.00" },
         ]
       : [
           { label: "Quantity", value: item.quantity },
-          { label: "Price", value: item.price.toFixed(2) },
+          { label: "Price", value: item.price.toFixed(2) || 120 },
         ];
 
   const notes: Note[] = [
@@ -117,13 +121,13 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                   )}
                 </div>
               )}
-              <div>
+              {!requestStatus && <div>
                 <span
                   className={`inline-block whitespace-nowrap border border-gray-200 rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium`}
                 >
                   Recovery & Healing
                 </span>
-              </div>
+              </div>}
             </div>
             {item.amount && !requestStatus && (
               <p className="text-xs font-normal text-gray-800">{item.amount}</p>
@@ -132,11 +136,11 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
           {/* Desktop version - hidden on mobile, shown on desktop */}
           <div className="hidden md:flex md:flex-col md:gap-2 mt-2">
             {details.map((detail, index) => (
-              <div key={index} className="flex justify-between">
+              <div key={index} className={`flex justify-between ${detail.label === "Tax (8%):" ? "border-b border-gray-200 pb-2" : "border-none"}`}>
                 <span className="text-sm font-normal text-gray-800">
                   {detail.label}
                 </span>
-                <span className="text-sm font-medium text-gray-800">
+                <span className={`text-sm font-medium text-gray-800 `}>
                   {detail.value}
                 </span>
               </div>
@@ -193,7 +197,23 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                   Requested:
                 </span>
                 <span className="text-xs font-medium text-gray-800">
-                  {item.requestedOn}
+                  {item.requestedOn || "8/8/2025"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-xs font-normal text-gray-800">
+                  Review Date
+                </span>
+                <span className="text-xs font-medium text-gray-800">
+                  10/8/2025
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-xs font-normal text-gray-800">
+                  Category
+                </span>
+                <span className="text-xs font-medium text-gray-800">
+                  Recovery
                 </span>
               </div>
             </>
@@ -205,6 +225,11 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
             {item.quantity && (
               <span className="text-base font-semibold text-primary">
                 ${(item.price * item.quantity).toFixed(2)}
+              </span>
+            )}
+            {requestStatus && (
+              <span className="text-base font-semibold text-primary">
+                ${item.price}
               </span>
             )}
           </div>
@@ -225,7 +250,13 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                     : "bg-porcelan"
                 } p-3 rounded-lg mt-1`}
               >
-                <p className="text-base font-normal text-gray-600">
+                <p
+                  className={`text-base font-normal ${
+                    note.label === "Reason for Denial"
+                      ? "text-red-900"
+                      : "text-gray-600"
+                  }`}
+                >
                   {note.value}
                 </p>
               </div>
