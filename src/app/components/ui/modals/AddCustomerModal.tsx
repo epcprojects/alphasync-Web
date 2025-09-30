@@ -2,7 +2,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import AppModal from "./AppModal";
-import { Calendar, UserAddIcon } from "@/icons";
+import { UserAddIcon } from "@/icons";
 import ThemeInput from "../inputs/ThemeInput";
 import Stepper from "../../Stepper";
 import TextAreaField from "../inputs/TextAreaField";

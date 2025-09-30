@@ -42,13 +42,31 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
     closeMenu();
   };
 
+  // useEffect(() => {
+  //   const handleScroll = (): void => {
+  //     setIsSticky(window.scrollY > 100);
+  //   };
+
+  //   window.addEventListener("scroll", handleScroll);
+  //   return (): void => window.removeEventListener("scroll", handleScroll);
+  // }, []);
+
   useEffect(() => {
     const handleScroll = (): void => {
-      setIsSticky(window.scrollY > 350);
+      const isStickyNow = window.scrollY > 350;
+      setIsSticky(isStickyNow);
+      const mainEl = document.querySelector("main");
+      if (mainEl) {
+        if (isStickyNow) {
+          mainEl.classList.add("pt-20");
+        } else {
+          mainEl.classList.remove("pt-20");
+        }
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
-    // return (): void => window.removeEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const hasPendingPayment = menuItems.some((item) =>
@@ -262,19 +280,6 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                       </Link>
                     );
                   })}
-
-                  {/* <Link
-                    onClick={closeMenu}
-                    key={"profile"}
-                    href={"/profile"}
-                    className="flex items-center gap-1.5 p-1.5  text-base font-normal leading-7 text-gray-900 hover:bg-gray-100"
-                  >
-                    <span className="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center">
-                      <UserIcon fill={"currentColor"} height="16" width="16" />
-                    </span>
-                    Profile
-                  </Link> */}
-
                   <Link
                     onClick={closeMenu}
                     key={"logout"}
@@ -282,7 +287,6 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                     className="flex items-center gap-1.5 p-1.5  text-base font-normal leading-7 text-gray-900 hover:bg-gray-100"
                   >
                     <span className="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center">
-                      {/* <Icon fill={"currentColor"} height="16" width="16" /> */}
                       <LogoutIcon
                         fill={"currentColor"}
                         height="16"

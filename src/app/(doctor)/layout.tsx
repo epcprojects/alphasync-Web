@@ -159,7 +159,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           </div>
         )}
       </div>
-      <div className="px-3  pb-3">{children}</div>
+      <main className="px-3  pb-3">{children}</main>
     </div>
   );
 }
