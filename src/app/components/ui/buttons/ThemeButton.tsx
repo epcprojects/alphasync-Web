@@ -73,6 +73,8 @@ const ThemeButton: React.FC<ThemeButtonProps> = ({
             ? "border border-primary !p-0"
             : variant === "danger"
             ? "border border-red-500 !p-0"
+            : variant === "success"
+            ? "border border-green-200 !p-0"
             : "bg-green-50 border border-green-200 group-hover:bg-green-200"
         }`}
       >

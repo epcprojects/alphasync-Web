@@ -46,6 +46,7 @@ const headings: Record<string, string> = {
   "/reminder": "Refill Reminders",
   "/request": "Patient Requests",
   "/settings": "Settings",
+  "/notifications": "Notifications",
 };
 
 const subHeadings: Record<string, string> = {
@@ -53,9 +54,15 @@ const subHeadings: Record<string, string> = {
   "/requests": "Review and manage patient medication requests",
 };
 
-const noStatsRoutes = ["/customers", "/reminder", "/requests", "/settings"];
+const noStatsRoutes = [
+  "/customers",
+  "/reminder",
+  "/requests",
+  "/settings",
+  "/notifications",
+];
 
-const showSubHeading = ["/reminder", "/requests"];
+const showSubHeading = ["/reminder", "/requests", "/notifications"];
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   const pathname = usePathname();

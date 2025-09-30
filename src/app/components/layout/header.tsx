@@ -7,6 +7,7 @@ import { ProfileIcon, LogoutIcon, RequestIcon } from "@/icons";
 import HeaderMenuNavItems from "./HeaderMenuNavItems";
 import Notifications from "../ui/Notifications";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { notifications } from "../../../../public/data/notifications";
 
 interface MenuItemType {
   label: string;
@@ -140,7 +141,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
               </Link>
             )}
 
-            {!isAdminHeader && <Notifications />}
+            {!isAdminHeader && <Notifications notifications={notifications} />}
 
             <div className="text-right w-8 h-8 md:h-11 md:w-11">
               <Menu>

@@ -92,7 +92,9 @@ import DoctorFilledIcon from "./DoctorFilledIcon";
 import DoctorIcon from "./DoctorIcon";
 import UserRemoveIcon from "./UserRemoveIcon";
 import Lock from "./Lock";
+import TickDouble from "./TickDouble";
 export {
+    TickDouble,
     UserRemoveIcon,
     DoctorIcon,
     DoctorFilledIcon,
