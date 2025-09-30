@@ -8,6 +8,7 @@ import ReactPaginate from "react-paginate";
 import { customers } from "../../../../public/data/customers";
 import AddCustomerModal from "@/app/components/ui/modals/AddCustomerModal";
 import { showSuccessToast } from "@/lib/toast";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 function CustomerContent() {
   const [search, setSearch] = useState("");
@@ -47,12 +48,17 @@ function CustomerContent() {
     router.replace(`?${params.toString()}`);
   };
 
+  const isMobile = useIsMobile();
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
           <span className="flex items-center justify-center text-primary rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-            <UserGroupIcon />
+            <UserGroupIcon
+              height={isMobile ? 16 : 24}
+              width={isMobile ? 16 : 24}
+            />
           </span>
           <h2 className="w-full text-black font-semibold text-lg md:text-3xl">
             Customer Database

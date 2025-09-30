@@ -116,6 +116,11 @@ const OrderModal: React.FC<OrderModalProps> = ({
                 setPrice(e.target.value);
                 setErrors({});
               }}
+              onKeyDown={(e) => {
+                if (["e", "E", "+", "-"].includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
               className={`border ${
                 errors.price ? "border-red-500" : "border-gray-200"
               } outline-none bg-white text-gray-900 text-sm rounded-lg focus:ring-gray-200 focus:ring-1 block w-full ps-8 p-2.5`}

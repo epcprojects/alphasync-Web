@@ -2,12 +2,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import AppModal from "./AppModal";
-import { UserAddIcon } from "@/icons";
+import { Calendar, UserAddIcon } from "@/icons";
 import ThemeInput from "../inputs/ThemeInput";
 import Stepper from "../../Stepper";
 import TextAreaField from "../inputs/TextAreaField";
 import * as Yup from "yup";
-
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 interface AddCustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,12 +21,12 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   onConfirm,
 }) => {
   const [step, setStep] = useState(1);
-
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
-    dateOfBirth: "",
+    dateOfBirth: null as Date | null,
     address: "",
     emergencyName: "",
     emergencyPhone: "",
@@ -61,7 +62,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     }),
   ];
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string | Date | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -112,7 +113,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       fullName: "",
       email: "",
       phone: "",
-      dateOfBirth: "",
+      dateOfBirth: new Date(),
       address: "",
       emergencyName: "",
       emergencyPhone: "",
@@ -203,19 +204,58 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                 />
               </div>
             </div>
-            <div>
+            <div className="w-full">
               <label className="block mb-1 text-sm text-gray-700 font-medium text-start">
                 Date of Birth <span className="text-red-500">*</span>
               </label>
-              <input
-                value={formData.dateOfBirth}
-                onChange={(e) => handleChange("dateOfBirth", e.target.value)}
-                className={`${
+              <DatePicker
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
+                wrapperClassName="w-full"
+                placeholderText="mm/dd/yyyy"
+                toggleCalendarOnIconClick
+                selected={selectedDate}
+                onChange={(date) => {
+                  setSelectedDate(date);
+                  handleChange("dateOfBirth", date);
+                }}
+                className={`border ${
                   errors.dateOfBirth ? "border-red-500" : "border-lightGray"
-                } w-full focus:ring h-11 p-2 md:px-3 md:py-2.5 border rounded-lg outline-none text-gray-900 placeholder:text-neutral-300  focus:ring-gray-200`}
-                type="date"
-                min="1900-01-01"
-                max={new Date().toISOString().split("T")[0]}
+                } rounded-lg flex px-2 md:px-3 outline-none focus:ring focus:ring-gray-100 
+       placeholder:text-gray-600 text-gray-800 items-center !py-3 h-11 !w-full`}
+                maxDate={new Date()}
+                minDate={new Date(1900, 0, 1)}
+                showIcon
+                icon={
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M1.3335 7.99984C1.3335 5.48568 1.3335 4.2286 2.11454 3.44755C2.89559 2.6665 4.15267 2.6665 6.66683 2.6665H9.3335C11.8477 2.6665 13.1047 2.6665 13.8858 3.44755C14.6668 4.2286 14.6668 5.48568 14.6668 7.99984V9.33317C14.6668 11.8473 14.6668 13.1044 13.8858 13.8855C13.1047 14.6665 11.8477 14.6665 9.3335 14.6665H6.66683C4.15267 14.6665 2.89559 14.6665 2.11454 13.8855C1.3335 13.1044 1.3335 11.8473 1.3335 9.33317V7.99984Z"
+                      stroke="#6B7280"
+                    />
+                    <path
+                      d="M4.6665 2.6665V1.6665"
+                      stroke="#6B7280"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M11.3335 2.6665V1.6665"
+                      stroke="#6B7280"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M1.6665 6H14.3332"
+                      stroke="#6B7280"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                }
               />
               {errors.dateOfBirth && (
                 <p className="text-xs text-red-500 mt-1">
@@ -223,6 +263,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                 </p>
               )}
             </div>
+
             <ThemeInput
               required
               label="Address"

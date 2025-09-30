@@ -34,7 +34,7 @@ export default function BrowseProductListView({
 
   if (isMobile) {
     return (
-      <div className="bg-white flex flex-col gap-5 p-3 shadow-table rounded-xl">
+      <div className="bg-white flex flex-col  gap-5 p-3 shadow-table rounded-xl">
         <div className="flex flex-col gap-3">
           <div className=" flex items-center gap-3">
             <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
@@ -117,10 +117,10 @@ export default function BrowseProductListView({
     <div
       onClick={onRowClick}
       key={product.id}
-      className="grid cursor-pointer grid-cols-2  md:grid-cols-12  md:gap-4 items-center rounded-xl bg-white p-3 shadow-table"
+      className="grid cursor-pointer grid-cols-2 group hover:bg-gray-100  md:grid-cols-12  md:gap-4 items-center rounded-xl bg-white p-3 shadow-table"
     >
       <div className="lg:col-span-3 col-span-4 flex items-center gap-3">
-        <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
+        <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 group-hover:bg-white bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
           <Image
             width={36}
             height={36}
@@ -184,7 +184,7 @@ export default function BrowseProductListView({
         <Tooltip content="View Detail">
           <button
             onClick={() => onInfoBtn(product)}
-            className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-md border cursor-pointer border-lightGray"
+            className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center group-hover:bg-white rounded-md border cursor-pointer border-lightGray"
           >
             <InfoIcon fill="#9CA3AF" />
           </button>
@@ -196,7 +196,7 @@ export default function BrowseProductListView({
               e.stopPropagation();
               onAddToCart?.(product.id);
             }}
-            className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-md border cursor-pointer border-lightGray"
+            className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-md border group-hover:bg-white cursor-pointer border-lightGray"
           >
             <ShopingCartIcon width={16} height={16} />
           </button>

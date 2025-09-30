@@ -31,10 +31,10 @@ export default function ProductListView({
     <div
       onClick={onRowClick}
       key={product.id}
-      className="grid cursor-pointer grid-cols-2 hover:bg-gray-100 md:grid-cols-12 gap-2 md:gap-4 items-center rounded-xl bg-white p-3 shadow-table"
+      className="grid cursor-pointer grid-cols-2 hover:bg-gray-100 group md:grid-cols-12 gap-2 md:gap-4 items-center rounded-xl bg-white p-3 shadow-table"
     >
       <div className="col-span-2 md:col-span-4 lg:col-span-5 flex items-center gap-3">
-        <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
+        <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 group-hover:bg-white bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
           <Image
             width={36}
             height={36}
