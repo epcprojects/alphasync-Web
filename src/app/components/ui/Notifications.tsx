@@ -131,9 +131,12 @@ export default function Notifications({ notifications }: NotificationsProps) {
     <>
       {isMobile ? (
         <>
-          <PopoverButton className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+          <button
+            onClick={() => setOpen(!open)}
+            className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
+          >
             <ReminderIcon fill="white" />
-          </PopoverButton>
+          </button>
 
           <Dialog
             open={open}

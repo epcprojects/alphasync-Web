@@ -163,7 +163,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
 
             <div className="text-right w-8 h-8 md:h-11 md:w-11">
               <Menu>
-                <MenuButton className="inline-flex items-center gap-2 rounded-full  text-sm/6 font-semibold  shadow-inner shadow-white/10 focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-700 data-open:bg-gray-700">
+                <MenuButton className="inline-flex cursor-pointer items-center gap-2 rounded-full  text-sm/6 font-semibold  shadow-inner shadow-white/10 focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-700 data-open:bg-gray-700">
                   <Image
                     width={40}
                     height={40}
