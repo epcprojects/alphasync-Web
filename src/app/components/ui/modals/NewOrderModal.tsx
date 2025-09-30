@@ -9,6 +9,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import Image from "next/image";
 import { showSuccessToast } from "@/lib/toast";
+import { formatNumber } from "@/lib/helpers";
 
 type DropdownItem = {
   name: string;
@@ -329,7 +330,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     </div>
 
                     <div className="text-xs md:text-sm whitespace-nowrap">
-                      ${(item.quantity * item.price).toFixed(2)}
+                      ${formatNumber(item.quantity * item.price)}
                     </div>
 
                     <div>
@@ -349,7 +350,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                       Total Amount:
                     </span>
                     <span className="text-primary text-lg font-semibold">
-                      ${totalAmount.toFixed(2)}
+                      ${formatNumber(totalAmount)}
                     </span>
                   </div>
                   <div className="flex justify-end">

@@ -120,30 +120,36 @@ export default function RequestListView({
           </div>
 
           <div className=" flex items-center justify-end gap-1">
-            {onAcceptBtn && request.status !== "Approved" && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAcceptBtn();
-                }}
-                className="bg-green-500 cursor-pointer rounded-md h-6 w-6 flex items-center justify-center"
-              >
-                <CheckMarkCircle width={14} height={14} />
-              </button>
-            )}
-            {onRejectBtn && request.status !== "Approved" && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRejectBtn();
-                }}
-                className="bg-red-500 cursor-pointer rounded-md h-6 w-6 flex items-center justify-center"
-              >
-                <span className="bg-white rounded-full w-3 h-3 flex items-center justify-center">
-                  <CrossIcon fill="red" width="12" height="12" />
-                </span>
-              </button>
-            )}
+            {onAcceptBtn &&
+              request.status !== "Approved" &&
+              request.status !== "Denied" && (
+                <Tooltip content="Approve Request">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAcceptBtn();
+                    }}
+                    className="bg-green-500 hover:bg-green-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
+                  >
+                    <CheckMarkCircle />
+                  </button>
+                </Tooltip>
+              )}
+            {onRejectBtn &&
+              request.status !== "Approved" &&
+              request.status !== "Denied" && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRejectBtn();
+                  }}
+                  className="bg-red-500 cursor-pointer rounded-md h-6 w-6 flex items-center justify-center"
+                >
+                  <span className="bg-white rounded-full w-3 h-3 flex items-center justify-center">
+                    <CrossIcon fill="red" width="12" height="12" />
+                  </span>
+                </button>
+              )}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -235,34 +241,38 @@ export default function RequestListView({
       </div>
 
       <div className=" flex items-center justify-end gap-2">
-        {onAcceptBtn && request.status !== "Approved" && (
-          <Tooltip content="Approve Request">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAcceptBtn();
-              }}
-              className="bg-green-500 hover:bg-green-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
-            >
-              <CheckMarkCircle />
-            </button>
-          </Tooltip>
-        )}
-        {onRejectBtn && request.status !== "Approved" && (
-          <Tooltip content="Reject Request">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onRejectBtn();
-              }}
-              className="bg-red-500 hover:bg-red-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
-            >
-              <span className="bg-white rounded-full w-4 h-4 flex items-center justify-center">
-                <CrossIcon fill="red" width="14" height="14" />
-              </span>
-            </button>
-          </Tooltip>
-        )}
+        {onAcceptBtn &&
+          request.status !== "Approved" &&
+          request.status !== "Denied" && (
+            <Tooltip content="Approve Request">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAcceptBtn();
+                }}
+                className="bg-green-500 hover:bg-green-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
+              >
+                <CheckMarkCircle />
+              </button>
+            </Tooltip>
+          )}
+        {onRejectBtn &&
+          request.status !== "Approved" &&
+          request.status !== "Denied" && (
+            <Tooltip content="Reject Request">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRejectBtn();
+                }}
+                className="bg-red-500 hover:bg-red-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
+              >
+                <span className="bg-white rounded-full w-4 h-4 flex items-center justify-center">
+                  <CrossIcon fill="red" width="14" height="14" />
+                </span>
+              </button>
+            </Tooltip>
+          )}
 
         <Tooltip content="View Profile">
           <button

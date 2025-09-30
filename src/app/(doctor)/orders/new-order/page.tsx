@@ -8,6 +8,7 @@ import * as Yup from "yup";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { showSuccessToast } from "@/lib/toast";
+import { formatNumber } from "@/lib/helpers";
 
 interface OrderItem {
   product: string;
@@ -314,7 +315,7 @@ const Page = () => {
                     </div>
 
                     <div className="text-xs md:text-sm whitespace-nowrap">
-                      ${(item.quantity * item.price).toFixed(2)}
+                      ${formatNumber(item.quantity * item.price)}
                     </div>
 
                     <div className="flex justify-end">
@@ -334,7 +335,7 @@ const Page = () => {
                       Total Amount:
                     </span>
                     <span className="text-primary text-base md:text-lg font-semibold">
-                      ${totalAmount.toFixed(2)}
+                      ${formatNumber(totalAmount)}
                     </span>
                   </div>
                   <div className="flex justify-end">
