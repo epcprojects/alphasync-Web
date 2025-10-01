@@ -204,6 +204,10 @@ const Page = () => {
             setIsDetailModelOpen(false);
             setisPaymentModel(true);
           }}
+          oncancel={() => {
+            setIsDetailModelOpen(false);
+            setIsChatModel(true);
+          }}
         />
       )}
       {isPaymentModel && (
@@ -218,7 +222,7 @@ const Page = () => {
             doctorName: "Dr. Arina Baker",
             strength: "5 mg vial",
             requestedOn: "08/08/2025",
-            price: 120,
+            price: 137.99,
             status: status,
           }}
           onClick={() => {
