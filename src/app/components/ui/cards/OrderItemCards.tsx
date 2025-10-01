@@ -57,9 +57,9 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
       ? [
           { label: "Strength", value: item.strength },
           { label: "Dosage Form:", value: "Injectable" },
-          { label: "Doctor Name:", value: item.doctorName },
-          { label: "Requested:", value: "8/8/2025" },
-          { label: "Category:", value: "Recovery" },
+          // { label: "Doctor Name:", value: item.doctorName },
+          // { label: "Requested:", value: "8/8/2025" },
+          // { label: "Category:", value: "Recovery" },
           { label: "Subtotal:", value: "$125.99" },
           { label: "Tax (8%):", value: "$12.00" },
         ]

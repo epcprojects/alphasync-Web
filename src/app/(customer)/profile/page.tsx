@@ -14,13 +14,13 @@ const Page = () => {
       .email("Invalid email address")
       .required("Email is required"),
     phone: Yup.string()
-      .matches(/^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, "Invalid phone number")
+      .matches(/^[0-9]+$/, "Phone number must contain digits only")
       .required("Phone number is required"),
     dob: Yup.string().required("Date of Birth is required"),
     address: Yup.string().required("Address is required"),
     ename: Yup.string().required("Emergency Contact Name is required"),
     ephone: Yup.string()
-      .matches(/^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, "Invalid phone number")
+      .matches(/^[0-9]+$/, "Emergency phone must contain digits only")
       .required("Emergency Contact Phone is required"),
   });
 
@@ -173,7 +173,17 @@ const Page = () => {
                             type="phone"
                             name="phone"
                             value={values.phone}
-                            onChange={handleChange}
+                            onChange={(
+                              e: React.ChangeEvent<HTMLInputElement>
+                            ) => {
+                              const onlyNums = e.target.value.replace(
+                                /[^0-9]/g,
+                                ""
+                              );
+                              handleChange({
+                                target: { name: "phone", value: onlyNums },
+                              });
+                            }}
                           />
                           <ErrorMessage
                             name="phone"
@@ -269,7 +279,17 @@ const Page = () => {
                             type="ephone"
                             name="ephone"
                             value={values.ephone}
-                            onChange={handleChange}
+                            onChange={(
+                              e: React.ChangeEvent<HTMLInputElement>
+                            ) => {
+                              const onlyNums = e.target.value.replace(
+                                /[^0-9]/g,
+                                ""
+                              );
+                              handleChange({
+                                target: { name: "ephone", value: onlyNums },
+                              });
+                            }}
                           />
                           <ErrorMessage
                             name="ephone"

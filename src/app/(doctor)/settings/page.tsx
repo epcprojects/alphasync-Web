@@ -296,7 +296,7 @@ const Page = () => {
                           heightClass="h-10"
                           type="submit"
                           className="w-full md:w-fit"
-                          disabled
+                          // disabled
                         />
                       </div>
                     </Form>
@@ -383,7 +383,7 @@ const Page = () => {
                           heightClass="h-10 "
                           type="submit"
                           className="w-full md:w-fit"
-                          disabled
+                          // disabled 
                         />
                       </div>
                     </Form>
