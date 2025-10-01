@@ -7,6 +7,8 @@ import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
 import AvatarUploader from "@/app/components/AvatarUploader";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 const Page = () => {
   const profileSchema = Yup.object().shape({
     fullName: Yup.string().required("Full name is required"),
@@ -107,7 +109,7 @@ const Page = () => {
                     fullName: "Daniel Baker",
                     email: "daniel.baker@alphasync.com",
                     phone: "(316) 555-0116",
-                    dob: formatToDateInput("01/15/1990"),
+                    dob: new Date(),
                     address: "123 Main St",
                     ename: "Daniel Baker",
                     ephone: "(316) 555-0116",
@@ -117,7 +119,7 @@ const Page = () => {
                     console.log("Profile Values:", values);
                   }}
                 >
-                  {({ handleChange, values }) => (
+                  {({ handleChange, values, setFieldValue }) => (
                     <Form>
                       <div className="grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">
@@ -193,11 +195,50 @@ const Page = () => {
                           </label>
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
-                          <ThemeInput
-                            type="date"
+                          <DatePicker
                             name="dob"
-                            value={values.dob}
-                            onChange={handleChange}
+                            showMonthDropdown
+                            showYearDropdown
+                            dropdownMode="select"
+                            wrapperClassName="w-full"
+                            placeholderText="mm/dd/yyyy"
+                            toggleCalendarOnIconClick
+                            selected={values.dob ? new Date(values.dob) : null}
+                            onChange={(date) => setFieldValue("dob", date)}
+                            className={`border border-lightGray rounded-lg flex px-2 md:px-3 outline-none focus:ring focus:ring-gray-100 
+          placeholder:text-gray-600 text-gray-800 items-center !py-3 h-11 !w-full`}
+                            maxDate={new Date()}
+                            minDate={new Date(1900, 0, 1)}
+                            showIcon
+                            icon={
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M1.3335 7.99984C1.3335 5.48568 1.3335 4.2286 2.11454 3.44755C2.89559 2.6665 4.15267 2.6665 6.66683 2.6665H9.3335C11.8477 2.6665 13.1047 2.6665 13.8858 3.44755C14.6668 4.2286 14.6668 5.48568 14.6668 7.99984V9.33317C14.6668 11.8473 14.6668 13.1044 13.8858 13.8855C13.1047 14.6665 11.8477 14.6665 9.3335 14.6665H6.66683C4.15267 14.6665 2.89559 14.6665 2.11454 13.8855C1.3335 13.1044 1.3335 11.8473 1.3335 9.33317V7.99984Z"
+                                  stroke="#6B7280"
+                                />
+                                <path
+                                  d="M4.6665 2.6665V1.6665"
+                                  stroke="#6B7280"
+                                  strokeLinecap="round"
+                                />
+                                <path
+                                  d="M11.3335 2.6665V1.6665"
+                                  stroke="#6B7280"
+                                  strokeLinecap="round"
+                                />
+                                <path
+                                  d="M1.6665 6H14.3332"
+                                  stroke="#6B7280"
+                                  strokeLinecap="round"
+                                />
+                              </svg>
+                            }
                           />
                           <ErrorMessage
                             name="dob"

@@ -11,7 +11,7 @@ export const notifications = [
   },
   {
     id: 2,
-    title: "New Message from Your Dainel",
+    title: "New Message from Dainel",
     from: "Oliver Thompson",
     product: "Semaglutide",
     date: "8/22/2025",
@@ -41,7 +41,7 @@ export const notifications = [
   },
   {
     id: 5,
-    title: "New Message from Your Dainel",
+    title: "New Message from Dainel",
     from: "Oliver Thompson",
     product: "Semaglutide",
     date: "8/22/2025",
