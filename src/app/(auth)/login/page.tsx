@@ -1,5 +1,5 @@
 "use client";
-import { AuthHeader, ThemeButton, ThemeInput } from "@/app/components";
+import { AuthHeader, Loader, ThemeButton, ThemeInput } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import Link from "next/link";
 import React, { Suspense, useState } from "react";
@@ -165,7 +165,7 @@ function LoginContext() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loader />}>
       <LoginContext />
     </Suspense>
   );

@@ -1,5 +1,5 @@
 "use client";
-import { AuthHeader, ThemeButton } from "@/app/components";
+import { AuthHeader, Loader, ThemeButton } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import { InfoIcon } from "@/icons";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -112,7 +112,7 @@ function OTPContent() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loader />}>
       <OTPContent />
     </Suspense>
   );

@@ -1,4 +1,4 @@
-// utils/useBodyScrollLock.ts
+"use client";
 import { useEffect } from "react";
 
 let openModalsCount = 0;

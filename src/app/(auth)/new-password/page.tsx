@@ -2,6 +2,7 @@
 import {
   AuthHeader,
   InfoModal,
+  Loader,
   ThemeButton,
   ThemeInput,
 } from "@/app/components";
@@ -113,7 +114,7 @@ function Content() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loader />}>
       <Content />
     </Suspense>
   );

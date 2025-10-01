@@ -1,5 +1,5 @@
 "use client";
-import { AuthHeader, InfoList, ThemeButton } from "@/app/components";
+import { AuthHeader, InfoList, Loader, ThemeButton } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense } from "react";
@@ -62,7 +62,7 @@ function VerifyInfoContent() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loader />}>
       <VerifyInfoContent />
     </Suspense>
   );

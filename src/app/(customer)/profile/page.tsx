@@ -35,11 +35,6 @@ const Page = () => {
     additionalNotes: Yup.string().required("Additional Notes is required"),
   });
 
-  function formatToDateInput(dateStr: string) {
-    const [month, day, year] = dateStr.split("/");
-    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-  }
-
   const isMobile = useIsMobile();
 
   return (

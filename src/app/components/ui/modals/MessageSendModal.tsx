@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import AppModal from "./AppModal";
 import { BubbleChatIcon } from "@/icons";
