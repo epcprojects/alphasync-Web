@@ -18,7 +18,6 @@ import {
   Visa,
 } from "@/icons";
 import OrderItemCard, {
-  getStatusClasses,
   OrderItemProps,
 } from "../cards/OrderItemCards";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
