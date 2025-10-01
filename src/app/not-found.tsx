@@ -17,7 +17,7 @@ export default function NotFound() {
               Sorry, the page you are looking for doesn’t exist.
             </p>
             <Link
-              className="rounded-full  text-white font-semibold text-sm md:text-base py-1.5 md:py-2 px-2.5 md:px-3 bg-gradient-to-r from-[#3C85F5] to-[#1A407A] hover:from-[#3C85F5] hover:to-[#1A407A] hover:bg-gradient-to-l"
+              className="rounded-full  text-white font-semibold text-sm md:text-base py-1.5 md:py-3 px-2.5 md:px-8 bg-gradient-to-r from-[#3C85F5] to-[#1A407A] hover:from-[#3C85F5] hover:to-[#1A407A] hover:bg-gradient-to-l"
               href="/"
             >
               Go Home
