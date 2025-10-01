@@ -18,7 +18,6 @@ import {
   Visa,
 } from "@/icons";
 import OrderItemCard, {
-  getStatusClasses,
   OrderItemProps,
 } from "../cards/OrderItemCards";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
@@ -47,6 +46,8 @@ export type requestProps = {
   doctorName: string;
   strength: string;
   price: number;
+  status?: string;
+  requestedOn? : string;
 };
 
 interface CustomerOrderPaymentProps {
@@ -260,38 +261,73 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   };
 
   const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value;
-    let formatted = expiryDate;
-    const isBackSpace = input.length < expiryDate.length;
-
+    const raw = e.target.value;
+    const prev = expiryDate;
+    const isBackSpace = raw.length < prev.length;
+    let inputText = raw;
     if (!isBackSpace) {
-      const newChar = input.slice(-1);
-
-      if (expiryDate.length === 0) {
+      const added = raw.slice(prev.length);
+      const addedDigits = added.replace(/[^0-9]/g, "");
+      if (addedDigits.length === 0) return;
+      inputText = (prev + addedDigits).slice(0, 5);
+    } else {
+      inputText = raw.replace(/[^0-9/]/g, "");
+    }
+    let enteredText = inputText;
+    let newKey = "";
+    if (!isBackSpace) {
+      newKey = inputText.slice(prev.length);
+    }
+    if (newKey.length > 0) {
+      const newChar = newKey.charAt(0);
+      if (prev.length === 0) {
         if (newChar === "0" || newChar === "1") {
-          formatted = newChar;
+          enteredText = newChar;
         } else {
-          formatted = "0" + newChar + "/";
+          enteredText = "0" + newChar + "/";
         }
-      } else if (expiryDate.length === 1) {
-        const month = parseInt(expiryDate + newChar, 10);
-        if (month <= 12) {
-          formatted = expiryDate + newChar + "/";
+      } else if (prev.length === 1) {
+        const month = parseInt(prev + newChar, 10);
+        if (!isNaN(month) && month <= 12) {
+          enteredText = prev + newChar + "/";
         } else {
-          formatted = "0" + expiryDate + "/" + newChar;
+          enteredText = "0" + prev + "/" + newChar;
         }
       } else {
-        formatted = input;
+        enteredText = inputText;
+        const [month] = enteredText.split("/");
+        if (month && month.length > 2) {
+          enteredText = prev;
+        }
       }
     } else {
-      if (expiryDate.length === 3) {
-        formatted = expiryDate.slice(0, 2);
-      } else {
-        formatted = input;
+      if (prev.length === 3) {
+        enteredText = prev.slice(0, 2);
+      } else if (prev.length === 4 || prev.length === 5) {
+        if (enteredText.includes("/")) {
+          const rawText = enteredText.replace("/", "");
+          const first = rawText.charAt(0) || "";
+          const second = rawText.charAt(1) || "";
+          const third = rawText.charAt(2) || "";
+          const monthString = first + second;
+          const month = parseInt(monthString || "0", 10);
+          if (!isNaN(month) && month <= 12) {
+            if (prev.length === 4) {
+              enteredText = rawText + "/";
+            } else {
+              enteredText = monthString + "/";
+              if (third) enteredText += third;
+            }
+          } else {
+            enteredText = "0" + first + "/" + second;
+            if (third) enteredText += third;
+          }
+        } else {
+          enteredText = prev;
+        }
       }
     }
-
-    setExpiryDate(formatted);
+    setExpiryDate(enteredText);
   };
 
   const validateExpiry = (date: string) => {
@@ -392,6 +428,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       price: request.price,
       doctorName: request.doctorName,
       strength: request.strength,
+      status: request.status,
     };
   }
 
@@ -418,6 +455,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       onCancel={() => {
         if (isMobile && showForm) {
           setShowForm(false);
+          onClose();
         } else {
           onClose();
         }
@@ -455,7 +493,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     key={item.id}
                     className="flex justify-between items-center bg-gray-100 rounded-md p-1.5 gap-2"
                   >
-                    <div className="flex gap-3 items-center">
+                    <div className="flex gap-2 items-center">
                       <div className="w-12 h-12 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
                         <Image
                           alt="#"
@@ -502,107 +540,18 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   Total
                 </span>
                 <span className="text-base font-semibold text-primary">
-                  ${total}
+                  ${total} 
                 </span>
               </div>
             </div>
           ) : (
-            transformedItem &&
-            !isMobile && (
+            transformedItem && (
               <OrderItemCard
                 item={transformedItem}
                 requestStatus
                 paymentRequest={true}
               />
             )
-          )}
-          {request && isMobile && (
-            <>
-              <div className="flex items-start gap-3 md:border-b md:border-gray-200 md:pb-4">
-                <div className="w-18 h-18 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <Image
-                    alt="#"
-                    src={"/images/products/p1.png"}
-                    width={1024}
-                    height={1024}
-                  />
-                </div>
-                <div className="flex-1 flex flex-col gap-3 md:gap-1.5 ">
-                  <h3 className=" text-gray-800 font-semibold text-base">
-                    {transformedItem?.medicineName}
-                  </h3>
-                  <div>
-                    <p className="text-sm font-normal text-gray-800 line-clamp-2">
-                      A synthetic peptide known for its healing properties.
-                      BPC-157 promotes tissue...
-                    </p>
-                  </div>
-                  <div className="flex justify-between items-center text-sm text-gray-500">
-                    <div
-                      className={`flex items-center w-full ${
-                        transformedItem?.status ? "gap-2" : "gap-0"
-                      }`}
-                    >
-                      <div>
-                        {transformedItem?.status && (
-                          <span
-                            className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
-                              transformedItem?.status
-                            )}`}
-                          >
-                            {transformedItem?.status}
-                          </span>
-                        )}
-                      </div>
-                      <div>
-                        <span
-                          className={`inline-block whitespace-nowrap border border-gray-200 rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium`}
-                        >
-                          Recovery & Healing
-                        </span>
-                      </div>
-                      <div className="flex ml-auto gap-3">
-                        <span className="text-xs font-normal text-gray-800">
-                          5 mg vial
-                        </span>
-                        <span className="text-xs font-normal text-gray-800">
-                          |
-                        </span>
-                        <span className="text-xs font-normal text-gray-800">
-                          Injectable
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-normal text-gray-800">
-                    Sub total
-                  </span>
-                  <span className="text-sm font-medium text-gray-800">
-                    $125.99
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-normal text-gray-800">
-                    Tax (8%)
-                  </span>
-                  <span className="text-sm font-medium text-gray-800">
-                    $12.00
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-base font-medium text-gray-800">
-                    Total
-                  </span>
-                  <span className="text-base font-semibold text-primary">
-                    $137.99
-                  </span>
-                </div>
-              </div>
-            </>
           )}
           <form
             className={`${!showForm && isMobile ? "hidden" : "block"}

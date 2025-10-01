@@ -23,7 +23,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
 
   return (
     <Portal>
-      <div className="fixed inset-0 z-[99] flex sm:items-center sm:justify-center bg-black/40">
+      <div className="fixed inset-0 z-[99] flex sm:items-center sm:justify-center bg-black/40  backdrop-blur-xs">
         <div
           className="
       relative bg-green-100 sm:rounded-2xl shadow-lg sm:py-12 px-6 sm:px-10 text-center
@@ -53,7 +53,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
               label={btnTitle}
               onClick={viewOrder}
               variant="outline"
-              className="px-8 w-fit py-3 whitespace-nowrap font-semibold text-base outline-none transition cursor-pointer"
+              className=" w-fit whitespace-nowrap font-semibold text-base outline-none transition cursor-pointer"
               minWidthClass={"min-w-40"}
             />
           </div>

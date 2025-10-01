@@ -9,6 +9,7 @@ interface requestDetailsProps {
   onClose: () => void;
   request: requestDetails | null;
   onClick: () => void;
+  oncancel?: () => void;
 }
 
 export type requestDetails = {
@@ -32,6 +33,7 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
   onClose,
   request,
   onClick,
+  oncancel,
 }) => {
   if (!request) return null;
   console.log("request in model", request);
@@ -63,9 +65,10 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
       position={ModalPosition.RIGHT}
       showFooter={true}
       hideConfirmButton={request.status === "Approved" ? false : true} 
-      hideCancelBtn={request.status === "Approved" ? true : false}
+      hideCancelBtn={request.status === "Approved" || request.status === "Denied" ? true : false}
       cancelLabel="Follow up with Physician"
       onConfirm={onClick}
+      onCancel={oncancel}
       outSideClickClose={false}
       btnIcon={<Card fill="#fff" />}
       confirmLabel="Proceed to Payment"
