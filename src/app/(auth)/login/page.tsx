@@ -1,5 +1,11 @@
 "use client";
-import { AuthHeader, Loader, ThemeButton, ThemeInput } from "@/app/components";
+import {
+  AuthHeader,
+  Loader,
+  ThemeButton,
+  ThemeInput,
+  toastAlert,
+} from "@/app/components";
 import { Images } from "@/app/ui/images";
 import Link from "next/link";
 import React, { Suspense, useState } from "react";
@@ -8,16 +14,26 @@ import * as Yup from "yup";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "@headlessui/react";
 import { TickIcon } from "@/icons";
+import { useMutation } from "@apollo/client/react";
+import { LOGIN_USER } from "@/lib/graphql/mutations";
 
 type LoginType = "Customer" | "Doctor";
 
 function LoginContext() {
-  const [loginType, setLoginType] = useState("Doctor");
   const router = useRouter();
-  const params = useSearchParams();
-  const redirectedFrom = params.get("redirectedFrom");
+  const [loginType, setLoginType] = useState("Doctor");
+  const searchParams = useSearchParams();
+  const isAdminLogin = searchParams.get("admin") === "admin";
 
-  console.log(redirectedFrom);
+  const [loginUser, { loading: loginLoading }] = useMutation(LOGIN_USER, {
+    onCompleted: () => {
+      toastAlert("OTP sent successfully!", true);
+      router.push("/otp");
+    },
+    onError: (error) => {
+      toastAlert(error.message, false);
+    },
+  });
 
   const validationSchema = Yup.object().shape({
     loginType: Yup.mixed<LoginType>().oneOf(["Customer", "Doctor"]).required(),
@@ -42,34 +58,29 @@ function LoginContext() {
     },
     validationSchema,
     onSubmit: (values) => {
-      console.log("Form submitted:", values);
-
-      const loginTypeIs =
-        redirectedFrom === "admin" ? redirectedFrom : values.loginType;
-
-      router.push(
-        `/otp?loginType=${loginTypeIs}&email=${values.email}&rememberMe=${values.rememberMe}`
-      );
+      loginUser({
+        variables: {
+          email: values.email,
+          password: values.password,
+          rememberMe: values.rememberMe,
+          userType: isAdminLogin ? "ADMIN" : values.loginType.toUpperCase(),
+        },
+      });
+      const dataForOtp = {
+        userType: isAdminLogin ? "ADMIN" : loginType.toUpperCase(),
+        email: values.email,
+        rememberMe: values.rememberMe,
+      };
+      localStorage.setItem("dataForOtp", JSON.stringify(dataForOtp));
     },
     enableReinitialize: true,
   });
 
   return (
     <div className="relative flex flex-col items-center justify-center h-screen">
-      {redirectedFrom === "admin" ? (
+      {isAdminLogin ? (
         <AuthHeader
           logo={Images.auth.logo}
-          // defaultValue={loginType}
-          // options={["Customer", "Doctor"]}
-          // onToggleChange={(val) => {
-          //   setLoginType(val);
-          //   formik.setFieldValue("loginType", val);
-          //   if (val !== "Doctor") {
-          //     formik.setFieldValue("password", "");
-          //     formik.setFieldTouched("password", false);
-          //   }
-          //   formik.validateForm();
-          // }}
           subtitle="Please enter your details to log in"
           title="Welcome back"
         />
@@ -154,7 +165,7 @@ function LoginContext() {
         <ThemeButton
           label="Login"
           type="submit"
-          disabled={formik.isSubmitting}
+          disabled={loginLoading}
           onClick={() => {}}
           heightClass="h-11"
         />
