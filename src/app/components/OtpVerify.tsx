@@ -2,74 +2,69 @@
 import { AuthHeader, Loader, ThemeButton, toastAlert } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useState } from "react";
 import OTPInput from "react-otp-input";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN_WITH_OTP } from "@/lib/graphql/mutations";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
+import { storage } from "@/lib/utils/storage";
 import { UserAttributes } from "@/lib/graphql/attributes";
 
-interface LoginWithOtpResponse {
-  loginWithOtp: {
-    token?: string;
-    user?: UserAttributes;
-  };
-}
-interface StoredOtpData {
-  userType?: string;
-  email?: string;
-  rememberMe?: boolean;
-}
-
-function OTPContent() {
+const OTPVerify = () => {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState(false);
-  const [storedData, setStoredData] = useState<StoredOtpData>({});
+  const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const data = JSON.parse(localStorage.getItem("dataForOtp") || "{}");
-      setStoredData(data);
-    }
-  }, []);
+  const loginType = searchParams.get("loginType"); // "Doctor" or "Customer"
+  const email = searchParams.get("email");
+  const rememberMe = searchParams.get("rememberMe") === "true";
 
-  const [loginWithOtp, { loading: otpLoading }] =
-    useMutation<LoginWithOtpResponse>(LOGIN_WITH_OTP, {
-      onCompleted: (data) => {
-        const token = data?.loginWithOtp?.token ?? "";
-        const user = data?.loginWithOtp?.user ?? null;
-        localStorage.setItem("auth_token", token);
-        dispatch(setUser(user));
-        toastAlert("Login successful!", true);
+  const [loginWithOtp, { loading: otpLoading }] = useMutation(LOGIN_WITH_OTP, {
+    onCompleted: (data) => {
+      console.log(data);
 
-        // Navigate based on user type
-        if (storedData?.userType === "DOCTOR") {
-          router.push("/inventory");
-        } else if (storedData?.userType === "CUSTOMER") {
-          router.push(`/verify-info?email=${storedData?.email}`);
-        } else if (storedData?.userType === "ADMIN") {
-          router.push(`/admin/doctors`);
-        } else {
-          router.push("/login");
-        }
-      },
-      onError: (error) => {
-        toastAlert(error.message, false);
-      },
-    });
+      // storage.setToken(data?.loginWithOtp?.token);
+      // Store user in Redux
+      // dispatch(setUser(data?.loginWithOtp?.user));
+      toastAlert("Login successful!", true);
+
+      // Navigate based on user type
+      if (loginType === "Doctor") {
+        router.push("/inventory");
+      } else if (loginType === "Customer") {
+        router.push(`/verify-info?email=${email}`);
+      } else if (loginType === "admin") {
+        router.push(`/admin/doctors`);
+      } else {
+        router.push("/login");
+      }
+    },
+    onError: (error) => {
+      setError(true);
+      toastAlert(error.message, false);
+    },
+  });
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("verify");
+
+    if (otp.length < 6) {
+      setError(true);
+      toastAlert("Please enter a valid 6-digit OTP", false);
+      return;
+    }
+
+    setError(false);
 
     try {
       await loginWithOtp({
         variables: {
-          email: storedData?.email,
+          email: email,
           otp: otp,
-          rememberMe: storedData?.rememberMe,
         },
       });
     } catch (error) {
@@ -92,7 +87,7 @@ function OTPContent() {
             value={otp}
             onChange={(value) => {
               setOtp(value);
-              if (error) setError(false);
+              if (error) setError(false); // reset error when typing
             }}
             numInputs={6}
             placeholder="000000"
@@ -127,12 +122,6 @@ function OTPContent() {
       </div>
     </div>
   );
-}
+};
 
-export default function Page() {
-  return (
-    <Suspense fallback={<Loader />}>
-      <OTPContent />
-    </Suspense>
-  );
-}
+export default OTPVerify;
