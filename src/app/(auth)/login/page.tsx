@@ -16,6 +16,7 @@ import { Checkbox } from "@headlessui/react";
 import { TickIcon } from "@/icons";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN_USER } from "@/lib/graphql/mutations";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 type LoginType = "Customer" | "Doctor";
 
@@ -27,11 +28,11 @@ function LoginContext() {
 
   const [loginUser, { loading: loginLoading }] = useMutation(LOGIN_USER, {
     onCompleted: () => {
-      toastAlert("OTP sent successfully!", true);
+      showSuccessToast("OTP sent successfully!");
       router.push("/otp");
     },
     onError: (error) => {
-      toastAlert(error.message, false);
+      showErrorToast(error.message);
     },
   });
 

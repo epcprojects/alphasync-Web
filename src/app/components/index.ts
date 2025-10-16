@@ -30,6 +30,8 @@ import Loader from "./ui/Loader";
 import EmptyState from "./ui/EmptyState";
 import { toastAlert } from "./ToastAlert";
 import OTPVerify from "./OtpVerify";
+import Skeleton from "@/app/components/Skelton";
+import Pagination from "./ui/Pagination";
 
 export {
   EmptyState,
@@ -64,4 +66,6 @@ export {
   RequestRejectModal,
   toastAlert,
   OTPVerify,
+  Skeleton,
+  Pagination,
 };

@@ -7,14 +7,16 @@ import AvatarUploader from "../../AvatarUploader";
 import ThemeInput from "../inputs/ThemeInput";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
 import * as Yup from "yup";
-import { Doctor } from "../cards/DoctorListView";
-import { showSuccessToast } from "@/lib/toast";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { useMutation } from "@apollo/client/react";
+import { CREATE_INVITATION, UPDATE_USER } from "@/lib/graphql/mutations";
+import { UserAttributes } from "@/lib/graphql/attributes";
 
 interface AddEditDoctorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: Doctor) => void;
-  initialData?: Doctor; // for editing
+  onConfirm: (data: UserAttributes) => void;
+  initialData?: UserAttributes;
 }
 
 const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
@@ -25,25 +27,58 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
 }) => {
   const [selectedUser, setSelectedUser] = useState("");
   const [formData, setFormData] = useState({
-    id: 0,
-    name: "",
-    phone: "",
+    fullName: "",
+    phoneNo: "",
     email: "",
-    medicalLicenseNumber: "",
+    medicalLicense: "",
     specialty: "",
     status: "Active",
   });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isFormValid, setIsFormValid] = useState(false);
   const schema = Yup.object().shape({
-    name: Yup.string().required("Doctor name is required"),
-    phone: Yup.string().required("Phone number is required"),
+    fullName: Yup.string().required("Doctor fullName is required"),
+    phoneNo: Yup.string()
+      .required("Phone number is required")
+      .matches(
+        /^\+?[1-9]\d{0,15}$/,
+        "Must be a valid phone number (e.g. +1234567890)"
+      ),
     email: Yup.string().email("Invalid email").required("Email is required"),
-    medicalLicenseNumber: Yup.string().required("Medical License is required"),
+    medicalLicense: Yup.string().required("Medical License is required"),
     specialty: Yup.string().required("Specialty is required"),
     status: Yup.string().oneOf(["Active", "Inactive"]).required(),
   });
+
+  const [createInvitation, { loading: createLoading }] = useMutation(
+    CREATE_INVITATION,
+    {
+      onCompleted: (data) => {
+        showSuccessToast("Doctor Added Successfully");
+        onConfirm(data.createInvitation);
+        onClose();
+      },
+      onError: (error) => {
+        showErrorToast(error.message);
+      },
+    }
+  );
+
+  const [updateUser, { loading: updateLoading }] = useMutation(UPDATE_USER, {
+    onCompleted: (data) => {
+      showSuccessToast("Doctor Updated Successfully");
+      onConfirm(data.updateUser.user);
+      onClose();
+    },
+    onError: (error) => {
+      showErrorToast(error.message);
+    },
+  });
+
+  const loading = createLoading || updateLoading;
+  console.log(formData);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -53,6 +88,10 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     const userSelected = Array.isArray(user) ? user[0] : user;
     setSelectedUser(userSelected);
     setFormData((prev) => ({ ...prev, specialty: userSelected }));
+  };
+
+  const handleImageChange = (file: File | null) => {
+    setSelectedImage(file);
   };
 
   const validateForm = async () => {
@@ -72,12 +111,34 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
 
   const handleConfirm = async () => {
     const valid = await validateForm();
+
     if (valid) {
-      onConfirm(formData);
-      showSuccessToast(
-        `Doctor ${initialData ? "Updated" : "Added"} Successfully`
-      );
-      onClose();
+      try {
+        const variables = {
+          ...formData,
+          status: formData.status.toUpperCase(),
+          userType: "DOCTOR",
+          image: selectedImage,
+        };
+
+        if (initialData) {
+          // Edit mode - use UPDATE_USER mutation
+          await updateUser({
+            variables: {
+              id: initialData.id, // Include the user ID for update
+              ...variables,
+            },
+          });
+        } else {
+          // Create mode - use CREATE_INVITATION mutation
+          await createInvitation({
+            variables,
+          });
+        }
+      } catch (error) {
+        // Error handling is done in the mutation onError callbacks
+        console.error("Error:", error);
+      }
     }
   };
 
@@ -88,28 +149,42 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
-        setFormData(initialData);
+        // Edit mode
+        setFormData({
+          fullName: initialData.fullName || "",
+          phoneNo: initialData.phoneNo || "",
+          email: initialData.email || "",
+          medicalLicense: initialData.medicalLicense || "",
+          specialty: initialData.specialty || "",
+          status:
+            initialData.status === "ACTIVE"
+              ? "Active"
+              : initialData.status === "INACTIVE"
+              ? "Inactive"
+              : "Active",
+        });
         setSelectedUser(initialData.specialty || "");
       } else {
+        // Add mode
         setFormData({
-          id: 1,
-          name: "",
-          phone: "",
+          fullName: "",
+          phoneNo: "",
           email: "",
-          medicalLicenseNumber: "",
+          medicalLicense: "",
           specialty: "",
           status: "Active",
         });
         setSelectedUser("");
       }
+      setSelectedImage(null);
       setErrors({});
     }
   }, [isOpen, initialData]);
 
   useEffect(() => {
-    const { name, phone, email, medicalLicenseNumber, specialty, status } =
+    const { fullName, phoneNo, email, medicalLicense, specialty, status } =
       formData;
-    if (name && phone && email && medicalLicenseNumber && specialty && status) {
+    if (fullName && phoneNo && email && medicalLicense && specialty && status) {
       setIsFormValid(true);
     } else {
       setIsFormValid(false);
@@ -126,7 +201,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       icon={<DoctorIcon />}
       size="large"
       outSideClickClose={false}
-      confimBtnDisable={!isFormValid}
+      confimBtnDisable={!isFormValid || loading}
       onCancel={handleCancel}
       cancelLabel={"Cancel"}
     >
@@ -136,6 +211,8 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           roundedClass="rounded-lg"
           width={96}
           height={96}
+          onChange={handleImageChange}
+          initialImage={initialData?.imageUrl}
         />
 
         <div className="flex items-start gap-2 md:gap-5">
@@ -144,28 +221,28 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
               required
               label="Name"
               placeholder="Enter doctor name"
-              name="name"
-              error={!!errors.name}
-              errorMessage={errors.name}
-              id="name"
-              onChange={(e) => handleChange("name", e.target.value)}
+              name="fullName"
+              error={!!errors.fullName}
+              errorMessage={errors.fullName}
+              id="fullName"
+              onChange={(e) => handleChange("fullName", e.target.value)}
               type="text"
-              value={formData.name}
+              value={formData.fullName}
             />
           </div>
 
           <div className="w-full">
             <ThemeInput
               required
-              label="Phone"
+              label="Phone Number"
               placeholder="Enter phone number"
-              name="phone"
-              error={!!errors.phone}
-              errorMessage={errors.phone}
-              id="phone"
-              onChange={(e) => handleChange("phone", e.target.value)}
+              name="phoneNo"
+              error={!!errors.phoneNo}
+              errorMessage={errors.phoneNo}
+              id="phoneNo"
+              onChange={(e) => handleChange("phoneNo", e.target.value)}
               type="text"
-              value={formData.phone}
+              value={formData.phoneNo}
             />
           </div>
         </div>
@@ -192,11 +269,9 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
               error={!!errors.medicalLicense}
               errorMessage={errors.medicalLicense}
               id="medicalLicense"
-              onChange={(e) =>
-                handleChange("medicalLicenseNumber", e.target.value)
-              }
+              onChange={(e) => handleChange("medicalLicense", e.target.value)}
               type="text"
-              value={formData.medicalLicenseNumber}
+              value={formData.medicalLicense}
             />
           </div>
 

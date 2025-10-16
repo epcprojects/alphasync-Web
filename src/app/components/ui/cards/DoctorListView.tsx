@@ -2,19 +2,10 @@
 import { PencilEditIcon, TrashBinIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
-
-export type Doctor = {
-  id: number;
-  name: string;
-  email: string;
-  specialty: string;
-  phone: string;
-  medicalLicenseNumber: string;
-  status: string;
-};
+import { UserAttributes } from "@/lib/graphql/attributes";
 
 type DoctorListingProps = {
-  doctor: Doctor;
+  doctor: UserAttributes;
   onEditDoctor?: (id: number) => void;
   onDeleteDoctor?: (id: number) => void;
   onRowClick?: () => void;
@@ -30,11 +21,14 @@ const colorPairs = [
   { bg: "bg-indigo-100", text: "text-indigo-600" },
 ];
 
-function getColorPair(seed: number) {
-  return colorPairs[seed % colorPairs.length];
+// ✅ make it more flexible (accept string or undefined)
+function getColorPair(seed: number | string | undefined) {
+  const validSeed = typeof seed === "number" ? seed : Number(seed) || 0;
+  const index = Math.abs(validSeed) % colorPairs.length;
+  return colorPairs[index] || colorPairs[0];
 }
 
-export function getStatusClasses(status: Doctor["status"]) {
+export function getStatusClasses(status?: string) {
   switch (status) {
     case "Active":
       return "bg-green-50 border border-green-200 text-green-700";
@@ -46,12 +40,13 @@ export function getStatusClasses(status: Doctor["status"]) {
 }
 
 export default function DoctorListView({
-  doctor: doctor,
+  doctor,
   onDeleteDoctor,
   onEditDoctor,
   onRowClick,
 }: DoctorListingProps) {
   const { bg, text } = getColorPair(doctor.id);
+
   return (
     <div
       onClick={onRowClick}
@@ -62,41 +57,42 @@ export default function DoctorListView({
         <span
           className={`md:w-10 md:h-10 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
         >
-          {getInitials(doctor.name)}
+          {getInitials(doctor.fullName ?? doctor.email ?? "----")}
         </span>
-        <div className="">
+        <div>
           <h2 className="text-gray-800 text-xs md:text-sm font-medium">
-            {doctor.name}
+            {doctor.fullName ?? "----"}
           </h2>
-          <h2 className="text-gray-800 text-xs  font-normal">{doctor.email}</h2>
+          <h2 className="text-gray-800 text-xs font-normal">{doctor.email}</h2>
         </div>
       </div>
+
       <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
-        {doctor.specialty}
+        {doctor.specialty ?? "—"}
       </div>
       <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
-        {doctor.phone}
+        {doctor.phoneNo ?? "—"}
       </div>
       <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
-        {doctor.medicalLicenseNumber}
+        {doctor.medicalLicense ?? "—"}
       </div>
 
-      <div className=" font-medium text-xs md:text-sm text-gray-800 col-span-2">
+      <div className="font-medium text-xs md:text-sm text-gray-800 col-span-2">
         <span
           className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
             doctor.status
           )}`}
         >
-          {doctor.status}
+          {doctor.status ?? "Unknown"}
         </span>
       </div>
 
-      <div className=" flex items-center justify-starts gap-2">
+      <div className="flex items-center justify-start gap-2">
         <Tooltip content="Edit">
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onEditDoctor?.(doctor.id);
+              if (doctor.id) onEditDoctor?.(Number(doctor.id));
             }}
             className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
           >
@@ -107,9 +103,9 @@ export default function DoctorListView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onDeleteDoctor?.(doctor.id);
+              if (doctor.id) onDeleteDoctor?.(Number(doctor.id));
             }}
-            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-red-50 hover:border-red-500 hover:text-white  text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
           >
             <TrashBinIcon width="15" height="15" />
           </button>

@@ -8,6 +8,7 @@ interface DoctorDeleteModalProps {
   onDelete: () => void;
   title?: string;
   subtitle?: string;
+  isLoading?: boolean;
 }
 
 const DoctorDeleteModal: React.FC<DoctorDeleteModalProps> = ({
@@ -16,6 +17,7 @@ const DoctorDeleteModal: React.FC<DoctorDeleteModalProps> = ({
   onDelete,
   title,
   subtitle,
+  isLoading = false,
 }) => {
   if (!isOpen) return null;
   return (
@@ -44,14 +46,16 @@ const DoctorDeleteModal: React.FC<DoctorDeleteModalProps> = ({
               onClick={onClose}
               heightClass="h-10"
               variant="outline"
+              disabled={isLoading}
             />
 
             <ThemeButton
-              label="Delete"
+              label={isLoading ? "Deleting..." : "Delete"}
               className="w-full"
               onClick={onDelete}
               heightClass="h-10"
               variant="danger"
+              disabled={isLoading}
             />
           </div>
         </div>

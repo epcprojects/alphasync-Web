@@ -10,10 +10,23 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@apollo/client";
+import { SEND_PASSWORD_INSTRUCTIONS } from "@/lib/graphql/mutations";
 const Page = () => {
   const router = useRouter();
   const [isCheckEmailModalOpen, setIsCheckEmailModalOpen] =
     useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  const [sendPasswordInstructions, { loading }] = useMutation(SEND_PASSWORD_INSTRUCTIONS, {
+    onCompleted: () => {
+      setIsCheckEmailModalOpen(true);
+      setErrorMessage("");
+    },
+    onError: (error) => {
+      setErrorMessage(error.message || "Failed to send password reset instructions. Please try again.");
+    },
+  });
 
   const validationSchema = Yup.object({
     email: Yup.string()
@@ -27,8 +40,16 @@ const Page = () => {
     },
     validationSchema,
     onSubmit: async (values) => {
-      console.log("Email submitted:", values.email);
-      setIsCheckEmailModalOpen(true);
+      setErrorMessage("");
+      try {
+        await sendPasswordInstructions({
+          variables: {
+            email: values.email,
+          },
+        });
+      } catch (error) {
+        // Error is handled by the onError callback
+      }
     },
   });
 
@@ -56,10 +77,16 @@ const Page = () => {
           errorMessage={formik.touched.email ? formik.errors.email : ""}
         />
 
+        {errorMessage && (
+          <div className="text-red-500 text-sm mt-2">
+            {errorMessage}
+          </div>
+        )}
+
         <ThemeButton
           type="submit"
-          disabled={formik.isSubmitting || !formik.values.email}
-          label="Send Reset Link"
+          disabled={loading || !formik.values.email}
+          label={loading ? "Sending..." : "Send Reset Link"}
           heightClass="h-11"
         />
       </form>

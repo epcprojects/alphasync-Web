@@ -5,10 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
 import OTPInput from "react-otp-input";
 import { useMutation } from "@apollo/client/react";
-import { LOGIN_WITH_OTP } from "@/lib/graphql/mutations";
+import { LOGIN_WITH_OTP, RESEND_OTP } from "@/lib/graphql/mutations";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
 import { UserAttributes } from "@/lib/graphql/attributes";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 interface LoginWithOtpResponse {
   loginWithOtp: {
@@ -26,6 +27,8 @@ function OTPContent() {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState(false);
   const [storedData, setStoredData] = useState<StoredOtpData>({});
+  const [timer, setTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -36,6 +39,19 @@ function OTPContent() {
     }
   }, []);
 
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else {
+      setCanResend(true);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
+
   const [loginWithOtp, { loading: otpLoading }] =
     useMutation<LoginWithOtpResponse>(LOGIN_WITH_OTP, {
       onCompleted: (data) => {
@@ -43,7 +59,7 @@ function OTPContent() {
         const user = data?.loginWithOtp?.user ?? null;
         localStorage.setItem("auth_token", token);
         dispatch(setUser(user));
-        toastAlert("Login successful!", true);
+        showSuccessToast("Loged in successfully!");
 
         // Navigate based on user type
         if (storedData?.userType === "DOCTOR") {
@@ -57,9 +73,20 @@ function OTPContent() {
         }
       },
       onError: (error) => {
-        toastAlert(error.message, false);
+        showErrorToast(error.message);
       },
     });
+
+  const [resendOtp, { loading: resendLoading }] = useMutation(RESEND_OTP, {
+    onCompleted: () => {
+      showSuccessToast("OTP sent successfully!");
+      setTimer(60);
+      setCanResend(false);
+    },
+    onError: (error) => {
+      showErrorToast(error.message);
+    },
+  });
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +101,20 @@ function OTPContent() {
       });
     } catch (error) {
       console.error("OTP verification error:", error);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!canResend || resendLoading) return;
+    
+    try {
+      await resendOtp({
+        variables: {
+          email: storedData?.email,
+        },
+      });
+    } catch (error) {
+      console.error("Resend OTP error:", error);
     }
   };
   return (
@@ -114,16 +155,20 @@ function OTPContent() {
         />
       </form>
       <div className="flex items-center gap-1">
-        <h2 className="text-sm text-vampire-gray">Didn’t receive the OTP?</h2>
-        <button
-          onClick={() => {
-            setOtp("");
-            setError(false);
-          }}
-          className="text-primary cursor-pointer text-sm font-semibold"
-        >
-          Click to resend
-        </button>
+        <h2 className="text-sm text-vampire-gray">Didn't receive the OTP?</h2>
+        {canResend ? (
+          <button
+            onClick={handleResendOtp}
+            disabled={resendLoading}
+            className="text-primary cursor-pointer text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {resendLoading ? "Sending..." : "Click to resend"}
+          </button>
+        ) : (
+          <span className="text-sm text-gray-500">
+            Resend in {timer}s
+          </span>
+        )}
       </div>
     </div>
   );

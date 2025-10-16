@@ -3,6 +3,7 @@ export const userpayload = `
         deleted
         email
         fullName
+        specialty
         id
         imageUrl
         lastSignInAt
@@ -18,8 +19,9 @@ export interface UserAttributes {
   deleted?: boolean;
   email?: string;
   fullName?: string;
-  id?: string;
+  id?: number | string;
   imageUrl?: string;
+  specialty?: string;
   lastSignInAt?: string;
   medicalLicense?: string;
   phoneNo?: string;

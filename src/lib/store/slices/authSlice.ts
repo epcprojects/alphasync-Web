@@ -5,7 +5,7 @@ export interface User {
   deleted?: boolean;
   email?: string;
   fullName?: string;
-  id?: string;
+  id?: number | string;
   imageUrl?: string;
   lastSignInAt?: string;
   medicalLicense?: string;
