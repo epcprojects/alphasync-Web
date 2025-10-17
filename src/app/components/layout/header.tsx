@@ -8,7 +8,10 @@ import HeaderMenuNavItems from "./HeaderMenuNavItems";
 import Notifications from "../ui/Notifications";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { notifications } from "../../../../public/data/notifications";
-import { useAppSelector } from "@/lib/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import Cookies from "js-cookie";
+import { clearUser } from "@/lib/store/slices/authSlice";
+import { useRouter } from "next/navigation";
 
 interface MenuItemType {
   label: string;
@@ -22,6 +25,8 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ menuItems }) => {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isSticky, setIsSticky] = useState<boolean>(false);
 
@@ -79,6 +84,13 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
   );
   const user = useAppSelector((state) => state.auth.user);
   const INITIAL_AVATAR = "/images/arinaProfile.png";
+  const handleLogout = () => {
+    Cookies.remove("auth_token");
+    Cookies.remove("user_data");
+    dispatch(clearUser());
+    router.push("/login");
+  };
+
   return (
     <>
       <header
@@ -205,6 +217,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                   <MenuItem>
                     <Link
                       href={"/login"}
+                      onClick={handleLogout}
                       className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10"
                     >
                       <LogoutIcon /> Logout
