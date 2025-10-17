@@ -32,6 +32,7 @@ import { toastAlert } from "./ToastAlert";
 import OTPVerify from "./OtpVerify";
 import Skeleton from "@/app/components/Skelton";
 import Pagination from "./ui/Pagination";
+import ChangePassword from "@/app/components/ChangePassword";
 
 export {
   EmptyState,
@@ -68,4 +69,5 @@ export {
   OTPVerify,
   Skeleton,
   Pagination,
+  ChangePassword,
 };

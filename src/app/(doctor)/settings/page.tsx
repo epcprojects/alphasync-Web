@@ -1,5 +1,10 @@
 "use client";
-import { NotificationToggle, ThemeButton, ThemeInput } from "@/app/components";
+import {
+  ChangePassword,
+  NotificationToggle,
+  ThemeButton,
+  ThemeInput,
+} from "@/app/components";
 import {
   AlertIcon,
   LockIcon,
@@ -14,11 +19,19 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import React, { useState } from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
+import { useMutation } from "@apollo/client";
+import Cookies from "js-cookie";
 import AvatarUploader from "@/app/components/AvatarUploader";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { showSuccessToast } from "@/lib/toast";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
+import { UPDATE_DOCTOR } from "@/lib/graphql/mutations";
+import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/slices/authSlice";
 
 const Page = () => {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [toggles, setToggles] = useState({
     email: true,
     sms: false,
@@ -27,6 +40,26 @@ const Page = () => {
   });
 
   const isMobile = useIsMobile();
+
+  const [updateDoctor, { loading: updateLoading }] = useMutation(
+    UPDATE_DOCTOR,
+    {
+      onCompleted: (data) => {
+        if (data?.updateUser?.user) {
+          dispatch(setUser(data.updateUser.user));
+          Cookies.set("user_data", JSON.stringify(data?.updateUser?.user), {
+            expires: 7,
+          });
+          showSuccessToast("Profile updated successfully!");
+        }
+      },
+      onError: (error) => {
+        showErrorToast(error.message || "Failed to update profile");
+      },
+    }
+  );
+
+  const INITIAL_AVATAR = "/images/arinaProfile.png";
 
   const notifications = [
     {
@@ -73,21 +106,14 @@ const Page = () => {
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
-    phone: Yup.string()
-      .matches(/^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, "Invalid phone number")
+    phoneNo: Yup.string()
+      .matches(
+        /^\+?[1-9]\d{0,15}$/,
+        "Must be a valid phone number (e.g. +1234567890)"
+      )
       .required("Phone number is required"),
-    license: Yup.string().required("Medical license is required"),
+    medicalLicense: Yup.string().required("Medical license is required"),
     specialty: Yup.string().required("Specialty is required"),
-  });
-
-  const passwordSchema = Yup.object().shape({
-    currentPassword: Yup.string().required("Current password is required"),
-    newPassword: Yup.string()
-      .min(6, "New password must be at least 6 characters")
-      .required("New password is required"),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("newPassword")], "Passwords must match")
-      .required("Confirm new password is required"),
   });
 
   return (
@@ -153,29 +179,40 @@ const Page = () => {
                   </div>
 
                   <AvatarUploader
-                    initialImage="/images/arinaProfile.png"
-                    onChange={(file) => {
-                      if (file) {
-                        console.log("New image selected:", file);
-                      } else {
-                        console.log("Image deleted");
-                      }
-                    }}
+                    initialImage={
+                      user?.imageUrl
+                        ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${user?.imageUrl}`
+                        : INITIAL_AVATAR
+                    }
+                    onChange={setSelectedImage}
                   />
                 </div>
                 <Formik
                   initialValues={{
-                    fullName: "Dr. Arina Baker",
-                    email: "arina@alphasync.com",
-                    phone: "(316) 555-0116",
-                    license: "MD-12345-67890",
-                    specialty: "Internal Medicine",
+                    fullName: user?.fullName ?? "",
+                    email: user?.email ?? "",
+                    phoneNo: user?.phoneNo ?? "",
+                    medicalLicense: user?.medicalLicense ?? "",
+                    specialty: user?.specialty ?? "",
                   }}
                   validationSchema={profileSchema}
-                  onSubmit={(values) => {
-                    console.log("Profile Values:", values);
-                    showSuccessToast("Changes saved successfully");
+                  onSubmit={async (values) => {
+                    try {
+                      const variables = {
+                        fullName: values.fullName,
+                        email: values.email,
+                        phoneNo: values.phoneNo,
+                        medicalLicense: values.medicalLicense,
+                        specialty: values.specialty,
+                        ...(selectedImage && { image: selectedImage }),
+                      };
+
+                      await updateDoctor({ variables });
+                    } catch (error) {
+                      // Error is handled by the mutation's onError callback
+                    }
                   }}
+                  enableReinitialize
                 >
                   {({ handleChange, values }) => (
                     <Form>
@@ -230,13 +267,13 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="number"
-                            name="phone"
-                            value={values.phone}
+                            type="tel"
+                            name="phoneNo"
+                            value={values.phoneNo}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="phone"
+                            name="phoneNo"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -254,13 +291,13 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="license"
-                            name="license"
-                            value={values.license}
+                            type="text"
+                            name="medicalLicense"
+                            value={values.medicalLicense}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="license"
+                            name="medicalLicense"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -278,7 +315,7 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="specialty"
+                            type="text"
                             name="specialty"
                             value={values.specialty}
                             onChange={handleChange}
@@ -292,11 +329,11 @@ const Page = () => {
                       </div>
                       <div className="flex pt-3 md:pt-6 justify-end">
                         <ThemeButton
-                          label="Save Changes"
+                          label={updateLoading ? "Saving..." : "Save Changes"}
                           heightClass="h-10"
                           type="submit"
                           className="w-full md:w-fit"
-                          disabled
+                          disabled={updateLoading}
                         />
                       </div>
                     </Form>
@@ -309,86 +346,7 @@ const Page = () => {
                   "grid grid-cols-1 md:grid-cols-2 p-5 lg:py-0 gap-4 md:gap-8"
                 }
               >
-                <Formik
-                  initialValues={{
-                    currentPassword: "",
-                    newPassword: "",
-                    confirmPassword: "",
-                  }}
-                  validationSchema={passwordSchema}
-                  onSubmit={(values) => {
-                    console.log("Password Values:", values);
-                  }}
-                >
-                  {({ handleChange, values }) => (
-                    <Form className="flex flex-col gap-2 md:gap-4">
-                      <h2 className="text-black font-medium text-xl ">
-                        Change Password
-                      </h2>
-                      <div className="flex flex-col gap-3 md:gap-5">
-                        <div>
-                          <ThemeInput
-                            type="password"
-                            name="currentPassword"
-                            label="Current Password"
-                            placeholder="Current Password"
-                            value={values.currentPassword}
-                            onChange={handleChange}
-                            required
-                          />
-                          <ErrorMessage
-                            name="currentPassword"
-                            component="div"
-                            className="text-red-500 text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <ThemeInput
-                            type="password"
-                            name="newPassword"
-                            label="New Password"
-                            required
-                            placeholder="New Password"
-                            value={values.newPassword}
-                            onChange={handleChange}
-                          />
-                          <ErrorMessage
-                            name="newPassword"
-                            component="div"
-                            className="text-red-500 text-xs"
-                          />
-                        </div>
-                        <div>
-                          <ThemeInput
-                            type="password"
-                            name="confirmPassword"
-                            label="Confirm New Password"
-                            required
-                            placeholder="Confirm New Password"
-                            value={values.confirmPassword}
-                            onChange={handleChange}
-                          />
-                          <ErrorMessage
-                            name="confirmPassword"
-                            component="div"
-                            className="text-red-500 text-xs"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end">
-                        <ThemeButton
-                          label="Update Password"
-                          heightClass="h-10 "
-                          type="submit"
-                          className="w-full md:w-fit"
-                          disabled
-                        />
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
+                <ChangePassword />
                 <div className="p-4 md:p-8 bg-gray-50 rounded-xl flex flex-col gap-2 md:gap-3 border-gray-100 border ">
                   <h2 className="text-black text-xl font-medium">
                     Two-Factor Authentication

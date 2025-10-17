@@ -170,3 +170,47 @@ export const UPDATE_ADMIN = gql`
     }
   }
 `;
+export const UPDATE_DOCTOR = gql`
+  mutation UpdateUser(
+    $email: String
+    $fullName: String
+    $phoneNo: String
+    $image: Upload
+    $medicalLicense: String
+    $specialty: String
+  ) {
+    updateUser(
+      input: {
+        userAttributes: {
+          email: $email
+          fullName: $fullName
+          phoneNo: $phoneNo
+          image: $image
+          medicalLicense: $medicalLicense
+          specialty: $specialty
+        }
+      }
+    ) {
+      user {
+        ${userpayload}
+      }
+    }
+  }
+`;
+export const UPDATE_PASSWORD = gql`
+  mutation UpdatePassword(
+    $currentPassword: String!
+    $password: String!
+    $passwordConfirmation: String!
+  ) {
+    updatePassword(
+      input: {
+        currentPassword: $currentPassword
+        password: $password
+        passwordConfirmation: $passwordConfirmation
+      }
+    ) {
+      response
+    }
+  }
+`;
