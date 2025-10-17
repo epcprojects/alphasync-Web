@@ -12,6 +12,7 @@ export const userpayload = `
         rememberMe
         revokeAccess
         status
+        userType
 `;
 
 export interface UserAttributes {
@@ -28,4 +29,5 @@ export interface UserAttributes {
   rememberMe?: boolean;
   revokeAccess?: boolean;
   status?: string;
+  userType?: string;
 }

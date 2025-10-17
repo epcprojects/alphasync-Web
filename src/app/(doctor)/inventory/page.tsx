@@ -18,6 +18,7 @@ import ReactPaginate from "react-paginate";
 import { products } from "../../../../public/data/products";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
+import { useAppSelector } from "@/lib/store/hooks";
 
 function InventoryContent() {
   const [search, setSearch] = useState("");

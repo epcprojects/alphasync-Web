@@ -5,6 +5,7 @@ import CustomToastContainer from "./components/ToastContainer";
 import { GraphQLProvider } from "../lib/graphql/GraphQLProvider";
 import { ReduxProvider } from "@/lib/store/ReduxProvider";
 
+
 const poppins_init = Poppins({
   style: ["normal"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800"],
@@ -49,12 +50,13 @@ export default function RootLayout({
       <body
         className={`${poppins_init.variable} !bg-[url(/images/background.png)] !bg-center w-full min-h-dvh !bg-cover !bg-no-repeat antialiased`}
       >
-        <ReduxProvider>
-          <GraphQLProvider>
+        <GraphQLProvider>
+          <ReduxProvider>
             {children}
             <CustomToastContainer />
-          </GraphQLProvider>
-        </ReduxProvider>
+            
+          </ReduxProvider>
+        </GraphQLProvider>
       </body>
     </html>
   );

@@ -14,3 +14,13 @@ export const ALL_DOCTORS = gql`
     }
   }
 `;
+
+export const FETCH_USER = gql`
+  query FetchUser {
+    fetchUser {
+      user {
+        ${userpayload}
+      }
+    }
+  }
+`;

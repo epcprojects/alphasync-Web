@@ -1,43 +1,29 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { UserAttributes } from "@/lib/graphql/attributes";
+import { createSlice } from "@reduxjs/toolkit";
 
-export interface User {
-  createdAt?: string;
-  deleted?: boolean;
-  email?: string;
-  fullName?: string;
-  id?: number | string;
-  imageUrl?: string;
-  lastSignInAt?: string;
-  medicalLicense?: string;
-  phoneNo?: string;
-  rememberMe?: boolean;
-  revokeAccess?: boolean;
-  status?: string;
+// State interface
+interface UserState {
+  user: UserAttributes | null;
 }
 
-interface AuthState {
-  user: User | null;
-}
-
-const initialState: AuthState = {
+// Initial state
+const initialState: UserState = {
   user: null,
 };
 
+// Create the slice
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<User | null>) => {
+    setUser: (state, action) => {
       state.user = action.payload;
     },
-    logout: (state) => {
+    clearUser: (state) => {
       state.user = null;
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("auth_token");
-      }
     },
   },
 });
 
-export const { setUser, logout } = authSlice.actions;
+export const { setUser, clearUser } = authSlice.actions;
 export default authSlice.reducer;

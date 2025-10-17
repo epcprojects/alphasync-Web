@@ -26,7 +26,7 @@ export const LOGIN_USER = gql`
 export const LOGIN_WITH_OTP = gql`
   mutation LoginWithOtp($email: String!, $otp: String!, $rememberMe: Boolean) {
     loginWithOtp(
-      input: { otpLoginAttributes: { email: $email, otp: $otp rememberMe: $rememberMe } }
+      input: { otpLoginAttributes: { email: $email, otp: $otp, rememberMe: $rememberMe } }
     ) {
       token
       user {

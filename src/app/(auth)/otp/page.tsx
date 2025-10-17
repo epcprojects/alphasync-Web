@@ -6,7 +6,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import OTPInput from "react-otp-input";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN_WITH_OTP, RESEND_OTP } from "@/lib/graphql/mutations";
-import { useAppDispatch } from "@/lib/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -57,10 +57,13 @@ function OTPContent() {
       onCompleted: (data) => {
         const token = data?.loginWithOtp?.token ?? "";
         const user = data?.loginWithOtp?.user ?? null;
-        localStorage.setItem("auth_token", token);
-        dispatch(setUser(user));
-        showSuccessToast("Loged in successfully!");
 
+        // Store token in localStorage
+        localStorage.setItem("auth_token", token);
+
+        dispatch(setUser(user));
+
+        showSuccessToast("Loged in successfully!");
         // Navigate based on user type
         if (storedData?.userType === "DOCTOR") {
           router.push("/inventory");
@@ -106,7 +109,7 @@ function OTPContent() {
 
   const handleResendOtp = async () => {
     if (!canResend || resendLoading) return;
-    
+
     try {
       await resendOtp({
         variables: {
@@ -155,7 +158,9 @@ function OTPContent() {
         />
       </form>
       <div className="flex items-center gap-1">
-        <h2 className="text-sm text-vampire-gray">Didn't receive the OTP?</h2>
+        <h2 className="text-sm text-vampire-gray">
+          {"Didn't receive the OTP?"}
+        </h2>
         {canResend ? (
           <button
             onClick={handleResendOtp}
@@ -165,9 +170,7 @@ function OTPContent() {
             {resendLoading ? "Sending..." : "Click to resend"}
           </button>
         ) : (
-          <span className="text-sm text-gray-500">
-            Resend in {timer}s
-          </span>
+          <span className="text-sm text-gray-500">Resend in {timer}s</span>
         )}
       </div>
     </div>

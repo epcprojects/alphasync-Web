@@ -8,7 +8,6 @@ import { useMutation } from "@apollo/client/react";
 import { LOGIN_WITH_OTP } from "@/lib/graphql/mutations";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
-import { storage } from "@/lib/utils/storage";
 import { UserAttributes } from "@/lib/graphql/attributes";
 
 const OTPVerify = () => {
@@ -26,9 +25,14 @@ const OTPVerify = () => {
     onCompleted: (data) => {
       console.log(data);
 
-      // storage.setToken(data?.loginWithOtp?.token);
+      const token = data?.loginWithOtp?.token ?? "";
+      const user = data?.loginWithOtp?.user ?? null;
+      
+      // Store token in localStorage
+      localStorage.setItem("auth_token", token);
+      
       // Store user in Redux
-      // dispatch(setUser(data?.loginWithOtp?.user));
+      dispatch(setUser(user));
       toastAlert("Login successful!", true);
 
       // Navigate based on user type
