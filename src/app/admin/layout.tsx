@@ -5,6 +5,7 @@ import { OrdersIcon, DashDoctor } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useAppSelector } from "@/lib/store/hooks";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -35,6 +36,8 @@ const headings: Record<string, string> = {
 const noStatsRoutes = ["/admin/settings"];
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
+  const user = useAppSelector((state) => state.auth.user);
+
   const pathname = usePathname();
   const heading =
     Object.keys(headings).find((key) => pathname.startsWith(key)) !== undefined
@@ -51,7 +54,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         {!hideStats && (
           <DashboardStats
             showUserName={pathname.startsWith("/orders") ? false : true}
-            username={"Arina"}
+            username={user?.fullName || "----"}
             heading={heading}
             stats={[
               {

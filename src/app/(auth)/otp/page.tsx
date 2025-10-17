@@ -1,15 +1,16 @@
 "use client";
 import { AuthHeader, Loader, ThemeButton, toastAlert } from "@/app/components";
 import { Images } from "@/app/ui/images";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
 import OTPInput from "react-otp-input";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN_WITH_OTP, RESEND_OTP } from "@/lib/graphql/mutations";
-import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import Cookies from "js-cookie";
 
 interface LoginWithOtpResponse {
   loginWithOtp: {
@@ -58,13 +59,17 @@ function OTPContent() {
         const token = data?.loginWithOtp?.token ?? "";
         const user = data?.loginWithOtp?.user ?? null;
 
-        // Store token in localStorage
-        localStorage.setItem("auth_token", token);
+        if (token) {
+          Cookies.set("auth_token", token, { expires: 7 });
+        }
 
+        if (user) {
+          Cookies.set("user_data", JSON.stringify(user), { expires: 7 });
+        }
         dispatch(setUser(user));
 
-        showSuccessToast("Loged in successfully!");
-        // Navigate based on user type
+        showSuccessToast("Logged in successfully!");
+
         if (storedData?.userType === "DOCTOR") {
           router.push("/inventory");
         } else if (storedData?.userType === "CUSTOMER") {

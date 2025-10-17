@@ -73,8 +73,11 @@ function DoctorContent() {
     {
       variables: {
         search: search,
-        status: selectedStatus === "All Status" ? undefined : selectedStatus,
-        page: currentPage + 1, // GraphQL expects 1-based page numbers
+        status:
+          selectedStatus === "All Status"
+            ? undefined
+            : selectedStatus.toUpperCase(),
+        page: currentPage + 1,
         perPage: itemsPerPage,
       },
       fetchPolicy: "network-only",

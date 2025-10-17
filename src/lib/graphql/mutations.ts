@@ -142,3 +142,31 @@ export const SEND_PASSWORD_INSTRUCTIONS = gql`
     sendResetPasswordInstructions(input: { email: $email })
   }
 `;
+
+export const UPDATE_ADMIN = gql`
+  mutation UpdateUser(
+    $email: String
+    $password: String
+    $passwordConfirmation: String
+    $fullName: String
+    $phoneNo: String
+    $image: Upload
+  ) {
+    updateUser(
+      input: {
+        userAttributes: {
+          email: $email
+          password: $password
+          passwordConfirmation: $passwordConfirmation
+          fullName: $fullName
+          phoneNo: $phoneNo
+          image: $image
+        }
+      }
+    ) {
+      user {
+        ${userpayload}
+      }
+    }
+  }
+`;

@@ -8,6 +8,7 @@ import HeaderMenuNavItems from "./HeaderMenuNavItems";
 import Notifications from "../ui/Notifications";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { notifications } from "../../../../public/data/notifications";
+import { useAppSelector } from "@/lib/store/hooks";
 
 interface MenuItemType {
   label: string;
@@ -76,7 +77,8 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
   const isAdminHeader = menuItems.some((item) =>
     item.label.includes("Doctors")
   );
-
+  const user = useAppSelector((state) => state.auth.user);
+  const INITIAL_AVATAR = "/images/arinaProfile.png";
   return (
     <>
       <header
@@ -167,7 +169,11 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                   <Image
                     width={40}
                     height={40}
-                    src={"/images/arinaProfile.png"}
+                    src={
+                      user?.imageUrl
+                        ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${user?.imageUrl}`
+                        : INITIAL_AVATAR
+                    }
                     className="w-8 h-8 md:h-11 md:w-11 rounded-full"
                     alt="arina profile"
                   />
@@ -182,10 +188,10 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                 >
                   <div className="bg-black/45 mb-1 py-2 px-3 rounded-lg">
                     <span className="text-white whitespace-nowrap text-sm block">
-                      Arina Baker
+                      {user?.fullName}
                     </span>
                     <span className="text-white/40 whitespace-nowrap ">
-                      arina@alphasync.com
+                      {user?.email}
                     </span>
                   </div>
                   <MenuItem>

@@ -1,18 +1,19 @@
 import { ApolloClient, ApolloLink, InMemoryCache } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
+import Cookies from "js-cookie";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 
 const uploadLink = createUploadLink({
-  uri: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT,
+  uri: `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/graphql`,
   fetch: fetch,
 });
 
 const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem("auth_token");
+  const token = Cookies.get("auth_token");
   return {
     headers: {
       ...headers,
@@ -58,7 +59,8 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
         message.includes("Unauthorized error")
       ) {
         console.log(message, false);
-        localStorage.clear();
+        Cookies.remove("auth_token");
+        Cookies.remove("user_data");
         window.location.replace("/");
       }
     });
