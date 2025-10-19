@@ -9,6 +9,9 @@ import TextAreaField from "../inputs/TextAreaField";
 import * as Yup from "yup";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useMutation } from "@apollo/client";
+import { CREATE_CUSTOMER } from "@/lib/graphql/mutations";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 interface AddCustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -37,6 +40,17 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [createInvitation, { loading, error }] = useMutation(CREATE_CUSTOMER, {
+    onCompleted: (data) => {
+      onConfirm({ id: data.createInvitation.id, ...formData });
+      onClose();
+    },
+    onError: (error) => {
+      console.error("Error creating customer:", error);
+      showErrorToast("Failed to create customer. Please try again.");
+    },
+  });
 
   const schemas = [
     Yup.object({
@@ -96,8 +110,26 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     } else {
       const valid = await validateStep();
       if (valid) {
-        onConfirm(formData);
-        onClose();
+        try {
+          await createInvitation({
+            variables: {
+              fullName: formData.fullName,
+              email: formData.email,
+              phoneNo: formData.phone,
+              dateOfBirth: formData.dateOfBirth?.toISOString(),
+              address: formData.address,
+              emergencyContactName: formData.emergencyName,
+              emergencyContactPhone: formData.emergencyPhone,
+              medicalHistory: formData.medicalHistory || null,
+              knownAllergies: formData.allergies || null,
+              currentMedications: formData.medications || null,
+              additionalNotes: formData.notes || null,
+              userType: "PATIENT",
+            },
+          });
+        } catch (err) {
+          console.error("Error creating customer:", err);
+        }
       }
     }
   };
@@ -147,16 +179,30 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       onClose={onClose}
       title="Add New Customer"
       onConfirm={handleConfirm}
-      confirmLabel={step === 3 ? "Create Customer" : "Next"}
+      confirmLabel={
+        step === 3
+          ? loading
+            ? "Creating Customer..."
+            : "Create Customer"
+          : "Next"
+      }
       icon={<UserAddIcon fill="#374151" />}
       size="large"
       outSideClickClose={false}
       onCancel={handleCancel}
       cancelLabel={step === 1 ? "Cancel" : "Back"}
-      confimBtnDisable={!isStepValid()}
+      confimBtnDisable={!isStepValid() || loading}
     >
       <div className="flex flex-col gap-8">
         <Stepper activeStep={step} steps={steps} />
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-800 text-sm">
+              Error creating customer: {error.message}
+            </p>
+          </div>
+        )}
 
         {step === 1 && (
           <div className="flex flex-col gap-2 md:gap-5">
@@ -359,9 +405,6 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               placeholder="Enter any additional notes about the customer"
               // required
             />
-            {/* {errors.notes && (
-            <p className="text-xs text-red-500 mt-1">{errors.notes}</p>
-          )} */}
           </div>
         )}
       </div>

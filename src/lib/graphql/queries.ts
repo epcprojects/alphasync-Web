@@ -24,3 +24,16 @@ export const FETCH_USER = gql`
     }
   }
 `;
+export const ALL_PATIENTS = gql`
+  query allPatients($status: UserStatusEnum $search: String, $page: Int, $perPage: Int) {
+    allPatients(status: $status, search: $search, page: $page, perPage: $perPage) {
+      allData {
+       ${userpayload}
+      }
+      count
+      nextPage
+      prevPage
+      totalPages
+    }
+  }
+`;

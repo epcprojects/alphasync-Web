@@ -15,10 +15,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "@headlessui/react";
 import { TickIcon } from "@/icons";
 import { useMutation } from "@apollo/client/react";
-import { LOGIN_USER } from "@/lib/graphql/mutations";
+import { LOGIN_USER, SEND_OTP } from "@/lib/graphql/mutations";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
-type LoginType = "Customer" | "Doctor";
+type LoginType = "Patient" | "Doctor";
 
 function LoginContext() {
   const router = useRouter();
@@ -36,8 +36,18 @@ function LoginContext() {
     },
   });
 
+  const [sendOtp, { loading: sendOtpLoading }] = useMutation(SEND_OTP, {
+    onCompleted: () => {
+      showSuccessToast("OTP sent successfully!");
+      router.push("/otp");
+    },
+    onError: (error) => {
+      showErrorToast(error.message);
+    },
+  });
+
   const validationSchema = Yup.object().shape({
-    loginType: Yup.mixed<LoginType>().oneOf(["Customer", "Doctor"]).required(),
+    loginType: Yup.mixed<LoginType>().oneOf(["Patient", "Doctor"]).required(),
     email: Yup.string()
       .email("Please enter a valid email address.")
       .required("Email is required."),
@@ -59,20 +69,30 @@ function LoginContext() {
     },
     validationSchema,
     onSubmit: (values) => {
-      loginUser({
-        variables: {
-          email: values.email,
-          password: values.password,
-          rememberMe: values.rememberMe,
-          userType: isAdminLogin ? "ADMIN" : values.loginType.toUpperCase(),
-        },
-      });
       const dataForOtp = {
         userType: isAdminLogin ? "ADMIN" : loginType.toUpperCase(),
         email: values.email,
         rememberMe: values.rememberMe,
       };
       localStorage.setItem("dataForOtp", JSON.stringify(dataForOtp));
+
+      // Use SEND_OTP for Patient type, LOGIN_USER for Doctor/Admin
+      if (loginType === "Patient") {
+        sendOtp({
+          variables: {
+            email: values.email,
+          },
+        });
+      } else {
+        loginUser({
+          variables: {
+            email: values.email,
+            password: values.password,
+            rememberMe: values.rememberMe,
+            userType: isAdminLogin ? "ADMIN" : values.loginType.toUpperCase(),
+          },
+        });
+      }
     },
     enableReinitialize: true,
   });
@@ -89,7 +109,7 @@ function LoginContext() {
         <AuthHeader
           logo={Images.auth.logo}
           defaultValue={loginType}
-          options={["Customer", "Doctor"]}
+          options={["Patient", "Doctor"]}
           onToggleChange={(val) => {
             setLoginType(val);
             formik.setFieldValue("loginType", val);
@@ -166,7 +186,7 @@ function LoginContext() {
         <ThemeButton
           label="Login"
           type="submit"
-          disabled={loginLoading}
+          disabled={loginLoading || sendOtpLoading}
           onClick={() => {}}
           heightClass="h-11"
         />

@@ -2,6 +2,7 @@
 import { ArrowLeftIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
+import { UserAttributes } from "@/lib/graphql/attributes";
 
 type Customer = {
   id: number;
@@ -15,7 +16,8 @@ type Customer = {
 };
 
 type CustomerDatabaseViewProps = {
-  customer: Customer;
+  customer?: Customer;
+  patient?: UserAttributes;
   onViewCustomer?: (id: number) => void;
   onRowClick?: () => void;
 };
@@ -30,11 +32,13 @@ const colorPairs = [
   { bg: "bg-indigo-100", text: "text-indigo-600" },
 ];
 
-function getColorPair(seed: number) {
-  return colorPairs[seed % colorPairs.length];
+function getColorPair(seed: number | string | undefined) {
+  const validSeed = typeof seed === "number" ? seed : Number(seed) || 0;
+  const index = Math.abs(validSeed) % colorPairs.length;
+  return colorPairs[index] || colorPairs[0];
 }
 
-function getStatusClasses(status: Customer["status"]) {
+function getStatusClasses(status?: string) {
   switch (status) {
     case "Active":
       return "bg-green-50 border border-green-200 text-green-700";
@@ -46,15 +50,28 @@ function getStatusClasses(status: Customer["status"]) {
 }
 
 export default function CustomerDatabaseView({
-  customer: customer,
+  customer,
+  patient,
   onViewCustomer,
   onRowClick,
 }: CustomerDatabaseViewProps) {
-  const { bg, text } = getColorPair(customer.id);
+  // Use patient data if available, otherwise fall back to customer data
+  const data = patient || customer;
+  const id = patient?.id || customer?.id;
+  const name = patient?.fullName || customer?.name;
+  const contact = patient?.phoneNo || customer?.contact;
+  const email = patient?.email || customer?.email;
+  const dateOfBirth = patient?.createdAt ? new Date(patient.createdAt).toLocaleDateString() : customer?.dateOfBirth;
+  const lastOrder = patient?.lastSignInAt ? new Date(patient.lastSignInAt).toLocaleDateString() : customer?.lastOrder;
+  const totalOrder = customer?.totalOrder || "—";
+  const status = patient?.status === "ACTIVE" ? "Active" : patient?.status === "INACTIVE" ? "Inactive" : patient?.status || customer?.status;
+
+  const { bg, text } = getColorPair(id);
+  
   return (
     <div
       onClick={onRowClick}
-      key={customer.id}
+      key={id}
       className="grid cursor-pointer grid-cols-12 hover:bg-gray-100 group gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div className="col-span-3 flex items-center gap-3">
@@ -62,52 +79,45 @@ export default function CustomerDatabaseView({
           <span
             className={`md:w-10 md:h-10 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
           >
-            {getInitials(customer.name)}
-            {/* <Image
-              alt=""
-              width={256}
-              height={256}
-              src={"/images/arinaProfile.png"}
-              className="rounded-full w-full h-full"
-            /> */}
+            {getInitials(name || "----")}
           </span>
 
           <h3 className="font-medium line-clamp-1 text-gray-800 text-sm md:text-base">
-            {customer.name}
+            {name || "----"}
           </h3>
         </div>
       </div>
       <div className="col-span-2 text-gray-800 text-xs md:text-sm font-normal">
-        {customer.contact}
+        {contact || "—"}
       </div>
 
       <div className="col-span-2">
         <button className="text-gray-800 text-xs md:text-sm font-medium">
-          {customer.email}
+          {email || "—"}
         </button>
       </div>
 
       <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
-        {customer.dateOfBirth}
+        {dateOfBirth || "—"}
       </div>
 
       <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
-        {customer.lastOrder}
+        {lastOrder || "—"}
       </div>
 
       <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
-        <span className="inline-block rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-xs  font-medium text-gray-700">
-          {customer.totalOrder}
+        <span className="inline-block rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+          {totalOrder}
         </span>
       </div>
 
       <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
         <span
           className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
-            customer.status
+            status
           )}`}
         >
-          {customer.status}
+          {status || "Unknown"}
         </span>
       </div>
 
@@ -116,7 +126,7 @@ export default function CustomerDatabaseView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onViewCustomer?.(customer.id);
+              if (id) onViewCustomer?.(Number(id));
             }}
             className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >

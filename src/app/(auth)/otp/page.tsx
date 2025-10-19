@@ -72,8 +72,8 @@ function OTPContent() {
 
         if (storedData?.userType === "DOCTOR") {
           router.push("/inventory");
-        } else if (storedData?.userType === "CUSTOMER") {
-          router.push(`/verify-info?email=${storedData?.email}`);
+        } else if (storedData?.userType === "PATIENT") {
+          router.push("/pending-payments");
         } else if (storedData?.userType === "ADMIN") {
           router.push(`/admin/doctors`);
         } else {

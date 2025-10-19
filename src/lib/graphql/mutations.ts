@@ -214,3 +214,48 @@ export const UPDATE_PASSWORD = gql`
     }
   }
 `;
+
+export const CREATE_CUSTOMER = gql`
+  mutation CreateInvitation(
+    $fullName: String
+    $email: String
+    $phoneNo: String
+    $dateOfBirth: ISO8601Date
+    $emergencyContactName: String
+    $emergencyContactPhone: String
+    $medicalHistory: String
+    $knownAllergies: String
+    $currentMedications: String
+    $additionalNotes: String
+    $address: String
+    $userType: UserTypeEnum
+  ) {
+    createInvitation(
+      input: {
+        invitationAttributes: {
+          fullName: $fullName
+          email: $email
+          phoneNo: $phoneNo
+          dateOfBirth: $dateOfBirth
+          emergencyContactName: $emergencyContactName
+          emergencyContactPhone: $emergencyContactPhone
+          medicalHistory: $medicalHistory
+          knownAllergies: $knownAllergies
+          currentMedications: $currentMedications
+          additionalNotes: $additionalNotes
+          address: $address
+          userType: $userType
+        }
+      }
+    ) {
+      id
+    }
+  }
+`;
+export const SEND_OTP = gql`
+  mutation SendOtp($email: String!) {
+    sendOtp(input: { sendOtpAttributes: { email: $email } }) {
+      message
+    }
+  }
+`;

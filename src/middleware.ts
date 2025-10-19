@@ -36,8 +36,10 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/admin/doctors", request.url));
     } else if (userType === "doctor") {
       return NextResponse.redirect(new URL("/inventory?page=0", request.url));
+    } else if (userType === "customer" || userType === "patient") {
+      return NextResponse.redirect(new URL("/pending-payments", request.url));
     } else {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL("/pending-payments", request.url));
     }
   }
 

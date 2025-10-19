@@ -12,6 +12,13 @@ export const userpayload = `
         rememberMe
         revokeAccess
         status
+        emergencyContactName
+        emergencyContactPhone
+        medicalHistory
+        knownAllergies
+        currentMedications
+        additionalNotes
+        address
         userType
 `;
 
@@ -29,5 +36,12 @@ export interface UserAttributes {
   rememberMe?: boolean;
   revokeAccess?: boolean;
   status?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  medicalHistory?: string;
+  knownAllergies?: string;
+  currentMedications?: string;
+  additionalNotes?: string;
+  address?: string;
   userType?: string;
 }
