@@ -7,6 +7,8 @@ import {
   CustomerOrderHistroyView,
   PrescriptionRequestCard,
   RequestRejectModal,
+  Loader,
+  Skeleton,
 } from "@/app/components";
 import {
   ArrowDownIcon,
@@ -19,7 +21,7 @@ import {
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { orders } from "../../../../../public/data/orders";
 import ReactPaginate from "react-paginate";
@@ -29,16 +31,37 @@ import ProductRequestDetailModal from "@/app/components/ui/modals/ProductRequest
 import ChatModal from "@/app/components/ui/modals/ChatModal";
 import NewOrderModal from "@/app/components/ui/modals/NewOrderModal";
 import CustomerProfileHeaderCard from "@/app/components/ui/cards/CustomerProfileHeaderCard";
+import { useQuery } from "@apollo/client/react";
+import { FETCH_CUSTOMER } from "@/lib/graphql/queries";
+import { UserAttributes } from "@/lib/graphql/attributes";
+
+// Interface for GraphQL response
+interface FetchUserResponse {
+  fetchUser: {
+    user: UserAttributes;
+  };
+}
 
 export default function CustomerDetail() {
   const router = useRouter();
-  // const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+
+  // GraphQL query to fetch customer data
+  const { data, loading, error } = useQuery<FetchUserResponse>(FETCH_CUSTOMER, {
+    variables: {
+      id: params.id,
+    },
+    skip: !params.id,
+    fetchPolicy: "network-only",
+  });
+
+  const customer = data?.fetchUser?.user;
 
   const itemsPerPage = 10;
 
@@ -110,6 +133,85 @@ export default function CustomerDetail() {
     console.log("Final Order Data:", data);
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="flex items-center gap-2 md:gap-4">
+          <button
+            onClick={router.back}
+            className="flex rotate-90 cursor-pointer bg-white rounded-full shadow items-center justify-center w-7 h-7 md:h-10 md:w-10"
+          >
+            <ArrowDownIcon />
+          </button>
+          <h2 className="text-black font-semibold text-lg md:text-3xl">
+            Customer Profile
+          </h2>
+        </div>
+        <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] p-6">
+          <div className="space-y-4">
+            <Skeleton className="w-full h-32 rounded-lg" />
+            <Skeleton className="w-full h-20 rounded-lg" />
+            <Skeleton className="w-full h-40 rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="flex items-center gap-2 md:gap-4">
+          <button
+            onClick={router.back}
+            className="flex rotate-90 cursor-pointer bg-white rounded-full shadow items-center justify-center w-7 h-7 md:h-10 md:w-10"
+          >
+            <ArrowDownIcon />
+          </button>
+          <h2 className="text-black font-semibold text-lg md:text-3xl">
+            Customer Profile
+          </h2>
+        </div>
+        <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] p-6">
+          <div className="text-center py-8">
+            <p className="text-red-500 mb-4">{error.message}</p>
+            
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show not found state
+  if (!customer) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="flex items-center gap-2 md:gap-4">
+          <button
+            onClick={router.back}
+            className="flex rotate-90 cursor-pointer bg-white rounded-full shadow items-center justify-center w-7 h-7 md:h-10 md:w-10"
+          >
+            <ArrowDownIcon />
+          </button>
+          <h2 className="text-black font-semibold text-lg md:text-3xl">
+            Customer Profile
+          </h2>
+        </div>
+        <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] p-6">
+          <div className="text-center py-8">
+            <p className="text-gray-500 mb-4">Customer not found</p>
+            <ThemeButton
+              label="Go Back"
+              onClick={() => router.back()}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex items-center gap-2 md:gap-4">
@@ -126,13 +228,13 @@ export default function CustomerDetail() {
 
       <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)]">
         <CustomerProfileHeaderCard
-          name="John Smith"
-          email="john.smith@email.com"
-          phone="(555) 123-4567"
-          totalOrders={8}
-          statusActive={true}
-          lastOrder="1/15/2024"
-          dob="3/15/1985"
+          name={customer.fullName || "Unknown Customer"}
+          email={customer.email || ""}
+          phone={customer.phoneNo || ""}
+          totalOrders={8} // TODO: Get from orders query
+          statusActive={customer.status === "ACTIVE"}
+          lastOrder="1/15/2024" // TODO: Get from orders query
+          dob={customer.dateOfBirth || ""}
           onQuickChat={() => setSelectedIndex(1)}
           onCreateOrder={() => setIsOrderModalOpen(true)}
           getInitials={(name) =>
@@ -382,21 +484,15 @@ export default function CustomerDetail() {
         isOpen={isOrderModalOpen}
         onCreateOrder={handleCreateOrder}
         onClose={() => setIsOrderModalOpen(false)}
-        currentCustomer={{ name: "John Doe", displayName: "John Doe" }}
+        currentCustomer={{ 
+          name: customer.fullName || "Unknown Customer", 
+          displayName: customer.fullName || "Unknown Customer" 
+        }}
         customers={[
           {
-            name: "John Smith",
-            displayName: "John Smith",
-          },
-          {
-            name: "Sarah J",
-            displayName: "Sarah J",
-            email: "Sarah.smith@email.com",
-          },
-          {
-            name: "Emily Chen",
-            displayName: "Emily Chen",
-            email: "Emily.smith@email.com",
+            name: customer.fullName || "Unknown Customer",
+            displayName: customer.fullName || "Unknown Customer",
+            email: customer.email,
           },
         ]}
         products={[

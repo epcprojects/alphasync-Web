@@ -9,6 +9,7 @@ type Order = {
   orderId: string;
   date: string;
   customer: string;
+
   status: string;
   items: number;
   total: number;
@@ -32,8 +33,11 @@ const colorPairs = [
   { bg: "bg-indigo-100", text: "text-indigo-600" },
 ];
 
-function getColorPair(seed: number) {
-  return colorPairs[seed % colorPairs.length];
+function getColorPair(seed: number | undefined) {
+  if (seed === undefined || isNaN(seed)) {
+    return colorPairs[0];
+  }
+  return colorPairs[Math.abs(seed) % colorPairs.length];
 }
 
 export function getStatusClasses(status: Order["status"]) {
@@ -58,7 +62,7 @@ export default function OrderListView({
   onViewOrderDetail,
   onRowClick,
 }: OrderListViewProps) {
-  const { bg, text } = getColorPair(order.id);
+  const { bg, text } = getColorPair(order.id) || colorPairs[0];
 
   const ismobile = useIsMobile();
 
@@ -83,6 +87,7 @@ export default function OrderListView({
               <h2 className="text-gray-800 text-xs md:text-sm font-medium">
                 {order.customer}
               </h2>
+             
             </div>
           </div>
 
@@ -177,6 +182,7 @@ export default function OrderListView({
           <h2 className="text-gray-800 text-xs md:text-sm font-medium">
             {order.customer}
           </h2>
+         
         </div>
       </div>
       <div className="text-xs md:text-sm font-normal text-gray-600 ">

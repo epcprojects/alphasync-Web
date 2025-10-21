@@ -259,3 +259,39 @@ export const SEND_OTP = gql`
     }
   }
 `;
+export const SET_PASSWORD = gql`
+  mutation SetPassword {
+    setPassword(
+      input: {
+        setPasswordAttributes: {
+          resetPassword: null
+          token: "ee"
+          password: null
+          passwordConfirmation: null
+        }
+      }
+    )
+  }
+`;
+
+export const CREATE_ORDER = gql`
+  mutation CreateOrder(
+    $orderItems: [OrderItemAttributes!]!
+    $totalPrice: Float!
+    $patientId: ID!
+  ) {
+    createOrder(
+      input: {
+        orderAttributes: {
+          orderItems: $orderItems
+          totalPrice: $totalPrice
+          patientId: $patientId
+        }
+      }
+    ) {
+      order {
+        id
+      }
+    }
+  }
+`;

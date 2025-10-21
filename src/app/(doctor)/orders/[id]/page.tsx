@@ -13,10 +13,95 @@ import {
 } from "@/icons";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
+import { useQuery } from "@apollo/client";
+import { FETCH_ORDER } from "@/lib/graphql/queries";
+import { UserAttributes } from "@/lib/graphql/attributes";
+
+interface OrderItem {
+  id: string;
+  quantity: number;
+  price: number;
+  totalPrice: number;
+  product: {
+    id: string;
+    title: string;
+    variants: {
+      id: string;
+      price: number;
+      shopifyVariantId: string;
+    }[];
+  };
+}
+
+interface FetchOrderResponse {
+  fetchOrder: {
+    id: string;
+    createdAt: string;
+    status: string;
+    subtotalPrice: number;
+    totalPrice: number;
+    totalTax: number;
+    patient: UserAttributes;
+    orderItems: OrderItem[];
+  };
+}
 
 const Page = () => {
   const router = useRouter();
   const params = useParams<{ id: string }>();
+
+  // GraphQL query to fetch order details
+  const { data, loading, error } = useQuery<FetchOrderResponse>(FETCH_ORDER, {
+    variables: {
+      id: params.id,
+    },
+    fetchPolicy: "network-only",
+  });
+
+  const order = data?.fetchOrder;
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg text-gray-600">Loading order details...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg text-red-600">{error.message}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Order not found
+  if (!order) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg text-gray-600">Order not found</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "numeric",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex items-center gap-2 md:gap-4">
@@ -34,14 +119,14 @@ const Page = () => {
       <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)]">
         <div>
           <CustomerInfoCard
-            name="John Smith"
-            email="john.smith@email.com"
-            phone="(555) 123-4567"
+            name={order.patient.fullName || "Unknown"}
+            email={order.patient.email || ""}
+            phone={order.patient.phoneNo || ""}
             totalOrders={8}
-            lastOrder="1/15/2024"
-            address="321 Elm St, Nowhere, ST 98765"
+            lastOrder={formatDate(order.createdAt)}
+            address={order.patient.address || ""}
             onBack={() => console.log("Go back")}
-            onViewProfile={() => router.push("/customers/123")}
+            onViewProfile={() => router.push(`/customers/${order.patient.id}`)}
             getInitials={(name) =>
               name
                 .split(" ")
@@ -54,18 +139,18 @@ const Page = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-4">
                 <h2 className="text-base md:text-lg font-semibold text-black">
-                  Order {params.id}
+                  Order {order.id}
                 </h2>
                 <span className="text-gray-700 font-medium text-xs md:text-sm py-0.5 px-2.5 rounded-full bg-gray-100 border border-gray-200">
-                  1/12/2024
+                  {formatDate(order.createdAt)}
                 </span>
               </div>
               <span
                 className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
-                  "Processing"
+                  order.status
                 )}`}
               >
-                Processing
+                {order.status}
               </span>
             </div>
 
@@ -76,41 +161,47 @@ const Page = () => {
                 <div>Unit Price</div>
                 <div>Total</div>
               </div>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 items-start rounded-lg sm:rounded-xl bg-gray-50 p-1.5 md:py-2 md:px-3">
-                <div className="text-gray-800 text-xs md:text-sm sm:order-1 order-1">
-                  <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
-                    Product:
-                  </span>
-                  CJC-1295
+
+              {order.orderItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-2 gap-2 sm:grid-cols-4 items-start rounded-lg sm:rounded-xl bg-gray-50 p-1.5 md:py-2 md:px-3"
+                >
+                  <div className="text-gray-800 text-xs md:text-sm sm:order-1 order-1">
+                    <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                      Product:
+                    </span>
+                    {item.product.title}
+                  </div>
+                  <div className="flex sm:order-2 order-3">
+                    <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                      Quantity:
+                    </span>
+                    <span className="inline-block rounded-full sm:px-2 sm:py-0.5 text-xs sm:font-medium text-gray-800 sm:text-gray-700 sm:bg-gray-50 sm:border sm:border-gray-200">
+                      {item.quantity}
+                    </span>
+                  </div>
+                  <div className="text-gray-800 flex sm:justify-start justify-end text-xs md:text-sm font-normal sm:order-3 order-2">
+                    <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                      Unit Price:
+                    </span>
+                    ${item.price.toFixed(2)}
+                  </div>
+                  <div className="text-gray-800 text-xs flex sm:justify-start justify-end md:text-sm sm:font-medium sm:order-4 order-4">
+                    <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                      Total:
+                    </span>
+                    ${item.totalPrice.toFixed(2)}
+                  </div>
                 </div>
-                <div className="flex  sm:order-2 order-3">
-                  <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
-                    Quantity:
-                  </span>
-                  <span className="inline-block rounded-full sm:px-2 sm:py-0.5 text-xs sm:font-medium text-gray-800 sm:text-gray-700 sm:bg-gray-50 sm:border sm:border-gray-200">
-                    1
-                  </span>
-                </div>
-                <div className="text-gray-800 flex sm:justify-start justify-end text-xs md:text-sm font-normal sm:order-3 order-2">
-                  <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
-                    Unit Price:
-                  </span>
-                  $95.25
-                </div>
-                <div className="text-gray-800 text-xs flex sm:justify-start justify-end md:text-sm sm:font-medium sm:order-4 order-4">
-                  <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
-                    Total:
-                  </span>
-                  $95.25
-                </div>
-              </div>
+              ))}
 
               <div className="grid grid-cols-4 bg-sky-50 p-1.5 md:py-2 md:px-3 rounded-lg md:rounded-xl">
                 <div className="col-span-3 text-gray-800 font-semibold text-sm md:text-lg">
                   Order Total
                 </div>
                 <div className="text-sm md:text-lg font-semibold text-primary">
-                  $307.75
+                  ${order.totalPrice.toFixed(2)}
                 </div>
               </div>
             </div>
@@ -144,7 +235,7 @@ const Page = () => {
                   Shipping Address:
                 </h2>
                 <h3 className="text-xs md:text-sm text-gray-800">
-                  321 Elm St, Nowhere, ST 98765
+                  {order.patient.address || "No address provided"}
                 </h3>
               </div>
             </div>

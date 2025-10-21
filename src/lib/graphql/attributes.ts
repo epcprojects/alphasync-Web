@@ -20,6 +20,7 @@ export const userpayload = `
         additionalNotes
         address
         userType
+        dateOfBirth
 `;
 
 export interface UserAttributes {
@@ -44,4 +45,5 @@ export interface UserAttributes {
   additionalNotes?: string;
   address?: string;
   userType?: string;
+  dateOfBirth?: string;
 }

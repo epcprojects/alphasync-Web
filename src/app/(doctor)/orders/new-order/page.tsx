@@ -7,13 +7,44 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { showSuccessToast } from "@/lib/toast";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { formatNumber } from "@/lib/helpers";
+import { useQuery, useMutation } from "@apollo/client/react";
+import { ALL_PATIENTS, ALL_PRODUCTS } from "@/lib/graphql/queries";
+import { CREATE_ORDER } from "@/lib/graphql/mutations";
+import { UserAttributes } from "@/lib/graphql/attributes";
 
 interface OrderItem {
   product: string;
+  productId: string;
+  variantId: string;
   quantity: number;
   price: number;
+}
+
+// Interface for GraphQL response
+interface AllPatientsResponse {
+  allPatients: {
+    allData: UserAttributes[];
+    count: number;
+    nextPage: number | null;
+    prevPage: number | null;
+    totalPages: number;
+  };
+}
+
+interface AllProductsResponse {
+  allProducts: {
+    allData: {
+      id: string;
+      title: string;
+      variants: {
+        id: string;
+        shopifyVariantId: string;
+        price: number;
+      }[];
+    }[];
+  };
 }
 
 const Page = () => {
@@ -30,6 +61,36 @@ const Page = () => {
   const [customerDraft, setCustomerDraft] = useState("");
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
 
+  // GraphQL query to fetch customers
+  const {
+    data,
+    loading: customersLoading,
+    error: customersError,
+  } = useQuery<AllPatientsResponse>(ALL_PATIENTS, {
+    variables: {
+      search: "",
+      status: "ACTIVE", // Only fetch active customers
+      page: 1,
+      perPage: 100, // Fetch more customers for dropdown
+    },
+    fetchPolicy: "network-only",
+  });
+
+  // GraphQL query to fetch products
+  const {
+    data: productsData,
+    loading: productsLoading,
+    error: productsError,
+  } = useQuery<AllProductsResponse>(ALL_PRODUCTS, {
+    fetchPolicy: "network-only",
+  });
+
+  // GraphQL mutation to create order
+  const [
+    createOrder,
+    { loading: createOrderLoading, error: createOrderError },
+  ] = useMutation(CREATE_ORDER);
+
   const handleAddItem = (values: {
     customer: string;
     product: string;
@@ -39,8 +100,12 @@ const Page = () => {
     // lock on first item
     if (!lockedCustomer) setLockedCustomer(values.customer);
 
+    const selectedProduct = products.find((p) => p.name === values.product);
+
     const newItem: OrderItem = {
       product: values.product,
+      productId: selectedProduct?.productId || "",
+      variantId: selectedProduct?.variantId || "",
       quantity: values.quantity,
       price: values.price,
     };
@@ -67,45 +132,73 @@ const Page = () => {
     0
   );
 
-  const handleCreateOrder = () => {
+  const handleCreateOrder = async () => {
     if (orderItems.length === 0) return;
-    setLockedCustomer(null);
-    setOrderItems([]);
-    setCustomerDraft("");
-    showSuccessToast("Order created successfully");
+
+    try {
+      // Find the selected customer
+      const selectedCustomer = customers.find((c) => c.name === lockedCustomer);
+      if (!selectedCustomer) {
+        showErrorToast("Customer not found");
+        return;
+      }
+
+      // Transform order items to match the expected GraphQL input format
+      const orderItemsInput = orderItems.map((item) => ({
+        productId: item.productId,
+        variantId: item.variantId,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      console.log("Creating order with items:", orderItemsInput);
+      console.log("Mutation variables:", {
+        orderItems: orderItemsInput,
+        totalPrice: totalAmount,
+        patientId: selectedCustomer.id,
+      });
+
+      await createOrder({
+        variables: {
+          orderItems: orderItemsInput,
+          totalPrice: totalAmount,
+          patientId: selectedCustomer.id,
+        },
+      });
+
+      // Reset form state
+      setLockedCustomer(null);
+      setOrderItems([]);
+      setCustomerDraft("");
+      showSuccessToast("Order created successfully");
+    } catch (error) {
+      console.error("Error creating order:", error);
+      showErrorToast("Failed to create order. Please try again.");
+    }
   };
 
-  const products = [
-    {
-      name: "BPC-157",
-      displayName: "BPC-157",
-    },
-    {
-      name: "TB-500",
-      displayName: "TB-500",
-    },
-    {
-      name: "CJC-1295",
-      displayName: "CJC-1295",
-    },
-  ];
+  // Transform GraphQL customer data to match dropdown format
+  const customers =
+    data?.allPatients.allData?.map((patient: UserAttributes) => ({
+      name: patient.fullName || patient.email || `Patient ${patient.id}`,
+      displayName: patient.fullName || patient.email || `Patient ${patient.id}`,
+      email: patient.email,
+      id: patient.id, // Include patient ID for mutation
+    })) || [];
 
-  const customers = [
-    {
-      name: "John Smith",
-      displayName: "John Smith",
-    },
-    {
-      name: "Sarah J",
-      displayName: "Sarah J",
-      email: "Sarah.smith@email.com",
-    },
-    {
-      name: "Emily Chen",
-      displayName: "Emily Chen",
-      email: "Emily.smith@email.com",
-    },
-  ];
+  // Transform GraphQL product data to match dropdown format
+  const products =
+    productsData?.allProducts.allData?.map((product) => {
+      const firstVariant = product.variants?.[0];
+
+      return {
+        name: product.title,
+        displayName: product.title,
+        productId: product.id,
+        variantId: firstVariant?.shopifyVariantId,
+        price: firstVariant?.price,
+      };
+    }) || [];
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -148,6 +241,11 @@ const Page = () => {
             {({ values, setFieldValue, errors, touched }) => (
               <Form className="flex flex-col gap-4 md:gap-5">
                 <div>
+                  {customersError && (
+                    <p className="text-red-500 text-xs mb-2">
+                      Error loading customers: {customersError.message}
+                    </p>
+                  )}
                   <SelectGroupDropdown
                     selectedGroup={values.customer}
                     setSelectedGroup={(val: string | string[]) => {
@@ -161,9 +259,15 @@ const Page = () => {
                     name="Customer"
                     multiple={false}
                     placeholder={
-                      lockedCustomer ? "Customer locked" : "Select a customer"
+                      customersLoading
+                        ? "Loading customers..."
+                        : lockedCustomer
+                        ? "Customer locked"
+                        : customers.length === 0
+                        ? "No customers available"
+                        : "Select a customer"
                     }
-                    isShowDrop={!lockedCustomer}
+                    isShowDrop={!lockedCustomer && !customersLoading}
                     searchTerm={""}
                     setSearchTerm={() => {}}
                     required={true}
@@ -171,32 +275,54 @@ const Page = () => {
                     optionPaddingClasses="p-1"
                     showLabel={true}
                     showIcon={false}
-                    disabled={lockedCustomer ? true : false}
+                    disabled={!!lockedCustomer || customersLoading}
                   />
                   {errors.customer && touched.customer && (
                     <p className="text-red-500 text-xs">{errors.customer}</p>
                   )}
                 </div>
                 <div>
+                  {productsError && (
+                    <p className="text-red-500 text-xs mb-2">
+                      Error loading products: {productsError.message}
+                    </p>
+                  )}
                   <SelectGroupDropdown
                     selectedGroup={values.product}
                     setSelectedGroup={(val: string | string[]) => {
                       const v = Array.isArray(val) ? val[0] : val;
                       setFieldValue("product", v);
+
+                      // Auto-populate price when product is selected
+                      if (v) {
+                        const selectedProduct = products.find(
+                          (p) => p.name === v
+                        );
+                        if (selectedProduct && selectedProduct.price) {
+                          setFieldValue("price", selectedProduct.price);
+                        }
+                      }
                     }}
                     groups={products}
                     errors={errors.product || ""}
                     name="Product:"
                     multiple={false}
-                    placeholder="Select a product"
+                    placeholder={
+                      productsLoading
+                        ? "Loading products..."
+                        : products.length === 0
+                        ? "No products available"
+                        : "Select a product"
+                    }
                     searchTerm={""}
                     setSearchTerm={() => {}}
-                    isShowDrop={true}
+                    isShowDrop={!productsLoading}
                     required={true}
                     paddingClasses="py-2.5 h-11 px-2"
                     optionPaddingClasses="p-1"
                     showLabel={true}
                     showIcon={false}
+                    disabled={productsLoading}
                   />
                   {errors.product && touched.product && (
                     <p className="text-red-500 text-xs">{errors.product}</p>
@@ -339,14 +465,23 @@ const Page = () => {
                     </span>
                   </div>
                   <div className="flex justify-end">
+                    {createOrderError && (
+                      <p className="text-red-500 text-xs mb-2">
+                        Error creating order: {createOrderError.message}
+                      </p>
+                    )}
                     <ThemeButton
-                      label="Create Order"
+                      label={
+                        createOrderLoading
+                          ? "Creating Order..."
+                          : "Create Order"
+                      }
                       onClick={handleCreateOrder}
                       size="medium"
                       icon={<PlusIcon height="18" width="18" />}
                       heightClass="h-10"
                       className="w-full sm:w-fit"
-                      // disabled={true}
+                      disabled={createOrderLoading || orderItems.length === 0}
                     />
                   </div>
                 </div>
