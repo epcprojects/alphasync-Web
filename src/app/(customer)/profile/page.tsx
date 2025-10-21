@@ -2,28 +2,42 @@
 import { TextAreaField, ThemeButton, ThemeInput } from "@/app/components";
 import { InfoIcon, UserIcon } from "@/icons";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
 import AvatarUploader from "@/app/components/AvatarUploader";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useMutation } from "@apollo/client";
+import { UPDATE_CUSTOMER_PROFILE } from "@/lib/graphql/mutations";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
+import { UserAttributes } from "@/lib/graphql/attributes";
+import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/slices/authSlice";
+import Cookies from "js-cookie";
 const Page = () => {
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
   const profileSchema = Yup.object().shape({
     fullName: Yup.string().required("Full name is required"),
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
-    phone: Yup.string()
-      .matches(/^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, "Invalid phone number")
+      phoneNo: Yup.string()
+      .matches(
+        /^\+?[1-9]\d{0,15}$/,
+        "Must be a valid phone number (e.g. +1234567890)"
+      )
       .required("Phone number is required"),
     dob: Yup.string().required("Date of Birth is required"),
     address: Yup.string().required("Address is required"),
     ename: Yup.string().required("Emergency Contact Name is required"),
     ephone: Yup.string()
-      .matches(/^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, "Invalid phone number")
-      .required("Emergency Contact Phone is required"),
+    .matches(
+      /^\+?[1-9]\d{0,15}$/,
+      "Must be a valid phone number (e.g. +1234567890)"
+    )
   });
 
   const informationSchema = Yup.object().shape({
@@ -36,6 +50,134 @@ const Page = () => {
   });
 
   const isMobile = useIsMobile();
+
+  // Get user data from Redux store
+  const user = useAppSelector((state) => state.auth.user);
+  const dispatch = useAppDispatch();
+
+  // Fallback: If user is not in Redux but exists in cookies, load it
+  useEffect(() => {
+    if (!user) {
+      const userDataFromCookie = Cookies.get("user_data");
+      if (userDataFromCookie) {
+        try {
+          const parsedUser = JSON.parse(userDataFromCookie);
+          dispatch(setUser(parsedUser));
+        } catch (error) {
+          console.error("Error parsing user data from cookie:", error);
+        }
+      }
+    }
+  }, [user, dispatch]);
+
+  // Update customer profile mutation
+  const [updateCustomerProfile, { loading: updateLoading }] = useMutation(
+    UPDATE_CUSTOMER_PROFILE,
+    {
+      onCompleted: (data) => {
+        // Update Redux store with the latest user data
+        if (data?.updateUser?.user) {
+          dispatch(setUser(data.updateUser.user));
+          // Also update the cookie with the latest data
+          Cookies.set("user_data", JSON.stringify(data.updateUser.user), {
+            expires: 7,
+          });
+        }
+        showSuccessToast("Profile updated successfully!");
+      },
+      onError: (error) => {
+        showErrorToast(error.message || "Failed to update profile");
+      },
+    }
+  );
+
+  const handleImageChange = (file: File | null) => {
+    setSelectedImage(file);
+  };
+
+  const handleProfileSubmit = async (values: any) => {
+    console.log("Profile form values:", values);
+    try {
+      const variables = {
+        fullName: values.fullName,
+        phoneNo: values.phoneNo,
+        email: values.email,
+        dateOfBirth: values.dob,
+        address: values.address,
+        emergencyContactName: values.ename,
+        emergencyContactPhone: values.ephone,
+        image: selectedImage,
+      };
+      console.log("Mutation variables:", variables);
+      await updateCustomerProfile({ variables });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+
+  const handleInformationSubmit = async (values: any) => {
+    console.log("Information form values:", values);
+    try {
+      const variables = {
+        medicalHistory: values.medicalHistory,
+        knownAllergies: values.knownAllergies,
+        currentMedications: values.currentMedications,
+        additionalNotes: values.additionalNotes,
+      };
+      console.log("Information mutation variables:", variables);
+      await updateCustomerProfile({ variables });
+    } catch (error) {
+      console.error("Error updating information:", error);
+    }
+  };
+
+  const INITIAL_AVATAR = "/images/arinaProfile.png";
+
+  // Convert user data to form initial values
+  const getInitialValues = () => {
+    if (!user) {
+      return {
+        fullName: "",
+        email: "",
+        phoneNo: "",
+        dob: new Date(),
+        address: "",
+        ename: "",
+        ephone: "",
+        medicalHistory: "",
+        knownAllergies: "",
+        currentMedications: "",
+        additionalNotes: "",
+      };
+    }
+
+    return {
+      fullName: user.fullName || "",
+      email: user.email || "",
+      phoneNo: user.phoneNo || "",
+      dob: user.dateOfBirth ? new Date(user.dateOfBirth) : new Date(),
+      address: user.address || "",
+      ename: user.emergencyContactName || "",
+      ephone: user.emergencyContactPhone || "",
+      medicalHistory: user.medicalHistory || "",
+      knownAllergies: user.knownAllergies || "",
+      currentMedications: user.currentMedications || "",
+      additionalNotes: user.additionalNotes || "",
+    };
+  };
+
+  // Show loading if user data is not available yet
+  if (!user) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="bg-white rounded-xl p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-gray-500">Loading profile...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -87,32 +229,19 @@ const Page = () => {
                   </div>
 
                   <AvatarUploader
-                    initialImage="/images/arinaProfile.png"
-                    onChange={(file) => {
-                      if (file) {
-                        console.log("New image selected:", file);
-                        // send to API
-                      } else {
-                        console.log("Image deleted");
-                        // handle delete API call
-                      }
-                    }}
+                    initialImage={
+                      user?.imageUrl
+                        ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${user?.imageUrl}`
+                        : INITIAL_AVATAR
+                    }
+                    onChange={handleImageChange}
                   />
                 </div>
                 <Formik
-                  initialValues={{
-                    fullName: "Daniel Baker",
-                    email: "daniel.baker@alphasync.com",
-                    phone: "(316) 555-0116",
-                    dob: new Date(),
-                    address: "123 Main St",
-                    ename: "Daniel Baker",
-                    ephone: "(316) 555-0116",
-                  }}
+                  initialValues={getInitialValues()}
                   validationSchema={profileSchema}
-                  onSubmit={(values) => {
-                    console.log("Profile Values:", values);
-                  }}
+                  onSubmit={handleProfileSubmit}
+                  enableReinitialize={true}
                 >
                   {({ handleChange, values, setFieldValue }) => (
                     <Form>
@@ -168,12 +297,12 @@ const Page = () => {
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="phone"
-                            name="phone"
-                            value={values.phone}
+                            name="phoneNo"
+                            value={values.phoneNo}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="phone"
+                            name="phoneNo"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -316,10 +445,11 @@ const Page = () => {
                       </div>
                       <div className="flex pt-3 md:pt-6 justify-end">
                         <ThemeButton
-                          label="Save Changes"
+                          label={updateLoading ? "Saving..." : "Save Changes"}
                           heightClass="h-10"
                           type="submit"
                           className="w-full md:w-fit"
+                          disabled={updateLoading}
                         />
                       </div>
                     </Form>
@@ -330,15 +460,14 @@ const Page = () => {
               <TabPanel className={"px-4 md:px-8"}>
                 <Formik
                   initialValues={{
-                    medicalHistory: "",
-                    knownAllergies: "",
-                    currentMedications: "",
-                    additionalNotes: "",
+                    medicalHistory: user?.medicalHistory || "",
+                    knownAllergies: user?.knownAllergies || "",
+                    currentMedications: user?.currentMedications || "",
+                    additionalNotes: user?.additionalNotes || "",
                   }}
                   validationSchema={informationSchema}
-                  onSubmit={(values) => {
-                    console.log("Password Values:", values);
-                  }}
+                  onSubmit={handleInformationSubmit}
+                  enableReinitialize={true}
                 >
                   {({ handleChange, values }) => (
                     <Form className="flex flex-col w-full">
@@ -441,11 +570,11 @@ const Page = () => {
 
                       <div className="flex pt-3 md:pt-6 justify-end">
                         <ThemeButton
-                          label="Update Password"
+                          label={updateLoading ? "Saving..." : "Save Changes"}
                           heightClass="h-10"
                           type="submit"
                           className="w-full md:w-fit"
-                          disabled
+                          disabled={updateLoading}
                         />
                       </div>
                     </Form>

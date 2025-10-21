@@ -2,6 +2,8 @@ import ThemeButton from "./ui/buttons/ThemeButton";
 import ToggleGroup from "./ui/buttons/ToggleGroup";
 import AuthHeader from "./AuthHeader";
 import ThemeInput from "./ui/inputs/ThemeInput";
+import ProductSelect from "./ui/inputs/ProductSelect";
+import CustomerSelect from "./ui/inputs/CustomerSelect";
 import AttributionCard from "./ui/cards/AttributionCard";
 import LoginBanner from "./LoginBanner";
 import Portal from "./ui/portal";
@@ -31,6 +33,7 @@ import EmptyState from "./ui/EmptyState";
 import { toastAlert } from "./ToastAlert";
 import OTPVerify from "./OtpVerify";
 import Skeleton from "@/app/components/Skelton";
+import InventorySkeleton from "./ui/InventorySkeleton";
 import Pagination from "./ui/Pagination";
 import ChangePassword from "@/app/components/ChangePassword";
 
@@ -43,6 +46,8 @@ export {
   ToggleGroup,
   AuthHeader,
   ThemeInput,
+  ProductSelect,
+  CustomerSelect,
   AttributionCard,
   LoginBanner,
   Portal,
@@ -68,6 +73,7 @@ export {
   toastAlert,
   OTPVerify,
   Skeleton,
+  InventorySkeleton,
   Pagination,
   ChangePassword,
 };

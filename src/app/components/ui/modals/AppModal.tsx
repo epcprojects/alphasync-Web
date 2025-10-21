@@ -38,9 +38,9 @@ interface AppModalProps {
 
 const sizeClasses = {
   small: "sm:max-w-lg", // ~512px
-  medium: "sm:max-w-[600px]", // ~600x
+  medium: "sm:max-w-[600px]", // ~600px
   large: "sm:max-w-3xl", // ~768px
-  extraLarge: "sm:max-w-5xl", // ~1024
+  extraLarge: "sm:max-w-5xl", // ~1024px
 };
 
 const AppModal: React.FC<AppModalProps> = ({

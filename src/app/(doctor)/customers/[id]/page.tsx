@@ -495,20 +495,6 @@ export default function CustomerDetail() {
             email: customer.email,
           },
         ]}
-        products={[
-          {
-            name: "BPC-157",
-            displayName: "BPC-157",
-          },
-          {
-            name: "TB-500",
-            displayName: "TB-500",
-          },
-          {
-            name: "CJC-1295",
-            displayName: "CJC-1295",
-          },
-        ]}
       />
     </div>
   );

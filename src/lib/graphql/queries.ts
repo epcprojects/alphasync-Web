@@ -52,6 +52,36 @@ export const ALL_PRODUCTS = gql`
     }
   }
 `;
+export const ALL_PRODUCTS_INVENTORY = gql`
+  query AllProducts($page: Int, $perPage: Int) {
+    allProducts(page: $page, perPage: $perPage) {
+      allData {
+        customPrice
+        description
+        handle
+        id
+        images
+        inStock
+        isFavorited
+        priceRange
+        primaryImage
+        productType
+        shopifyId
+        title
+        totalInventory
+        vendor
+        variants {
+          price
+          id
+          shopifyVariantId
+        }
+      }
+      nextPage
+      prevPage
+      totalPages
+    }
+  }
+`;
 export const DOCTOR_ORDERS = gql`
   query DoctorOrders($status: String, $page: Int, $perPage: Int) {
     doctorOrders(status: $status, page: $page, perPage: $perPage) {

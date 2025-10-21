@@ -12,17 +12,18 @@ import { showSuccessToast } from "@/lib/toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
 import ReactPaginate from "react-paginate";
-import { products } from "../../../../public/data/products";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import BrowserProductCard, {
-  Product,
-} from "@/app/components/ui/cards/BrowserProductCard";
+import BrowserProductCard from "@/app/components/ui/cards/BrowserProductCard";
 import RequestModel from "@/app/components/ui/modals/RequestModel";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import BrowseProductListView from "@/app/components/ui/cards/BrowseProductListView";
 import ProductDetails from "@/app/components/ui/modals/ProductDetails";
 import Tooltip from "@/app/components/ui/tooltip";
 import { EmptyState, Loader } from "@/app/components";
+import { useQuery } from "@apollo/client/react";
+import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
+import { AllProductsResponse, Product, transformGraphQLProduct } from "@/types/products";
+
 
 const orderCategories = [
   { label: "All Categories" },
@@ -49,6 +50,18 @@ function InventoryContent() {
   );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+
+  // GraphQL query to fetch products
+  const {
+    data: productsData,
+    loading: productsLoading,
+    error: productsError,
+  } = useQuery<AllProductsResponse>(ALL_PRODUCTS_INVENTORY, {
+    fetchPolicy: "network-only",
+  });
+
+  // Transform GraphQL product data to match the expected format
+  const products: Product[] = productsData?.allProducts.allData?.map(transformGraphQLProduct) || [];
 
   const filteredProducts = products.filter((p) => {
     const matchesSearch =
@@ -88,6 +101,23 @@ function InventoryContent() {
     setSelectedProduct(product);
     setIsProductModalOpen(true);
   };
+
+  // Show loading state
+  if (productsLoading) {
+    return <Loader />;
+  }
+
+  // Show error state
+  if (productsError) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="text-center py-8">
+          <p className="text-red-500 text-lg">Error loading products: {productsError.message}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">

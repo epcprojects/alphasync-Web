@@ -295,3 +295,43 @@ export const CREATE_ORDER = gql`
     }
   }
 `;
+
+export const UPDATE_CUSTOMER_PROFILE = gql`
+  mutation UpdateCustomerProfile(
+    $fullName: String
+    $phoneNo: String
+    $email: String
+    $dateOfBirth: ISO8601Date
+    $address: String
+    $emergencyContactName: String
+    $emergencyContactPhone: String
+    $medicalHistory: String
+    $knownAllergies: String
+    $currentMedications: String
+    $additionalNotes: String
+    $image: Upload
+  ) {
+    updateUser(
+      input: {
+        userAttributes: {
+          fullName: $fullName
+          phoneNo: $phoneNo
+          email: $email
+          dateOfBirth: $dateOfBirth
+          address: $address
+          emergencyContactName: $emergencyContactName
+          emergencyContactPhone: $emergencyContactPhone
+          medicalHistory: $medicalHistory
+          knownAllergies: $knownAllergies
+          currentMedications: $currentMedications
+          additionalNotes: $additionalNotes
+          image: $image
+        }
+      }
+    ) {
+      user {
+        ${userpayload}
+      }
+    }
+  }
+`;

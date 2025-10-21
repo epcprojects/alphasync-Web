@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowDownIcon, PlusIcon, TrashBinIcon } from "@/icons";
-import { SelectGroupDropdown } from "@/app/components";
+import { SelectGroupDropdown, ProductSelect, CustomerSelect } from "@/app/components";
 import { ThemeInput, ThemeButton } from "@/app/components";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
@@ -9,10 +9,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { formatNumber } from "@/lib/helpers";
-import { useQuery, useMutation } from "@apollo/client/react";
-import { ALL_PATIENTS, ALL_PRODUCTS } from "@/lib/graphql/queries";
+import { useMutation } from "@apollo/client/react";
 import { CREATE_ORDER } from "@/lib/graphql/mutations";
-import { UserAttributes } from "@/lib/graphql/attributes";
 
 interface OrderItem {
   product: string;
@@ -20,31 +18,6 @@ interface OrderItem {
   variantId: string;
   quantity: number;
   price: number;
-}
-
-// Interface for GraphQL response
-interface AllPatientsResponse {
-  allPatients: {
-    allData: UserAttributes[];
-    count: number;
-    nextPage: number | null;
-    prevPage: number | null;
-    totalPages: number;
-  };
-}
-
-interface AllProductsResponse {
-  allProducts: {
-    allData: {
-      id: string;
-      title: string;
-      variants: {
-        id: string;
-        shopifyVariantId: string;
-        price: number;
-      }[];
-    }[];
-  };
 }
 
 const Page = () => {
@@ -60,30 +33,19 @@ const Page = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [customerDraft, setCustomerDraft] = useState("");
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
-
-  // GraphQL query to fetch customers
-  const {
-    data,
-    loading: customersLoading,
-    error: customersError,
-  } = useQuery<AllPatientsResponse>(ALL_PATIENTS, {
-    variables: {
-      search: "",
-      status: "ACTIVE", // Only fetch active customers
-      page: 1,
-      perPage: 100, // Fetch more customers for dropdown
-    },
-    fetchPolicy: "network-only",
-  });
-
-  // GraphQL query to fetch products
-  const {
-    data: productsData,
-    loading: productsLoading,
-    error: productsError,
-  } = useQuery<AllProductsResponse>(ALL_PRODUCTS, {
-    fetchPolicy: "network-only",
-  });
+  const [selectedProductData, setSelectedProductData] = useState<{
+    name: string;
+    displayName: string;
+    productId?: string;
+    variantId?: string;
+    price?: number;
+  } | null>(null);
+  const [selectedCustomerData, setSelectedCustomerData] = useState<{
+    name: string;
+    displayName: string;
+    email: string;
+    id: string;
+  } | null>(null);
 
   // GraphQL mutation to create order
   const [
@@ -100,12 +62,10 @@ const Page = () => {
     // lock on first item
     if (!lockedCustomer) setLockedCustomer(values.customer);
 
-    const selectedProduct = products.find((p) => p.name === values.product);
-
     const newItem: OrderItem = {
       product: values.product,
-      productId: selectedProduct?.productId || "",
-      variantId: selectedProduct?.variantId || "",
+      productId: selectedProductData?.productId || "",
+      variantId: selectedProductData?.variantId || "",
       quantity: values.quantity,
       price: values.price,
     };
@@ -136,9 +96,8 @@ const Page = () => {
     if (orderItems.length === 0) return;
 
     try {
-      // Find the selected customer
-      const selectedCustomer = customers.find((c) => c.name === lockedCustomer);
-      if (!selectedCustomer) {
+      // Use the selected customer data
+      if (!selectedCustomerData) {
         showErrorToast("Customer not found");
         return;
       }
@@ -155,14 +114,14 @@ const Page = () => {
       console.log("Mutation variables:", {
         orderItems: orderItemsInput,
         totalPrice: totalAmount,
-        patientId: selectedCustomer.id,
+        patientId: selectedCustomerData.id,
       });
 
       await createOrder({
         variables: {
           orderItems: orderItemsInput,
           totalPrice: totalAmount,
-          patientId: selectedCustomer.id,
+          patientId: selectedCustomerData.id,
         },
       });
 
@@ -176,29 +135,6 @@ const Page = () => {
       showErrorToast("Failed to create order. Please try again.");
     }
   };
-
-  // Transform GraphQL customer data to match dropdown format
-  const customers =
-    data?.allPatients.allData?.map((patient: UserAttributes) => ({
-      name: patient.fullName || patient.email || `Patient ${patient.id}`,
-      displayName: patient.fullName || patient.email || `Patient ${patient.id}`,
-      email: patient.email,
-      id: patient.id, // Include patient ID for mutation
-    })) || [];
-
-  // Transform GraphQL product data to match dropdown format
-  const products =
-    productsData?.allProducts.allData?.map((product) => {
-      const firstVariant = product.variants?.[0];
-
-      return {
-        name: product.title,
-        displayName: product.title,
-        productId: product.id,
-        variantId: firstVariant?.shopifyVariantId,
-        price: firstVariant?.price,
-      };
-    }) || [];
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -241,92 +177,44 @@ const Page = () => {
             {({ values, setFieldValue, errors, touched }) => (
               <Form className="flex flex-col gap-4 md:gap-5">
                 <div>
-                  {customersError && (
-                    <p className="text-red-500 text-xs mb-2">
-                      Error loading customers: {customersError.message}
-                    </p>
-                  )}
-                  <SelectGroupDropdown
-                    selectedGroup={values.customer}
-                    setSelectedGroup={(val: string | string[]) => {
+                  <CustomerSelect
+                    selectedCustomer={values.customer}
+                    setSelectedCustomer={(val: string) => {
                       if (lockedCustomer) return; // prevent changing after first item
-                      const v = Array.isArray(val) ? val[0] : val;
-                      setFieldValue("customer", v);
-                      setCustomerDraft(v);
+                      setFieldValue("customer", val);
+                      setCustomerDraft(val);
                     }}
-                    groups={customers}
                     errors={errors.customer || ""}
-                    name="Customer"
-                    multiple={false}
+                    touched={touched.customer}
+                    disabled={!!lockedCustomer}
                     placeholder={
-                      customersLoading
-                        ? "Loading customers..."
-                        : lockedCustomer
+                      lockedCustomer
                         ? "Customer locked"
-                        : customers.length === 0
-                        ? "No customers available"
                         : "Select a customer"
                     }
-                    isShowDrop={!lockedCustomer && !customersLoading}
-                    searchTerm={""}
-                    setSearchTerm={() => {}}
                     required={true}
+                    showLabel={true}
                     paddingClasses="py-2.5 h-11 px-2"
                     optionPaddingClasses="p-1"
-                    showLabel={true}
-                    showIcon={false}
-                    disabled={!!lockedCustomer || customersLoading}
+                    onCustomerChange={(customer) => {
+                      setSelectedCustomerData(customer);
+                    }}
                   />
-                  {errors.customer && touched.customer && (
-                    <p className="text-red-500 text-xs">{errors.customer}</p>
-                  )}
                 </div>
                 <div>
-                  {productsError && (
-                    <p className="text-red-500 text-xs mb-2">
-                      Error loading products: {productsError.message}
-                    </p>
-                  )}
-                  <SelectGroupDropdown
-                    selectedGroup={values.product}
-                    setSelectedGroup={(val: string | string[]) => {
-                      const v = Array.isArray(val) ? val[0] : val;
-                      setFieldValue("product", v);
-
+                  <ProductSelect
+                    selectedProduct={values.product}
+                    setSelectedProduct={(product) => setFieldValue("product", product)}
+                    errors={errors.product || ""}
+                    touched={touched.product}
+                    onProductChange={(selectedProduct) => {
+                      setSelectedProductData(selectedProduct);
                       // Auto-populate price when product is selected
-                      if (v) {
-                        const selectedProduct = products.find(
-                          (p) => p.name === v
-                        );
-                        if (selectedProduct && selectedProduct.price) {
-                          setFieldValue("price", selectedProduct.price);
-                        }
+                      if (selectedProduct && selectedProduct.price) {
+                        setFieldValue("price", selectedProduct.price);
                       }
                     }}
-                    groups={products}
-                    errors={errors.product || ""}
-                    name="Product:"
-                    multiple={false}
-                    placeholder={
-                      productsLoading
-                        ? "Loading products..."
-                        : products.length === 0
-                        ? "No products available"
-                        : "Select a product"
-                    }
-                    searchTerm={""}
-                    setSearchTerm={() => {}}
-                    isShowDrop={!productsLoading}
-                    required={true}
-                    paddingClasses="py-2.5 h-11 px-2"
-                    optionPaddingClasses="p-1"
-                    showLabel={true}
-                    showIcon={false}
-                    disabled={productsLoading}
                   />
-                  {errors.product && touched.product && (
-                    <p className="text-red-500 text-xs">{errors.product}</p>
-                  )}
                 </div>
 
                 <div className={`flex gap-4 flex-row`}>

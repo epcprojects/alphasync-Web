@@ -1,7 +1,14 @@
 "use client";
 
 import OrderModal from "@/app/components/ui/modals/OrderModal";
-import { EmptyState, Loader, ProductCard, ProductListView } from "@/components";
+import {
+  EmptyState,
+  InventorySkeleton,
+  ProductCard,
+  ProductListView,
+  Pagination,
+  CustomerSelect,
+} from "@/components";
 import {
   ArrowLeftIcon,
   DeliveryBoxIcon,
@@ -11,20 +18,33 @@ import {
   ListViewIcon,
   SearchIcon,
 } from "@/icons";
-import { showSuccessToast } from "@/lib/toast";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
-import ReactPaginate from "react-paginate";
-import { products } from "../../../../public/data/products";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
 import { useAppSelector } from "@/lib/store/hooks";
+import { useQuery, useMutation } from "@apollo/client/react";
+import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
+import { CREATE_ORDER } from "@/lib/graphql/mutations";
+import {
+  AllProductsResponse,
+  Product,
+  transformGraphQLProduct,
+} from "@/types/products";
 
 function InventoryContent() {
   const [search, setSearch] = useState("");
   const [showFavourites, setShowFavourites] = useState(false);
   const [showGridView, setShowGridView] = useState(true);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<{
+    id: string;
+    shopifyVariantId: string;
+    title: string;
+    price?: number;
+  } | null>(null);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
@@ -33,6 +53,35 @@ function InventoryContent() {
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
 
+  // GraphQL query to fetch products with pagination
+  const {
+    data: productsData,
+    loading: productsLoading,
+    error: productsError,
+    refetch,
+  } = useQuery<AllProductsResponse>(ALL_PRODUCTS_INVENTORY, {
+    variables: {
+      page: currentPage + 1, // GraphQL pagination is 1-based
+      perPage: itemsPerPage,
+    },
+    fetchPolicy: "network-only",
+  });
+
+  // GraphQL mutation to create order
+  const [
+    createOrder,
+    { loading: createOrderLoading, error: createOrderError },
+  ] = useMutation(CREATE_ORDER);
+
+  // Transform GraphQL product data to match the expected format
+  const products: Product[] =
+    productsData?.allProducts.allData?.map(transformGraphQLProduct) || [];
+
+  // Get pagination info from GraphQL response
+  const pageCount = productsData?.allProducts.totalPages || 1;
+  const totalCount = productsData?.allProducts.count || 0;
+
+  // Apply client-side filtering for search and favorites
   const filteredProducts = products.filter((p) => {
     const matchesSearch =
       p.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -43,29 +92,65 @@ function InventoryContent() {
     return matchesSearch && matchesFavourite;
   });
 
-  const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
-  const offset = currentPage * itemsPerPage;
-  const currentItems = filteredProducts.slice(offset, offset + itemsPerPage);
-
-  useEffect(() => {
-    setCurrentPage(0);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", "0");
-    router.replace(`?${params.toString()}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, showFavourites]);
-
-  const handlePageChange = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(selected));
-    router.replace(`?${params.toString()}`);
+  const handlePageChange = (selectedPage: number) => {
+    setCurrentPage(selectedPage);
   };
 
-  const handleConfirmOrder = () => {
-    setIsOrderModalOpen(false);
-    showSuccessToast("Order created successfully!");
+  const handleConfirmOrder = async (data: { 
+    customer: string; 
+    price: number; 
+    productId?: string; 
+    shopifyVariantId?: string;
+    customerId?: string;
+  }) => {
+    if (!selectedProduct || !data.productId || !data.shopifyVariantId) {
+      showErrorToast("Product information is missing");
+      return;
+    }
+
+    if (!data.customerId) {
+      showErrorToast("Please select a customer");
+      return;
+    }
+
+    try {
+      // Create order with single item
+      await createOrder({
+        variables: {
+          orderItems: [{
+            productId: data.productId,
+            variantId: data.shopifyVariantId,
+            quantity: 1,
+            price: data.price,
+          }],
+          totalPrice: data.price,
+          patientId: data.customerId,
+        },
+      });
+
+      // Only close modal after successful mutation
+      setIsOrderModalOpen(false);
+      setSelectedProduct(null);
+      showSuccessToast("Order created successfully!");
+    } catch (error) {
+      console.error("Error creating order:", error);
+      showErrorToast("Failed to create order. Please try again.");
+    }
   };
+
+ 
+
+  // Show error state
+  if (productsError) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="text-center py-8">
+          <p className="text-red-500 text-lg">{productsError.message}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
@@ -154,15 +239,31 @@ function InventoryContent() {
           </Tooltip>
         </div>
       </div>
-
-      <div className="flex flex-col gap-2 md:gap-6">
+      {productsLoading  ? <InventorySkeleton /> : (
+        <div className="flex flex-col gap-2 md:gap-6">
         {showGridView ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
-            {currentItems.map((product) => (
+            {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
-                onAddToCart={() => setIsOrderModalOpen(true)}
+                onAddToCart={(id) => {
+                  // Find the transformed product to get the originalId
+                  const transformedProduct = filteredProducts.find(p => p.id === id);
+                  if (transformedProduct) {
+                    // Find the original GraphQL product data
+                    const originalProduct = productsData?.allProducts.allData?.find(p => p.id === transformedProduct.originalId);
+                    if (originalProduct) {
+                      setSelectedProduct({
+                        id: originalProduct.id,
+                        shopifyVariantId: originalProduct.variants?.[0]?.shopifyVariantId || "",
+                        title: originalProduct.title,
+                        price: originalProduct.variants?.[0]?.price,
+                      });
+                      setIsOrderModalOpen(true);
+                    }
+                  }
+                }}
                 onCardClick={() => router.push(`/inventory/${product.id}`)}
               />
             ))}
@@ -180,84 +281,61 @@ function InventoryContent() {
                 Actions
               </div>
             </div>
-            {currentItems.map((product) => (
+            {filteredProducts.map((product) => (
               <ProductListView
                 onRowClick={() => router.push(`/inventory/${product.id}`)}
                 key={product.id}
                 product={product}
                 onToggleFavourite={(id) => console.log("Fav toggled", id)}
-                onAddToCart={() => setIsOrderModalOpen(true)}
+                onAddToCart={(id) => {
+                  // Find the transformed product to get the originalId
+                  const transformedProduct = filteredProducts.find(p => p.id === id);
+                  if (transformedProduct) {
+                    // Find the original GraphQL product data
+                    const originalProduct = productsData?.allProducts.allData?.find(p => p.id === transformedProduct.originalId);
+                    if (originalProduct) {
+                      setSelectedProduct({
+                        id: originalProduct.id,
+                        shopifyVariantId: originalProduct.variants?.[0]?.shopifyVariantId || "",
+                        title: originalProduct.title,
+                        price: originalProduct.variants?.[0]?.price,
+                      });
+                      setIsOrderModalOpen(true);
+                    }
+                  }
+                }}
               />
             ))}
           </div>
         )}
 
         <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-          {currentItems.length < 1 && (
+          {filteredProducts.length < 1 && (
             <EmptyState mtClasses=" -mt-3 md:-mt-6" />
           )}
 
-          <div className="w-full flex items-center justify-center">
-            <ReactPaginate
-              breakLabel="..."
-              nextLabel={
-                <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="hidden md:inline-block">Next</span>
-                  <span className="block mb-0.5 rotate-180">
-                    <ArrowLeftIcon />
-                  </span>
-                </span>
-              }
-              previousLabel={
-                <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="md:mb-0.5">
-                    <ArrowLeftIcon />
-                  </span>
-                  <span className="hidden md:inline-block">Previous</span>
-                </span>
-              }
-              onPageChange={handlePageChange}
-              pageRangeDisplayed={3}
-              marginPagesDisplayed={1}
-              pageCount={pageCount ? pageCount : 1}
-              forcePage={currentPage}
-              pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-              pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-              activeClassName="bg-gray-200 text-gray-900 font-medium"
-              previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-              nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-              breakClassName="px-3 py-1 font-semibold text-gray-400"
-            />
-
-            <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-              Page {currentPage + 1} of {pageCount}
-            </h2>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={pageCount}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
+      )}
+
+      
 
       <OrderModal
         isOpen={isOrderModalOpen}
-        onConfirm={() => handleConfirmOrder()}
-        customers={[
-          {
-            name: "John Smith",
-            displayName: "John Smith",
-            email: "john.smith@email.com john.smith@email.com",
-          },
-          {
-            name: "Sarah J",
-            displayName: "Sarah J",
-            email: "john.smith@email.com",
-          },
-          {
-            name: "Emily Chen",
-            displayName: "Emily Chen",
-            email: "john.smith@email.com",
-          },
-        ]}
-        onClose={() => setIsOrderModalOpen(false)}
+        onConfirm={handleConfirmOrder}
+        productId={selectedProduct?.id}
+        shopifyVariantId={selectedProduct?.shopifyVariantId}
+        defaultPrice={selectedProduct?.price}
+        isLoading={createOrderLoading}
+        onClose={() => {
+          setIsOrderModalOpen(false);
+          setSelectedProduct(null);
+        }}
       />
     </div>
   );
@@ -265,7 +343,7 @@ function InventoryContent() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<InventorySkeleton />}>
       <InventoryContent />
     </Suspense>
   );
