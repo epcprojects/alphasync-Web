@@ -26,7 +26,7 @@ import Tooltip from "@/app/components/ui/tooltip";
 import { useAppSelector } from "@/lib/store/hooks";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
-import { CREATE_ORDER } from "@/lib/graphql/mutations";
+import { CREATE_ORDER, TOGGLE_FAVOURITE } from "@/lib/graphql/mutations";
 import {
   AllProductsResponse,
   Product,
@@ -73,6 +73,12 @@ function InventoryContent() {
     { loading: createOrderLoading, error: createOrderError },
   ] = useMutation(CREATE_ORDER);
 
+  // GraphQL mutation to toggle favorite
+  const [
+    toggleFavorite,
+    { loading: toggleFavoriteLoading, error: toggleFavoriteError },
+  ] = useMutation(TOGGLE_FAVOURITE);
+
   // Transform GraphQL product data to match the expected format
   const products: Product[] =
     productsData?.allProducts.allData?.map(transformGraphQLProduct) || [];
@@ -94,6 +100,23 @@ function InventoryContent() {
 
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
+  };
+
+  const handleToggleFavorite = async (productId: string) => {
+    try {
+      await toggleFavorite({
+        variables: {
+          productId: productId,
+        },
+      });
+      
+      // Refetch the products to get updated favorite status
+      await refetch();
+     
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      showErrorToast("Failed to update favorite status. Please try again.");
+    }
   };
 
   const handleConfirmOrder = async (data: { 
@@ -264,7 +287,14 @@ function InventoryContent() {
                     }
                   }
                 }}
-                onCardClick={() => router.push(`/inventory/${product.id}`)}
+                onToggleFavourite={(id) => {
+                  // Find the transformed product to get the originalId
+                  const transformedProduct = filteredProducts.find(p => p.id === id);
+                  if (transformedProduct) {
+                    handleToggleFavorite(transformedProduct.originalId);
+                  }
+                }}
+                onCardClick={() => router.push(`/inventory/${product.originalId}`)}
               />
             ))}
           </div>
@@ -283,10 +313,16 @@ function InventoryContent() {
             </div>
             {filteredProducts.map((product) => (
               <ProductListView
-                onRowClick={() => router.push(`/inventory/${product.id}`)}
+                onRowClick={() => router.push(`/inventory/${product.originalId}`)}
                 key={product.id}
                 product={product}
-                onToggleFavourite={(id) => console.log("Fav toggled", id)}
+                onToggleFavourite={(id) => {
+                  // Find the transformed product to get the originalId
+                  const transformedProduct = filteredProducts.find(p => p.id === id);
+                  if (transformedProduct) {
+                    handleToggleFavorite(transformedProduct.originalId);
+                  }
+                }}
                 onAddToCart={(id) => {
                   // Find the transformed product to get the originalId
                   const transformedProduct = filteredProducts.find(p => p.id === id);
@@ -314,11 +350,13 @@ function InventoryContent() {
             <EmptyState mtClasses=" -mt-3 md:-mt-6" />
           )}
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={pageCount}
-            onPageChange={handlePageChange}
-          />
+          {filteredProducts.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pageCount}
+              onPageChange={handlePageChange}
+            />
+          )}
         </div>
       </div>
       )}

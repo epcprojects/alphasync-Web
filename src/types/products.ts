@@ -95,6 +95,55 @@ export const transformGraphQLProduct = (product: AllProductsResponse['allProduct
   };
 };
 
+// GraphQL response interface for FETCH_PRODUCT query
+export interface FetchProductResponse {
+  fetchProduct: {
+    customPrice?: number;
+    description?: string;
+    handle?: string;
+    id: string;
+    images?: {
+      id: number;
+      alt: string;
+      position: number;
+      product_id: number;
+      created_at: string;
+      updated_at: string;
+      admin_graphql_api_id: string;
+      width: number;
+      height: number;
+      src: string;
+      variant_ids: number[];
+    }[];
+    inStock?: boolean;
+    isFavorited?: boolean;
+    priceRange?: string;
+    primaryImage?: {
+      id: number;
+      alt: string;
+      position: number;
+      product_id: number;
+      created_at: string;
+      updated_at: string;
+      admin_graphql_api_id: string;
+      width: number;
+      height: number;
+      src: string;
+      variant_ids: number[];
+    };
+    productType?: string;
+    shopifyId?: string;
+    title: string;
+    totalInventory?: number;
+    vendor?: string;
+    variants: {
+      price: number;
+      id: string;
+      shopifyVariantId: string;
+    }[];
+  };
+}
+
 // Helper function to transform GraphQL product data to dropdown format
 export const transformToDropdownItem = (product: AllProductsResponse['allProducts']['allData'][0]): ProductDropdownItem => {
   const firstVariant = product.variants?.[0];

@@ -19,19 +19,27 @@ interface ProductCardProps {
   product: Product;
   onAddToCart?: (id: number) => void;
   onCardClick?: () => void;
+  onToggleFavourite?: (id: number) => void;
 }
 
 export default function ProductCard({
   product,
   onAddToCart,
   onCardClick,
+  onToggleFavourite,
 }: ProductCardProps) {
   return (
     <div
       onClick={onCardClick}
       className="rounded-2xl pb-2 cursor-pointer flex-col bg-white shadow-table border relative border-gray-200 px-2 flex items-center justify-center"
     >
-      <button className="absolute top-4 end-4 cursor-pointer">
+      <button 
+        className="absolute top-4 end-4 cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleFavourite?.(product.id);
+        }}
+      >
         {product.isFavourite ? (
           <HeartFilledIcon fill="#2862A9" />
         ) : (

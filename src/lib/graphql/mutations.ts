@@ -335,3 +335,10 @@ export const UPDATE_CUSTOMER_PROFILE = gql`
     }
   }
 `;
+export const TOGGLE_FAVOURITE = gql`
+  mutation ToggleFavorite($productId: ID!) {
+    toggleFavorite(input: { productId: $productId }) {
+      isFavorited
+    }
+  }
+`;

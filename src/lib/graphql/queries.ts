@@ -150,3 +150,28 @@ export const FETCH_ORDER = gql`
     }
   }
 `;
+export const FETCH_PRODUCT = gql`
+  query FetchProduct($id: ID!) {
+    fetchProduct(id: $id) {
+      customPrice
+      description
+      handle
+      id
+      images
+      inStock
+      isFavorited
+      priceRange
+      primaryImage
+      productType
+      shopifyId
+      title
+      totalInventory
+      vendor
+      variants {
+        price
+        id
+        shopifyVariantId
+      }
+    }
+  }
+`;
