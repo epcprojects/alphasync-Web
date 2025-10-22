@@ -177,7 +177,6 @@ export default function CustomerDetail() {
         <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] p-6">
           <div className="text-center py-8">
             <p className="text-red-500 mb-4">{error.message}</p>
-            
           </div>
         </div>
       </div>
@@ -202,10 +201,7 @@ export default function CustomerDetail() {
         <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] p-6">
           <div className="text-center py-8">
             <p className="text-gray-500 mb-4">Customer not found</p>
-            <ThemeButton
-              label="Go Back"
-              onClick={() => router.back()}
-            />
+            <ThemeButton label="Go Back" onClick={() => router.back()} />
           </div>
         </div>
       </div>
@@ -232,7 +228,7 @@ export default function CustomerDetail() {
           email={customer.email || ""}
           phone={customer.phoneNo || ""}
           totalOrders={8} // TODO: Get from orders query
-          statusActive={customer.status === "ACTIVE"}
+          statusActive={customer.status === "active"}
           lastOrder="1/15/2024" // TODO: Get from orders query
           dob={customer.dateOfBirth || ""}
           onQuickChat={() => setSelectedIndex(1)}
@@ -484,9 +480,9 @@ export default function CustomerDetail() {
         isOpen={isOrderModalOpen}
         onCreateOrder={handleCreateOrder}
         onClose={() => setIsOrderModalOpen(false)}
-        currentCustomer={{ 
-          name: customer.fullName || "Unknown Customer", 
-          displayName: customer.fullName || "Unknown Customer" 
+        currentCustomer={{
+          name: customer.fullName || "Unknown Customer",
+          displayName: customer.fullName || "Unknown Customer",
         }}
         customers={[
           {

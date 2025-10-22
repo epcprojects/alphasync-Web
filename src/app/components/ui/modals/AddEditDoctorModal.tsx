@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import AppModal from "./AppModal";
 import { DoctorIcon } from "@/icons";
-import AvatarUploader from "../../AvatarUploader";
+import { ImageUpload } from "@/app/components";
 import ThemeInput from "../inputs/ThemeInput";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
 import * as Yup from "yup";
@@ -117,7 +117,6 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
         const variables = {
           ...formData,
           status: formData.status.toUpperCase(),
-          userType: "DOCTOR",
           image: selectedImage,
         };
 
@@ -206,13 +205,19 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       cancelLabel={"Cancel"}
     >
       <div className="flex flex-col gap-2 md:gap-5">
-        <AvatarUploader
-          showTitle
+        <ImageUpload
+          imageUrl={
+            initialData?.imageUrl
+              ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${initialData.imageUrl}`
+              : undefined
+          }
+          onChange={handleImageChange}
+          placeholder="/images/arinaProfile.png"
+          showTitle={false}
           roundedClass="rounded-lg"
           width={96}
           height={96}
-          onChange={handleImageChange}
-          initialImage={initialData?.imageUrl}
+          className="border-b-0"
         />
 
         <div className="flex items-start gap-2 md:gap-5">

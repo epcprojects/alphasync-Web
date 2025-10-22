@@ -237,7 +237,7 @@ function DoctorContent() {
           <>
             {doctors?.map((doctor: UserAttributes) => (
               <DoctorListView
-                onRowClick={() => router.push(`/orders/${doctor.id}`)}
+                // onRowClick={() => router.push(`/orders/${doctor.id}`)}
                 key={doctor.id}
                 doctor={doctor}
                 onEditDoctor={(id) => handleEdit(doctor)}

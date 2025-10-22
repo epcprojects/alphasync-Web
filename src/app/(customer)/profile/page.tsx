@@ -1,16 +1,15 @@
 "use client";
-import { TextAreaField, ThemeButton, ThemeInput } from "@/app/components";
+import { TextAreaField, ThemeButton, ThemeInput, ImageUpload } from "@/app/components";
 import { InfoIcon, UserIcon } from "@/icons";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import React, { useState, useEffect } from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
-import AvatarUploader from "@/app/components/AvatarUploader";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useMutation } from "@apollo/client";
-import { UPDATE_CUSTOMER_PROFILE } from "@/lib/graphql/mutations";
+import { UPDATE_CUSTOMER_PROFILE, REMOVE_IMAGE } from "@/lib/graphql/mutations";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
@@ -91,8 +90,37 @@ const Page = () => {
     }
   );
 
+  // Remove image mutation
+  const [removeImage, { loading: removeLoading }] = useMutation(REMOVE_IMAGE, {
+    onCompleted: (data) => {
+      if (data?.removeImage?.user) {
+        dispatch(setUser(data.removeImage.user));
+        Cookies.set("user_data", JSON.stringify(data.removeImage.user), {
+          expires: 7,
+        });
+        showSuccessToast("Image removed successfully!");
+      }
+    },
+    onError: (error) => {
+      showErrorToast(error.message || "Failed to remove image");
+    },
+  });
+
   const handleImageChange = (file: File | null) => {
     setSelectedImage(file);
+  };
+
+  const handleImageRemove = async () => {
+    try {
+      await removeImage({
+        variables: {
+          id: user?.id,
+          removeImage: true,
+        },
+      });
+    } catch (error) {
+      console.error("Error removing image:", error);
+    }
   };
 
   const handleProfileSubmit = async (values: any) => {
@@ -228,13 +256,16 @@ const Page = () => {
                     </span>
                   </div>
 
-                  <AvatarUploader
-                    initialImage={
+                  <ImageUpload
+                    imageUrl={
                       user?.imageUrl
                         ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${user?.imageUrl}`
-                        : INITIAL_AVATAR
+                        : undefined
                     }
                     onChange={handleImageChange}
+                    onImageRemove={handleImageRemove}
+                    placeholder={INITIAL_AVATAR}
+                    className="col-span-12 md:col-span-8 lg:col-span-8"
                   />
                 </div>
                 <Formik

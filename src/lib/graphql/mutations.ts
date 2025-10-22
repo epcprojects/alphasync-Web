@@ -342,3 +342,12 @@ export const TOGGLE_FAVOURITE = gql`
     }
   }
 `;
+export const REMOVE_IMAGE = gql`
+  mutation RemoveImage($id: ID, $removeImage: Boolean!) {
+    removeImage(input: { id: $id, removeImage: $removeImage }) {
+      user {
+        ${userpayload}
+      }
+    }
+  }
+`;

@@ -6,9 +6,8 @@ import { Formik, Form, ErrorMessage } from "formik";
 import { useMutation } from "@apollo/client";
 import Cookies from "js-cookie";
 
-import { ThemeButton, ThemeInput } from "@/app/components";
-import AvatarUploader from "@/app/components/AvatarUploader";
-import { UPDATE_ADMIN } from "@/lib/graphql/mutations";
+import { ThemeButton, ThemeInput, ImageUpload } from "@/app/components";
+import { UPDATE_ADMIN, REMOVE_IMAGE } from "@/lib/graphql/mutations";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
@@ -81,25 +80,18 @@ const FormField: React.FC<FormFieldProps> = ({
 const AvatarSection: React.FC<{
   imageUrl: string | undefined;
   onImageChange: (file: File | null) => void;
-}> = ({ imageUrl, onImageChange }) => (
-  <div className="grid grid-cols-12 py-3 md:py-5 border-b border-gray-200">
-    <div className="col-span-3">
-      <p className="text-xs md:text-sm font-semibold text-gray-700">
-        Your photo
-      </p>
-      <p className="text-xs md:text-sm text-gray-600">
-        This will be displayed on your profile.
-      </p>
-    </div>
-    <AvatarUploader
-      initialImage={
-        imageUrl
-          ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${imageUrl}`
-          : INITIAL_AVATAR
-      }
-      onChange={onImageChange}
-    />
-  </div>
+  onImageRemove: () => Promise<void>;
+}> = ({ imageUrl, onImageChange, onImageRemove }) => (
+  <ImageUpload
+    imageUrl={
+      imageUrl
+        ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${imageUrl}`
+        : undefined
+    }
+    onChange={onImageChange}
+    onImageRemove={onImageRemove}
+    placeholder={INITIAL_AVATAR}
+  />
 );
 
 // Page Component
@@ -120,6 +112,21 @@ const AdminProfilePage: React.FC = () => {
     },
     onError: (error) => {
       showErrorToast(error.message || "Failed to update profile");
+    },
+  });
+
+  const [removeImage, { loading: removeLoading }] = useMutation(REMOVE_IMAGE, {
+    onCompleted: (data) => {
+      if (data?.removeImage?.user) {
+        dispatch(setUser(data.removeImage.user));
+        Cookies.set("user_data", JSON.stringify(data.removeImage.user), {
+          expires: 7,
+        });
+        showSuccessToast("Image removed successfully!");
+      }
+    },
+    onError: (error) => {
+      showErrorToast(error.message || "Failed to remove image");
     },
   });
 
@@ -152,12 +159,26 @@ const AdminProfilePage: React.FC = () => {
     }
   };
 
+  const handleImageRemove = async () => {
+    try {
+      await removeImage({
+        variables: {
+          id: user?.id,
+          removeImage: true,
+        },
+      });
+    } catch (error) {
+      console.error("Error removing image:", error);
+    }
+  };
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full mx-auto flex flex-col gap-4 md:gap-6 pt-2">
       <div className="bg-white rounded-xl py-4 md:py-6 px-4 md:px-8">
         <AvatarSection
           imageUrl={user?.imageUrl}
           onImageChange={setSelectedImage}
+          onImageRemove={handleImageRemove}
         />
 
         <Formik

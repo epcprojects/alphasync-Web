@@ -36,6 +36,7 @@ import Skeleton from "@/app/components/Skelton";
 import InventorySkeleton from "./ui/InventorySkeleton";
 import Pagination from "./ui/Pagination";
 import ChangePassword from "@/app/components/ChangePassword";
+import ImageUpload from "@/app/components/ImageUpload";
 
 export {
   EmptyState,
@@ -76,4 +77,5 @@ export {
   InventorySkeleton,
   Pagination,
   ChangePassword,
+  ImageUpload,
 };

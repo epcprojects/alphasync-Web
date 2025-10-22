@@ -4,6 +4,7 @@ import {
   NotificationToggle,
   ThemeButton,
   ThemeInput,
+  ImageUpload,
 } from "@/app/components";
 import {
   AlertIcon,
@@ -21,10 +22,9 @@ import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
 import { useMutation } from "@apollo/client";
 import Cookies from "js-cookie";
-import AvatarUploader from "@/app/components/AvatarUploader";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
-import { UPDATE_DOCTOR } from "@/lib/graphql/mutations";
+import { UPDATE_DOCTOR, REMOVE_IMAGE } from "@/lib/graphql/mutations";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
 
@@ -59,7 +59,35 @@ const Page = () => {
     }
   );
 
+  const [removeImage, { loading: removeLoading }] = useMutation(REMOVE_IMAGE, {
+    onCompleted: (data) => {
+      if (data?.removeImage?.user) {
+        dispatch(setUser(data.removeImage.user));
+        Cookies.set("user_data", JSON.stringify(data.removeImage.user), {
+          expires: 7,
+        });
+        showSuccessToast("Image removed successfully!");
+      }
+    },
+    onError: (error) => {
+      showErrorToast(error.message || "Failed to remove image");
+    },
+  });
+
   const INITIAL_AVATAR = "/images/arinaProfile.png";
+
+  const handleImageRemove = async () => {
+    try {
+      await removeImage({
+        variables: {
+          id: user?.id,
+          removeImage: true,
+        },
+      });
+    } catch (error) {
+      console.error("Error removing image:", error);
+    }
+  };
 
   const notifications = [
     {
@@ -168,25 +196,17 @@ const Page = () => {
             </TabList>
             <TabPanels className={"pb-4 lg:p-6"}>
               <TabPanel className={"px-5 lg:px-8"}>
-                <div className="grid grid-cols-12 py-3 md:py-5 lg:gap-8 border-b border-b-gray-200">
-                  <div className="col-span-12 mb-3 sm:mb-0 md:col-span-4 lg:col-span-3">
-                    <label className="text-xs md:text-sm text-gray-700 font-semibold">
-                      Your photo
-                    </label>
-                    <span className="block text-gray-600 text-xs md:text-sm">
-                      This will be displayed on your profile.
-                    </span>
-                  </div>
-
-                  <AvatarUploader
-                    initialImage={
-                      user?.imageUrl
-                        ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${user?.imageUrl}`
-                        : INITIAL_AVATAR
-                    }
-                    onChange={setSelectedImage}
-                  />
-                </div>
+                <ImageUpload
+                  imageUrl={
+                    user?.imageUrl
+                      ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${user?.imageUrl}`
+                      : undefined
+                  }
+                  onChange={setSelectedImage}
+                  onImageRemove={handleImageRemove}
+                  placeholder={INITIAL_AVATAR}
+                  className="py-3 md:py-5 lg:gap-8"
+                />
                 <Formik
                   initialValues={{
                     fullName: user?.fullName ?? "",

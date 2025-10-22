@@ -49,9 +49,9 @@ export default function DoctorListView({
 
   return (
     <div
-      onClick={onRowClick}
+      // onClick={onRowClick}
       key={doctor.id}
-      className="grid cursor-pointer grid-cols-12 gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
+      className="grid  grid-cols-12 gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div className="flex items-center gap-2 col-span-3">
         <span
