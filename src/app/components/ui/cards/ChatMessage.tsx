@@ -27,11 +27,11 @@ export default function ChatMessage({
       >
         <div className="flex items-center w-full md:gap-3 justify-between gap-1">
           <div className="flex gap-1 md:gap-2 items-center">
-            {!isUser && (
+            {/* {!isUser && (
               <span className="bg-red-100 text-red-600 h-7 w-7 justify-center font-medium rounded-full text-xs shrink-0  flex items-center">
                 {getInitials(sender)}
               </span>
-            )}
+            )} */}
             <Image
               alt=""
               width={256}

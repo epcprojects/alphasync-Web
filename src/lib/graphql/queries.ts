@@ -175,3 +175,53 @@ export const FETCH_PRODUCT = gql`
     }
   }
 `;
+export const FETCH_ALL_MESSAGES = gql`
+query FetchAllMessages($chatId: ID!) {
+    fetchAllMessages(chatId: $chatId) {
+        allData {
+            content
+            id
+            chat {
+            id
+            otherParticipant {
+                ${userpayload}
+            }
+            }
+            user {
+                ${userpayload}
+            }
+        }
+    }
+}
+`;
+export const FETCH_DOCTOR = gql`
+  query FetchUser {
+    fetchUser {
+      user {
+        doctor {
+          id
+          fullName
+          specialty
+        }
+      }
+    }
+  }
+`;
+export const MESSAGE_ADDED = gql`
+  subscription MessageAdded($chatId: ID!) {
+    messageAdded(chatId: $chatId) {
+      __typename
+      content
+      id
+      messageType
+      user {
+        __typename
+        ${userpayload}
+      }
+      sender {
+        __typename
+        ${userpayload}
+      }
+    }
+  }
+`;

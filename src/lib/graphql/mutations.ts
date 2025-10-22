@@ -356,3 +356,21 @@ export const REMOVE_IMAGE = gql`
     }
   }
 `;
+export const CREATE_CHAT = gql`
+  mutation CreateChat($participantId: ID!) {
+    createChat(input: { participantId: $participantId }) {
+      chat {
+        id
+      }
+    }
+  }
+`;
+export const SEND_MESSAGE = gql`
+  mutation SendMessage($chatId: ID!, $content: String!) {
+    sendMessage(
+      input: { chatId: $chatId, content: $content, messageType: TEXT }
+    ) {
+      success
+    }
+  }
+`;

@@ -37,6 +37,7 @@ import InventorySkeleton from "./ui/InventorySkeleton";
 import Pagination from "./ui/Pagination";
 import ChangePassword from "@/app/components/ChangePassword";
 import ImageUpload from "@/app/components/ImageUpload";
+import Chat from "./ui/chat/Chat";
 
 export {
   EmptyState,
@@ -78,4 +79,5 @@ export {
   Pagination,
   ChangePassword,
   ImageUpload,
+  Chat,
 };

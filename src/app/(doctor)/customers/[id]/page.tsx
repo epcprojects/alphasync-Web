@@ -1,8 +1,7 @@
 "use client";
 import {
-  ChatMessage,
+  Chat,
   NoteCard,
-  QuickTemplates,
   ThemeButton,
   CustomerOrderHistroyView,
   PrescriptionRequestCard,
@@ -21,7 +20,7 @@ import {
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { orders } from "../../../../../public/data/orders";
 import ReactPaginate from "react-paginate";
 import { PrecriptionDATA } from "../../../../../public/data/PrescriptionRequest";
@@ -62,6 +61,10 @@ export default function CustomerDetail() {
 
   const customer = data?.fetchUser?.user;
 
+  // State declarations
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [chatId, setChatId] = useState<string | null>(null);
+
   const itemsPerPage = 10;
 
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
@@ -72,41 +75,6 @@ export default function CustomerDetail() {
   const currentItems = orders.slice(offset, offset + itemsPerPage);
   const handlePageChange = ({ selected }: { selected: number }) => {
     setCurrentPage(selected);
-  };
-
-  const [messages, setMessages] = useState<
-    { sender: string; time: string; text: string; isUser: boolean }[]
-  >([]);
-  const [input, setInput] = useState("");
-  const [toggle, setToggle] = useState(true);
-  const chatRef = useRef<HTMLDivElement | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const handleSend = (msg: string) => {
-    if (!msg.trim()) return;
-
-    const now = new Date();
-    const time = now.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        sender: toggle ? "You" : "John Smith",
-        time,
-        text: msg,
-        isUser: toggle,
-      },
-    ]);
-
-    setToggle(!toggle);
-    setInput("");
   };
 
   const handleApprove = (title: string) => {
@@ -130,6 +98,14 @@ export default function CustomerDetail() {
     totalAmount: number;
   }) => {
     console.log("Final Order Data:", data);
+  };
+
+  const handleQuickChat = () => {
+    setSelectedIndex(1); // Switch to chat tab
+  };
+
+  const handleChatCreated = (newChatId: string) => {
+    setChatId(newChatId);
   };
 
   // Show loading state
@@ -230,7 +206,7 @@ export default function CustomerDetail() {
           statusActive={customer.status === "active"}
           lastOrder="1/15/2024" // TODO: Get from orders query
           dob={customer.dateOfBirth || ""}
-          onQuickChat={() => setSelectedIndex(1)}
+          onQuickChat={handleQuickChat}
           onCreateOrder={() => setIsOrderModalOpen(true)}
           getInitials={(name) =>
             name
@@ -343,48 +319,12 @@ export default function CustomerDetail() {
                   </div>
                 )}
               </TabPanel>
-              <TabPanel className={"flex flex-col gap-1 md:gap-3"}>
-                <div className="rounded-2xl overflow-hidden flex flex-col gap-2 border border-gray-200 p-1.5 md:p-3 max-h-[470px]  min-h-[470px]">
-                  <QuickTemplates
-                    templates={[
-                      "Your prescription is ready",
-                      "Please schedule a follow-up",
-                      "Lab results are available",
-                      "We have updated your records",
-                    ]}
-                  />
-
-                  <div
-                    className="flex-1 flex flex-col gap-2 overflow-y-auto h-full"
-                    ref={chatRef}
-                  >
-                    {messages.map((msg, i) => (
-                      <ChatMessage
-                        key={i}
-                        sender={msg.sender}
-                        time={msg.time}
-                        isUser={msg.isUser}
-                        message={msg.text}
-                      />
-                    ))}
-                    <div ref={messagesEndRef}></div>
-                  </div>
-                </div>
-                <div className="w-full relative flex items-center">
-                  <input
-                    placeholder="Type your message..."
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
-                    className="border border-gray-200 h-12 rounded-full w-full outline-none focus:ring focus:ring-gray-200 placeholder:text-gray-400 ps-4 pe-20 bg-gray-50 text-sm md:text-base"
-                  />
-                  <ThemeButton
-                    label="Send"
-                    heightClass="h-10"
-                    className="absolute end-1"
-                    onClick={() => handleSend(input)}
-                  />
-                </div>
+              <TabPanel>
+                <Chat
+                  participantId={params.id}
+                  participantName={customer?.fullName}
+                  onChatCreated={handleChatCreated}
+                />
               </TabPanel>
               <TabPanel>
                 <div className="flex justify-end">
@@ -469,10 +409,8 @@ export default function CustomerDetail() {
         isOpen={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}
         itemTitle="REQ-001"
-        messages={messages}
-        onSend={(msg) => {
-          handleSend(msg);
-        }}
+        participantId={params.id}
+        participantName={customer?.fullName || "Customer"}
       />
 
       <NewOrderModal

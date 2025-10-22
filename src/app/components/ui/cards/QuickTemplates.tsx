@@ -4,9 +4,10 @@ import { CrossIcon } from "@/icons";
 
 interface QuickTemplatesProps {
   templates: string[];
+  onTemplateClick?: (template: string) => void;
 }
 
-const QuickTemplates: React.FC<QuickTemplatesProps> = ({ templates }) => {
+const QuickTemplates: React.FC<QuickTemplatesProps> = ({ templates, onTemplateClick }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   if (!isOpen) return null;
@@ -27,6 +28,7 @@ const QuickTemplates: React.FC<QuickTemplatesProps> = ({ templates }) => {
         {templates.map((template, index) => (
           <button
             key={index}
+            onClick={() => onTemplateClick?.(template)}
             className="text-xs md:text-sm bg-white cursor-pointer hover:bg-gray-50 text-gray-700 font-medium rounded-md px-2 md:px-3 py-1  border border-gray-200"
           >
             {template}

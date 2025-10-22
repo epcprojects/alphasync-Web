@@ -1,7 +1,9 @@
-import { ApolloClient, ApolloLink, InMemoryCache } from "@apollo/client";
+import { ApolloClient, ApolloLink, InMemoryCache, split } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
+import { getMainDefinition } from "@apollo/client/utilities";
 import Cookies from "js-cookie";
+import { ActionCableLink } from "./actioncable-link";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -70,8 +72,24 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   }
 });
 
+// Create ActionCable link for subscriptions
+const actionCableLink = new ActionCableLink();
+
+// Split link to handle subscriptions via ActionCable and other operations via HTTP
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
+    );
+  },
+  actionCableLink,
+  ApolloLink.from([errorLink, authLink, uploadLink])
+);
+
 const apolloClient = new ApolloClient({
-  link: ApolloLink.from([errorLink, authLink, uploadLink]),
+  link: splitLink,
   cache: new InMemoryCache({
     addTypename: false,
   }),
