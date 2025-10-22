@@ -18,15 +18,21 @@ const Page = () => {
     useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const [sendPasswordInstructions, { loading }] = useMutation(SEND_PASSWORD_INSTRUCTIONS, {
-    onCompleted: () => {
-      setIsCheckEmailModalOpen(true);
-      setErrorMessage("");
-    },
-    onError: (error) => {
-      setErrorMessage(error.message || "Failed to send password reset instructions. Please try again.");
-    },
-  });
+  const [sendPasswordInstructions, { loading }] = useMutation(
+    SEND_PASSWORD_INSTRUCTIONS,
+    {
+      onCompleted: () => {
+        setIsCheckEmailModalOpen(true);
+        setErrorMessage("");
+      },
+      onError: (error) => {
+        setErrorMessage(
+          error.message ||
+            "Failed to send password reset instructions. Please try again."
+        );
+      },
+    }
+  );
 
   const validationSchema = Yup.object({
     email: Yup.string()
@@ -78,9 +84,7 @@ const Page = () => {
         />
 
         {errorMessage && (
-          <div className="text-red-500 text-sm mt-2">
-            {errorMessage}
-          </div>
+          <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
         )}
 
         <ThemeButton
@@ -95,7 +99,7 @@ const Page = () => {
         isOpen={isCheckEmailModalOpen}
         onClose={() => setIsCheckEmailModalOpen(false)}
         onClick={() => {
-          router.push(`/new-password?email=${formik.values.email}`);
+          router.push(`/login`);
         }}
         buttonLabel="Back to Login"
         email={formik.values.email}

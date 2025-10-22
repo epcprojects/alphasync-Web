@@ -260,14 +260,19 @@ export const SEND_OTP = gql`
   }
 `;
 export const SET_PASSWORD = gql`
-  mutation SetPassword {
+  mutation SetPassword(
+    $resetPassword: Boolean
+    $token: String!
+    $password: String
+    $passwordConfirmation: String
+  ) {
     setPassword(
       input: {
         setPasswordAttributes: {
-          resetPassword: null
-          token: "ee"
-          password: null
-          passwordConfirmation: null
+          resetPassword: $resetPassword
+          token: $token
+          password: $password
+          passwordConfirmation: $passwordConfirmation
         }
       }
     )

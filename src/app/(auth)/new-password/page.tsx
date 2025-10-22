@@ -11,14 +11,29 @@ import React, { Suspense, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useMutation } from "@apollo/client";
+import { SET_PASSWORD } from "@/lib/graphql/mutations";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 function Content() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const email = searchParams.get("email");
+  const token = searchParams.get("token");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [setPassword, { loading: setPasswordLoading }] = useMutation(SET_PASSWORD, {
+    onCompleted: (data) => {
+      if (data?.setPassword) {
+        showSuccessToast("Password updated successfully!");
+        setIsModalOpen(true);
+      }
+    },
+    onError: (error) => {
+      showErrorToast(error.message || "Failed to update password");
+    },
+  });
 
   const validationSchema = Yup.object({
     password: Yup.string()
@@ -39,9 +54,24 @@ function Content() {
       confirmPassword: "",
     },
     validationSchema,
-    onSubmit: (values) => {
-      console.log("Submitted values:", values);
-      setIsModalOpen(true);
+    onSubmit: async (values) => {
+      if (!token) {
+        showErrorToast("Reset token is missing. Please request a new password reset.");
+        return;
+      }
+
+      try {
+        await setPassword({
+          variables: {
+            resetPassword: true,
+            token: token,
+            password: values.password,
+            passwordConfirmation: values.confirmPassword,
+          },
+        });
+      } catch (error) {
+        // Error is handled by the mutation's onError callback
+      }
     },
   });
 
@@ -87,10 +117,12 @@ function Content() {
         <ThemeButton
           disabled={
             formik.isSubmitting ||
+            setPasswordLoading ||
+            !formik.values.password ||
             !formik.values.confirmPassword ||
-            !formik.values.confirmPassword
+            !token
           }
-          label="Update Password"
+          label={setPasswordLoading ? "Updating..." : "Update Password"}
           onClick={() => {}}
           type="submit"
           heightClass="h-11"

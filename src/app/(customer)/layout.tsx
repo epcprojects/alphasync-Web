@@ -9,6 +9,7 @@ import {
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { Header } from "../components";
+import { useAppSelector } from "@/lib/store/hooks";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -67,6 +68,7 @@ const noStatsRoutes = [
 const showSubHeading = ["/reminder", "/requests"];
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
+  const user = useAppSelector((state) => state.auth.user);
   const pathname = usePathname();
   const heading =
     Object.keys(headings).find((key) => pathname.startsWith(key)) !== undefined
@@ -94,7 +96,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         <div className="flex items-center flex-col">
           {pathname.startsWith(menuItems[0].href) && (
             <h2 className="text-white font-normal mb-3 text-base md:text-2xl">
-              👋 Welcome Daniel,
+              👋 Welcome {user?.fullName}
             </h2>
           )}
           {hideStats && (
