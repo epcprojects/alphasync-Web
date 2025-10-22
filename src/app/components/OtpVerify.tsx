@@ -1,14 +1,13 @@
 "use client";
-import { AuthHeader, Loader, ThemeButton, toastAlert } from "@/app/components";
+import { AuthHeader, ThemeButton, toastAlert } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { Suspense, useState } from "react";
+import React, { useState } from "react";
 import OTPInput from "react-otp-input";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN_WITH_OTP } from "@/lib/graphql/mutations";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
-import { UserAttributes } from "@/lib/graphql/attributes";
 
 const OTPVerify = () => {
   const [otp, setOtp] = useState("");
@@ -19,7 +18,6 @@ const OTPVerify = () => {
 
   const loginType = searchParams.get("loginType"); // "Doctor" or "Customer"
   const email = searchParams.get("email");
-  const rememberMe = searchParams.get("rememberMe") === "true";
 
   const [loginWithOtp, { loading: otpLoading }] = useMutation(LOGIN_WITH_OTP, {
     onCompleted: (data) => {

@@ -1,5 +1,10 @@
 "use client";
-import { TextAreaField, ThemeButton, ThemeInput, ImageUpload } from "@/app/components";
+import {
+  TextAreaField,
+  ThemeButton,
+  ThemeInput,
+  ImageUpload,
+} from "@/app/components";
 import { InfoIcon, UserIcon } from "@/icons";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import React, { useState, useEffect } from "react";
@@ -11,10 +16,27 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useMutation } from "@apollo/client";
 import { UPDATE_CUSTOMER_PROFILE, REMOVE_IMAGE } from "@/lib/graphql/mutations";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
-import { UserAttributes } from "@/lib/graphql/attributes";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
 import Cookies from "js-cookie";
+
+interface ProfileFormValues {
+  fullName: string;
+  email: string;
+  phoneNo: string;
+  dob: Date;
+  address: string;
+  ename: string;
+  ephone: string;
+}
+
+interface InformationFormValues {
+  medicalHistory: string;
+  knownAllergies: string;
+  currentMedications: string;
+  additionalNotes: string;
+}
+
 const Page = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
@@ -23,7 +45,7 @@ const Page = () => {
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
-      phoneNo: Yup.string()
+    phoneNo: Yup.string()
       .matches(
         /^\+?[1-9]\d{0,15}$/,
         "Must be a valid phone number (e.g. +1234567890)"
@@ -32,11 +54,10 @@ const Page = () => {
     dob: Yup.string().required("Date of Birth is required"),
     address: Yup.string().required("Address is required"),
     ename: Yup.string().required("Emergency Contact Name is required"),
-    ephone: Yup.string()
-    .matches(
+    ephone: Yup.string().matches(
       /^\+?[1-9]\d{0,15}$/,
       "Must be a valid phone number (e.g. +1234567890)"
-    )
+    ),
   });
 
   const informationSchema = Yup.object().shape({
@@ -91,7 +112,7 @@ const Page = () => {
   );
 
   // Remove image mutation
-  const [removeImage, { loading: removeLoading }] = useMutation(REMOVE_IMAGE, {
+  const [removeImage] = useMutation(REMOVE_IMAGE, {
     onCompleted: (data) => {
       if (data?.removeImage?.user) {
         dispatch(setUser(data.removeImage.user));
@@ -123,7 +144,7 @@ const Page = () => {
     }
   };
 
-  const handleProfileSubmit = async (values: any) => {
+  const handleProfileSubmit = async (values: ProfileFormValues) => {
     console.log("Profile form values:", values);
     try {
       const variables = {
@@ -143,7 +164,7 @@ const Page = () => {
     }
   };
 
-  const handleInformationSubmit = async (values: any) => {
+  const handleInformationSubmit = async (values: InformationFormValues) => {
     console.log("Information form values:", values);
     try {
       const variables = {
@@ -266,6 +287,7 @@ const Page = () => {
                     onImageRemove={handleImageRemove}
                     placeholder={INITIAL_AVATAR}
                     className="col-span-12 md:col-span-8 lg:col-span-8"
+                    showTitle={false}
                   />
                 </div>
                 <Formik

@@ -7,7 +7,6 @@ import {
   CustomerOrderHistroyView,
   PrescriptionRequestCard,
   RequestRejectModal,
-  Loader,
   Skeleton,
 } from "@/app/components";
 import {

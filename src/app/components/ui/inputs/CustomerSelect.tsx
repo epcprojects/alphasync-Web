@@ -70,8 +70,8 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({
     customersData?.allPatients.allData?.map((patient: UserAttributes) => ({
       name: patient.fullName || patient.email || `Patient ${patient.id}`,
       displayName: patient.fullName || patient.email || `Patient ${patient.id}`,
-      email: patient.email,
-      id: patient.id,
+      email: patient.email || "",
+      id: patient.id?.toString() || "",
     })) || [];
 
   const handleCustomerChange = (val: string | string[]) => {

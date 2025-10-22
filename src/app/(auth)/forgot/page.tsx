@@ -53,7 +53,7 @@ const Page = () => {
             email: values.email,
           },
         });
-      } catch (error) {
+      } catch {
         // Error is handled by the onError callback
       }
     },

@@ -115,7 +115,7 @@ const AdminProfilePage: React.FC = () => {
     },
   });
 
-  const [removeImage, { loading: removeLoading }] = useMutation(REMOVE_IMAGE, {
+  const [removeImage] = useMutation(REMOVE_IMAGE, {
     onCompleted: (data) => {
       if (data?.removeImage?.user) {
         dispatch(setUser(data.removeImage.user));

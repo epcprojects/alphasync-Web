@@ -49,7 +49,7 @@ const ChangePassword = () => {
               passwordConfirmation: values.confirmPassword,
             },
           });
-        } catch (error) {
+        } catch {
           // Error is handled by the mutation's onError callback
         }
       }}

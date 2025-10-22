@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowLeftIcon, SearchIcon, UserAddIcon, UserGroupIcon } from "@/icons";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { Suspense, useEffect, useState } from "react";
+import { SearchIcon, UserAddIcon, UserGroupIcon } from "@/icons";
+import { useRouter } from "next/navigation";
+import React, { Suspense, useState } from "react";
 import {
   EmptyState,
   Loader,
@@ -13,7 +13,7 @@ import {
 } from "@/app/components";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { ALL_PATIENTS } from "@/lib/graphql/queries";
-import { MODIFY_ACCESSS_USER, UPDATE_USER } from "@/lib/graphql/mutations";
+import { MODIFY_ACCESSS_USER } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -47,7 +47,6 @@ function CustomerContent() {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [editPatient, setEditPatient] = useState<PatientFormData>();
   const [patientToDelete, setPatientToDelete] = useState<PatientFormData>();
   
   const statusOptions = [
@@ -78,7 +77,7 @@ function CustomerContent() {
   );
 
   // GraphQL mutation for modifying user access
-  const [modifyAccessUser, { loading: modifyLoading, error: modifyError }] =
+  const [modifyAccessUser, { loading: modifyLoading }] =
     useMutation(MODIFY_ACCESSS_USER);
 
   // Transform GraphQL data to match Patient interface
@@ -87,16 +86,6 @@ function CustomerContent() {
 
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
-  };
-
-  const handleEdit = (patient: PatientFormData) => {
-    setEditPatient(patient);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = (patient: PatientFormData) => {
-    setPatientToDelete(patient);
-    setIsDeleteModalOpen(true);
   };
 
   const handleStatusChange = (status: string) => {
@@ -241,11 +230,9 @@ function CustomerContent() {
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          setEditPatient(undefined);
         }}
         onConfirm={() => {
           setIsModalOpen(false);
-          setEditPatient(undefined);
           refetch(); // Refetch data after adding
         }}
       />

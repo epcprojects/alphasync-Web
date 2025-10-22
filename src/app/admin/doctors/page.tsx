@@ -2,13 +2,11 @@
 
 import {
   ArrowDownIcon,
-  ArrowLeftIcon,
   DoctorFilledIcon,
   PlusIcon,
   SearchIcon,
 } from "@/icons";
-import React, { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { Suspense, useState } from "react";
 import {
   EmptyState,
   Loader,
@@ -50,7 +48,6 @@ interface DoctorFormData {
 }
 
 function DoctorContent() {
-  const router = useRouter();
   const [search, setSearch] = useState("");
   const [isModalOpne, setIsModalOpen] = useState(false);
   const [isDeleteModalOpne, setIsDeleteModalOpen] = useState(false);
@@ -85,7 +82,7 @@ function DoctorContent() {
   );
 
   // GraphQL mutation for modifying user access
-  const [modifyAccessUser, { loading: modifyLoading, error: modifyError }] =
+  const [modifyAccessUser, { loading: modifyLoading }] =
     useMutation(MODIFY_ACCESSS_USER);
 
   // Transform GraphQL data to match Doctor interface
@@ -240,8 +237,8 @@ function DoctorContent() {
                 // onRowClick={() => router.push(`/orders/${doctor.id}`)}
                 key={doctor.id}
                 doctor={doctor}
-                onEditDoctor={(id) => handleEdit(doctor)}
-                onDeleteDoctor={(id) => handleDelete(doctor)}
+                onEditDoctor={() => handleEdit(doctor)}
+                onDeleteDoctor={() => handleDelete(doctor)}
               />
             ))}
           </>

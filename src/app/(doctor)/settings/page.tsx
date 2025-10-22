@@ -59,7 +59,7 @@ const Page = () => {
     }
   );
 
-  const [removeImage, { loading: removeLoading }] = useMutation(REMOVE_IMAGE, {
+  const [removeImage] = useMutation(REMOVE_IMAGE, {
     onCompleted: (data) => {
       if (data?.removeImage?.user) {
         dispatch(setUser(data.removeImage.user));
@@ -206,6 +206,7 @@ const Page = () => {
                   onImageRemove={handleImageRemove}
                   placeholder={INITIAL_AVATAR}
                   className="py-3 md:py-5 lg:gap-8"
+                  showTitle={false}
                 />
                 <Formik
                   initialValues={{
@@ -228,7 +229,7 @@ const Page = () => {
                       };
 
                       await updateDoctor({ variables });
-                    } catch (error) {
+                    } catch {
                       // Error is handled by the mutation's onError callback
                     }
                   }}

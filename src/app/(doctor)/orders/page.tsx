@@ -74,11 +74,6 @@ function OrderContent() {
     endDate: new Date(),
     key: "selection",
   });
-  const startOfDay = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
-
-  const endOfDay = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
 
   const itemsPerPage = 10;
   const [selectedStatus, setSelectedStatus] = useState<string>("All Status");

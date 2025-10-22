@@ -15,7 +15,6 @@ export default function PostDetail() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   
-  const [price, setPrice] = useState("");
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   // GraphQL query to fetch product data
@@ -28,10 +27,10 @@ export default function PostDetail() {
   });
 
   // GraphQL mutation to create order
-  const [createOrder, { loading: createOrderLoading, error: createOrderError }] = useMutation(CREATE_ORDER);
+  const [createOrder, { loading: createOrderLoading }] = useMutation(CREATE_ORDER);
 
   // GraphQL mutation to toggle favorite
-  const [toggleFavorite, { loading: toggleFavoriteLoading, error: toggleFavoriteError }] = useMutation(TOGGLE_FAVOURITE);
+  const [toggleFavorite, { loading: toggleFavoriteLoading }] = useMutation(TOGGLE_FAVOURITE);
 
   const product = data?.fetchProduct;
 

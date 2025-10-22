@@ -16,7 +16,6 @@ interface ImageUploadProps {
   height?: number;
   className?: string;
   accept?: string;
-  userId?: string;
   onImageRemove?: () => Promise<void>;
 }
 
@@ -33,7 +32,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   height = 64,
   className = "",
   accept = ".png,.jpg,.jpeg,.svg",
-  userId,
   onImageRemove,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -122,7 +120,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               onClick={handleDeleteClick}
               className="text-red-500 hover:bg-red-100 px-3 py-1.5 rounded-lg cursor-pointer text-xs md:text-sm font-semibold flex items-center gap-1"
             >
-              <TrashBinIcon width={14} height={14} />
+              <TrashBinIcon width="14" height="14" />
               Delete
             </button>
           )}

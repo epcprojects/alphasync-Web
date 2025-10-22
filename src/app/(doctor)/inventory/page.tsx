@@ -7,10 +7,8 @@ import {
   ProductCard,
   ProductListView,
   Pagination,
-  CustomerSelect,
 } from "@/components";
 import {
-  ArrowLeftIcon,
   DeliveryBoxIcon,
   FavoriteIcon,
   GridViewIcon,
@@ -20,10 +18,9 @@ import {
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useState } from "react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
-import { useAppSelector } from "@/lib/store/hooks";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import { CREATE_ORDER, TOGGLE_FAVOURITE } from "@/lib/graphql/mutations";
@@ -70,13 +67,12 @@ function InventoryContent() {
   // GraphQL mutation to create order
   const [
     createOrder,
-    { loading: createOrderLoading, error: createOrderError },
+    { loading: createOrderLoading },
   ] = useMutation(CREATE_ORDER);
 
   // GraphQL mutation to toggle favorite
   const [
     toggleFavorite,
-    { loading: toggleFavoriteLoading, error: toggleFavoriteError },
   ] = useMutation(TOGGLE_FAVOURITE);
 
   // Transform GraphQL product data to match the expected format
@@ -85,7 +81,6 @@ function InventoryContent() {
 
   // Get pagination info from GraphQL response
   const pageCount = productsData?.allProducts.totalPages || 1;
-  const totalCount = productsData?.allProducts.count || 0;
 
   // Apply client-side filtering for search and favorites
   const filteredProducts = products.filter((p) => {

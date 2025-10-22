@@ -5,7 +5,6 @@ import {
   Loader,
   ThemeButton,
   ThemeInput,
-  toastAlert,
 } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import React, { Suspense, useState } from "react";
@@ -24,12 +23,10 @@ function Content() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [acceptInvitation, { loading: acceptLoading }] = useMutation(ACCEPT_INVITATION, {
-    onCompleted: (data) => {
-     
+    onCompleted: () => {
       setIsModalOpen(true);
     },
-    onError: (error) => {
-     
+    onError: () => {
       showErrorToast("There is an error accepting the invitation. Please try again.");
     },
   });

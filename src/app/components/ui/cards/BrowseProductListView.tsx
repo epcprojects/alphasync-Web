@@ -6,6 +6,7 @@ import Tooltip from "../tooltip";
 
 type Product = {
   id: number;
+  originalId: string;
   title: string;
   description: string;
   prescription: boolean;

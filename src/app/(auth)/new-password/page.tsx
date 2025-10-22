@@ -18,7 +18,6 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 function Content() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const email = searchParams.get("email");
   const token = searchParams.get("token");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,7 +68,7 @@ function Content() {
             passwordConfirmation: values.confirmPassword,
           },
         });
-      } catch (error) {
+      } catch {
         // Error is handled by the mutation's onError callback
       }
     },

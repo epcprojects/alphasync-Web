@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowDownIcon, PlusIcon, TrashBinIcon } from "@/icons";
-import { SelectGroupDropdown, ProductSelect, CustomerSelect } from "@/app/components";
+import { ProductSelect, CustomerSelect } from "@/app/components";
 import { ThemeInput, ThemeButton } from "@/app/components";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";

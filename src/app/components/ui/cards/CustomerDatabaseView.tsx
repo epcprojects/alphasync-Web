@@ -56,7 +56,6 @@ export default function CustomerDatabaseView({
   onRowClick,
 }: CustomerDatabaseViewProps) {
   // Use patient data if available, otherwise fall back to customer data
-  const data = patient || customer;
   const id = patient?.id || customer?.id;
   const name = patient?.fullName || customer?.name;
   const contact = patient?.phoneNo || customer?.contact;

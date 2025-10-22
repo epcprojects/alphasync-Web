@@ -8,7 +8,6 @@ type DoctorListingProps = {
   doctor: UserAttributes;
   onEditDoctor?: (id: number) => void;
   onDeleteDoctor?: (id: number) => void;
-  onRowClick?: () => void;
 };
 
 const colorPairs = [
@@ -43,7 +42,6 @@ export default function DoctorListView({
   doctor,
   onDeleteDoctor,
   onEditDoctor,
-  onRowClick,
 }: DoctorListingProps) {
   const { bg, text } = getColorPair(doctor.id);
 

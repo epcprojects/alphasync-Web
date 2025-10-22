@@ -11,7 +11,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useMutation } from "@apollo/client";
 import { CREATE_CUSTOMER } from "@/lib/graphql/mutations";
-import { showSuccessToast, showErrorToast } from "@/lib/toast";
+import { showErrorToast } from "@/lib/toast";
 interface AddCustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
