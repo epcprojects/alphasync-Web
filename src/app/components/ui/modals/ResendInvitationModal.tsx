@@ -62,7 +62,7 @@ const ResendInvitationModal: React.FC<ResendInvitationModalProps> = ({
           <span className="font-semibold">{doctorName || "this doctor"}</span>?
         </p>
         <p className="text-gray-500 text-xs">
-          A new invitation email will be sent to the doctor&apos;s email address.
+          A new invitation email will be sent to the email address.
         </p>
       </div>
     </AppModal>

@@ -1,5 +1,5 @@
 "use client";
-import { ArrowLeftIcon } from "@/icons";
+import { ArrowLeftIcon, MailIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
@@ -21,6 +21,7 @@ type CustomerDatabaseViewProps = {
   patient?: UserAttributes;
   onViewCustomer?: (id: number) => void;
   onRowClick?: () => void;
+  onResendInvitation?: (id: string | number) => void;
 };
 
 const colorPairs = [
@@ -55,6 +56,7 @@ export default function CustomerDatabaseView({
   patient,
   onViewCustomer,
   onRowClick,
+  onResendInvitation,
 }: CustomerDatabaseViewProps) {
   // Use patient data if available, otherwise fall back to customer data
   const id = patient?.id || customer?.id;
@@ -131,6 +133,21 @@ export default function CustomerDatabaseView({
       </div>
 
       <div className="col-span-1 flex items-center justify-center gap-2">
+        {/* Show resend invitation icon for pending patients */}
+        {patient?.invitationStatus === "pending" && onResendInvitation && (
+          <Tooltip content="Resend Invitation">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (id) onResendInvitation(id);
+              }}
+              className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+            >
+              <MailIcon  />
+            </button>
+          </Tooltip>
+        )}
+        
         <Tooltip content="View Customer">
           <button
             onClick={(e) => {

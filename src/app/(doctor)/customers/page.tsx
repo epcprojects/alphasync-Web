@@ -13,14 +13,15 @@ import {
 } from "@/app/components";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { ALL_PATIENTS } from "@/lib/graphql/queries";
-import { MODIFY_ACCESSS_USER } from "@/lib/graphql/mutations";
+import { MODIFY_ACCESSS_USER, RESEND_INVITATION } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { Menu, MenuButton, MenuItem, MenuItems, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { ArrowDownIcon } from "@/icons";
 import AddCustomerModal from "@/app/components/ui/modals/AddCustomerModal";
 import AppModal from "@/app/components/ui/modals/AppModal";
+import ResendInvitationModal from "@/app/components/ui/modals/ResendInvitationModal";
 
 // Interface for GraphQL response
 interface AllPatientsResponse {
@@ -48,7 +49,12 @@ function CustomerContent() {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isResendModalOpen, setIsResendModalOpen] = useState(false);
   const [patientToDelete, setPatientToDelete] = useState<PatientFormData>();
+  const [patientToResend, setPatientToResend] = useState<PatientFormData>();
+
+  // Tab state for All Patients/Pending Patients
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   const statusOptions = [
     { label: "All Status", value: null },
@@ -70,6 +76,7 @@ function CustomerContent() {
           selectedStatus === "All Status"
             ? undefined
             : selectedStatus.toUpperCase(),
+        pendingInvites: selectedTabIndex === 1, // true for pending patients (index 1), false for all patients (index 0)
         page: currentPage + 1,
         perPage: itemsPerPage,
       },
@@ -115,6 +122,25 @@ function CustomerContent() {
     } catch (error) {
       console.error("Error revoking patient access:", error);
       showErrorToast("Failed to delete patient. Please try again.");
+    }
+  };
+
+  const handleResendInvitation = (patientId: string | number) => {
+    console.log("handleResendInvitation called with patientId:", patientId);
+    const patient = patients?.find(p => p.id === patientId || p.id === String(patientId));
+    console.log("Found patient:", patient);
+    if (patient) {
+      setPatientToResend({
+        id: patient.id,
+        fullName: patient.fullName,
+        email: patient.email,
+        phoneNo: patient.phoneNo,
+        address: patient.address,
+        status: patient.status,
+        patientOrdersCount: patient.patientOrdersCount,
+      });
+      setIsResendModalOpen(true);
+      console.log("Modal should be opening now");
     }
   };
 
@@ -179,53 +205,126 @@ function CustomerContent() {
         </div>
       </div>
 
-      <div className="space-y-1">
-        <div className="grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium shadow-table bg-white rounded-xl text-black">
-          <div className="col-span-3">Name</div>
-          <div className="col-span-2">Contact</div>
-          <div className="col-span-2">Email</div>
-          <div className="col-span-1">Date of Birth</div>
-          <div className="col-span-1">Last Order</div>
-          <div className="col-span-1">Total Orders</div>
-          <div className="col-span-1">Status</div>
-          <div className="col-span-1 text-center">Actions</div>
-        </div>
-
-        {error && (
-          <div className="text-center">
-            <p className="text-red-500 mb-4">{error.message}</p>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="my-3 space-y-1">
-            <Skeleton className="w-full h-12 rounded-full" />
-            <Skeleton className="w-full h-12 rounded-full" />
-            <Skeleton className="w-full h-12 rounded-full" />
-            <Skeleton className="w-full h-12 rounded-full" />
-          </div>
-        ) : (
-          <>
-            {patients?.map((patient: UserAttributes) => (
-              <CustomerDatabaseView
-                onRowClick={() => router.push(`/customers/${patient.id}`)}
-                key={patient.id}
-                patient={patient}
-                onViewCustomer={() => router.push(`/customers/${patient.id}`)}
-              />
+      {/* Tabs for All Patients/Pending Patients */}
+      <div className="bg-white rounded-xl shadow-table">
+        <TabGroup selectedIndex={selectedTabIndex} onChange={setSelectedTabIndex}>
+          <TabList className="flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-6">
+            {["All Patients", "Pending Patients"].map((tab, index) => (
+              <Tab
+                key={index}
+                as="button"
+                className="flex items-center gap-1 md:gap-2 w-full justify-center text-[11px] hover:bg-gray-50 whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-2 py-3 md:py-4 md:px-6"
+              >
+                {tab}
+              </Tab>
             ))}
-          </>
-        )}
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <div className="space-y-1 p-4 md:p-6 pt-0">
+                <div className="grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium shadow-table bg-white rounded-xl text-black">
+                  <div className="col-span-3">Name</div>
+                  <div className="col-span-2">Contact</div>
+                  <div className="col-span-2">Email</div>
+                  <div className="col-span-1">Date of Birth</div>
+                  <div className="col-span-1">Last Order</div>
+                  <div className="col-span-1">Total Orders</div>
+                  <div className="col-span-1">Status</div>
+                  <div className="col-span-1 text-center">Actions</div>
+                </div>
 
-        {(!patients || patients.length === 0) && !loading && <EmptyState />}
+                {error && (
+                  <div className="text-center">
+                    <p className="text-red-500 mb-4">{error.message}</p>
+                  </div>
+                )}
+
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                  </div>
+                ) : (
+                  <>
+                    {patients?.map((patient: UserAttributes) => (
+                      <CustomerDatabaseView
+                        onRowClick={() => router.push(`/customers/${patient.id}`)}
+                        key={patient.id}
+                        patient={patient}
+                        onViewCustomer={() => router.push(`/customers/${patient.id}`)}
+                        onResendInvitation={() => patient.id && handleResendInvitation(patient.id)}
+                      />
+                    ))}
+                  </>
+                )}
+
+                {(!patients || patients.length === 0) && !loading && <EmptyState />}
+
+                {pageCount && pageCount > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pageCount}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div className="space-y-1 p-4 md:p-6 pt-0">
+                <div className="grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium shadow-table bg-white rounded-xl text-black">
+                  <div className="col-span-3">Name</div>
+                  <div className="col-span-2">Contact</div>
+                  <div className="col-span-2">Email</div>
+                  <div className="col-span-1">Date of Birth</div>
+                  <div className="col-span-1">Last Order</div>
+                  <div className="col-span-1">Total Orders</div>
+                  <div className="col-span-1">Status</div>
+                  <div className="col-span-1 text-center">Actions</div>
+                </div>
+
+                {error && (
+                  <div className="text-center">
+                    <p className="text-red-500 mb-4">{error.message}</p>
+                  </div>
+                )}
+
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                  </div>
+                ) : (
+                  <>
+                    {patients?.map((patient: UserAttributes) => (
+                      <CustomerDatabaseView
+                        onRowClick={() => router.push(`/customers/${patient.id}`)}
+                        key={patient.id}
+                        patient={patient}
+                        onViewCustomer={() => router.push(`/customers/${patient.id}`)}
+                        onResendInvitation={() => patient.id && handleResendInvitation(patient.id)}
+                      />
+                    ))}
+                  </>
+                )}
+
+                {(!patients || patients.length === 0) && !loading && <EmptyState />}
+
+                {pageCount && pageCount > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pageCount}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </div>
+            </TabPanel>
+          </TabPanels>
+        </TabGroup>
       </div>
-      {pageCount && pageCount > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={pageCount}
-          onPageChange={handlePageChange}
-        />
-      )}
 
       <AddCustomerModal
         isOpen={isModalOpen}
@@ -258,6 +357,19 @@ function CustomerContent() {
           </p>
         </div>
       </AppModal>
+
+      <ResendInvitationModal
+        isOpen={isResendModalOpen}
+        onClose={() => {
+          setIsResendModalOpen(false);
+          setPatientToResend(undefined);
+        }}
+        doctorName={patientToResend?.fullName}
+        doctorId={patientToResend?.id}
+        onSuccess={() => {
+          refetch(); // Refetch data after resending invitation
+        }}
+      />
     </div>
   );
 }
