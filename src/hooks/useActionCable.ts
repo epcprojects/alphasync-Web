@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createActionCableConsumer, ActionCableSubscription } from "@/lib/actioncable";
+import { createActionCableConsumer, ActionCableSubscription, GraphQLActionCableSubscription } from "@/lib/actioncable";
 
 interface UseActionCableOptions {
   channel: string;
-  onReceived?: (data: any) => void;
+  onReceived?: (data: unknown) => void;
   onConnected?: () => void;
   onDisconnected?: () => void;
 }
@@ -40,9 +40,9 @@ export const useActionCable = (options: UseActionCableOptions) => {
     } catch (error) {
       console.error("Failed to create ActionCable subscription:", error);
     }
-  }, [options.channel]);
+  }, [options.channel, options.onReceived, options.onConnected, options.onDisconnected]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const perform = (action: string, data?: any) => {
+  const perform = (action: string, data?: object) => {
     subscriptionRef.current?.perform(action, data);
   };
 
@@ -55,37 +55,42 @@ export const useActionCable = (options: UseActionCableOptions) => {
 // Hook specifically for GraphQL subscriptions
 interface UseGraphQLSubscriptionOptions {
   query: string;
-  variables?: any;
-  onNext?: (data: any) => void;
-  onError?: (error: any) => void;
+  variables?: Record<string, unknown>;
+  onNext?: (data: unknown) => void;
+  onError?: (error: unknown) => void;
   onComplete?: () => void;
 }
 
 export const useGraphQLSubscription = (options: UseGraphQLSubscriptionOptions) => {
   const [isConnected, setIsConnected] = useState(false);
-  const [data, setData] = useState<any>(null);
-  const [error, setError] = useState<any>(null);
-  const subscriptionRef = useRef<any>(null);
+  const [data, setData] = useState<unknown>(null);
+  const [error, setError] = useState<unknown>(null);
+  const subscriptionRef = useRef<GraphQLActionCableSubscription | null>(null);
 
   useEffect(() => {
     try {
       const consumer = createActionCableConsumer();
-      const subscription = new (require("@/lib/actioncable").GraphQLActionCableSubscription)(consumer);
+      const subscription = new GraphQLActionCableSubscription(consumer);
 
-      subscription.subscribe(options.query, options.variables, {
-        next: (result: any) => {
-          setData(result);
-          options.onNext?.(result);
-        },
-        error: (err: any) => {
-          setError(err);
-          options.onError?.(err);
-        },
-        complete: () => {
-          setIsConnected(false);
-          options.onComplete?.();
-        },
-      });
+      subscription.subscribe(
+        options.query,
+        options.variables,
+        "GraphqlChannel",
+        {
+          next: (result: unknown) => {
+            setData(result);
+            options.onNext?.(result);
+          },
+          error: (err: unknown) => {
+            setError(err);
+            options.onError?.(err);
+          },
+          complete: () => {
+            setIsConnected(false);
+            options.onComplete?.();
+          },
+        }
+      );
 
       subscriptionRef.current = subscription;
       setIsConnected(true);
@@ -98,7 +103,7 @@ export const useGraphQLSubscription = (options: UseGraphQLSubscriptionOptions) =
       console.error("Failed to create GraphQL subscription:", err);
       setError(err);
     }
-  }, [options.query, JSON.stringify(options.variables)]);
+  }, [options.query, options.variables, options.onNext, options.onError, options.onComplete]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     isConnected,

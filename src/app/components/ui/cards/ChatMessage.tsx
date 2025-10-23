@@ -1,6 +1,5 @@
 "use client";
 
-import { getInitials } from "@/lib/helpers";
 import Image from "next/image";
 
 type ChatMessageProps = {

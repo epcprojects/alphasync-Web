@@ -29,7 +29,7 @@ const CsvImportDoctorModal: React.FC<CsvImportDoctorModalProps> = ({
 
   const [bulkImportDoctors, { loading: bulkImportLoading }] = useMutation(BULK_IMPORT_DOCTORS, {
     onCompleted: (data) => {
-      const { totalProcessed, successfulInvitations, failedRows, failedDetails } = data.bulkImportDoctors;
+      const { successfulInvitations, failedRows, failedDetails } = data.bulkImportDoctors;
       
       setImportResults({
         successfulInvitations,
@@ -96,18 +96,6 @@ const CsvImportDoctorModal: React.FC<CsvImportDoctorModalProps> = ({
     onClose();
   };
 
-  const handleCloseAfterErrors = () => {
-    setImportResults(null);
-    onConfirm();
-    onClose();
-  };
-
-  const handleUploadAgain = () => {
-    setImportResults(null);
-    setSelectedCsvFile(null);
-    setErrors({});
-    setIsFormValid(false);
-  };
 
   const downloadSampleCsv = () => {
     const link = document.createElement('a');
@@ -189,7 +177,7 @@ const CsvImportDoctorModal: React.FC<CsvImportDoctorModalProps> = ({
             <h3 className="font-medium text-blue-900 mb-2">CSV Import Instructions</h3>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• CSV file must contain columns: email, full_name, phone_no, medical_license, specialty, status</li>
-              <li>• Status values should be either "ACTIVE" or "INACTIVE"</li>
+              <li>• Status values should be either &quot;ACTIVE&quot; or &quot;INACTIVE&quot;</li>
               <li>• Phone numbers should include country code (e.g., +1234567890)</li>
               <li>• Email addresses must be valid</li>
               <li>• Download the sample CSV file below for reference</li>

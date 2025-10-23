@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeftIcon, ReminderFilledIcon, SearchIcon } from "@/icons";
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { reminders } from "../../../../public/data/reminders";
 import ReactPaginate from "react-paginate";
@@ -44,38 +44,6 @@ function ReminderContent() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", String(selected + 1));
     router.replace(`?${params.toString()}`);
-  };
-
-  const [messages, setMessages] = useState<
-    { sender: string; time: string; text: string; isUser: boolean }[]
-  >([]);
-  const [toggle, setToggle] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const handleSend = (msg: string) => {
-    if (!msg.trim()) return;
-
-    const now = new Date();
-    const time = now.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        sender: toggle ? "You" : "John Smith",
-        time,
-        text: msg,
-        isUser: toggle,
-      },
-    ]);
-
-    setToggle(!toggle);
   };
 
   const isMobile = useIsMobile();
@@ -198,11 +166,9 @@ function ReminderContent() {
       <ChatModal
         isOpen={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}
-        // itemTitle="REQ-001"
-        messages={messages}
-        onSend={(msg) => {
-          handleSend(msg);
-        }}
+        itemTitle="REQ-001"
+        participantId="reminder-patient"
+        participantName="Patient"
       />
     </div>
   );

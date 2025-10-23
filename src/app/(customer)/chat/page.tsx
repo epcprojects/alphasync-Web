@@ -1,7 +1,7 @@
 "use client";
 import { Chat } from "@/app/components";
 import { getInitials } from "@/lib/helpers";
-import React, { useState } from "react";
+import React from "react";
 import { useQuery } from "@apollo/client/react";
 import { FETCH_DOCTOR } from "@/lib/graphql/queries";
 
@@ -21,17 +21,15 @@ interface FetchDoctorResponse {
 }
 
 const Page = () => {
-  const [chatId, setChatId] = useState<string | null>(null);
-
   // GraphQL query to fetch doctor data
-  const { data: doctorData, loading: doctorLoading, error: doctorError } = useQuery<FetchDoctorResponse>(FETCH_DOCTOR, {
+  const { data: doctorData } = useQuery<FetchDoctorResponse>(FETCH_DOCTOR, {
     fetchPolicy: "network-only",
   });
 
   const doctor = doctorData?.fetchUser?.user?.doctor;
 
-  const handleChatCreated = (newChatId: string) => {
-    setChatId(newChatId);
+  const handleChatCreated = () => {
+    // Chat created successfully
   };
 
   return (

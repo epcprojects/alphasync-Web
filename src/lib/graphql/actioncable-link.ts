@@ -1,33 +1,32 @@
-import { ApolloLink, Observable } from "@apollo/client";
+import { ApolloLink, Observable, Operation, NextLink, FetchResult } from "@apollo/client";
 import { createActionCableConsumer, GraphQLActionCableSubscription } from "../actioncable";
+import { DefinitionNode } from "graphql";
 
 export class ActionCableLink extends ApolloLink {
-  private consumer: any;
+  private consumer: ReturnType<typeof createActionCableConsumer>;
 
   constructor() {
     super();
     this.consumer = createActionCableConsumer();
   }
 
-  request(operation: any, forward: any) {
+  request(operation: Operation, forward: NextLink): Observable<FetchResult> | null {
     // Only handle subscription operations
-    if (operation.query.definitions.some((def: any) => def.operation === "subscription")) {
-      return new Observable((observer) => {
+    if (operation.query.definitions.some((def: DefinitionNode) => 'operation' in def && def.operation === "subscription")) {
+      return new Observable<FetchResult>((observer) => {
         const subscription = new GraphQLActionCableSubscription(this.consumer);
         
-        const graphqlSubscription = subscription.subscribe(
-          operation.query.loc?.source?.body || operation.query,
+        subscription.subscribe(
+          operation.query.loc?.source?.body || operation.query.toString(),
           operation.variables,
           "GraphqlChannel", // Channel name
           {
-            next: (data: any) => {
+            next: (data: unknown) => {
               observer.next({
-                data,
-                loading: false,
-                networkStatus: 7, // NetworkStatus.ready
+                data: data as Record<string, unknown>,
               });
             },
-            error: (error: any) => {
+            error: (error: unknown) => {
               observer.error(error);
             },
             complete: () => {

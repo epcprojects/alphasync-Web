@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useMutation, useSubscription, useQuery } from "@apollo/client/react";
 import { CREATE_CHAT, SEND_MESSAGE } from "@/lib/graphql/mutations";
 import { FETCH_ALL_MESSAGES, MESSAGE_ADDED } from "@/lib/graphql/queries";
@@ -50,8 +50,6 @@ export default function Chat({
   const [chatId, setChatId] = useState<string | null>(null);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
-  const [connectionStatus, setConnectionStatus] =
-    useState<string>("disconnected");
 
   const chatRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -65,7 +63,7 @@ export default function Chat({
   const [sendMessage] = useMutation(SEND_MESSAGE);
 
   // Map GraphQL message -> local UI type
-  const mapGraphQLMessage = (msg: GraphQLMessage): ChatMessageType => {
+  const mapGraphQLMessage = useCallback((msg: GraphQLMessage): ChatMessageType => {
     const isCurrentUser =
       msg.user?.id === currentUser?.id ||
       msg.user?.id === String(currentUser?.id) ||
@@ -93,10 +91,10 @@ export default function Chat({
       text: msg.content,
       isUser: isCurrentUser,
     };
-  };
+  }, [currentUser?.id, participantName]);
 
   // Fetch existing messages
-  const { data: messagesData, loading: MessageLoading } = useQuery(
+  const { loading: MessageLoading } = useQuery(
     FETCH_ALL_MESSAGES,
     {
       variables: { chatId },
@@ -156,7 +154,7 @@ export default function Chat({
         return prev;
       });
     }
-  }, [subscriptionData, chatId]);
+  }, [subscriptionData, chatId, mapGraphQLMessage]);
 
   // Auto-scroll on new message
   useEffect(() => {
@@ -193,7 +191,7 @@ export default function Chat({
       }
     };
     createChatOnMount();
-  }, [participantId, chatId, isCreatingChat]);
+  }, [participantId, chatId, isCreatingChat, createChat, onChatCreated]);
 
   // Handle send
   const handleSend = async (msg: string) => {

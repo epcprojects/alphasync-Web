@@ -1,26 +1,11 @@
-import { createConsumer } from "@rails/actioncable";
+import { createConsumer, Consumer } from "@rails/actioncable";
 import Cookies from "js-cookie";
 import { validateActionCableConfig } from "./validate-config";
 
 // Type definitions for ActionCable
-interface ActionCableConsumer {
-  subscriptions: {
-    create: (
-      channel: string | { channel: string },
-      callbacks: ActionCableCallbacks
-    ) => ActionCableSubscriptionInstance;
-  };
-}
-
 interface ActionCableSubscriptionInstance {
   unsubscribe: () => void;
-  perform: (action: string, data?: unknown) => void;
-}
-
-interface ActionCableCallbacks {
-  received?: (data: unknown) => void;
-  connected?: () => void;
-  disconnected?: () => void;
+  perform: (action: string, data?: object) => boolean;
 }
 
 interface GraphQLSubscriptionData {
@@ -54,10 +39,10 @@ export const createActionCableConsumer = () => {
 
 // ActionCable subscription helper
 export class ActionCableSubscription {
-  private consumer: ActionCableConsumer;
+  private consumer: Consumer;
   private subscription: ActionCableSubscriptionInstance | null = null;
 
-  constructor(consumer: ActionCableConsumer) {
+  constructor(consumer: Consumer) {
     this.consumer = consumer;
   }
 
@@ -84,7 +69,7 @@ export class ActionCableSubscription {
     }
   }
 
-  perform(action: string, data?: unknown) {
+  perform(action: string, data?: object) {
     if (this.subscription) {
       this.subscription.perform(action, data);
     }
@@ -93,10 +78,10 @@ export class ActionCableSubscription {
 
 // GraphQL subscription over ActionCable
 export class GraphQLActionCableSubscription {
-  private consumer: ActionCableConsumer;
+  private consumer: Consumer;
   private subscription: ActionCableSubscriptionInstance | null = null;
 
-  constructor(consumer: ActionCableConsumer) {
+  constructor(consumer: Consumer) {
     this.consumer = consumer;
   }
 

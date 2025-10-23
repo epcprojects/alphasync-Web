@@ -63,7 +63,6 @@ export default function CustomerDetail() {
 
   // State declarations
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [chatId, setChatId] = useState<string | null>(null);
 
   const itemsPerPage = 10;
 
@@ -104,8 +103,8 @@ export default function CustomerDetail() {
     setSelectedIndex(1); // Switch to chat tab
   };
 
-  const handleChatCreated = (newChatId: string) => {
-    setChatId(newChatId);
+  const handleChatCreated = () => {
+    // Chat created successfully
   };
 
   // Show loading state
