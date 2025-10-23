@@ -20,7 +20,17 @@ const statusStyles: Record<string, string> = {
   Processing: "bg-amber-50 text-amber-700 border border-amber-200",
   Cancelled: "bg-red-50 text-red-700 border border-red-200",
   Shipped: "bg-blue-50 text-blue-700 border border-blue-200",
+  pending_payment: "bg-orange-50 text-orange-700 border border-orange-200",
 };
+
+function formatStatusDisplay(status: string) {
+  switch (status) {
+    case "pending_payment":
+      return "Pending Payment";
+    default:
+      return status;
+  }
+}
 
 export default function CustomerOrderHistroyView({
   order: customer,
@@ -52,7 +62,7 @@ export default function CustomerOrderHistroyView({
           "bg-gray-100 text-gray-700 border border-gray-300"
         }`}
       >
-        {customer.status}
+        {formatStatusDisplay(customer.status)}
       </div>
 
       <div className="font-normal line-clamp-1 text-gray-800 text-xs md:text-sm">

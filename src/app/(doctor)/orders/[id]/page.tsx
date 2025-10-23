@@ -1,7 +1,6 @@
 "use client";
 import { ThemeButton } from "@/app/components";
 import CustomerInfoCard from "@/app/components/ui/cards/CustomerInfoCard";
-import { getStatusClasses } from "@/app/components/ui/cards/OrderListView";
 import {
   ArrowDownIcon,
   CrossIcon,
@@ -16,6 +15,7 @@ import React from "react";
 import { useQuery } from "@apollo/client";
 import { FETCH_ORDER } from "@/lib/graphql/queries";
 import { UserAttributes } from "@/lib/graphql/attributes";
+import { getStatusClasses, formatStatusDisplay } from "@/app/components/ui/cards/OrderListView";
 
 interface OrderItem {
   id: string;
@@ -150,7 +150,7 @@ const Page = () => {
                   order.status
                 )}`}
               >
-                {order.status}
+                {formatStatusDisplay(order.status)}
               </span>
             </div>
 

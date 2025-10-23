@@ -48,12 +48,23 @@ export function getStatusClasses(status: Order["status"]) {
       return "bg-amber-50 border border-amber-200 text-amber-700";
     case "Pending":
       return "bg-red-50 border border-red-200 text-red-700";
+    case "pending_payment":
+      return "bg-orange-50 border border-orange-200 text-orange-700";
     case "Shipped":
       return "bg-indigo-50 border border-indigo-200 text-indigo-700";
     case "Cancelled":
       return "bg-gray-50 border border-gray-200 text-gray-700";
     default:
       return "bg-gray-100 border border-gray-200 text-gray-700";
+  }
+}
+
+export function formatStatusDisplay(status: string) {
+  switch (status) {
+    case "pending_payment":
+      return "Pending Payment";
+    default:
+      return status;
   }
 }
 
@@ -97,7 +108,7 @@ export default function OrderListView({
                 order.status
               )}`}
             >
-              {order.status}
+              {formatStatusDisplay(order.status)}
             </span>
           </div>
         </div>
@@ -195,7 +206,7 @@ export default function OrderListView({
             order.status
           )}`}
         >
-          {order.status}
+          {formatStatusDisplay(order.status)}
         </span>
       </div>
 
