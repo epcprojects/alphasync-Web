@@ -196,8 +196,8 @@ query FetchAllMessages($chatId: ID!) {
 }
 `;
 export const FETCH_DOCTOR = gql`
-  query FetchUser($status: String, $page: Int, $perPage: Int) {
-    fetchUser(status: $status, page: $page, perPage: $perPage) {
+  query FetchUser {
+    fetchUser {
       user {
         doctor {
           id
