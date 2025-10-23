@@ -17,8 +17,8 @@ import {
   SearchIcon,
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
 import { useQuery, useMutation } from "@apollo/client/react";
@@ -32,9 +32,11 @@ import {
 
 function InventoryContent() {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showFavourites, setShowFavourites] = useState(false);
   const [showGridView, setShowGridView] = useState(true);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isRefetchingFavorites, setIsRefetchingFavorites] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<{
     id: string;
     shopifyVariantId: string;
@@ -43,14 +45,21 @@ function InventoryContent() {
   } | null>(null);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
   const isMobile = useIsMobile();
   const itemsPerPage = 9;
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const initialPage = parseInt(searchParams.get("page") || "0", 10);
-  const [currentPage, setCurrentPage] = useState(initialPage);
+  // Debounce search input to avoid too many API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      // Reset to first page when search changes
+      setCurrentPage(1);
+    }, 500);
 
-  // GraphQL query to fetch products with pagination
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const {
     data: productsData,
     loading: productsLoading,
@@ -58,22 +67,20 @@ function InventoryContent() {
     refetch,
   } = useQuery<AllProductsResponse>(ALL_PRODUCTS_INVENTORY, {
     variables: {
-      page: currentPage + 1, // GraphQL pagination is 1-based
+      search: debouncedSearch,
+      page: currentPage, // Use currentPage directly (1-based pagination)
       perPage: itemsPerPage,
     },
     fetchPolicy: "network-only",
+    notifyOnNetworkStatusChange: true,
   });
 
   // GraphQL mutation to create order
-  const [
-    createOrder,
-    { loading: createOrderLoading },
-  ] = useMutation(CREATE_ORDER);
+  const [createOrder, { loading: createOrderLoading }] =
+    useMutation(CREATE_ORDER);
 
   // GraphQL mutation to toggle favorite
-  const [
-    toggleFavorite,
-  ] = useMutation(TOGGLE_FAVOURITE);
+  const [toggleFavorite] = useMutation(TOGGLE_FAVOURITE);
 
   // Transform GraphQL product data to match the expected format
   const products: Product[] =
@@ -82,42 +89,39 @@ function InventoryContent() {
   // Get pagination info from GraphQL response
   const pageCount = productsData?.allProducts.totalPages || 1;
 
-  // Apply client-side filtering for search and favorites
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.title.toLowerCase().includes(search.toLowerCase()) ||
-      p.description.toLowerCase().includes(search.toLowerCase());
-
-    const matchesFavourite = showFavourites ? p.isFavourite : true;
-
-    return matchesSearch && matchesFavourite;
-  });
+  // Apply only favorites filtering on the frontend (search is handled by backend)
+  const displayProducts = showFavourites 
+    ? products.filter((p) => p.isFavourite) 
+    : products;
 
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
   };
 
+  console.log(currentPage);
+
   const handleToggleFavorite = async (productId: string) => {
     try {
+      setIsRefetchingFavorites(true);
       await toggleFavorite({
         variables: {
           productId: productId,
         },
       });
-      
-      // Refetch the products to get updated favorite status
+
       await refetch();
-     
     } catch (error) {
       console.error("Error toggling favorite:", error);
       showErrorToast("Failed to update favorite status. Please try again.");
+    } finally {
+      setIsRefetchingFavorites(false);
     }
   };
 
-  const handleConfirmOrder = async (data: { 
-    customer: string; 
-    price: number; 
-    productId?: string; 
+  const handleConfirmOrder = async (data: {
+    customer: string;
+    price: number;
+    productId?: string;
     shopifyVariantId?: string;
     customerId?: string;
   }) => {
@@ -135,12 +139,14 @@ function InventoryContent() {
       // Create order with single item
       await createOrder({
         variables: {
-          orderItems: [{
-            productId: data.productId,
-            variantId: data.shopifyVariantId,
-            quantity: 1,
-            price: data.price,
-          }],
+          orderItems: [
+            {
+              productId: data.productId,
+              variantId: data.shopifyVariantId,
+              quantity: 1,
+              price: data.price,
+            },
+          ],
           totalPrice: data.price,
           patientId: data.customerId,
         },
@@ -155,8 +161,6 @@ function InventoryContent() {
       showErrorToast("Failed to create order. Please try again.");
     }
   };
-
- 
 
   // Show error state
   if (productsError) {
@@ -257,106 +261,128 @@ function InventoryContent() {
           </Tooltip>
         </div>
       </div>
-      {productsLoading  ? <InventorySkeleton /> : (
+      {productsLoading && !isRefetchingFavorites ? (
+        <InventorySkeleton />
+      ) : (
         <div className="flex flex-col gap-2 md:gap-6">
-        {showGridView ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={(id) => {
-                  // Find the transformed product to get the originalId
-                  const transformedProduct = filteredProducts.find(p => p.id === id);
-                  if (transformedProduct) {
-                    // Find the original GraphQL product data
-                    const originalProduct = productsData?.allProducts.allData?.find(p => p.id === transformedProduct.originalId);
-                    if (originalProduct) {
-                      setSelectedProduct({
-                        id: originalProduct.id,
-                        shopifyVariantId: originalProduct.variants?.[0]?.shopifyVariantId || "",
-                        title: originalProduct.title,
-                        price: originalProduct.variants?.[0]?.price,
-                      });
-                      setIsOrderModalOpen(true);
+          {showGridView ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
+              {displayProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={(id) => {
+                    // Find the transformed product to get the originalId
+                    const transformedProduct = displayProducts.find(
+                      (p) => p.id === id
+                    );
+                    if (transformedProduct) {
+                      // Find the original GraphQL product data
+                      const originalProduct =
+                        productsData?.allProducts.allData?.find(
+                          (p) => p.id === transformedProduct.originalId
+                        );
+                      if (originalProduct) {
+                        setSelectedProduct({
+                          id: originalProduct.id,
+                          shopifyVariantId:
+                            originalProduct.variants?.[0]?.shopifyVariantId ||
+                            "",
+                          title: originalProduct.title,
+                          price: originalProduct.variants?.[0]?.price,
+                        });
+                        setIsOrderModalOpen(true);
+                      }
                     }
+                  }}
+                  onToggleFavourite={(id) => {
+                    // Find the transformed product to get the originalId
+                    const transformedProduct = displayProducts.find(
+                      (p) => p.id === id
+                    );
+                    if (transformedProduct) {
+                      handleToggleFavorite(transformedProduct.originalId);
+                    }
+                  }}
+                  onCardClick={() =>
+                    router.push(`/inventory/${product.originalId}`)
                   }
-                }}
-                onToggleFavourite={(id) => {
-                  // Find the transformed product to get the originalId
-                  const transformedProduct = filteredProducts.find(p => p.id === id);
-                  if (transformedProduct) {
-                    handleToggleFavorite(transformedProduct.originalId);
-                  }
-                }}
-                onCardClick={() => router.push(`/inventory/${product.originalId}`)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-1">
-            <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-table">
-              <div className="col-span-5 md:col-span-4 lg:col-span-5">
-                Product
-              </div>
-              <div className="col-span-3">Category</div>
-              <div className="col-span-2">Stock</div>
-              <div className="col-span-1">Price</div>
-              <div className="col-span-1 md:col-span-2 lg:col-span-1 text-center">
-                Actions
-              </div>
+                />
+              ))}
             </div>
-            {filteredProducts.map((product) => (
-              <ProductListView
-                onRowClick={() => router.push(`/inventory/${product.originalId}`)}
-                key={product.id}
-                product={product}
-                onToggleFavourite={(id) => {
-                  // Find the transformed product to get the originalId
-                  const transformedProduct = filteredProducts.find(p => p.id === id);
-                  if (transformedProduct) {
-                    handleToggleFavorite(transformedProduct.originalId);
+          ) : (
+            <div className="space-y-1">
+              <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-table">
+                <div className="col-span-5 md:col-span-4 lg:col-span-5">
+                  Product
+                </div>
+                <div className="col-span-3">Category</div>
+                <div className="col-span-2">Stock</div>
+                <div className="col-span-1">Price</div>
+                <div className="col-span-1 md:col-span-2 lg:col-span-1 text-center">
+                  Actions
+                </div>
+              </div>
+              {displayProducts.map((product) => (
+                <ProductListView
+                  onRowClick={() =>
+                    router.push(`/inventory/${product.originalId}`)
                   }
-                }}
-                onAddToCart={(id) => {
-                  // Find the transformed product to get the originalId
-                  const transformedProduct = filteredProducts.find(p => p.id === id);
-                  if (transformedProduct) {
-                    // Find the original GraphQL product data
-                    const originalProduct = productsData?.allProducts.allData?.find(p => p.id === transformedProduct.originalId);
-                    if (originalProduct) {
-                      setSelectedProduct({
-                        id: originalProduct.id,
-                        shopifyVariantId: originalProduct.variants?.[0]?.shopifyVariantId || "",
-                        title: originalProduct.title,
-                        price: originalProduct.variants?.[0]?.price,
-                      });
-                      setIsOrderModalOpen(true);
+                  key={product.id}
+                  product={product}
+                  onToggleFavourite={(id) => {
+                    // Find the transformed product to get the originalId
+                    const transformedProduct = displayProducts.find(
+                      (p) => p.id === id
+                    );
+                    if (transformedProduct) {
+                      handleToggleFavorite(transformedProduct.originalId);
                     }
-                  }
-                }}
+                  }}
+                  onAddToCart={(id) => {
+                    // Find the transformed product to get the originalId
+                    const transformedProduct = displayProducts.find(
+                      (p) => p.id === id
+                    );
+                    if (transformedProduct) {
+                      // Find the original GraphQL product data
+                      const originalProduct =
+                        productsData?.allProducts.allData?.find(
+                          (p) => p.id === transformedProduct.originalId
+                        );
+                      if (originalProduct) {
+                        setSelectedProduct({
+                          id: originalProduct.id,
+                          shopifyVariantId:
+                            originalProduct.variants?.[0]?.shopifyVariantId ||
+                            "",
+                          title: originalProduct.title,
+                          price: originalProduct.variants?.[0]?.price,
+                        });
+                        setIsOrderModalOpen(true);
+                      }
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          <div className="flex justify-center flex-col gap-2 md:gap-6 ">
+            {displayProducts.length < 1 && (
+              <EmptyState mtClasses=" -mt-3 md:-mt-6" />
+            )}
+
+            {displayProducts.length > 0 && (
+              <Pagination
+                currentPage={currentPage - 1} // Convert 1-based to 0-based for pagination component
+                totalPages={pageCount}
+                onPageChange={(selectedPage) => handlePageChange(selectedPage + 1)} // Convert 0-based back to 1-based
               />
-            ))}
+            )}
           </div>
-        )}
-
-        <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-          {filteredProducts.length < 1 && (
-            <EmptyState mtClasses=" -mt-3 md:-mt-6" />
-          )}
-
-          {filteredProducts.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={pageCount}
-              onPageChange={handlePageChange}
-            />
-          )}
         </div>
-      </div>
       )}
-
-      
 
       <OrderModal
         isOpen={isOrderModalOpen}

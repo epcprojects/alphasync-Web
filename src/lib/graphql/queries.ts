@@ -53,8 +53,8 @@ export const ALL_PRODUCTS = gql`
   }
 `;
 export const ALL_PRODUCTS_INVENTORY = gql`
-  query AllProducts($page: Int, $perPage: Int) {
-    allProducts(page: $page, perPage: $perPage) {
+  query AllProducts($search: String, $page: Int, $perPage: Int) {
+    allProducts(search: $search, page: $page, perPage: $perPage) {
       allData {
         customPrice
         description
@@ -76,6 +76,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
           shopifyVariantId
         }
       }
+      count
       nextPage
       prevPage
       totalPages
