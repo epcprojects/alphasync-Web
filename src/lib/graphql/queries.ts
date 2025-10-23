@@ -2,8 +2,8 @@ import { userpayload } from "@/lib/graphql/attributes";
 import { gql } from "@apollo/client";
 
 export const ALL_DOCTORS = gql`
-  query AllDoctors($status: UserStatusEnum $search: String, $page: Int, $perPage: Int) {
-    allDoctors(status: $status, search: $search, page: $page, perPage: $perPage) {
+  query AllDoctors($pendingInvites: Boolean, $status: UserStatusEnum $search: String, $page: Int, $perPage: Int) {
+    allDoctors(pendingInvites: $pendingInvites, status: $status, search: $search, page: $page, perPage: $perPage) {
       allData {
        ${userpayload}
       }

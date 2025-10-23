@@ -73,6 +73,14 @@ export const RESEND_OTP = gql`
   }
 `;
 
+export const RESEND_INVITATION = gql`
+  mutation ResendInvitation($id: ID!) {
+    resendInvitation(input: { id: $id }) {
+        id
+    }
+}
+`;
+
 export const UPDATE_USER = gql`
   mutation UpdateUser(
     $id: ID
