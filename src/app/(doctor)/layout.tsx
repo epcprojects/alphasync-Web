@@ -1,6 +1,6 @@
 "use client";
 import React, { ReactNode } from "react";
-import { DashboardStats, Header } from "../components";
+import { DashboardStats, Header, DoctorRoute } from "../components";
 import {
   SyrupIcon,
   InventoryIcon,
@@ -89,79 +89,81 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const isMobile = useIsMobile();
 
   return (
-    <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
-      <div className="px-2 py-3 md:p-4 md:pb-6 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex lg:p-5 flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-[20px] !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
-        <Header menuItems={menuItems} />
+    <DoctorRoute>
+      <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
+        <div className="px-2 py-3 md:p-4 md:pb-6 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex lg:p-5 flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-[20px] !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
+          <Header menuItems={menuItems} />
 
-        {!hideStats && (
-          <DashboardStats
-            showUserName={pathname.startsWith("/orders") ? false : true}
-            username={user?.fullName || "noname"}
-            heading={heading}
-            stats={[
-              {
-                label: "Sales This Year",
-                value: "$67,890.41",
-                icon: (
-                  <SyrupIcon
-                    height={isMobile ? "16" : "32"}
-                    width={isMobile ? "16" : "32"}
-                  />
-                ),
-                bgColor: "bg-purple-500",
-              },
-              {
-                label: "Sales This Month",
-                value: "$8,932.12",
-                icon: (
-                  <SyrupIcon
-                    height={isMobile ? "16" : "32"}
-                    width={isMobile ? "16" : "32"}
-                  />
-                ),
-                bgColor: "bg-emerald-400",
-              },
-              {
-                label: "Sales This Week",
-                value: "$2,114.77",
-                icon: (
-                  <SyrupIcon
-                    height={isMobile ? "16" : "32"}
-                    width={isMobile ? "16" : "32"}
-                  />
-                ),
-                bgColor: "bg-pink-400",
-              },
-              {
-                label: "Top Ordered Product",
-                value: "BPC-157",
-                icon: (
-                  <SyrupIcon
-                    height={isMobile ? "16" : "32"}
-                    width={isMobile ? "16" : "32"}
-                  />
-                ),
-                bgColor: "bg-orange-400",
-              },
-            ]}
-          />
-        )}
-        {hideStats && (
-          <div className="flex items-center flex-col">
-            {hideStats && (
-              <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
-                {heading}
-              </h2>
-            )}
-            {showSubHeads && (
-              <h2 className="text-white/80 mt-1 text-base text-center md:text-xl">
-                {subheading}
-              </h2>
-            )}
-          </div>
-        )}
+          {!hideStats && (
+            <DashboardStats
+              showUserName={pathname.startsWith("/orders") ? false : true}
+              username={user?.fullName || "noname"}
+              heading={heading}
+              stats={[
+                {
+                  label: "Sales This Year",
+                  value: "$67,890.41",
+                  icon: (
+                    <SyrupIcon
+                      height={isMobile ? "16" : "32"}
+                      width={isMobile ? "16" : "32"}
+                    />
+                  ),
+                  bgColor: "bg-purple-500",
+                },
+                {
+                  label: "Sales This Month",
+                  value: "$8,932.12",
+                  icon: (
+                    <SyrupIcon
+                      height={isMobile ? "16" : "32"}
+                      width={isMobile ? "16" : "32"}
+                    />
+                  ),
+                  bgColor: "bg-emerald-400",
+                },
+                {
+                  label: "Sales This Week",
+                  value: "$2,114.77",
+                  icon: (
+                    <SyrupIcon
+                      height={isMobile ? "16" : "32"}
+                      width={isMobile ? "16" : "32"}
+                    />
+                  ),
+                  bgColor: "bg-pink-400",
+                },
+                {
+                  label: "Top Ordered Product",
+                  value: "BPC-157",
+                  icon: (
+                    <SyrupIcon
+                      height={isMobile ? "16" : "32"}
+                      width={isMobile ? "16" : "32"}
+                    />
+                  ),
+                  bgColor: "bg-orange-400",
+                },
+              ]}
+            />
+          )}
+          {hideStats && (
+            <div className="flex items-center flex-col">
+              {hideStats && (
+                <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
+                  {heading}
+                </h2>
+              )}
+              {showSubHeads && (
+                <h2 className="text-white/80 mt-1 text-base text-center md:text-xl">
+                  {subheading}
+                </h2>
+              )}
+            </div>
+          )}
+        </div>
+        <main className="px-3  pb-3">{children}</main>
       </div>
-      <main className="px-3  pb-3">{children}</main>
-    </div>
+    </DoctorRoute>
   );
 }

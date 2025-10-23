@@ -38,6 +38,13 @@ import Pagination from "./ui/Pagination";
 import ChangePassword from "@/app/components/ChangePassword";
 import ImageUpload from "@/app/components/ImageUpload";
 import Chat from "./ui/chat/Chat";
+import { 
+  RoleBasedRoute, 
+  AdminRoute, 
+  DoctorRoute, 
+  CustomerRoute, 
+  DoctorOrAdminRoute 
+} from "./RoleBasedRoute";
 
 export {
   EmptyState,
@@ -80,4 +87,9 @@ export {
   ChangePassword,
   ImageUpload,
   Chat,
+  RoleBasedRoute,
+  AdminRoute,
+  DoctorRoute,
+  CustomerRoute,
+  DoctorOrAdminRoute,
 };
