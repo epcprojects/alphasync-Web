@@ -201,7 +201,7 @@ export default function CustomerDetail() {
           name={customer.fullName || "Unknown Customer"}
           email={customer.email || ""}
           phone={customer.phoneNo || ""}
-          totalOrders={8} // TODO: Get from orders query
+          totalOrders={customer?.patientOrdersCount} // TODO: Get from orders query
           statusActive={customer.status === "active"}
           lastOrder="1/15/2024" // TODO: Get from orders query
           dob={customer.dateOfBirth || ""}

@@ -121,7 +121,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
         };
 
         if (initialData) {
-          // Edit mode - use UPDATE_USER mutation
+          // Edit mode - use UPDATE_USER mutation (no userType needed)
           await updateUser({
             variables: {
               id: initialData.id, // Include the user ID for update
@@ -129,9 +129,12 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
             },
           });
         } else {
-          // Create mode - use CREATE_INVITATION mutation
+          // Create mode - use CREATE_INVITATION mutation with userType
           await createInvitation({
-            variables,
+            variables: {
+              ...variables,
+              userType: "DOCTOR",
+            },
           });
         }
       } catch (error) {

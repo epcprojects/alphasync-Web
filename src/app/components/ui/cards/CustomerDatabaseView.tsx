@@ -13,6 +13,7 @@ type Customer = {
   lastOrder: string;
   totalOrder: number;
   status: string;
+  patientOrdersCount?: string;
 };
 
 type CustomerDatabaseViewProps = {
@@ -60,13 +61,22 @@ export default function CustomerDatabaseView({
   const name = patient?.fullName || customer?.name;
   const contact = patient?.phoneNo || customer?.contact;
   const email = patient?.email || customer?.email;
-  const dateOfBirth = patient?.createdAt ? new Date(patient.createdAt).toLocaleDateString() : customer?.dateOfBirth;
-  const lastOrder = patient?.lastSignInAt ? new Date(patient.lastSignInAt).toLocaleDateString() : customer?.lastOrder;
-  const totalOrder = customer?.totalOrder || "—";
-  const status = patient?.status === "ACTIVE" ? "Active" : patient?.status === "INACTIVE" ? "Inactive" : patient?.status || customer?.status;
+  const dateOfBirth = patient?.createdAt
+    ? new Date(patient.createdAt).toLocaleDateString()
+    : customer?.dateOfBirth;
+  const lastOrder = patient?.lastSignInAt
+    ? new Date(patient.lastSignInAt).toLocaleDateString()
+    : customer?.lastOrder;
+  const totalOrder = patient?.patientOrdersCount;
+  const status =
+    patient?.status === "ACTIVE"
+      ? "Active"
+      : patient?.status === "INACTIVE"
+      ? "Inactive"
+      : patient?.status || customer?.status;
 
   const { bg, text } = getColorPair(id);
-  
+
   return (
     <div
       onClick={onRowClick}

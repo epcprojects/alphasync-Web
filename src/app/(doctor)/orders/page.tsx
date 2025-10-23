@@ -157,7 +157,7 @@ function OrderContent() {
         </div>
 
         <div className="md:bg-white rounded-full flex md:flex-row flex-col w-full items-center gap-2 md:p-2  md:shadow-table lg:w-fit">
-          <div className="flex items-center relative w-full md:shadow-none bg-white md:bg-transparent md:p-0  p-2 rounded-full shadow-table">
+          {/* <div className="flex items-center relative w-full md:shadow-none bg-white md:bg-transparent md:p-0  p-2 rounded-full shadow-table">
             <span className="absolute left-3">
               <SearchIcon
                 height={isMobile ? "16" : "20"}
@@ -170,15 +170,15 @@ function OrderContent() {
               placeholder="Search"
               className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
-          </div>
+          </div> */}
           <div className="flex items-center w-fit gap-1 md:gap-2 md:bg-transparent md:p-0 md:shadow-none bg-white rounded-full p-2 w-full shadow-table">
-            <DateRangeSelector
+            {/* <DateRangeSelector
               value={range}
               onApply={(next) => {
                 setRange(next);
                 setCurrentPage(0);
               }}
-            />
+            /> */}
             <Menu>
               <MenuButton className="inline-flex whitespace-nowrap py-1.5 md:w-fit w-full md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline justify-between data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
                 {selectedStatus} <ArrowDownIcon fill="#717680" />
@@ -295,7 +295,7 @@ function OrderContent() {
                 id: parseInt(order.id),
                 orderId: order.id,
                 customer: order.patient.fullName,
-              
+
                 date: format(new Date(order.createdAt), "MM-dd-yy"),
                 status: order.status,
                 items: order.orderItems.length,

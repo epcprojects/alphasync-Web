@@ -21,6 +21,7 @@ export const userpayload = `
         address
         userType
         dateOfBirth
+        patientOrdersCount
 `;
 
 export interface UserAttributes {
@@ -46,4 +47,5 @@ export interface UserAttributes {
   address?: string;
   userType?: string;
   dateOfBirth?: string;
+  patientOrdersCount?: string;
 }

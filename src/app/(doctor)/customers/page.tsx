@@ -40,6 +40,7 @@ interface PatientFormData {
   email?: string;
   address?: string;
   status?: string;
+  patientOrdersCount?: string;
 }
 
 function CustomerContent() {
@@ -48,7 +49,7 @@ function CustomerContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [patientToDelete, setPatientToDelete] = useState<PatientFormData>();
-  
+
   const statusOptions = [
     { label: "All Status", value: null },
     { label: "Active", value: "ACTIVE" },
@@ -189,7 +190,7 @@ function CustomerContent() {
           <div className="col-span-1">Status</div>
           <div className="col-span-1 text-center">Actions</div>
         </div>
-        
+
         {error && (
           <div className="text-center">
             <p className="text-red-500 mb-4">{error.message}</p>
@@ -215,7 +216,7 @@ function CustomerContent() {
             ))}
           </>
         )}
-        
+
         {(!patients || patients.length === 0) && !loading && <EmptyState />}
       </div>
       {pageCount && pageCount > 1 && (
@@ -252,7 +253,8 @@ function CustomerContent() {
       >
         <div className="text-center py-4">
           <p className="text-gray-600 mb-4">
-            Are you sure you want to delete this patient? This action cannot be undone.
+            Are you sure you want to delete this patient? This action cannot be
+            undone.
           </p>
         </div>
       </AppModal>
