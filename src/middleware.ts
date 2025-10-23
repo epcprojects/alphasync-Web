@@ -7,7 +7,12 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes (accessible without login)
-  const publicRoutes = ["/login", "/otp", "/new-password"];
+  const publicRoutes = [
+    "/login",
+    "/otp",
+    "/new-password",
+    "/accept-invitation",
+  ];
   const isPublicRoute = publicRoutes.includes(pathname);
 
   // Protected routes (require authentication)
@@ -53,6 +58,7 @@ export const config = {
     "/login",
     "/otp",
     "/new-password",
+    "/accept-invitation",
     "/inventory/:path*",
     "/admin/:path*",
   ],
