@@ -196,8 +196,8 @@ query FetchAllMessages($chatId: ID!) {
 }
 `;
 export const FETCH_DOCTOR = gql`
-  query FetchUser {
-    fetchUser {
+  query FetchUser($status: String, $page: Int, $perPage: Int) {
+    fetchUser(status: $status, page: $page, perPage: $perPage) {
       user {
         doctor {
           id
@@ -225,4 +225,21 @@ export const MESSAGE_ADDED = gql`
       }
     }
   }
+`;
+
+export const PATIENT_ORDERS = gql`
+query PatientOrders($patientId: ID, $page: Int, $perPage: Int) {
+  patientOrders(patientId: $patientId, page: $page, perPage: $perPage) {
+      allData {
+          id
+          status
+          createdAt
+          totalPrice
+      }
+      count
+      nextPage
+      prevPage
+      totalPages
+  }
+}
 `;

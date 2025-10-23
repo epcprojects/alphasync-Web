@@ -21,7 +21,6 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { useState } from "react";
-import { orders } from "../../../../../public/data/orders";
 import ReactPaginate from "react-paginate";
 import { PrecriptionDATA } from "../../../../../public/data/PrescriptionRequest";
 import AddNoteModal from "@/app/components/ui/modals/AddNoteModal";
@@ -30,13 +29,29 @@ import ChatModal from "@/app/components/ui/modals/ChatModal";
 import NewOrderModal from "@/app/components/ui/modals/NewOrderModal";
 import CustomerProfileHeaderCard from "@/app/components/ui/cards/CustomerProfileHeaderCard";
 import { useQuery } from "@apollo/client/react";
-import { FETCH_CUSTOMER } from "@/lib/graphql/queries";
+import { FETCH_CUSTOMER, PATIENT_ORDERS } from "@/lib/graphql/queries";
 import { UserAttributes } from "@/lib/graphql/attributes";
 
 // Interface for GraphQL response
 interface FetchUserResponse {
   fetchUser: {
     user: UserAttributes;
+  };
+}
+
+// Interface for Patient Orders response
+interface PatientOrdersResponse {
+  patientOrders: {
+    allData: {
+      id: string;
+      status: string;
+      createdAt: string;
+      totalPrice: number;
+    }[];
+    count: number;
+    nextPage: number | null;
+    prevPage: number | null;
+    totalPages: number;
   };
 }
 
@@ -50,6 +65,12 @@ export default function CustomerDetail() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
+  // State declarations
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const itemsPerPage = 10;
+  const initialPage = parseInt(searchParams.get("page") || "0", 10);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+
   // GraphQL query to fetch customer data
   const { data, loading, error } = useQuery<FetchUserResponse>(FETCH_CUSTOMER, {
     variables: {
@@ -59,21 +80,37 @@ export default function CustomerDetail() {
     fetchPolicy: "network-only",
   });
 
+  // GraphQL query to fetch patient orders
+  const { 
+    data: ordersData, 
+    loading: ordersLoading, 
+    error: ordersError,
+    refetch: refetchOrders
+  } = useQuery<PatientOrdersResponse>(PATIENT_ORDERS, {
+    variables: {
+      patientId: params.id,
+      page: currentPage + 1, // GraphQL pagination is usually 1-based
+      perPage: itemsPerPage,
+    },
+    skip: !params.id,
+    fetchPolicy: "network-only",
+  });
+
   const customer = data?.fetchUser?.user;
+  const patientOrders = ordersData?.patientOrders;
 
-  // State declarations
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const itemsPerPage = 10;
-
-  const initialPage = parseInt(searchParams.get("page") || "0", 10);
-  const [currentPage, setCurrentPage] = useState(initialPage);
-
-  const pageCount = Math.ceil(orders.length / itemsPerPage);
-  const offset = currentPage * itemsPerPage;
-  const currentItems = orders.slice(offset, offset + itemsPerPage);
+  // Use GraphQL data for pagination
+  const pageCount = patientOrders?.totalPages || 0;
+  const currentItems = patientOrders?.allData || [];
+  
   const handlePageChange = ({ selected }: { selected: number }) => {
     setCurrentPage(selected);
+    // Refetch orders with new page number
+    refetchOrders({
+      patientId: params.id,
+      page: selected + 1,
+      perPage: itemsPerPage,
+    });
   };
 
   const handleApprove = (title: string) => {
@@ -108,7 +145,7 @@ export default function CustomerDetail() {
   };
 
   // Show loading state
-  if (loading) {
+  if (loading || ordersLoading) {
     return (
       <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
         <div className="flex items-center gap-2 md:gap-4">
@@ -201,9 +238,12 @@ export default function CustomerDetail() {
           name={customer.fullName || "Unknown Customer"}
           email={customer.email || ""}
           phone={customer.phoneNo || ""}
-          totalOrders={customer?.patientOrdersCount} // TODO: Get from orders query
+          totalOrders={patientOrders?.count || 0}
           statusActive={customer.status === "active"}
-          lastOrder="1/15/2024" // TODO: Get from orders query
+          lastOrder={patientOrders?.allData?.[0]?.createdAt ? 
+            new Date(patientOrders.allData[0].createdAt).toLocaleDateString() : 
+            "No orders"
+          }
           dob={customer.dateOfBirth || ""}
           onQuickChat={handleQuickChat}
           onCreateOrder={() => setIsOrderModalOpen(true)}
@@ -257,26 +297,49 @@ export default function CustomerDetail() {
             </TabList>
             <TabPanels className={"p-4 md:p-6"}>
               <TabPanel className={""}>
-                <div className="space-y-1">
-                  <div className="grid grid-cols-[1fr_1fr_1fr_1fr_5rem] gap-4 p-1.5 md:p-3 text-xs font-medium bg-gray-50 rounded-lg text-black">
-                    <div className="">Order ID</div>
-                    <div className="">Date</div>
-                    <div className="">Status</div>
-                    <div className="">Total</div>
-                    <div className="text-center">Actions</div>
+                {ordersLoading ? (
+                  <div className="space-y-4">
+                    <Skeleton className="w-full h-12 rounded-lg" />
+                    <Skeleton className="w-full h-16 rounded-lg" />
+                    <Skeleton className="w-full h-16 rounded-lg" />
+                    <Skeleton className="w-full h-16 rounded-lg" />
                   </div>
-                  {currentItems.map((order) => (
-                    <CustomerOrderHistroyView
-                      onRowClick={() => router.push(`/orders/${order.orderId}`)}
-                      key={order.orderId}
-                      order={order}
-                      onViewOrderDetails={() =>
-                        router.push(`/orders/${order.orderId}`)
-                      }
-                    />
-                  ))}
-                </div>
-                {currentItems.length > 0 && (
+                ) : ordersError ? (
+                  <div className="text-center py-8">
+                    <p className="text-red-500 mb-4"> {ordersError.message}</p>
+                  
+                  </div>
+                ) : currentItems.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 mb-4">No orders found for this customer</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <div className="grid grid-cols-[1fr_1fr_1fr_1fr_5rem] gap-4 p-1.5 md:p-3 text-xs font-medium bg-gray-50 rounded-lg text-black">
+                      <div className="">Order ID</div>
+                      <div className="">Date</div>
+                      <div className="">Status</div>
+                      <div className="">Total</div>
+                      <div className="text-center">Actions</div>
+                    </div>
+                    {currentItems.map((order) => (
+                      <CustomerOrderHistroyView
+                        onRowClick={() => router.push(`/orders/${order.id}`)}
+                        key={order.id}
+                        order={{
+                          orderId: order.id,
+                          date: new Date(order.createdAt).toLocaleDateString(),
+                          status: order.status,
+                          totalAmount: order.totalPrice,
+                        }}
+                        onViewOrderDetails={() =>
+                          router.push(`/orders/${order.id}`)
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+                {!ordersLoading && !ordersError && currentItems.length > 0 && (
                   <div className="w-full flex items-center justify-center">
                     <ReactPaginate
                       breakLabel="..."
@@ -304,7 +367,7 @@ export default function CustomerDetail() {
                       pageCount={pageCount}
                       forcePage={currentPage}
                       pageLinkClassName="px-4 py-2 rounded-lg text-gray-500 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-                      containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
+                      containerClassName="px-3 flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
                       pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
                       activeClassName="bg-gray-200 text-gray-900 font-medium text-gray-700"
                       previousClassName="md:px-4 md:py-2 rounded-full  absolute left-0 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
