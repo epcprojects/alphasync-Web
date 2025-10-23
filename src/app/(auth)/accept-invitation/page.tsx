@@ -20,33 +20,38 @@ function Content() {
   const router = useRouter();
   const token = searchParams.get("token");
   const doctorParam = searchParams.get("doctor");
-  
+
   // Debug logging
-  console.log("URL params:", { token, doctorParam });
-  console.log("All search params:", Object.fromEntries(searchParams.entries()));
-  
+
   // Handle both correct format (?token=...&doctor=true) and incorrect format (?token=...?doctor=true)
   // Also check if URL contains doctor=true anywhere
-  const urlString = typeof window !== 'undefined' ? window.location.href : '';
-  const hasDoctorTrue = urlString.includes('doctor=true');
-  
-  const isDoctor = doctorParam === "true" || doctorParam === "true?doctor=true" || doctorParam?.includes("true") || hasDoctorTrue;
-  
-  console.log("isDoctor:", isDoctor);
+  const urlString = typeof window !== "undefined" ? window.location.href : "";
+  const hasDoctorTrue = urlString.includes("doctor=true");
+
+  const isDoctor =
+    doctorParam === "true" ||
+    doctorParam === "true?doctor=true" ||
+    doctorParam?.includes("true") ||
+    hasDoctorTrue;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasAutoExecuted, setHasAutoExecuted] = useState(false);
   const [invitationAccepted, setInvitationAccepted] = useState(false);
 
-  const [acceptInvitation, { loading: acceptLoading }] = useMutation(ACCEPT_INVITATION, {
-    onCompleted: () => {
-      setInvitationAccepted(true);
-      setIsModalOpen(true);
-    },
-    onError: () => {
-      showErrorToast("There is an error accepting the invitation. Please try again.");
-    },
-  });
+  const [acceptInvitation, { loading: acceptLoading }] = useMutation(
+    ACCEPT_INVITATION,
+    {
+      onCompleted: () => {
+        setInvitationAccepted(true);
+        setIsModalOpen(true);
+      },
+      onError: () => {
+        showErrorToast(
+          "There is an error accepting the invitation. Please try again."
+        );
+      },
+    }
+  );
 
   // Auto-run mutation when doctor=false or doctor param is not "true" - only once
   useEffect(() => {
@@ -85,7 +90,7 @@ function Content() {
         showErrorToast("Invalid invitation token");
         return;
       }
-      
+
       acceptInvitation({
         variables: {
           token: token,
@@ -131,7 +136,8 @@ function Content() {
               value={formik.values.confirmPassword}
               onChange={formik.handleChange}
               error={
-                formik.touched.confirmPassword && !!formik.errors.confirmPassword
+                formik.touched.confirmPassword &&
+                !!formik.errors.confirmPassword
               }
               errorMessage={formik.errors.confirmPassword}
             />
@@ -156,12 +162,26 @@ function Content() {
             <div className="text-center py-8">
               <div className="mb-6">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-8 h-8 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Invitation Accepted!</h3>
-                <p className="text-gray-600 mb-6">Your invitation has been successfully processed.</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Invitation Accepted!
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Your invitation has been successfully processed.
+                </p>
               </div>
               <ThemeButton
                 label="Go to Login"
@@ -172,7 +192,6 @@ function Content() {
             </div>
           ) : (
             <div className="text-center py-8">
-             
               {acceptLoading && (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
