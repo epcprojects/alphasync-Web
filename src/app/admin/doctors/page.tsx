@@ -117,12 +117,6 @@ function DoctorContent() {
     setCurrentPage(0);
   };
 
-  const handleTabChange = (index: number) => {
-    setSelectedTabIndex(index);
-    setCurrentPage(0);
-    setSelectedStatus("All Status"); // Reset status filter when switching tabs
-  };
-
   const handleConfirmDelete = async () => {
     if (!doctorToDelete?.id) return;
 
