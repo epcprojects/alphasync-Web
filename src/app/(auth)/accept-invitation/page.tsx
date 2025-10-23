@@ -56,7 +56,6 @@ function Content() {
   // Auto-run mutation when doctor=false or doctor param is not "true" - only once
   useEffect(() => {
     if (isDoctor !== true && token && !acceptLoading && !hasAutoExecuted) {
-      console.log("Auto-running mutation for non-doctor invitation");
       setHasAutoExecuted(true);
       acceptInvitation({
         variables: {
