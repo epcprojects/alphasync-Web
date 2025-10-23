@@ -71,9 +71,9 @@ function OTPContent() {
         showSuccessToast("Logged in successfully!");
 
         if (storedData?.userType === "DOCTOR") {
-          router.push("/inventory");
+          window.location.href = "/inventory";
         } else if (storedData?.userType === "PATIENT") {
-          router.push("/pending-payments");
+          window.location.href = "/pending-payments";
         } else if (storedData?.userType === "ADMIN") {
           router.push(`/admin/doctors`);
         } else {
