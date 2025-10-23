@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  ArrowDownIcon,
-  DoctorFilledIcon,
-  PlusIcon,
-  SearchIcon,
-} from "@/icons";
+import { ArrowDownIcon, DoctorFilledIcon, PlusIcon, SearchIcon } from "@/icons";
 import React, { Suspense, useState } from "react";
 import {
   EmptyState,
@@ -19,6 +14,7 @@ import { useQuery, useMutation } from "@apollo/client/react";
 
 import DoctorListView from "@/app/components/ui/cards/DoctorListView";
 import AddEditDoctorModal from "@/app/components/ui/modals/AddEditDoctorModal";
+import CsvImportDoctorModal from "@/app/components/ui/modals/CsvImportDoctorModal";
 import DoctorDeleteModal from "@/app/components/ui/modals/DoctorDeleteModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ALL_DOCTORS } from "@/lib/graphql/queries";
@@ -50,6 +46,7 @@ interface DoctorFormData {
 function DoctorContent() {
   const [search, setSearch] = useState("");
   const [isModalOpne, setIsModalOpen] = useState(false);
+  const [isCsvImportModalOpen, setIsCsvImportModalOpen] = useState(false);
   const [isDeleteModalOpne, setIsDeleteModalOpen] = useState(false);
   const [editDoctor, setEditDoctor] = useState<DoctorFormData>();
   const [doctorToDelete, setDoctorToDelete] = useState<DoctorFormData>();
@@ -187,6 +184,7 @@ function DoctorContent() {
               ))}
             </MenuItems>
           </Menu>
+          <ThemeButton label="Import" onClick={() => setIsCsvImportModalOpen(true)} />
 
           <ThemeButton
             label="Add New"
@@ -265,6 +263,17 @@ function DoctorContent() {
           refetch(); // Refetch data after adding/editing
         }}
         initialData={editDoctor}
+      />
+
+      <CsvImportDoctorModal
+        isOpen={isCsvImportModalOpen}
+        onClose={() => {
+          setIsCsvImportModalOpen(false);
+        }}
+        onConfirm={() => {
+          setIsCsvImportModalOpen(false);
+          refetch(); // Refetch data after importing
+        }}
       />
 
       <DoctorDeleteModal

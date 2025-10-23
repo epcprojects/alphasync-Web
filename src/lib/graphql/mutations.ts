@@ -374,3 +374,17 @@ export const SEND_MESSAGE = gql`
     }
   }
 `;
+export const BULK_IMPORT_DOCTORS = gql`
+  mutation BulkImportDoctors($csvFile: Upload!) {
+    bulkImportDoctors(input: { csvFile: $csvFile }) {
+      failedDetails {
+        data
+        errors
+        rowNumber
+      }
+      totalProcessed
+      successfulInvitations
+      failedRows
+    }
+  }
+`;

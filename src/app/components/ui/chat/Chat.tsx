@@ -96,35 +96,29 @@ export default function Chat({
   };
 
   // Fetch existing messages
-  const { data: messagesData } = useQuery(FETCH_ALL_MESSAGES, {
-    variables: { chatId },
-    skip: !chatId,
-    fetchPolicy: "cache-first",
-    onCompleted: (data) => {
-      if (data?.fetchAllMessages?.allData) {
-        const formatted = data.fetchAllMessages.allData.map(mapGraphQLMessage);
-        setMessages(formatted.reverse());
-      }
-    },
-  });
+  const { data: messagesData, loading: MessageLoading } = useQuery(
+    FETCH_ALL_MESSAGES,
+    {
+      variables: { chatId },
+      skip: !chatId,
+      fetchPolicy: "cache-first",
+      onCompleted: (data) => {
+        if (data?.fetchAllMessages?.allData) {
+          const formatted =
+            data.fetchAllMessages.allData.map(mapGraphQLMessage);
+          setMessages(formatted.reverse());
+        }
+      },
+    }
+  );
 
   // Subscription for new messages
-  const {
-    data: subscriptionData,
-    loading: subscriptionLoading,
-    error: subscriptionError,
-  } = useSubscription(MESSAGE_ADDED, {
+  const { data: subscriptionData } = useSubscription(MESSAGE_ADDED, {
     variables: { chatId },
     skip: !chatId,
     fetchPolicy: "no-cache",
     onError: (err) => {
       console.error("Subscription error:", err.message);
-    },
-    onSubscriptionData: ({ subscriptionData }) => {
-      setConnectionStatus("connected");
-    },
-    onSubscriptionComplete: () => {
-      setConnectionStatus("completed");
     },
   });
 
@@ -236,7 +230,7 @@ export default function Chat({
 
   return (
     <div className={`flex flex-col gap-2 md:gap-3 ${className}`}>
-      {isCreatingChat ? (
+      {isCreatingChat || MessageLoading ? (
         <div className="rounded-2xl border border-gray-200 p-3 h-[470px] flex items-center justify-center">
           <div className="text-gray-500">Initializing chat...</div>
         </div>
