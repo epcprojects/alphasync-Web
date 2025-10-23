@@ -1,7 +1,7 @@
 "use client";
 import React, { ReactNode } from "react";
 import { DashboardStats, Header, AdminRoute } from "../components";
-import { OrdersIcon, DashDoctor } from "@/icons";
+import { OrdersIcon, DashDoctor, PackageIcon } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -25,11 +25,17 @@ const menuItems = [
     href: "/admin/doctors",
     icon: OrdersIcon,
   },
+  {
+    label: "Products",
+    href: "/admin/products",
+    icon: PackageIcon,
+  },
   { label: "Settings", href: "/admin/settings", icon: OrdersIcon },
 ];
 
 const headings: Record<string, string> = {
   "/admin/doctors": "Trusted Peptide Solutions",
+  "/admin/products": "Product Management",
   "/admin/settings": "Settings",
 };
 

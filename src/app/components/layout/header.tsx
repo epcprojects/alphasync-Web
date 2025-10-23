@@ -299,11 +299,13 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                       </Link>
                     );
                   })}
-                  <Link
-                    onClick={closeMenu}
+                  <button
+                    onClick={() => {
+                      closeMenu();
+                      handleLogout();
+                    }}
                     key={"logout"}
-                    href={"/profile"}
-                    className="flex items-center gap-1.5 p-1.5  text-base font-normal leading-7 text-gray-900 hover:bg-gray-100"
+                    className="flex items-center gap-1.5 p-1.5 w-full text-left text-base font-normal leading-7 text-gray-900 hover:bg-gray-100"
                   >
                     <span className="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center">
                       <LogoutIcon
@@ -313,7 +315,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                       />
                     </span>
                     Logout
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

@@ -388,3 +388,13 @@ export const BULK_IMPORT_DOCTORS = gql`
     }
   }
 `;
+
+export const SYNC_PRODUCTS = gql`
+  mutation SyncProducts($clientMutationId: String) {
+    syncProducts(input: { clientMutationId: $clientMutationId }) {
+      message
+      productsCount
+      clientMutationId
+    }
+  }
+`;
