@@ -88,6 +88,7 @@ export const DOCTOR_ORDERS = gql`
     doctorOrders(status: $status, page: $page, perPage: $perPage) {
       allData {
         id
+        displayId
         patient {
          ${userpayload}
         }
@@ -125,6 +126,7 @@ export const FETCH_ORDER = gql`
   query FetchOrder($id: ID!) {
     fetchOrder(id: $id) {
       id
+      displayId
       createdAt
       status
       subtotalPrice
@@ -228,18 +230,18 @@ export const MESSAGE_ADDED = gql`
 `;
 
 export const PATIENT_ORDERS = gql`
-query PatientOrders($patientId: ID, $page: Int, $perPage: Int) {
-  patientOrders(patientId: $patientId, page: $page, perPage: $perPage) {
+  query PatientOrders($patientId: ID, $page: Int, $perPage: Int) {
+    patientOrders(patientId: $patientId, page: $page, perPage: $perPage) {
       allData {
-          id
-          status
-          createdAt
-          totalPrice
+        id
+        status
+        createdAt
+        totalPrice
       }
       count
       nextPage
       prevPage
       totalPages
+    }
   }
-}
 `;

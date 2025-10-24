@@ -36,6 +36,7 @@ interface OrderItem {
 interface FetchOrderResponse {
   fetchOrder: {
     id: string;
+    displayId?: string | number;
     createdAt: string;
     status: string;
     subtotalPrice: number;
@@ -112,7 +113,7 @@ const Page = () => {
           <ArrowDownIcon />
         </button>
         <h2 className="text-black font-semibold text-lg md:text-3xl">
-          Order {params.id}
+          Order {order.displayId || order.id}
         </h2>
       </div>
 
@@ -139,7 +140,7 @@ const Page = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-4">
                 <h2 className="text-base md:text-lg font-semibold text-black">
-                  Order {order.id}
+                  Order {order.displayId || order.id}
                 </h2>
                 <span className="text-gray-700 font-medium text-xs md:text-sm py-0.5 px-2.5 rounded-full bg-gray-100 border border-gray-200">
                   {formatDate(order.createdAt)}

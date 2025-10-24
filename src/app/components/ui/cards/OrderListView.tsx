@@ -6,7 +6,8 @@ import Tooltip from "../tooltip";
 
 type Order = {
   id: number;
-  orderId: string;
+  orderId: string | number;
+  displayId: number;
   date: string;
   customer: string;
 
@@ -98,7 +99,6 @@ export default function OrderListView({
               <h2 className="text-gray-800 text-xs md:text-sm font-medium">
                 {order.customer}
               </h2>
-             
             </div>
           </div>
 
@@ -159,7 +159,7 @@ export default function OrderListView({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onViewOrderDetail?.(order.id);
+                onViewOrderDetail?.(order.displayId);
               }}
               className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
             >
@@ -193,7 +193,6 @@ export default function OrderListView({
           <h2 className="text-gray-800 text-xs md:text-sm font-medium">
             {order.customer}
           </h2>
-         
         </div>
       </div>
       <div className="text-xs md:text-sm font-normal text-gray-600 ">
@@ -233,7 +232,7 @@ export default function OrderListView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onViewOrderDetail?.(order.id);
+              onViewOrderDetail?.(order.displayId);
             }}
             className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
