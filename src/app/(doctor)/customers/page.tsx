@@ -13,11 +13,24 @@ import {
 } from "@/app/components";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { ALL_PATIENTS } from "@/lib/graphql/queries";
-import { MODIFY_ACCESSS_USER, RESEND_INVITATION } from "@/lib/graphql/mutations";
+import {
+  MODIFY_ACCESSS_USER,
+  RESEND_INVITATION,
+} from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Menu, MenuButton, MenuItem, MenuItems, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+} from "@headlessui/react";
 import { ArrowDownIcon } from "@/icons";
 import AddCustomerModal from "@/app/components/ui/modals/AddCustomerModal";
 import AppModal from "@/app/components/ui/modals/AppModal";
@@ -127,7 +140,9 @@ function CustomerContent() {
 
   const handleResendInvitation = (patientId: string | number) => {
     console.log("handleResendInvitation called with patientId:", patientId);
-    const patient = patients?.find(p => p.id === patientId || p.id === String(patientId));
+    const patient = patients?.find(
+      (p) => p.id === patientId || p.id === String(patientId)
+    );
     console.log("Found patient:", patient);
     if (patient) {
       setPatientToResend({
@@ -207,7 +222,10 @@ function CustomerContent() {
 
       {/* Tabs for All Patients/Pending Patients */}
       <div className="bg-white rounded-xl shadow-table">
-        <TabGroup selectedIndex={selectedTabIndex} onChange={setSelectedTabIndex}>
+        <TabGroup
+          selectedIndex={selectedTabIndex}
+          onChange={setSelectedTabIndex}
+        >
           <TabList className="flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-6">
             {["All Patients", "Pending Patients"].map((tab, index) => (
               <Tab
@@ -250,17 +268,25 @@ function CustomerContent() {
                   <>
                     {patients?.map((patient: UserAttributes) => (
                       <CustomerDatabaseView
-                        onRowClick={() => router.push(`/customers/${patient.id}`)}
+                        onRowClick={() =>
+                          router.push(`/customers/${patient.id}`)
+                        }
                         key={patient.id}
                         patient={patient}
-                        onViewCustomer={() => router.push(`/customers/${patient.id}`)}
-                        onResendInvitation={() => patient.id && handleResendInvitation(patient.id)}
+                        onViewCustomer={() =>
+                          router.push(`/customers/${patient.id}`)
+                        }
+                        onResendInvitation={() =>
+                          patient.id && handleResendInvitation(patient.id)
+                        }
                       />
                     ))}
                   </>
                 )}
 
-                {(!patients || patients.length === 0) && !loading && <EmptyState />}
+                {(!patients || patients.length === 0) && !loading && (
+                  <EmptyState />
+                )}
 
                 {pageCount && pageCount > 1 && (
                   <Pagination
@@ -301,17 +327,25 @@ function CustomerContent() {
                   <>
                     {patients?.map((patient: UserAttributes) => (
                       <CustomerDatabaseView
-                        onRowClick={() => router.push(`/customers/${patient.id}`)}
+                        onRowClick={() =>
+                          router.push(`/customers/${patient.id}`)
+                        }
                         key={patient.id}
                         patient={patient}
-                        onViewCustomer={() => router.push(`/customers/${patient.id}`)}
-                        onResendInvitation={() => patient.id && handleResendInvitation(patient.id)}
+                        onViewCustomer={() =>
+                          router.push(`/customers/${patient.id}`)
+                        }
+                        onResendInvitation={() =>
+                          patient.id && handleResendInvitation(patient.id)
+                        }
                       />
                     ))}
                   </>
                 )}
 
-                {(!patients || patients.length === 0) && !loading && <EmptyState />}
+                {(!patients || patients.length === 0) && !loading && (
+                  <EmptyState />
+                )}
 
                 {pageCount && pageCount > 1 && (
                   <Pagination

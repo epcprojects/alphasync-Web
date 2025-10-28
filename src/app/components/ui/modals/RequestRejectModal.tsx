@@ -9,6 +9,7 @@ interface RequestRejectModalProps {
   onClose: () => void;
   onConfirm: (data: { reason: string }) => void;
   itemTitle?: string;
+  isSubmitting?: boolean;
 }
 
 const RequestRejectModal: React.FC<RequestRejectModalProps> = ({
@@ -16,19 +17,21 @@ const RequestRejectModal: React.FC<RequestRejectModalProps> = ({
   onClose,
   itemTitle,
   onConfirm,
+  isSubmitting = false,
 }) => {
   const [reason, setReason] = useState("");
 
   const handleClose = () => {
-    onClose();
-    setReason(""); // reset on close
+    if (!isSubmitting) {
+      onClose();
+      setReason(""); // reset on close
+    }
   };
 
   const handleConfirm = () => {
     if (reason.trim()) {
       onConfirm({ reason });
-      setReason(""); // reset after confirm
-      onClose();
+      // Don't close here - let parent component handle it
     }
   };
 
@@ -38,12 +41,13 @@ const RequestRejectModal: React.FC<RequestRejectModalProps> = ({
       onClose={handleClose}
       title="Deny Patient Request"
       onConfirm={handleConfirm}
-      confirmLabel="Deny Request"
+      confirmLabel={isSubmitting ? "Denying..." : "Deny Request"}
       icon={<UserRejectIcon />}
       confirmBtnVarient="danger"
       outSideClickClose={false}
       subtitle={`Please provide a reason for denying request ${itemTitle}`}
-      confimBtnDisable={!reason.trim()}
+      confimBtnDisable={!reason.trim() || isSubmitting}
+      disableCloseButton={isSubmitting}
     >
       <TextAreaField
         label="Denial Reason"

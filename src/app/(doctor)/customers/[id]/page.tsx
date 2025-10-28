@@ -6,7 +6,9 @@ import {
   CustomerOrderHistroyView,
   PrescriptionRequestCard,
   RequestRejectModal,
+  RequestApproveModal,
   Skeleton,
+  Pagination,
 } from "@/app/components";
 import {
   ArrowDownIcon,
@@ -21,16 +23,25 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { useState } from "react";
-import ReactPaginate from "react-paginate";
-import { PrecriptionDATA } from "../../../../../public/data/PrescriptionRequest";
 import AddNoteModal from "@/app/components/ui/modals/AddNoteModal";
 import ProductRequestDetailModal from "@/app/components/ui/modals/ProductRequestDetailModal";
 import ChatModal from "@/app/components/ui/modals/ChatModal";
 import NewOrderModal from "@/app/components/ui/modals/NewOrderModal";
 import CustomerProfileHeaderCard from "@/app/components/ui/cards/CustomerProfileHeaderCard";
-import { useQuery } from "@apollo/client/react";
-import { FETCH_CUSTOMER, PATIENT_ORDERS } from "@/lib/graphql/queries";
-import { UserAttributes } from "@/lib/graphql/attributes";
+import { useQuery, useMutation } from "@apollo/client/react";
+import {
+  FETCH_CUSTOMER,
+  PATIENT_ORDERS,
+  ALL_ORDER_REQUESTS,
+} from "@/lib/graphql/queries";
+import {
+  UserAttributes,
+  OrderRequestAttributes,
+} from "@/lib/graphql/attributes";
+import {
+  APPROVE_ORDER_REQUEST,
+  DENY_ORDER_REQUEST,
+} from "@/lib/graphql/mutations";
 
 // Interface for GraphQL response
 interface FetchUserResponse {
@@ -55,21 +66,38 @@ interface PatientOrdersResponse {
   };
 }
 
+// Interface for Order Requests response
+interface OrderRequestsResponse {
+  allOrderRequests: {
+    allData: OrderRequestAttributes[];
+    dataCount: number;
+    nextPage: number | null;
+    prevPage: number | null;
+    totalPages: number;
+  };
+}
+
 export default function CustomerDetail() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
+    null
+  );
 
   // State declarations
   const [selectedIndex, setSelectedIndex] = useState(0);
   const itemsPerPage = 10;
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
+  const [requestsCurrentPage, setRequestsCurrentPage] = useState(0);
+  const requestsPerPage = 10;
 
   // GraphQL query to fetch customer data
   const { data, loading, error } = useQuery<FetchUserResponse>(FETCH_CUSTOMER, {
@@ -81,11 +109,11 @@ export default function CustomerDetail() {
   });
 
   // GraphQL query to fetch patient orders
-  const { 
-    data: ordersData, 
-    loading: ordersLoading, 
+  const {
+    data: ordersData,
+    loading: ordersLoading,
     error: ordersError,
-    refetch: refetchOrders
+    refetch: refetchOrders,
   } = useQuery<PatientOrdersResponse>(PATIENT_ORDERS, {
     variables: {
       patientId: params.id,
@@ -96,36 +124,144 @@ export default function CustomerDetail() {
     fetchPolicy: "network-only",
   });
 
+  // GraphQL query to fetch order requests for this patient
+  const {
+    data: requestsData,
+    loading: requestsLoading,
+    error: requestsError,
+    refetch: refetchRequests,
+  } = useQuery<OrderRequestsResponse>(ALL_ORDER_REQUESTS, {
+    variables: {
+      patientId: params.id,
+      page: requestsCurrentPage + 1,
+      perPage: requestsPerPage,
+    },
+    skip: !params.id,
+    fetchPolicy: "network-only",
+  });
+
+  // GraphQL mutation to approve order request
+  const [approveOrderRequest, { loading: isApproving }] = useMutation(
+    APPROVE_ORDER_REQUEST
+  );
+
+  // GraphQL mutation to deny order request
+  const [denyOrderRequest, { loading: isDenying }] =
+    useMutation(DENY_ORDER_REQUEST);
+
   const customer = data?.fetchUser?.user;
   const patientOrders = ordersData?.patientOrders;
+  const orderRequests = requestsData?.allOrderRequests.allData || [];
+  const requestsPageCount = requestsData?.allOrderRequests.totalPages || 1;
+
+  console.log("Requests Data:", {
+    totalPages: requestsData?.allOrderRequests.totalPages,
+    dataCount: requestsData?.allOrderRequests.dataCount,
+    requestsCurrentPage,
+    requestsPerPage,
+  });
 
   // Use GraphQL data for pagination
   const pageCount = patientOrders?.totalPages || 0;
   const currentItems = patientOrders?.allData || [];
-  
-  const handlePageChange = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected);
+
+  const handlePageChange = (selectedPage: number) => {
+    setCurrentPage(selectedPage);
     // Refetch orders with new page number
     refetchOrders({
       patientId: params.id,
-      page: selected + 1,
+      page: selectedPage + 1,
       perPage: itemsPerPage,
     });
   };
 
-  const handleApprove = (title: string) => {
-    showSuccessToast("Patient request approved successfully.");
-    console.log(title);
+  // Transform order requests to PrescriptionRequestCard format
+  const transformedRequests =
+    orderRequests.map((request) => {
+      // Normalize status
+      const normalizeStatus = (status: string | undefined) => {
+        if (!status) return "Pending Review";
+        const lowerStatus = status.toLowerCase();
+        if (lowerStatus === "approved") return "Approved";
+        if (lowerStatus === "denied" || lowerStatus === "rejected")
+          return "Denied";
+        return "Pending Review";
+      };
+
+      const firstItem = request.requestedItems?.[0];
+      const totalAmount =
+        request.requestedItems?.reduce((sum, item) => {
+          const price =
+            typeof item.price === "string"
+              ? parseFloat(item.price)
+              : (item.price as number) || 0;
+          return sum + price;
+        }, 0) || 0;
+
+      return {
+        id: String(request.id),
+        displayId: request.displayId || `REQ-${request.id}`,
+        title: firstItem?.title || "Multiple Products",
+        subtitle:
+          request.requestedItems && request.requestedItems.length > 1
+            ? `(${request.requestedItems.length} items)`
+            : "",
+        description:
+          firstItem?.product?.description || firstItem?.product?.title || "",
+        status: normalizeStatus(request.status),
+        requestedDate: request.patient?.createdAt
+          ? new Date(request.patient.createdAt).toLocaleDateString()
+          : new Date().toLocaleDateString(),
+        reviewedDate:
+          request.status === "approved" || request.status === "denied"
+            ? new Date().toLocaleDateString()
+            : undefined,
+        doctorName: request.doctor?.fullName || "Dr. Unknown",
+        price: `$${totalAmount.toFixed(2)}`,
+        userNotes: undefined, // Hide patient notes for doctor view
+        physicianNotes: request.doctorMessage,
+        denialReason: request.reason, // Show reason for all statuses
+        category: firstItem?.product?.productType || "General",
+        imageSrc: "/images/fallbackImages/medicine-syrup.svg",
+        requestedItems: request.requestedItems,
+      };
+    }) || [];
+
+  const handleApprove = (requestId: string) => {
+    setSelectedRequestId(requestId);
+    setIsApproveModalOpen(true);
   };
 
-  const handleReject = (title: string) => {
+  const handleReject = (requestId: string) => {
+    setSelectedRequestId(requestId);
     setIsRejectModalOpen(true);
-    console.log(title);
   };
 
-  const handleAddNote = (title: string) => {
+  const handleAddNote = (requestId: string) => {
+    setSelectedRequestId(requestId);
     setIsNoteModalOpen(true);
-    console.log(title);
+  };
+
+  const handleViewDetails = (requestId: string) => {
+    const request = transformedRequests.find((r) => r.id === requestId);
+    if (request) {
+      setSelectedRequestId(requestId);
+      setIsDetailModalOpen(true);
+    }
+  };
+
+  const handleChat = (requestId: string) => {
+    setSelectedRequestId(requestId);
+    setIsChatModalOpen(true);
+  };
+
+  const handleRequestsPageChange = (selectedPage: number) => {
+    setRequestsCurrentPage(selectedPage);
+    refetchRequests({
+      patientId: params.id,
+      page: selectedPage + 1,
+      perPage: requestsPerPage,
+    });
   };
 
   const handleCreateOrder = (data: {
@@ -145,7 +281,7 @@ export default function CustomerDetail() {
   };
 
   // Show loading state
-  if (loading || ordersLoading) {
+  if (loading) {
     return (
       <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
         <div className="flex items-center gap-2 md:gap-4">
@@ -240,9 +376,12 @@ export default function CustomerDetail() {
           phone={customer.phoneNo || ""}
           totalOrders={patientOrders?.count || 0}
           statusActive={customer.status === "active"}
-          lastOrder={patientOrders?.allData?.[0]?.createdAt ? 
-            new Date(patientOrders.allData[0].createdAt).toLocaleDateString() : 
-            "No orders"
+          lastOrder={
+            patientOrders?.allData?.[0]?.createdAt
+              ? new Date(
+                  patientOrders.allData[0].createdAt
+                ).toLocaleDateString()
+              : "No orders"
           }
           dob={customer.dateOfBirth || ""}
           onQuickChat={handleQuickChat}
@@ -307,11 +446,12 @@ export default function CustomerDetail() {
                 ) : ordersError ? (
                   <div className="text-center py-8">
                     <p className="text-red-500 mb-4"> {ordersError.message}</p>
-                  
                   </div>
                 ) : currentItems.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">No orders found for this customer</p>
+                    <p className="text-gray-500 mb-4">
+                      No orders found for this customer
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-1">
@@ -340,45 +480,11 @@ export default function CustomerDetail() {
                   </div>
                 )}
                 {!ordersLoading && !ordersError && currentItems.length > 0 && (
-                  <div className="w-full flex items-center justify-center">
-                    <ReactPaginate
-                      breakLabel="..."
-                      nextLabel={
-                        <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                          <span className="hidden md:inline-block">Next</span>
-                          <span className="block mb-0.5 rotate-180">
-                            <ArrowLeftIcon />
-                          </span>
-                        </span>
-                      }
-                      previousLabel={
-                        <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                          <span className="md:mb-0.5">
-                            <ArrowLeftIcon />
-                          </span>
-                          <span className="hidden md:inline-block">
-                            Previous
-                          </span>
-                        </span>
-                      }
-                      onPageChange={handlePageChange}
-                      pageRangeDisplayed={3}
-                      marginPagesDisplayed={1}
-                      pageCount={pageCount}
-                      forcePage={currentPage}
-                      pageLinkClassName="px-4 py-2 rounded-lg text-gray-500 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-                      containerClassName="px-3 flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-                      pageClassName=" rounded-lg text-gray-600 hover:bg-gray-50 cursor-pointer"
-                      activeClassName="bg-gray-200 text-gray-900 font-medium text-gray-700"
-                      previousClassName="md:px-4 md:py-2 rounded-full  absolute left-0 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-                      nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-0 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-                      breakClassName="px-3 py-1 font-semibold text-gray-400"
-                    />
-
-                    <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-                      Page {currentPage + 1} of {pageCount}
-                    </h2>
-                  </div>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pageCount}
+                    onPageChange={handlePageChange}
+                  />
                 )}
               </TabPanel>
               <TabPanel>
@@ -420,21 +526,45 @@ export default function CustomerDetail() {
               </TabPanel>
 
               <TabPanel className={"flex flex-col gap-2 md:gap-4"}>
-                {PrecriptionDATA.map((item) => (
-                  <PrescriptionRequestCard
-                    key={item.id}
-                    onApprove={() => handleApprove(item.title)}
-                    onReject={() => handleReject(item.title)}
-                    onAddNote={() => handleAddNote(item.title)}
-                    onViewDetails={() => {
-                      setIsDetailModalOpen(true);
-                    }}
-                    onChat={() => {
-                      setIsChatModalOpen(true);
-                    }}
-                    {...item}
-                  />
-                ))}
+                {requestsLoading ? (
+                  <div className="space-y-4">
+                    <Skeleton className="w-full h-32 rounded-lg" />
+                    <Skeleton className="w-full h-32 rounded-lg" />
+                    <Skeleton className="w-full h-32 rounded-lg" />
+                  </div>
+                ) : requestsError ? (
+                  <div className="text-center py-8">
+                    <p className="text-red-500 mb-4">{requestsError.message}</p>
+                  </div>
+                ) : transformedRequests.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 mb-4">
+                      No requests found for this customer
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col gap-2">
+                      {transformedRequests.map((item) => (
+                        <PrescriptionRequestCard
+                          key={item.id}
+                          onApprove={() => handleApprove(item.id)}
+                          onReject={() => handleReject(item.id)}
+                          onAddNote={() => handleAddNote(item.id)}
+                          onViewDetails={() => handleViewDetails(item.id)}
+                          onChat={() => handleChat(item.id)}
+                          cardVarient="Doctor"
+                          {...item}
+                        />
+                      ))}
+                    </div>
+                    <Pagination
+                      currentPage={requestsCurrentPage}
+                      totalPages={requestsPageCount}
+                      onPageChange={handleRequestsPageChange}
+                    />
+                  </>
+                )}
               </TabPanel>
             </TabPanels>
           </TabGroup>
@@ -443,12 +573,66 @@ export default function CustomerDetail() {
 
       <RequestRejectModal
         isOpen={isRejectModalOpen}
-        onClose={() => setIsRejectModalOpen(false)}
-        onConfirm={(reason) => {
-          showErrorToast("Patient request denied.");
-          console.log(reason);
+        onClose={() => {
+          if (!isDenying) {
+            setIsRejectModalOpen(false);
+            setSelectedRequestId(null);
+          }
         }}
-        itemTitle="ORD-004"
+        onConfirm={async (data) => {
+          try {
+            await denyOrderRequest({
+              variables: {
+                requestId: selectedRequestId,
+                doctorMessage: data.reason,
+              },
+            });
+            showErrorToast("Patient request denied.");
+            refetchRequests();
+            setIsRejectModalOpen(false);
+            setSelectedRequestId(null);
+          } catch (error) {
+            showErrorToast("Failed to deny request. Please try again.");
+            console.error("Error denying request:", error);
+          }
+        }}
+        isSubmitting={isDenying}
+        itemTitle={
+          transformedRequests.find((r) => r.id === selectedRequestId)
+            ?.displayId || ""
+        }
+      />
+
+      <RequestApproveModal
+        isOpen={isApproveModalOpen}
+        onClose={() => {
+          if (!isApproving) {
+            setIsApproveModalOpen(false);
+            setSelectedRequestId(null);
+          }
+        }}
+        onConfirm={async (data) => {
+          try {
+            await approveOrderRequest({
+              variables: {
+                requestId: selectedRequestId,
+                doctorMessage: data.doctorMessage || null,
+              },
+            });
+            showSuccessToast("Patient request approved successfully.");
+            refetchRequests();
+            setIsApproveModalOpen(false);
+            setSelectedRequestId(null);
+          } catch (error) {
+            showErrorToast("Failed to approve request. Please try again.");
+            console.error("Error approving request:", error);
+          }
+        }}
+        isSubmitting={isApproving}
+        itemTitle={
+          transformedRequests.find((r) => r.id === selectedRequestId)
+            ?.displayId || ""
+        }
       />
 
       <AddNoteModal
@@ -458,19 +642,31 @@ export default function CustomerDetail() {
           showSuccessToast("Note added Successfully.");
           console.log(note);
         }}
-        itemTitle="ORD-004"
+        itemTitle={
+          transformedRequests.find((r) => r.id === selectedRequestId)
+            ?.displayId || ""
+        }
       />
 
       <ProductRequestDetailModal
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        itemTitle="REQ-001"
+        itemTitle={
+          transformedRequests.find((r) => r.id === selectedRequestId)
+            ?.displayId || ""
+        }
+        requestData={transformedRequests.find(
+          (r) => r.id === selectedRequestId
+        )}
       />
 
       <ChatModal
         isOpen={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}
-        itemTitle="REQ-001"
+        itemTitle={
+          transformedRequests.find((r) => r.id === selectedRequestId)
+            ?.displayId || ""
+        }
         participantId={params.id}
         participantName={customer?.fullName || "Customer"}
       />

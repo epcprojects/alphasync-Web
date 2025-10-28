@@ -17,9 +17,7 @@ import {
   UnionPay,
   Visa,
 } from "@/icons";
-import OrderItemCard, {
-  OrderItemProps,
-} from "../cards/OrderItemCards";
+import OrderItemCard, { OrderItemProps } from "../cards/OrderItemCards";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 type OrderItem = {
@@ -47,7 +45,8 @@ export type requestProps = {
   strength: string;
   price: number;
   status?: string;
-  requestedOn? : string;
+  requestedOn?: string;
+  category?: string;
 };
 
 interface CustomerOrderPaymentProps {
@@ -429,6 +428,8 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       doctorName: request.doctorName,
       strength: request.strength,
       status: request.status,
+      amount: request.category,
+      requestedOn: request.requestedOn,
     };
   }
 
@@ -540,7 +541,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   Total
                 </span>
                 <span className="text-base font-semibold text-primary">
-                  ${total} 
+                  ${total}
                 </span>
               </div>
             </div>

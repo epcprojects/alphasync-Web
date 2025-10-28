@@ -1,11 +1,11 @@
 "use client";
-import { PrescriptionRequestCard } from "@/app/components";
+import { PrescriptionRequestCard, Loader } from "@/app/components";
 import AddNoteModal from "@/app/components/ui/modals/AddNoteModal";
 import { RequestFilledIcon, SearchIcon } from "@/icons";
+import Pagination from "@/app/components/ui/Pagination";
 import { showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import React, { useState } from "react";
-import { PrecriptionDATA } from "../../../../public/data/PrescriptionRequest";
+import React, { useState, Suspense, useEffect } from "react";
 import RequestDetails, {
   requestDetails,
 } from "@/app/components/ui/modals/RequestDetails";
@@ -14,8 +14,21 @@ import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
 import CustomerOrderSummary from "@/app/components/ui/modals/CustomerOrderSummary";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import ChatWithPhysician from "@/app/components/ui/modals/CharWithPyhsicianModel";
+import { useQuery } from "@apollo/client";
+import { ALL_ORDER_REQUESTS } from "@/lib/graphql/queries";
+import { OrderRequestAttributes } from "@/lib/graphql/attributes";
 
-const Page = () => {
+interface OrderRequestsResponse {
+  allOrderRequests: {
+    allData: OrderRequestAttributes[];
+    dataCount: number;
+    nextPage: number | null;
+    prevPage: number | null;
+    totalPages: number;
+  };
+}
+
+function CustomerRequestContent() {
   const [search, setSearch] = useState("");
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isDetailModelOpen, setIsDetailModelOpen] = useState(false);
@@ -26,7 +39,97 @@ const Page = () => {
   const [isPaymentModel, setisPaymentModel] = useState(false);
   const [isSummaryModel, setIsSummaryModel] = useState(false);
   const [isChatModel, setIsChatModel] = useState(false);
-  const [status, setStatus] = useState("");
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+  const [selectedPaymentRequest, setSelectedPaymentRequest] =
+    useState<requestDetails | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10;
+  const [selectedChatInfo, setSelectedChatInfo] = useState<{
+    doctorId: string;
+    doctorName: string;
+    requestDisplayId: string;
+  } | null>(null);
+
+  // Helper function to convert tab selection to API status value
+  const getStatusFromTab = (tabIndex: number): string | undefined => {
+    switch (tabIndex) {
+      case 0: // All
+        return undefined;
+      case 1: // Pending
+        return "pending";
+      case 2: // Approved
+        return "approved";
+      case 3: // Denied
+        return "denied";
+      default:
+        return undefined;
+    }
+  };
+
+  // GraphQL query to fetch order requests
+  const {
+    data: orderRequestsData,
+    loading: orderRequestsLoading,
+    error: orderRequestsError,
+  } = useQuery<OrderRequestsResponse>(ALL_ORDER_REQUESTS, {
+    variables: {
+      search: search || undefined,
+      status: getStatusFromTab(selectedTabIndex),
+      page: currentPage + 1, // GraphQL uses 1-based pagination
+      perPage: itemsPerPage,
+    },
+    fetchPolicy: "network-only",
+    notifyOnNetworkStatusChange: true,
+  });
+
+  // Transform GraphQL data to match the card format
+  const transformedRequests =
+    orderRequestsData?.allOrderRequests.allData?.map((request) => {
+      // Normalize status to match component expectations
+      const normalizeStatus = (status: string | undefined) => {
+        if (!status) return "Pending Review";
+        const lowerStatus = status.toLowerCase();
+        if (lowerStatus === "approved") return "Approved";
+        if (lowerStatus === "denied" || lowerStatus === "rejected")
+          return "Denied";
+        return "Pending Review";
+      };
+
+      // Get the first requested item for display
+      const firstItem = request.requestedItems?.[0];
+      const productInfo = firstItem?.product;
+
+      return {
+        id:
+          typeof request.id === "number"
+            ? request.id
+            : parseInt(String(request.id || 1)),
+        title: productInfo?.title || firstItem?.title || "Requested Item",
+        subtitle: "",
+        description: productInfo?.description || firstItem?.title || "",
+        status: normalizeStatus(request.status),
+        requestedDate: request.patient?.createdAt
+          ? new Date(request.patient.createdAt).toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            })
+          : "",
+        doctorName:
+          "Dr. " +
+          (request.doctor?.fullName || request.patient?.fullName || "Unknown"),
+        price: `$${firstItem?.price || 0}`,
+        userNotes: "",
+        physicianNotes: request.doctorMessage || "",
+        denialReason: request.reason || "",
+        category: productInfo?.productType || "",
+        imageSrc: "/images/fallbackImages/medicine-syrup.svg",
+        originalId: request.id,
+        displayId: request.displayId,
+        doctorId: request.doctor?.id ? String(request.doctor.id) : "",
+      };
+    }) || [];
+
   const handleApprove = (title: string) => {
     showSuccessToast("Patient request approved successfully.");
     console.log(title);
@@ -41,27 +144,50 @@ const Page = () => {
     console.log(title);
   };
 
-  const filterData = (status?: string) => {
-    return PrecriptionDATA.filter((item) => {
-      const matchesStatus = status ? item.status === status : true;
-      const matchesSearch = item.title
-        .toLowerCase()
-        .includes(search.toLowerCase());
-      return matchesStatus && matchesSearch;
-    });
-  };
-
   const handleRequests = (request: requestDetails) => {
     setSelectedRequest(request);
     setIsDetailModelOpen(true);
   };
 
-  const handlePayment = (status: string) => {
-    setStatus(status);
+  const handlePayment = (request: requestDetails) => {
+    setSelectedPaymentRequest(request);
     setisPaymentModel(true);
   };
 
+  const handlePageChange = (selectedPage: number) => {
+    setCurrentPage(selectedPage);
+  };
+
+  const pageCount = orderRequestsData?.allOrderRequests.totalPages || 1;
+
+  // Reset to page 1 when tab changes
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [selectedTabIndex]);
+
   const isMobile = useIsMobile();
+
+  // Show loader while fetching data
+  if (orderRequestsLoading) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <Loader />
+      </div>
+    );
+  }
+
+  // Show error message if query fails
+  if (orderRequestsError) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="text-red-600 text-center">
+          {orderRequestsError.message}
+        </div>
+      </div>
+    );
+  }
+
+  const requestCount = orderRequestsData?.allOrderRequests.dataCount || 0;
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -77,7 +203,7 @@ const Page = () => {
             Requests
           </h2>
           <div className="md:px-3 py-0.5 px-2 md:py-1 rounded-full  bg-white whitespace-nowrap text-blue-700 border border-blue-200 text-sm ">
-            4 Requests
+            {requestCount} Request{requestCount !== 1 ? "s" : ""}
           </div>
         </div>
 
@@ -100,7 +226,10 @@ const Page = () => {
       </div>
 
       <div className="rounded-xl bg-white sm:p-4 lg:p-8 pt-0 sm:pt-0 lg:pt-0">
-        <TabGroup>
+        <TabGroup
+          selectedIndex={selectedTabIndex}
+          onChange={setSelectedTabIndex}
+        >
           <TabList
             className={
               "flex items-center border-b border-b-gray-200 gap-2 md:gap-3  md:justify-start  justify-between md:px-6"
@@ -120,7 +249,7 @@ const Page = () => {
           </TabList>
           <TabPanels>
             <TabPanel>
-              {filterData().map((item) => (
+              {transformedRequests.map((item) => (
                 <PrescriptionRequestCard
                   key={item.id}
                   cardVarient="Customer"
@@ -129,10 +258,15 @@ const Page = () => {
                   onAddNote={() => handleAddNote(item.title)}
                   onViewDetails={() => handleRequests(item)}
                   onChat={() => {
+                    setSelectedChatInfo({
+                      doctorId: item.doctorId || "",
+                      doctorName: item.doctorName || "Physician",
+                      requestDisplayId: item.displayId || "",
+                    });
                     setIsChatModel(true);
                   }}
                   onPayment={() => {
-                    handlePayment(item.status);
+                    handlePayment(item);
                   }}
                   {...item}
                 />
@@ -140,7 +274,7 @@ const Page = () => {
             </TabPanel>
 
             <TabPanel>
-              {filterData("Pending Review").map((item) => (
+              {transformedRequests.map((item) => (
                 <PrescriptionRequestCard
                   key={item.id}
                   cardVarient="Customer"
@@ -149,10 +283,15 @@ const Page = () => {
                   onAddNote={() => handleAddNote(item.title)}
                   onViewDetails={() => handleRequests(item)}
                   onChat={() => {
+                    setSelectedChatInfo({
+                      doctorId: item.doctorId || "",
+                      doctorName: item.doctorName || "Physician",
+                      requestDisplayId: item.displayId || "",
+                    });
                     setIsChatModel(true);
                   }}
                   onPayment={() => {
-                    handlePayment(item.status);
+                    handlePayment(item);
                   }}
                   {...item}
                 />
@@ -160,7 +299,7 @@ const Page = () => {
             </TabPanel>
 
             <TabPanel>
-              {filterData("Approved").map((item) => (
+              {transformedRequests.map((item) => (
                 <PrescriptionRequestCard
                   key={item.id}
                   cardVarient="Customer"
@@ -169,7 +308,7 @@ const Page = () => {
                   onAddNote={() => handleAddNote(item.title)}
                   onViewDetails={() => handleRequests(item)}
                   onPayment={() => {
-                    handlePayment(item.status);
+                    handlePayment(item);
                   }}
                   {...item}
                 />
@@ -177,7 +316,7 @@ const Page = () => {
             </TabPanel>
 
             <TabPanel>
-              {filterData("Denied").map((item) => (
+              {transformedRequests.map((item) => (
                 <PrescriptionRequestCard
                   key={item.id}
                   cardVarient="Customer"
@@ -187,7 +326,7 @@ const Page = () => {
                   onViewDetails={() => handleRequests(item)}
                   {...item}
                   onPayment={() => {
-                    handlePayment(item.status);
+                    handlePayment(item);
                   }}
                 />
               ))}
@@ -195,6 +334,18 @@ const Page = () => {
           </TabPanels>
         </TabGroup>
       </div>
+
+      {/* Pagination */}
+      {transformedRequests.length > 0 && pageCount > 1 && (
+        <div className="flex justify-center flex-col gap-2 md:gap-6">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={pageCount}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
+
       {isDetailModelOpen && (
         <RequestDetails
           isOpen={isDetailModelOpen}
@@ -202,7 +353,10 @@ const Page = () => {
           request={selectedRequest}
           onClick={() => {
             setIsDetailModelOpen(false);
-            setisPaymentModel(true);
+            if (selectedRequest) {
+              setSelectedPaymentRequest(selectedRequest);
+              setisPaymentModel(true);
+            }
           }}
           oncancel={() => {
             setIsDetailModelOpen(false);
@@ -210,31 +364,44 @@ const Page = () => {
           }}
         />
       )}
-      {isPaymentModel && (
+      {isPaymentModel && selectedPaymentRequest && (
         <CustomerOrderPayment
           isOpen={isPaymentModel}
           onClose={() => {
             setisPaymentModel(false);
+            setSelectedPaymentRequest(null);
           }}
           request={{
-            id: "123456",
-            medicineName: "Semaglutide",
-            doctorName: "Dr. Arina Baker",
-            strength: "5 mg vial",
-            requestedOn: "08/08/2025",
-            price: 137.99,
-            status: status,
+            id: selectedPaymentRequest.id,
+            medicineName: selectedPaymentRequest.title,
+            doctorName: selectedPaymentRequest.doctorName || "Unknown Doctor",
+            strength: selectedPaymentRequest.subtitle || "",
+            requestedOn: selectedPaymentRequest.requestedDate || "",
+            price: parseFloat(
+              selectedPaymentRequest.price?.replace(/[^0-9.-]+/g, "") || "0"
+            ),
+            status: selectedPaymentRequest.status,
+            category: selectedPaymentRequest.category || "",
           }}
           onClick={() => {
             setisPaymentModel(false);
+            setSelectedPaymentRequest(null);
             setIsSuccess(true);
           }}
         />
       )}
-      <ChatWithPhysician
-        isOpen={isChatModel}
-        onClose={() => setIsChatModel(false)}
-      />
+      {selectedChatInfo && (
+        <ChatWithPhysician
+          isOpen={isChatModel}
+          onClose={() => {
+            setIsChatModel(false);
+            setSelectedChatInfo(null);
+          }}
+          participantId={selectedChatInfo.doctorId}
+          participantName={selectedChatInfo.doctorName}
+          itemTitle={selectedChatInfo.requestDisplayId}
+        />
+      )}
       <PaymentSuccess
         isOpen={isSucess}
         onClose={() => setIsSuccess(false)}
@@ -274,6 +441,12 @@ const Page = () => {
       />
     </div>
   );
-};
+}
 
-export default Page;
+export default function Page() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <CustomerRequestContent />
+    </Suspense>
+  );
+}

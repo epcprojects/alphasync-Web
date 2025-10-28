@@ -14,6 +14,7 @@ export interface OrderItemProps {
     userNotes?: string;
     physicianNotes?: string;
     denialReason?: string;
+    description?: string;
   };
   requestStatus?: boolean;
   paymentRequest?: boolean;
@@ -51,17 +52,17 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
           { label: "Dosage Form:", value: "Injectable" },
           { label: "Doctor Name:", value: item.doctorName },
           { label: "Requested:", value: item.requestedOn },
-          { label: "Category:", value: "Recovery" },
+          { label: "Category:", value: item.amount ?? "N/A" },
         ]
       : paymentRequest
       ? [
-          { label: "Strength", value: item.strength },
+          { label: "Strength:", value: item.strength },
           { label: "Dosage Form:", value: "Injectable" },
           { label: "Doctor Name:", value: item.doctorName },
-          { label: "Requested:", value: "8/8/2025" },
-          { label: "Category:", value: "Recovery" },
-          { label: "Subtotal:", value: "$125.99" },
-          { label: "Tax (8%):", value: "$12.00" },
+          { label: "Requested:", value: item.requestedOn },
+          { label: "Category:", value: item.amount ?? "N/A" },
+          { label: "Subtotal:", value: `$${item.price.toFixed(2)}` },
+          { label: "Tax (8%):", value: `$${(item.price * 0.08).toFixed(2)}` },
         ]
       : [
           { label: "Quantity", value: item.quantity },
@@ -74,7 +75,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
       ? { label: "Physician Notes:", value: item.physicianNotes }
       : null,
     item.denialReason
-      ? { label: "Reason for Denial", value: item.denialReason }
+      ? { label: "Reason for Denial:", value: item.denialReason }
       : null,
   ].filter((note): note is Note => note !== null);
 
@@ -100,8 +101,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
           </h3>
           <div className={`${requestStatus ? "block" : "hidden"} md:flex`}>
             <p className="text-sm font-normal text-gray-800 line-clamp-2">
-              A synthetic peptide known for its healing properties. BPC-157
-              promotes tissue...
+              {item.description || "No description available"}
             </p>
           </div>
           <div className="flex justify-between items-center text-sm text-gray-500">
@@ -236,10 +236,10 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs font-normal text-gray-800">
-                      Category
+                      Category:
                     </span>
                     <span className="text-xs font-medium text-gray-800">
-                      Recovery
+                      {item.amount ?? "N/A"}
                     </span>
                   </div>
                 </>
@@ -272,14 +272,14 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
               </p>
               <div
                 className={`${
-                  note.label === "Reason for Denial"
+                  note.label === "Reason for Denial:"
                     ? "bg-red-100"
                     : "bg-porcelan"
                 } p-3 rounded-lg mt-1`}
               >
                 <p
                   className={`text-base font-normal ${
-                    note.label === "Reason for Denial"
+                    note.label === "Reason for Denial:"
                       ? "text-red-900"
                       : "text-gray-600"
                   }`}

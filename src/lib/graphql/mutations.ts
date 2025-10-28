@@ -76,9 +76,9 @@ export const RESEND_OTP = gql`
 export const RESEND_INVITATION = gql`
   mutation ResendInvitation($id: ID!) {
     resendInvitation(input: { id: $id }) {
-        id
+      id
     }
-}
+  }
 `;
 
 export const UPDATE_USER = gql`
@@ -403,6 +403,49 @@ export const SYNC_PRODUCTS = gql`
       message
       productsCount
       clientMutationId
+    }
+  }
+`;
+export const REQUEST_ORDER = gql`
+  mutation RequestOrder(
+    $doctorId: ID!
+    $reason: String!
+    $requestedItems: [OrderItemAttributes!]!
+  ) {
+    requestOrder(
+      input: {
+        attributes: {
+          doctorId: $doctorId
+          reason: $reason
+          requestedItems: $requestedItems
+        }
+      }
+    ) {
+      orderRequest {
+        id
+      }
+    }
+  }
+`;
+
+export const APPROVE_ORDER_REQUEST = gql`
+  mutation ApproveOrderRequest($requestId: ID!, $doctorMessage: String) {
+    approveOrderRequest(
+      input: { requestId: $requestId, doctorMessage: $doctorMessage }
+    ) {
+      invoiceUrl
+    }
+  }
+`;
+
+export const DENY_ORDER_REQUEST = gql`
+  mutation DenyOrderRequest($requestId: ID!, $doctorMessage: String!) {
+    denyOrderRequest(
+      input: { requestId: $requestId, doctorMessage: $doctorMessage }
+    ) {
+      orderRequest {
+        id
+      }
     }
   }
 `;

@@ -245,3 +245,50 @@ export const PATIENT_ORDERS = gql`
     }
   }
 `;
+
+export const ALL_ORDER_REQUESTS = gql`
+  query AllOrderRequests(
+    $search: String
+    $patientId: ID
+    $status: String
+    $page: Int
+    $perPage: Int
+  ) {
+    allOrderRequests(
+      search: $search
+      patientId: $patientId
+      status: $status
+      page: $page
+      perPage: $perPage
+    ) {
+      allData {
+        displayId
+        id
+        status
+        doctorMessage
+        reason
+        doctor {
+          ${userpayload}
+        }
+        patient {
+          ${userpayload}
+        }
+        requestedItems {
+          title
+          price
+          product {
+            id
+            title
+            description
+            productType
+            vendor
+          }
+        }
+      }
+      dataCount
+      nextPage
+      prevPage
+      totalPages
+    }
+  }
+`;
