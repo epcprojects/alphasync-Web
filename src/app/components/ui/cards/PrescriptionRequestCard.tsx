@@ -10,10 +10,13 @@ import {
   NoteIcon,
   CreditCardOutlineIcon,
 } from "@/icons";
+import type { NoteAttributes } from "@/lib/graphql/attributes";
 import InfoGrid from "./InfoGrid";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 export type cardVariantType = "Customer" | "Doctor";
+type UserNote = NoteAttributes;
+
 interface PrescriptionRequestCardProps {
   imageSrc?: string;
   title?: string;
@@ -24,9 +27,9 @@ interface PrescriptionRequestCardProps {
   reviewedDate?: string;
   doctorName?: string;
   price?: string;
-  userNotes?: string;
+  userNotes?: UserNote[];
   physicianNotes?: string;
-  denialReason?: string;
+  customerReason?: string;
   onApprove?: () => void;
   onReject?: () => void;
   onChat?: () => void;
@@ -49,7 +52,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   price,
   userNotes,
   physicianNotes,
-  denialReason,
+  customerReason,
   onApprove,
   onReject,
   onChat,
@@ -81,6 +84,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   };
 
   const isMobile = useIsMobile();
+  console.log("userNotes", userNotes);
 
   return (
     <div className={`${baseClasses} ${variantClasses[cardVarient]}`}>
@@ -106,9 +110,10 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
                   )}
                 </h2>
                 {description && (
-                  <p className="text-[10px] md:text-xs mb-1.5 text-gray-800">
-                    {description}
-                  </p>
+                  <p
+                    className="text-[10px] md:text-xs mb-1.5 text-gray-800"
+                    dangerouslySetInnerHTML={{ __html: description }}
+                  />
                 )}
               </div>
 
@@ -145,19 +150,27 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
           />
         )}
       </div>
-
-      {userNotes && cardVarient === "Customer" && (
-        <div className="w-full">
-          <h2 className="text-gray-900 mb-1.5 font-medium text-xs md:text-sm">
-            Your Notes:
-          </h2>
-          <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
-            <p className="text-xs sm:text-sm md:text-base text-gray-600">
-              {userNotes}
-            </p>
+      {cardVarient === "Customer" &&
+        Array.isArray(userNotes) &&
+        userNotes.length > 0 && (
+          <div className="w-full">
+            <h2 className="text-gray-900 mb-1.5 font-medium text-xs md:text-sm">
+              Your Notes:
+            </h2>
+            <div>
+              {userNotes.map((note, index) => (
+                <div
+                  className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full mb-2"
+                  key={index}
+                >
+                  <div className="text-xs sm:text-sm md:text-base text-gray-600">
+                    {note?.content}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {physicianNotes && (
         <div className="w-full">
@@ -184,14 +197,14 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
         </div>
       )}
 
-      {denialReason && (
+      {customerReason && (
         <div className="w-full">
           <h2 className="text-gray-900  mb-1.5 font-medium text-xs md:text-sm">
-            Reason:
+            Request Reason:
           </h2>
           <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
             <p className="text-xs sm:text-sm md:text-base text-gray-600">
-              {denialReason}
+              {customerReason}
             </p>
           </div>
         </div>
@@ -259,7 +272,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
         )}
         {onAddNote &&
           status !== "Approved" &&
-          !(denialReason && cardVarient !== "Customer") && (
+          !(customerReason && cardVarient !== "Customer") && (
             <ThemeButton
               label="Add note"
               icon={<NoteIcon />}

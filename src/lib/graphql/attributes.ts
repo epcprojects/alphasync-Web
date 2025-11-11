@@ -68,6 +68,13 @@ export interface RequestedItem {
   product?: ProductInfo;
 }
 
+export interface NoteAttributes {
+  content?: string;
+  notableId?: string;
+  notableType?: string;
+  author?: UserAttributes;
+}
+
 export interface OrderRequestAttributes {
   displayId?: string;
   id?: number | string;
@@ -77,4 +84,5 @@ export interface OrderRequestAttributes {
   doctor?: UserAttributes;
   patient?: UserAttributes;
   requestedItems?: RequestedItem[];
+  notes?: NoteAttributes[];
 }

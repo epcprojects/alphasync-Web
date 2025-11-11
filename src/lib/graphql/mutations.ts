@@ -449,3 +449,25 @@ export const DENY_ORDER_REQUEST = gql`
     }
   }
 `;
+
+export const CREATE_NOTE = gql`
+  mutation CreateNote(
+    $notableId: ID!
+    $notableType: NotableTypeEnum!
+    $content: String!
+  ) {
+    createNote(
+      input: {
+        attributes: {
+          notableId: $notableId
+          notableType: $notableType
+          content: $content
+        }
+      }
+    ) {
+      note {
+        id
+      }
+    }
+  }
+`;

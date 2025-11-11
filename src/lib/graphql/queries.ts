@@ -303,6 +303,14 @@ export const ALL_ORDER_REQUESTS = gql`
         status
         doctorMessage
         reason
+        notes {
+          content
+          notableId
+          notableType
+          author {
+              ${userpayload}
+          }
+        }
         doctor {
           ${userpayload}
         }
@@ -325,6 +333,22 @@ export const ALL_ORDER_REQUESTS = gql`
       nextPage
       prevPage
       totalPages
+    }
+  }
+`;
+
+export const FETCH_NOTES = gql`
+  query FetchNotes($notableId: ID!) {
+    fetchNotes(notableId: $notableId) {
+      allData {
+        author {
+          ${userpayload}
+        }
+        content
+        notableId
+        notableType
+        id
+      }
     }
   }
 `;
