@@ -66,6 +66,10 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
     }
   };
 
+  {
+    console.log("hello", orders);
+  }
+
   return (
     <div className="flex flex-col gap-4 cursor-pointer">
       {orders?.map((order) => (

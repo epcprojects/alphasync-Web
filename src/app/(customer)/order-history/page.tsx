@@ -97,26 +97,6 @@ function History() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const statusLabelMap: Record<string, string> = {
-    paid: "Processing",
-    fulfilled: "Delivered",
-  };
-
-  const formatStatusLabel = (status?: string | null) => {
-    if (!status) return "Processing";
-
-    const normalizedStatus = status.toUpperCase();
-    if (statusLabelMap[normalizedStatus]) {
-      return statusLabelMap[normalizedStatus];
-    }
-
-    const normalized = status.replace(/_/g, " ").toLowerCase();
-    return normalized.replace(/\b\w/g, (char) => char.toUpperCase());
-  };
-
-  const normalizeStatus = (status?: string | null) =>
-    (status || "").toLowerCase().replace(/\s+/g, "-").replace(/_/g, "-");
-
   const mapFilterToStatusVariable = (filterId: string) => {
     const filterToStatusMap: Record<string, string | undefined> = {
       all: undefined,
@@ -211,7 +191,7 @@ function History() {
         ? new Date(order.createdAt).toLocaleDateString()
         : "--",
       totalPrice: order.totalPrice ?? 0,
-      status: formatStatusLabel(order.status),
+      status: order.status ?? undefined,
       patient: order.patient
         ? {
             address: normalizeAddress(order.patient.address),
@@ -220,13 +200,13 @@ function History() {
     };
   });
 
-  const filteredOrders = transformedOrders.filter((order) => {
-    if (selectedFilter !== "all") {
-      if (normalizeStatus(order.status) !== selectedFilter) return false;
-    }
-
-    return true;
-  });
+  const filteredOrders =
+    selectedFilter === "all" || !statusVariable
+      ? transformedOrders
+      : transformedOrders.filter((order) => {
+          const orderStatus = (order.status ?? "").toUpperCase();
+          return orderStatus === statusVariable.toUpperCase();
+        });
 
   const totalResults =
     patientOrdersData?.patientOrders?.count ?? filteredOrders.length;
@@ -244,9 +224,6 @@ function History() {
     const nextPage = Math.max(0, selectedPage);
     if (nextPage === currentPage) return;
     setCurrentPage(nextPage);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(nextPage));
-    router.replace(`?${params.toString()}`);
   };
 
   const handleOrderClick = (order: PrescriptionOrder) => {
