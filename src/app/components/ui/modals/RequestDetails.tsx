@@ -13,7 +13,7 @@ interface requestDetailsProps {
 }
 
 export type requestDetails = {
-  id: number;
+  id: number | string;
   title: string;
   subtitle?: string;
   description?: string;

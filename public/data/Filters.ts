@@ -11,5 +11,5 @@ export const orderfilterOptions = [
   { id: "all", label: "All" },
   { id: "delivered", label: "Delivered" },
   { id: "processing", label: "Processing" },
-  { id: "ready-for-pickup", label: "Ready for Pickup" },
+  // { id: "ready-for-pickup", label: "Ready for Pickup" },
 ];

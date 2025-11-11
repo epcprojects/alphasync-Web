@@ -30,6 +30,7 @@ export default function BrowserProductCard({
   onAddToCart,
   onCardClick,
 }: BrowserProductCardProps) {
+  console.log(product);
   return (
     <div className="rounded-2xl pb-2  flex-col bg-white shadow-table border relative border-gray-200 px-2 flex items-center justify-center">
       <div className="absolute top-4  end-4">
@@ -63,9 +64,10 @@ export default function BrowserProductCard({
                 {product.category}
               </span>
             </div>
-            <h3 className="text-gray-600 text-xs line-clamp-2 md:text-sm">
-              {product.description}
-            </h3>
+            <h3
+              className="text-gray-600 text-xs line-clamp-2 md:text-sm"
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            ></h3>
           </div>
 
           <div className="flex flex-col gap-2 md:gap-3">

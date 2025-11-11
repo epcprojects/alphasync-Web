@@ -1,26 +1,69 @@
 "use client";
 import {
-  ArrowLeftIcon,
   CrossIcon,
   EyeIcon,
   FilterIcon,
   OrderHistory,
   SearchIcon,
 } from "@/icons";
+import { useQuery } from "@apollo/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useRef, useState } from "react";
-import ReactPaginate from "react-paginate";
 import PrescriptionOrderCard, {
   PrescriptionOrder,
 } from "@/app/components/ui/cards/PrescriptionOrderCard";
-import { ordersHistory } from "../../../../public/data/orders";
 import { orderfilterOptions } from "../../../../public/data/Filters";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import CustomerOrderDetails from "@/app/components/ui/modals/CustomerOrderDetails";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
-import { EmptyState, Loader } from "@/app/components";
+import { EmptyState, OrderHistorySkeleton, Pagination } from "@/app/components";
+import { PATIENT_ORDERS } from "@/lib/graphql/queries";
+
+interface PatientOrderItemData {
+  id?: string | null;
+  quantity?: number | null;
+  price?: number | null;
+  totalPrice?: number | null;
+  product?: {
+    title?: string | null;
+    description?: string | null;
+    variants?:
+      | {
+          sku?: string | null;
+        }[]
+      | null;
+    tags?: (string | null)[] | null;
+    images?: (string | null)[] | null;
+    primaryImage?: string | null;
+  } | null;
+}
+
+interface PatientOrderData {
+  id: string;
+  displayId?: string | null;
+  status?: string | null;
+  createdAt: string;
+  totalPrice?: number | null;
+  doctor?: {
+    fullName?: string | null;
+  } | null;
+  orderItems?: PatientOrderItemData[] | null;
+  patient?: {
+    address?: string | null;
+  } | null;
+}
+
+interface PatientOrdersResponse {
+  patientOrders: {
+    allData: PatientOrderData[];
+    count: number;
+    nextPage: number | null;
+    prevPage: number | null;
+    totalPages: number;
+  };
+}
 
 function History() {
   const [search, setSearch] = useState("");
@@ -54,56 +97,155 @@ function History() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    setCurrentPage(0);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", "0");
-    router.replace(`?${params.toString()}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, selectedFilter]);
+  const statusLabelMap: Record<string, string> = {
+    paid: "Processing",
+    fulfilled: "Delivered",
+  };
+
+  const formatStatusLabel = (status?: string | null) => {
+    if (!status) return "Processing";
+
+    const normalizedStatus = status.toUpperCase();
+    if (statusLabelMap[normalizedStatus]) {
+      return statusLabelMap[normalizedStatus];
+    }
+
+    const normalized = status.replace(/_/g, " ").toLowerCase();
+    return normalized.replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
+  const normalizeStatus = (status?: string | null) =>
+    (status || "").toLowerCase().replace(/\s+/g, "-").replace(/_/g, "-");
+
+  const mapFilterToStatusVariable = (filterId: string) => {
+    const filterToStatusMap: Record<string, string | undefined> = {
+      all: undefined,
+      processing: "paid",
+      delivered: "fulfilled",
+    };
+
+    if (filterToStatusMap.hasOwnProperty(filterId)) {
+      return filterToStatusMap[filterId];
+    }
+
+    return filterId.replace(/-/g, "_").toUpperCase();
+  };
+
+  const statusVariable = mapFilterToStatusVariable(selectedFilter);
+
+  const normalizeAddress = (value?: string | null) => {
+    if (typeof value !== "string") return undefined;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  };
+
+  const {
+    data: patientOrdersData,
+    loading: patientOrdersLoading,
+    error: patientOrdersError,
+  } = useQuery<PatientOrdersResponse>(PATIENT_ORDERS, {
+    variables: {
+      patientId: null,
+      page: Math.max(1, currentPage + 1),
+      perPage: itemsPerPage,
+      search: search || undefined,
+      status: statusVariable,
+    },
+    fetchPolicy: "network-only",
+    notifyOnNetworkStatusChange: true,
+  });
 
   const handleFilterSelect = (filterId: string) => {
     setSelectedFilter(filterId);
     setShowFilterDropdown(false);
-    console.log("Selected filter:", filterId);
   };
 
-  const normalizeStatus = (status: string) =>
-    status.toLowerCase().replace(/\s+/g, "-").replace(/_/g, "-");
+  const rawOrders = patientOrdersData?.patientOrders?.allData ?? [];
 
-  const filteredOrders = ordersHistory.filter((order) => {
+  const transformedOrders: PrescriptionOrder[] = rawOrders.map((order) => {
+    const orderItems =
+      order.orderItems?.map((item, index) => {
+        const quantity = item.quantity ?? 0;
+        const unitPrice = item.price ?? 0;
+        const lineTotal = item.totalPrice ?? unitPrice * quantity;
+        const variantsData = item.product?.variants;
+        const variant =
+          Array.isArray(variantsData) && variantsData.length > 0
+            ? variantsData[0]
+            : undefined;
+        const tagsData = Array.isArray(item.product?.tags)
+          ? item.product?.tags.filter(
+              (tag): tag is string => typeof tag === "string"
+            )
+          : undefined;
+        const imageData = Array.isArray(item.product?.images)
+          ? item.product?.images.find(
+              (image): image is string =>
+                typeof image === "string" && image.trim().length > 0
+            )
+          : undefined;
+        const primaryImage = item.product?.primaryImage
+          ? String(item.product.primaryImage)
+          : undefined;
+
+        return {
+          id: item.id ?? `${order.id}-${index}`,
+          medicineName: item.product?.title || "Unknown Product",
+          quantity,
+          price: unitPrice,
+          amount: `$${lineTotal.toFixed(2)}`,
+          description: item.product?.description ?? undefined,
+          variants: variant,
+          tags: tagsData && tagsData.length > 0 ? tagsData : undefined,
+          imageUrl: imageData,
+          primaryImage: primaryImage ?? imageData,
+        };
+      }) ?? [];
+
+    return {
+      id: order.id,
+      displayId: String(order.displayId ?? order.id),
+      doctorName: order.doctor?.fullName || "Unknown Doctor",
+      orderItems,
+      orderedOn: order.createdAt
+        ? new Date(order.createdAt).toLocaleDateString()
+        : "--",
+      totalPrice: order.totalPrice ?? 0,
+      status: formatStatusLabel(order.status),
+      patient: order.patient
+        ? {
+            address: normalizeAddress(order.patient.address),
+          }
+        : undefined,
+    };
+  });
+
+  const filteredOrders = transformedOrders.filter((order) => {
     if (selectedFilter !== "all") {
-      if (
-        selectedFilter === "delivered" ||
-        selectedFilter === "processing" ||
-        selectedFilter === "ready-for-pickup"
-      ) {
-        if (normalizeStatus(order.status) !== selectedFilter) return false;
-      }
+      if (normalizeStatus(order.status) !== selectedFilter) return false;
     }
-    if (search.trim() !== "") {
-      const lowerSearch = search.toLowerCase();
-      const doctorMatch = order.doctorName.toLowerCase().includes(lowerSearch);
-      const medicineMatch = order.orderItems.some((item) =>
-        item.medicineName.toLowerCase().includes(lowerSearch)
-      );
-      const orderNumberMatch = order.orderNumber
-        .toLowerCase()
-        .includes(lowerSearch);
 
-      if (!doctorMatch && !medicineMatch && !orderNumberMatch) return false;
-    }
     return true;
   });
 
-  const pageCount = Math.ceil(filteredOrders.length / itemsPerPage);
-  const offset = currentPage * itemsPerPage;
-  const currentItems = filteredOrders.slice(offset, offset + itemsPerPage);
+  const totalResults =
+    patientOrdersData?.patientOrders?.count ?? filteredOrders.length;
 
-  const handlePageChange = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected);
+  const pageCountFromServer = patientOrdersData?.patientOrders?.totalPages ?? 0;
+
+  const currentItems = filteredOrders;
+
+  const showEmptyState =
+    !patientOrdersLoading && !patientOrdersError && rawOrders.length === 0;
+
+  const showSkeleton = patientOrdersLoading && currentItems.length === 0;
+
+  const handlePageChange = (selectedPage: number) => {
+    const nextPage = Math.max(0, selectedPage);
+    if (nextPage === currentPage) return;
+    setCurrentPage(nextPage);
     const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(selected));
+    params.set("page", String(nextPage));
     router.replace(`?${params.toString()}`);
   };
 
@@ -129,7 +271,7 @@ function History() {
           </h2>
           <div className="px-3 py-1 rounded-full bg-white border border-indigo-200">
             <p className="text-sm font-medium text-primary whitespace-nowrap">
-              {filteredOrders.length}
+              {totalResults}
             </p>
           </div>
         </div>
@@ -188,14 +330,12 @@ function History() {
             <div
               className="block md:hidden fixed inset-0 z-50 bg-black/40 outline-none"
               onClick={() => {
-                console.log("Overlay clicked, closing modal");
                 setShowFilterDropdown(false);
               }}
             >
               <div
                 className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-xl animate-slideUp"
                 onClick={(e) => {
-                  console.log("Inside white container clicked");
                   e.stopPropagation();
                 }}
               >
@@ -236,63 +376,40 @@ function History() {
         </div>
       </div>
       <div className="flex flex-col gap-2 md:gap-4">
-        {currentItems.map((order) => (
-          <PrescriptionOrderCard
-            key={order.id}
-            orders={[order]}
-            onPress={handleOrderClick}
-            btnTitle={"Reorder"}
-            onPay={() => {
-              showSuccessToast("Reorder Request Submitted");
-            }}
-            onDelete={() => {
-              showErrorToast("Order Cancelled");
-            }}
-            icon={<EyeIcon />}
-            type="order"
-          />
-        ))}
+        {showSkeleton ? (
+          <OrderHistorySkeleton />
+        ) : patientOrdersError ? (
+          <div className="bg-white border border-red-200 rounded-2xl p-6">
+            <p className="text-sm font-medium text-red-500">
+              {patientOrdersError.message}
+            </p>
+          </div>
+        ) : (
+          currentItems.map((order) => (
+            <PrescriptionOrderCard
+              key={order.id}
+              orders={[order]}
+              onPress={handleOrderClick}
+              btnTitle={"Reorder"}
+              onPay={() => {
+                showSuccessToast("Reorder Request Submitted");
+              }}
+              onDelete={() => {
+                showErrorToast("Order Cancelled");
+              }}
+              icon={<EyeIcon />}
+              type="order"
+            />
+          ))
+        )}
       </div>
       <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-        {currentItems.length < 1 && <EmptyState mtClasses="-mt-6" />}
-
-        <div className="w-full flex items-center justify-center">
-          <ReactPaginate
-            breakLabel="..."
-            nextLabel={
-              <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                <span className="hidden md:inline-block">Next</span>
-                <span className="block mb-0.5 rotate-180">
-                  <ArrowLeftIcon />
-                </span>
-              </span>
-            }
-            previousLabel={
-              <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                <span className="md:mb-0.5">
-                  <ArrowLeftIcon />
-                </span>
-                <span className="hidden md:inline-block">Previous</span>
-              </span>
-            }
-            onPageChange={handlePageChange}
-            pageRangeDisplayed={3}
-            marginPagesDisplayed={1}
-            pageCount={pageCount ? pageCount : 1}
-            forcePage={currentPage}
-            pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-            containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-            pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-            activeClassName="bg-gray-200 text-gray-900 font-medium"
-            previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-            nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-            breakClassName="px-3 py-1 font-semibold text-gray-400"
-          />
-
-          <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-            Page {currentPage + 1} of {pageCount}
-          </h2>
-        </div>
+        {showEmptyState && <EmptyState mtClasses="-mt-6" />}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={pageCountFromServer || 1}
+          onPageChange={handlePageChange}
+        />
       </div>
       <CustomerOrderDetails
         isOpen={isDetailModelOpen}
@@ -306,7 +423,7 @@ function History() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<OrderHistorySkeleton />}>
       <History />
     </Suspense>
   );

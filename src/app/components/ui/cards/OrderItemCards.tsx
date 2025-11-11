@@ -1,4 +1,4 @@
-import Image from "next/image";
+import ProductImage from "../ProductImage";
 
 export interface OrderItemProps {
   item: {
@@ -15,6 +15,12 @@ export interface OrderItemProps {
     physicianNotes?: string;
     denialReason?: string;
     description?: string;
+    variants?: {
+      sku?: string | null;
+    };
+    tags?: string[];
+    imageUrl?: string;
+    primaryImage?: string;
   };
   requestStatus?: boolean;
   paymentRequest?: boolean;
@@ -44,7 +50,6 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
   requestStatus,
   paymentRequest,
 }) => {
-  console.log(item);
   const details =
     requestStatus && !paymentRequest
       ? [
@@ -78,7 +83,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
       ? { label: "Reason for Denial:", value: item.denialReason }
       : null,
   ].filter((note): note is Note => note !== null);
-
+  console.log("primaryImage", item.primaryImage);
   return (
     <div
       key={item.id}
@@ -88,9 +93,9 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
     >
       <div className="flex items-start gap-3 md:border-b md:border-gray-200 md:pb-4">
         <div className="w-18 h-18 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
-          <Image
-            alt="#"
-            src={"/images/products/p1.png"}
+          <ProductImage
+            alt="prduct"
+            src={item.primaryImage}
             width={1024}
             height={1024}
           />
@@ -100,11 +105,14 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
             {item.medicineName}
           </h3>
           <div className={`${requestStatus ? "block" : "hidden"} md:flex`}>
-            <p className="text-sm font-normal text-gray-800 line-clamp-2">
-              {item.description || "No description available"}
-            </p>
+            <p
+              className="text-sm font-normal text-gray-800"
+              dangerouslySetInnerHTML={{
+                __html: item.description || "No description available",
+              }}
+            />
           </div>
-          <div className="flex justify-between items-center text-sm text-gray-500">
+          <div className="flex justify-between gap-3 items-start text-sm text-gray-500">
             <div
               className={`flex items-center ${item.status ? "gap-2" : "gap-0"}`}
             >
@@ -122,17 +130,29 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                 </div>
               )}
               {!requestStatus && (
-                <div>
-                  <span
-                    className={`inline-block whitespace-nowrap border border-gray-200 rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium`}
-                  >
-                    Recovery & Healing
-                  </span>
+                <div className="flex flex-wrap items-center gap-1">
+                  {item.tags && item.tags.length > 0 ? (
+                    item.tags.map((tag, index) => (
+                      <span
+                        key={`${item.id}-tag-${index}`}
+                        className="inline-flex items-center whitespace-nowrap border border-gray-200 rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="inline-flex items-center whitespace-nowrap border border-gray-200 rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium">
+                      N/A
+                    </span>
+                  )}
                 </div>
               )}
             </div>
-            {item.amount && !requestStatus && (
-              <p className="text-xs font-normal text-gray-800">{item.amount}</p>
+
+            {item.variants?.sku && !requestStatus && (
+              <p className="text-xs font-normal text-gray-800 flex-shrink-0">
+                {item.variants?.sku}
+              </p>
             )}
           </div>
           {/* Desktop version - hidden on mobile, shown on desktop */}

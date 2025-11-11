@@ -152,12 +152,6 @@ function InventoryContent() {
         },
       ];
 
-      console.log("Requesting order with:", {
-        doctorId,
-        reason,
-        requestedItems,
-      });
-
       const result = await requestOrder({
         variables: {
           doctorId,

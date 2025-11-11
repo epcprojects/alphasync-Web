@@ -14,7 +14,7 @@ type OrderItem = {
 };
 
 type order = {
-  orderNumber: string;
+  displayId: string;
   doctorName: string;
   orderedOn: string;
   shippingAddress?: string;
@@ -34,7 +34,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
   onClose,
   order,
 }) => {
-   useBodyScrollLock(isOpen);
+  useBodyScrollLock(isOpen);
   if (!order) return null;
   return (
     <AppModal
@@ -43,7 +43,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
       icon={<OrderDetail />}
       title="Order Details"
       outSideClickClose={false}
-      subtitle={order ? `Order #${order.orderNumber}` : ""}
+      subtitle={order ? `Order #${order.displayId}` : ""}
       position={ModalPosition.RIGHT}
       showFooter={false}
     >
@@ -59,7 +59,11 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
           </div>
           <div className="bg-gray-100 rounded-xl">
             {order.orderItems.map((item, idx) => (
-              <OrderSummaryCard key={item.id} item={item} isLast={idx === order.orderItems.length - 1} />
+              <OrderSummaryCard
+                key={item.id}
+                item={item}
+                isLast={idx === order.orderItems.length - 1}
+              />
             ))}
           </div>
           <h2 className="text-lg font-semibold text-primary">Order Summary</h2>

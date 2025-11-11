@@ -10,10 +10,11 @@ type OrderItem = {
   amount: string;
   quantity: number;
   price: number;
+  description?: string;
 };
 
 type order = {
-  orderNumber: string;
+  displayId: string;
   doctorName: string;
   orderedOn: string;
   shippingAddress?: string;
@@ -21,6 +22,9 @@ type order = {
   totalPrice: string | number;
   orderItems: OrderItem[];
   status?: string;
+  patient?: {
+    address?: string | null;
+  };
 };
 
 interface CustomerOrderDetailsProps {
@@ -37,7 +41,16 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
   type = "order",
 }) => {
   useBodyScrollLock(isOpen);
+  const normalizeAddress = (value?: string | null) => {
+    if (typeof value !== "string") return undefined;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  };
   if (!order) return null;
+  const shippingAddress =
+    normalizeAddress(order.patient?.address ?? undefined) ??
+    normalizeAddress(order.shippingAddress) ??
+    "Address not available";
   const getOrderTags = (status?: string) => {
     switch (status) {
       case "Due Today":
@@ -50,6 +63,9 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
         return "bg-green-50 border border-green-200 text-green-700";
     }
   };
+  {
+    console.log("order in details", order);
+  }
   return (
     <AppModal
       isOpen={isOpen}
@@ -57,7 +73,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
       icon={<OrderDetail />}
       title="Order Details"
       outSideClickClose={false}
-      subtitle={order ? `Order #${order.orderNumber}` : ""}
+      subtitle={order.displayId}
       position={ModalPosition.RIGHT}
       showFooter={false}
     >
@@ -66,6 +82,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
           {order.orderItems.map((item) => (
             <OrderItemCard key={item.id} item={item} />
           ))}
+
           <div className="flex flex-col gap-4 px-2.5 md:px-0 border-b border-gray-200 pb-4 ">
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
@@ -100,7 +117,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                 Shipping Address
               </span>
               <span className="text-sm font-medium text-gray-800">
-                123 Main St, New York, NY 10001
+                {shippingAddress}
               </span>
             </div>
           </div>

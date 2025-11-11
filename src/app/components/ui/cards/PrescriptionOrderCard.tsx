@@ -1,6 +1,7 @@
 import React from "react";
 import ThemeButton from "../buttons/ThemeButton";
 import { MedicineIcon, Reload } from "@/icons";
+import ProductImage from "@/app/components/ui/ProductImage";
 
 export type pageVarient = "order" | "Pending-page";
 
@@ -10,17 +11,27 @@ interface OrderItem {
   quantity: number;
   price: number;
   amount: string;
+  description?: string;
+  imageUrl?: string;
+
+  product?: {
+    primaryImage?: string;
+  };
 }
 
 export interface PrescriptionOrder {
   id: string;
-  orderNumber: string;
+  displayId: string;
   doctorName: string;
   orderItems: OrderItem[];
   orderedOn: string;
   totalPrice: number;
   isDueToday?: string;
   status?: string;
+  shippingAddress?: string;
+  patient?: {
+    address?: string | null;
+  };
 }
 
 interface PrescriptionOrderCardProps {
@@ -66,7 +77,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-950">
-              Order #{order.orderNumber}
+              {order.displayId}
             </h2>
             <span
               className={`${getOrderTags(
@@ -108,7 +119,13 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
-                    <MedicineIcon />
+                    {/* <MedicineIcon /> */}
+                    <ProductImage
+                      alt="prduct"
+                      src={item?.product?.primaryImage}
+                      width={1024}
+                      height={1024}
+                    />
                   </div>
                   <span
                     className="
@@ -144,7 +161,9 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                   }
                 }}
                 className={`w-11 h-11 ${
-                  type === "Pending-page" ? "hover:bg-red-50" : "hover:bg-gray-50"
+                  type === "Pending-page"
+                    ? "hover:bg-red-50"
+                    : "hover:bg-gray-50"
                 } cursor-pointer rounded-full flex items-center justify-center border ${
                   type === "Pending-page"
                     ? "border-red-200"

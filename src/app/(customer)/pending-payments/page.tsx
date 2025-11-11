@@ -41,6 +41,16 @@ function PendingPayments() {
     null
   );
   const today = new Date();
+  const normalizedPaymentOrders: PrescriptionOrder[] = paymentOrders.map(
+    ({ orderNumber, ...rest }) =>
+      ({
+        ...rest,
+        displayId: String(
+          // @ts-expect-error legacy datasets may still include displayId
+          rest.displayId ?? orderNumber ?? rest.id
+        ),
+      } as PrescriptionOrder)
+  );
   const itemsPerPage = 10;
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -85,7 +95,7 @@ function PendingPayments() {
     date1.getMonth() === date2.getMonth() &&
     date1.getDate() === date2.getDate();
 
-  const filteredOrders = paymentOrders.filter((order) => {
+  const filteredOrders = normalizedPaymentOrders.filter((order) => {
     if (selectedFilter !== "all") {
       const orderDate = toDate(order.orderedOn);
 
@@ -137,11 +147,11 @@ function PendingPayments() {
       const medicineMatch = order.orderItems.some((item) =>
         item.medicineName.toLowerCase().includes(lowerSearch)
       );
-      const orderNumberMatch = order.orderNumber
+      const displayIdMatch = order.displayId
         .toLowerCase()
         .includes(lowerSearch);
 
-      if (!doctorMatch && !medicineMatch && !orderNumberMatch) return false;
+      if (!doctorMatch && !medicineMatch && !displayIdMatch) return false;
     }
     return true;
   });

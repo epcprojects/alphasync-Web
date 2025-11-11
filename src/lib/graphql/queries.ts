@@ -230,13 +230,49 @@ export const MESSAGE_ADDED = gql`
 `;
 
 export const PATIENT_ORDERS = gql`
-  query PatientOrders($patientId: ID, $page: Int, $perPage: Int) {
-    patientOrders(patientId: $patientId, page: $page, perPage: $perPage) {
+  query PatientOrders(
+    $patientId: ID
+    $page: Int
+    $perPage: Int
+    $status: String
+    $search: String
+  ) {
+    patientOrders(
+      patientId: $patientId
+      page: $page
+      perPage: $perPage
+      status: $status
+      search: $search
+    ) {
       allData {
         id
+        displayId
         status
         createdAt
         totalPrice
+        patient {
+          address
+        }
+        doctor {
+          ${userpayload}
+        }
+        orderItems {
+          id
+          quantity
+          price
+          totalPrice
+          product {
+            title
+            description
+            id
+            images
+            primaryImage
+            tags
+             variants {
+              sku
+            }
+          }
+        }
       }
       count
       nextPage

@@ -1,5 +1,5 @@
 "use client";
-import { PrescriptionRequestCard, Loader } from "@/app/components";
+import { PrescriptionRequestCard, Loader, EmptyState } from "@/app/components";
 import AddNoteModal from "@/app/components/ui/modals/AddNoteModal";
 import { RequestFilledIcon, SearchIcon } from "@/icons";
 import Pagination from "@/app/components/ui/Pagination";
@@ -84,7 +84,7 @@ function CustomerRequestContent() {
 
   // Transform GraphQL data to match the card format
   const transformedRequests =
-    orderRequestsData?.allOrderRequests.allData?.map((request) => {
+    orderRequestsData?.allOrderRequests.allData?.map((request, index) => {
       // Normalize status to match component expectations
       const normalizeStatus = (status: string | undefined) => {
         if (!status) return "Pending Review";
@@ -99,11 +99,23 @@ function CustomerRequestContent() {
       const firstItem = request.requestedItems?.[0];
       const productInfo = firstItem?.product;
 
+      // Generate a unique ID - use original ID if valid, otherwise use displayId or index
+      const getUniqueId = () => {
+        if (request.id !== null && request.id !== undefined) {
+          const parsed =
+            typeof request.id === "number"
+              ? request.id
+              : parseInt(String(request.id), 10);
+          if (!isNaN(parsed)) return parsed;
+        }
+        if (request.displayId) {
+          return `display-${request.displayId}-${index}`;
+        }
+        return `request-${index}`;
+      };
+
       return {
-        id:
-          typeof request.id === "number"
-            ? request.id
-            : parseInt(String(request.id || 1)),
+        id: getUniqueId(),
         title: productInfo?.title || firstItem?.title || "Requested Item",
         subtitle: "",
         description: productInfo?.description || firstItem?.title || "",
@@ -129,6 +141,9 @@ function CustomerRequestContent() {
         doctorId: request.doctor?.id ? String(request.doctor.id) : "",
       };
     }) || [];
+
+  const showEmptyState =
+    !orderRequestsLoading && transformedRequests.length < 1;
 
   const handleApprove = (title: string) => {
     showSuccessToast("Patient request approved successfully.");
@@ -249,87 +264,103 @@ function CustomerRequestContent() {
           </TabList>
           <TabPanels>
             <TabPanel>
-              {transformedRequests.map((item) => (
-                <PrescriptionRequestCard
-                  key={item.id}
-                  cardVarient="Customer"
-                  onApprove={() => handleApprove(item.title)}
-                  onReject={() => handleReject(item.title)}
-                  onAddNote={() => handleAddNote(item.title)}
-                  onViewDetails={() => handleRequests(item)}
-                  onChat={() => {
-                    setSelectedChatInfo({
-                      doctorId: item.doctorId || "",
-                      doctorName: item.doctorName || "Physician",
-                      requestDisplayId: item.displayId || "",
-                    });
-                    setIsChatModel(true);
-                  }}
-                  onPayment={() => {
-                    handlePayment(item);
-                  }}
-                  {...item}
-                />
-              ))}
+              {showEmptyState ? (
+                <EmptyState />
+              ) : (
+                transformedRequests.map((item) => (
+                  <PrescriptionRequestCard
+                    key={item.id}
+                    cardVarient="Customer"
+                    onApprove={() => handleApprove(item.title)}
+                    onReject={() => handleReject(item.title)}
+                    onAddNote={() => handleAddNote(item.title)}
+                    onViewDetails={() => handleRequests(item)}
+                    onChat={() => {
+                      setSelectedChatInfo({
+                        doctorId: item.doctorId || "",
+                        doctorName: item.doctorName || "Physician",
+                        requestDisplayId: item.displayId || "",
+                      });
+                      setIsChatModel(true);
+                    }}
+                    onPayment={() => {
+                      handlePayment(item);
+                    }}
+                    {...item}
+                  />
+                ))
+              )}
             </TabPanel>
 
             <TabPanel>
-              {transformedRequests.map((item) => (
-                <PrescriptionRequestCard
-                  key={item.id}
-                  cardVarient="Customer"
-                  onApprove={() => handleApprove(item.title)}
-                  onReject={() => handleReject(item.title)}
-                  onAddNote={() => handleAddNote(item.title)}
-                  onViewDetails={() => handleRequests(item)}
-                  onChat={() => {
-                    setSelectedChatInfo({
-                      doctorId: item.doctorId || "",
-                      doctorName: item.doctorName || "Physician",
-                      requestDisplayId: item.displayId || "",
-                    });
-                    setIsChatModel(true);
-                  }}
-                  onPayment={() => {
-                    handlePayment(item);
-                  }}
-                  {...item}
-                />
-              ))}
+              {showEmptyState ? (
+                <EmptyState />
+              ) : (
+                transformedRequests.map((item) => (
+                  <PrescriptionRequestCard
+                    key={item.id}
+                    cardVarient="Customer"
+                    onApprove={() => handleApprove(item.title)}
+                    onReject={() => handleReject(item.title)}
+                    onAddNote={() => handleAddNote(item.title)}
+                    onViewDetails={() => handleRequests(item)}
+                    onChat={() => {
+                      setSelectedChatInfo({
+                        doctorId: item.doctorId || "",
+                        doctorName: item.doctorName || "Physician",
+                        requestDisplayId: item.displayId || "",
+                      });
+                      setIsChatModel(true);
+                    }}
+                    onPayment={() => {
+                      handlePayment(item);
+                    }}
+                    {...item}
+                  />
+                ))
+              )}
             </TabPanel>
 
             <TabPanel>
-              {transformedRequests.map((item) => (
-                <PrescriptionRequestCard
-                  key={item.id}
-                  cardVarient="Customer"
-                  onApprove={() => handleApprove(item.title)}
-                  onReject={() => handleReject(item.title)}
-                  onAddNote={() => handleAddNote(item.title)}
-                  onViewDetails={() => handleRequests(item)}
-                  onPayment={() => {
-                    handlePayment(item);
-                  }}
-                  {...item}
-                />
-              ))}
+              {showEmptyState ? (
+                <EmptyState />
+              ) : (
+                transformedRequests.map((item) => (
+                  <PrescriptionRequestCard
+                    key={item.id}
+                    cardVarient="Customer"
+                    onApprove={() => handleApprove(item.title)}
+                    onReject={() => handleReject(item.title)}
+                    onAddNote={() => handleAddNote(item.title)}
+                    onViewDetails={() => handleRequests(item)}
+                    onPayment={() => {
+                      handlePayment(item);
+                    }}
+                    {...item}
+                  />
+                ))
+              )}
             </TabPanel>
 
             <TabPanel>
-              {transformedRequests.map((item) => (
-                <PrescriptionRequestCard
-                  key={item.id}
-                  cardVarient="Customer"
-                  onApprove={() => handleApprove(item.title)}
-                  onReject={() => handleReject(item.title)}
-                  onAddNote={() => handleAddNote(item.title)}
-                  onViewDetails={() => handleRequests(item)}
-                  {...item}
-                  onPayment={() => {
-                    handlePayment(item);
-                  }}
-                />
-              ))}
+              {showEmptyState ? (
+                <EmptyState />
+              ) : (
+                transformedRequests.map((item) => (
+                  <PrescriptionRequestCard
+                    key={item.id}
+                    cardVarient="Customer"
+                    onApprove={() => handleApprove(item.title)}
+                    onReject={() => handleReject(item.title)}
+                    onAddNote={() => handleAddNote(item.title)}
+                    onViewDetails={() => handleRequests(item)}
+                    {...item}
+                    onPayment={() => {
+                      handlePayment(item);
+                    }}
+                  />
+                ))
+              )}
             </TabPanel>
           </TabPanels>
         </TabGroup>
@@ -415,7 +446,7 @@ function CustomerRequestContent() {
         isOpen={isSummaryModel}
         onClose={() => setIsSummaryModel(false)}
         order={{
-          orderNumber: "123456",
+          displayId: "123456",
           orderedOn: "8/8/2025",
           doctorName: "Dr. Arina Baker",
           totalPrice: 120,

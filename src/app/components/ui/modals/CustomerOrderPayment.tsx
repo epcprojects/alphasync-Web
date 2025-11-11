@@ -29,7 +29,7 @@ type OrderItem = {
 };
 
 type order = {
-  orderNumber: string;
+  displayId: string;
   doctorName: string;
   orderedOn: string;
   shippingAddress?: string;
@@ -482,7 +482,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
             <div className={`${showForm ? "hidden" : "block"} md:block`}>
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-gray-950">
-                  Order #{order.orderNumber}
+                  Order #{order.displayId}
                 </h2>
                 <span className="text-primary text-sm font-semibold">
                   {order.orderItems.length.toString().padStart(2, "0")} Items
