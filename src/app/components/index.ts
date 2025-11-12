@@ -39,6 +39,7 @@ import RequestListSkeleton from "./ui/RequestListSkeleton";
 import NotificationListSkeleton from "./ui/NotificationListSkeleton";
 import OrderHistorySkeleton from "./ui/OrderHistorySkeleton";
 import Pagination from "./ui/Pagination";
+import NotificationList from "./ui/NotificationList";
 import ChangePassword from "@/app/components/ChangePassword";
 import ImageUpload from "@/app/components/ImageUpload";
 import Chat from "./ui/chat/Chat";
@@ -92,6 +93,7 @@ export {
   NotificationListSkeleton,
   OrderHistorySkeleton,
   Pagination,
+  NotificationList,
   ChangePassword,
   ImageUpload,
   Chat,
