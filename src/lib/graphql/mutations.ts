@@ -515,3 +515,20 @@ export const LOW_STOCK_ALERTS_NOTIFICATION_SETTINGS = gql`
     }
   }
 `;
+
+export const DELETE_NOTIFICATION = gql`
+  mutation DeleteNotification($notificationId: ID!) {
+    deleteNotification(input: { notificationId: $notificationId }) {
+      message
+      success
+    }
+  }
+`;
+export const MARK_ALL_NOTIFICATIONS_AS_READ = gql`
+  mutation MarkAllNotificationsAsRead($clientMutationId: String) {
+    markAllNotificationsAsRead(input: { clientMutationId: $clientMutationId }) {
+      success
+      updatedCount
+    }
+  }
+`;

@@ -12,13 +12,29 @@ export function middleware(request: NextRequest) {
     "/otp",
     "/new-password",
     "/accept-invitation",
+    "/forgot",
   ];
   const isPublicRoute = publicRoutes.includes(pathname);
 
   // Role-based route definitions
   const adminRoutes = ["/admin"];
-  const doctorRoutes = ["/inventory", "/customers", "/orders", "/requests", "/notifications", "/reminder", "/settings"];
-  const customerRoutes = ["/browse-products", "/chat", "/customer-requests", "/order-history", "/pending-payments", "/profile"];
+  const doctorRoutes = [
+    "/inventory",
+    "/customers",
+    "/orders",
+    "/requests",
+    "/notifications",
+    "/reminder",
+    "/settings",
+  ];
+  const customerRoutes = [
+    "/browse-products",
+    "/chat",
+    "/customer-requests",
+    "/order-history",
+    "/pending-payments",
+    "/profile",
+  ];
 
   // All protected routes
   const protectedRoutes = [...adminRoutes, ...doctorRoutes, ...customerRoutes];
@@ -67,27 +83,45 @@ export function middleware(request: NextRequest) {
     }
 
     // Check if user is trying to access routes they're not authorized for
-    if (userType === "admin" && doctorRoutes.some((route) => pathname.startsWith(route))) {
-      return NextResponse.redirect(new URL("/admin/doctors", request.url));
-    }
-    
-    if (userType === "admin" && customerRoutes.some((route) => pathname.startsWith(route))) {
+    if (
+      userType === "admin" &&
+      doctorRoutes.some((route) => pathname.startsWith(route))
+    ) {
       return NextResponse.redirect(new URL("/admin/doctors", request.url));
     }
 
-    if (userType === "doctor" && adminRoutes.some((route) => pathname.startsWith(route))) {
-      return NextResponse.redirect(new URL("/inventory", request.url));
+    if (
+      userType === "admin" &&
+      customerRoutes.some((route) => pathname.startsWith(route))
+    ) {
+      return NextResponse.redirect(new URL("/admin/doctors", request.url));
     }
-    
-    if (userType === "doctor" && customerRoutes.some((route) => pathname.startsWith(route))) {
+
+    if (
+      userType === "doctor" &&
+      adminRoutes.some((route) => pathname.startsWith(route))
+    ) {
       return NextResponse.redirect(new URL("/inventory", request.url));
     }
 
-    if ((userType === "customer" || userType === "patient") && adminRoutes.some((route) => pathname.startsWith(route))) {
+    if (
+      userType === "doctor" &&
+      customerRoutes.some((route) => pathname.startsWith(route))
+    ) {
+      return NextResponse.redirect(new URL("/inventory", request.url));
+    }
+
+    if (
+      (userType === "customer" || userType === "patient") &&
+      adminRoutes.some((route) => pathname.startsWith(route))
+    ) {
       return NextResponse.redirect(new URL("/pending-payments", request.url));
     }
-    
-    if ((userType === "customer" || userType === "patient") && doctorRoutes.some((route) => pathname.startsWith(route))) {
+
+    if (
+      (userType === "customer" || userType === "patient") &&
+      doctorRoutes.some((route) => pathname.startsWith(route))
+    ) {
       return NextResponse.redirect(new URL("/pending-payments", request.url));
     }
   }
@@ -96,11 +130,11 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// ✅ Apply middleware globally (or restrict as needed)
 export const config = {
   matcher: [
     "/login",
     "/otp",
+    "/forgot",
     "/new-password",
     "/accept-invitation",
     "/inventory/:path*",

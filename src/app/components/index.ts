@@ -36,6 +36,7 @@ import OTPVerify from "./OtpVerify";
 import Skeleton from "@/app/components/Skelton";
 import InventorySkeleton from "./ui/InventorySkeleton";
 import RequestListSkeleton from "./ui/RequestListSkeleton";
+import NotificationListSkeleton from "./ui/NotificationListSkeleton";
 import OrderHistorySkeleton from "./ui/OrderHistorySkeleton";
 import Pagination from "./ui/Pagination";
 import ChangePassword from "@/app/components/ChangePassword";
@@ -88,6 +89,7 @@ export {
   Skeleton,
   InventorySkeleton,
   RequestListSkeleton,
+  NotificationListSkeleton,
   OrderHistorySkeleton,
   Pagination,
   ChangePassword,

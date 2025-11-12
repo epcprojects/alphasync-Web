@@ -363,3 +363,36 @@ export const FETCH_NOTIFICATION_SETTINGS = gql`
     }
   }
 `;
+export const ALL_NOTIFICATIONS = gql`
+  query AllNotifications($page: Int, $perPage: Int) {
+    allNotifications(page: $page, perPage: $perPage) {
+      allData {
+        date
+        doctorName
+        id
+        notificationType
+        senderName
+        productNames
+        read
+        sender {
+          id
+        }
+        message {
+          content
+        }
+        orderRequest {
+          id
+          displayId
+          status
+        }
+        user {
+          id
+        }
+      }
+      dataCount
+      nextPage
+      prevPage
+      totalPages
+    }
+  }
+`;
