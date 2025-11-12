@@ -257,7 +257,7 @@ export default function CustomerDetail() {
             : undefined,
         doctorName: request.doctor?.fullName || "Dr. Unknown",
         price: `$${totalAmount.toFixed(2)}`,
-        userNotes: undefined, // Hide patient notes for doctor view
+        customerReason: request.reason || "",
         physicianNotes: request.doctorMessage,
         denialReason: request.reason, // Show reason for all statuses
         category: firstItem?.product?.productType || "General",
