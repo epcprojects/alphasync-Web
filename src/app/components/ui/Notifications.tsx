@@ -1,7 +1,9 @@
+"use client";
 import {
   ChatIcon,
   CrossIcon,
   ReminderIcon,
+  PackageIcon,
   ReorderIcon,
   TrashBinIcon,
 } from "@/icons";
@@ -13,119 +15,301 @@ import {
   Dialog,
   DialogPanel,
 } from "@headlessui/react";
-import { Fragment, useState } from "react";
-import PackageIcon from "../../../../public/icons/PackageIcon";
-import ThemeButton from "./buttons/ThemeButton";
+import { Fragment, useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Link from "next/link";
-
-export type Notification = {
-  id: number;
-  title: string;
-  from: string;
-  product: string;
-  date: string;
-  status: string;
-  read: boolean;
-  type: string;
-};
+import { useQuery, useMutation } from "@apollo/client";
+import { ALL_NOTIFICATIONS } from "@/lib/graphql/queries";
+import { NotificationData } from "./NotificationList";
+import { useAppSelector } from "@/lib/store/hooks";
+import Tooltip from "./tooltip";
+import ThemeButton from "./buttons/ThemeButton";
+import { useRouter } from "next/navigation";
+import { RequestApproveModal, AppModal } from "@/app/components";
+import {
+  APPROVE_ORDER_REQUEST,
+  DELETE_NOTIFICATION,
+} from "@/lib/graphql/mutations";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 interface NotificationsProps {
-  notifications: Notification[];
+  userType?: "doctor" | "customer";
 }
 
-export default function Notifications({ notifications }: NotificationsProps) {
+export default function Notifications({ userType }: NotificationsProps) {
   const isMobile = useIsMobile();
+  const router = useRouter();
+  const user = useAppSelector((state) => state.auth.user);
   const [open, setOpen] = useState(false);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedNotificationId, setSelectedNotificationId] = useState<
+    string | null
+  >(null);
 
-  const renderList = (limit?: number) => (
-    <div className="space-y-3 lg:space-y-4">
-      {notifications.slice(0, limit ?? notifications.length).map((n) => (
-        <div
-          key={n.id}
-          className="pb-2.5 lg:pb-4 border-b border-mercury last:border-b-0"
-        >
-          <div className="flex items-start gap-2 justify-between">
-            <div className="flex items-start gap-2">
-              <div>
-                {n.type === "reorder" ? (
-                  <ReorderIcon />
-                ) : n.type === "message" ? (
-                  <ChatIcon />
-                ) : (
-                  <PackageIcon />
-                )}
-              </div>
+  // Determine user type from user data if not provided
+  const currentUserType =
+    userType ||
+    (user?.userType?.toLowerCase() === "customer" ||
+    user?.userType?.toLowerCase() === "patient"
+      ? "customer"
+      : "doctor");
 
-              <div className="flex flex-col gap-1">
-                <h2 className="text-xs md:text-base text-gray-800 font-semibold">
-                  {n.title}
-                </h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-700 font-medium md:text-xs text-[10px]">
-                    {n.date}
-                  </span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-300 block"></span>
-                  <span className="text-gray-800 font-medium md:text-xs text-[10px]">
-                    {n.from}
-                  </span>
-                </div>
+  const { data, loading, error, refetch } = useQuery(ALL_NOTIFICATIONS, {
+    variables: {
+      page: 1,
+      perPage: 4, // Fetch first 10 for dropdown3
+    },
+    fetchPolicy: "cache-and-network",
+  });
 
-                <h2 className="text-xs md:text-sm text-gray-800">
-                  {n.type === "reorder" ? (
-                    <div>
-                      A reorder request for “{n.product}” has been received by
-                      <span className="font-semibold"> {n.from}</span>.
-                    </div>
-                  ) : n.type === "message" ? (
-                    <div>
-                      <span>{n.from} </span>has sent you a message regarding his
-                      reorder request for
-                      <span className="font-semibold"> “{n.product}”</span>.
-                    </div>
+  const [approveOrderRequest, { loading: isApproving }] = useMutation(
+    APPROVE_ORDER_REQUEST
+  );
+
+  const [deleteNotification, { loading: isDeleting }] =
+    useMutation(DELETE_NOTIFICATION);
+
+  const notifications = data?.allNotifications?.allData || [];
+
+  // Refetch notifications when dialog/popover opens
+  useEffect(() => {
+    if (open) {
+      refetch();
+    }
+  }, [open, refetch]);
+
+  const handleViewDetails = (notification: NotificationData) => {
+    if (currentUserType === "doctor" && notification.sender?.id) {
+      router.push(`/customers/${notification.sender.id}`);
+    }
+  };
+
+  const handleApproveClick = (message: NotificationData) => {
+    const requestId = message.orderRequest?.id;
+    if (!requestId) {
+      showErrorToast("Unable to find request details.");
+      return;
+    }
+    setSelectedRequest(requestId);
+    setIsApproveModalOpen(true);
+  };
+
+  const handleApproveConfirm = async ({
+    doctorMessage,
+  }: {
+    doctorMessage: string;
+  }) => {
+    if (!selectedRequest) {
+      showErrorToast("No request selected.");
+      return;
+    }
+    try {
+      await approveOrderRequest({
+        variables: {
+          requestId: selectedRequest,
+          doctorMessage: doctorMessage || null,
+        },
+      });
+      showSuccessToast("Patient request approved successfully.");
+      // Close modal and reset state immediately after successful mutation
+      setIsApproveModalOpen(false);
+      setSelectedRequest(null);
+      // Refetch notifications after closing modal
+      await refetch();
+    } catch (error) {
+      showErrorToast("Failed to approve request. Please try again.");
+      console.error("Error approving request:", error);
+    }
+  };
+
+  const handleDeleteClick = (notificationId: string) => {
+    setSelectedNotificationId(notificationId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedNotificationId) {
+      showErrorToast("No notification selected.");
+      return;
+    }
+    try {
+      const result = await deleteNotification({
+        variables: {
+          notificationId: selectedNotificationId,
+        },
+      });
+      if (result.data?.deleteNotification?.success) {
+        showSuccessToast("Notification deleted successfully.");
+        await refetch();
+        setIsDeleteModalOpen(false);
+        setSelectedNotificationId(null);
+      } else {
+        showErrorToast("Failed to delete notification.");
+      }
+    } catch (error) {
+      showErrorToast("Failed to delete notification. Please try again.");
+      console.error("Error deleting notification:", error);
+    }
+  };
+
+  const getNotificationTitle = (message: NotificationData) => {
+    switch (message.notificationType) {
+      case "order_request_created":
+        return "Request for a new product";
+      case "order_request_approved":
+        return `Dr. ${message.doctorName} has approved your order`;
+      case "order_request_denied":
+        return `Dr. ${message.doctorName} has rejected your order`;
+      case "message_received":
+        return `New message from ${message.senderName}`;
+      default:
+        return "New notification";
+    }
+  };
+
+  const getNotificationDescription = (message: NotificationData) => {
+    if (message.notificationType === "order_request_created") {
+      return (
+        <div>
+          <span>{message.senderName} </span>has requested a new product
+          <span className="font-semibold">
+            {" "}
+            &quot;
+            {message.productNames.map((product) => (
+              <span key={product}>{product}</span>
+            ))}
+            &quot;
+          </span>
+          .
+        </div>
+      );
+    } else if (message.notificationType === "message_received") {
+      return (
+        <div>
+          <span>{message.senderName}</span> has sent you a message.
+          <span className="font-semibold">
+            {" "}
+            &quot;
+            {message.message?.content}
+            &quot;
+          </span>
+        </div>
+      );
+    } else if (message.notificationType === "order_request_approved") {
+      return <div>Dr. {message.doctorName} has approved your order</div>;
+    } else if (message.notificationType === "order_request_denied") {
+      return <div>Dr. {message.doctorName} has rejected your order.</div>;
+    }
+    return null;
+  };
+
+  const renderList = (limit?: number) => {
+    if (loading) {
+      return (
+        <div className="p-4 text-center text-gray-500 text-sm">
+          Loading notifications...
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="p-4 text-center text-red-600 text-sm">
+          Failed to load notifications
+        </div>
+      );
+    }
+
+    if (!notifications || notifications.length === 0) {
+      return (
+        <div className="p-4 text-center text-gray-500 text-sm">
+          No notifications found.
+        </div>
+      );
+    }
+
+    const displayNotifications = notifications.slice(
+      0,
+      limit ?? notifications.length
+    );
+
+    return (
+      <div className="space-y-3 lg:space-y-4">
+        {displayNotifications.map((n: NotificationData) => (
+          <div
+            key={n.id}
+            className="pb-2.5 lg:pb-4 border-b border-mercury last:border-b-0"
+          >
+            <div className="flex items-start gap-2 justify-between">
+              <div className="flex items-start gap-2">
+                <div className="mt-1">
+                  {n.notificationType === "reorder" ||
+                  n.notificationType === "reorder_request" ? (
+                    <ReorderIcon />
+                  ) : n.notificationType === "message_received" ? (
+                    <ChatIcon />
                   ) : (
-                    <div>
-                      <span>{n.from} </span>has requested a new product
-                      <span className="font-semibold"> “{n.product}”</span>.
-                    </div>
+                    <PackageIcon />
                   )}
-                </h2>
+                </div>
 
-                <div className="mt-2 flex items-center gap-2">
-                  <ThemeButton
-                    label="View Details"
-                    size={isMobile ? "small" : "medium"}
-                    variant="outline"
-                    className="w-fit"
-                    heightClass={isMobile ? "h-8" : "h-9"}
-                  />
-                  {n.type !== "message" && (
-                    <ThemeButton
-                      label="Approve"
-                      size={isMobile ? "small" : "medium"}
-                      variant="success"
-                      className="w-fit"
-                      heightClass={isMobile ? "h-8" : "h-9"}
-                    />
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xs md:text-base text-gray-800 font-semibold">
+                    {getNotificationTitle(n)}
+                  </h2>
+
+                  <h2 className="text-xs md:text-sm text-gray-800">
+                    {getNotificationDescription(n)}
+                  </h2>
+
+                  {currentUserType === "doctor" && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <ThemeButton
+                        label="View Details"
+                        size={isMobile ? "small" : "medium"}
+                        variant="outline"
+                        className="w-fit"
+                        heightClass={isMobile ? "h-8" : "h-9"}
+                        onClick={() => handleViewDetails(n)}
+                      />
+                      {n.notificationType !== "message_received" &&
+                        n.orderRequest?.status === "pending" && (
+                          <ThemeButton
+                            label="Approve"
+                            size={isMobile ? "small" : "medium"}
+                            variant="success"
+                            className="w-fit"
+                            heightClass={isMobile ? "h-8" : "h-9"}
+                            onClick={() => handleApproveClick(n)}
+                          />
+                        )}
+                    </div>
                   )}
                 </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-1">
-              {n.read && (
-                <span className="h-1.5 w-1.5 rounded-full bg-primary block"></span>
-              )}
+              <div className="flex items-center gap-1">
+                {!n.read && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary block"></span>
+                )}
 
-              <button className="cursor-pointer bg-white rounded p-1 hover:bg-red-100">
-                <TrashBinIcon />
-              </button>
+                <Tooltip content="Delete">
+                  <button
+                    onClick={() => handleDeleteClick(n.id)}
+                    className="cursor-pointer bg-white rounded p-1 hover:bg-red-100"
+                  >
+                    <TrashBinIcon />
+                  </button>
+                </Tooltip>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
-    </div>
-  );
+        ))}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -172,7 +356,13 @@ export default function Notifications({ notifications }: NotificationsProps) {
         </>
       ) : (
         <Popover className="relative">
-          <PopoverButton className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+          <PopoverButton
+            onClick={() => {
+              // Refetch notifications when popover button is clicked
+              refetch();
+            }}
+            className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 bg-black/40 backdrop-blur-sm flex items-center justify-center"
+          >
             <ReminderIcon fill="white" />
           </PopoverButton>
 
@@ -190,21 +380,68 @@ export default function Notifications({ notifications }: NotificationsProps) {
                 <div className="absolute px-3 md:min-w-96 py-4 right-0 mt-2 w-96 rounded-xl shadow-lg bg-white">
                   {renderList(3)}
 
-                  {notifications.length > 3 && (
-                    <Link
-                      href="/notifications"
-                      onClick={() => close()}
-                      className="w-full mt-2 flex items-center justify-center text-center py-2 bg-blue-100 rounded-lg text-sm font-semibold cursor-pointer hover:bg-blue-200 text-primary"
-                    >
-                      View all
-                    </Link>
-                  )}
+                  <Link
+                    href={
+                      currentUserType === "doctor"
+                        ? "/notifications"
+                        : "/customer-notifications"
+                    }
+                    onClick={() => close()}
+                    className="w-full mt-2 flex items-center justify-center text-center py-2 bg-blue-100 rounded-lg text-sm font-semibold cursor-pointer hover:bg-blue-200 text-primary"
+                  >
+                    View all
+                  </Link>
                 </div>
               )}
             </PopoverPanel>
           </Transition>
         </Popover>
       )}
+
+      <RequestApproveModal
+        isOpen={isApproveModalOpen}
+        onClose={() => {
+          if (!isApproving) {
+            setIsApproveModalOpen(false);
+            setSelectedRequest(null);
+          }
+        }}
+        onConfirm={handleApproveConfirm}
+        isSubmitting={isApproving}
+        itemTitle={
+          selectedRequest
+            ? notifications?.find(
+                (n: NotificationData) => n.orderRequest?.id === selectedRequest
+              )?.orderRequest?.displayId || ""
+            : undefined
+        }
+        key={selectedRequest || "modal"} // Force re-render when request changes
+      />
+
+      <AppModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          if (!isDeleting) {
+            setIsDeleteModalOpen(false);
+            setSelectedNotificationId(null);
+          }
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Notification?"
+        confirmLabel={isDeleting ? "Deleting..." : "Delete"}
+        cancelLabel="Cancel"
+        confimBtnDisable={isDeleting}
+        confirmBtnVarient="danger"
+        size="small"
+        disableCloseButton={isDeleting}
+      >
+        <div className="text-center py-4">
+          <p className="text-gray-600 mb-4">
+            Are you sure you want to delete this notification? This action
+            cannot be undone.
+          </p>
+        </div>
+      </AppModal>
     </>
   );
 }
