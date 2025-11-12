@@ -340,15 +340,14 @@ export const ALL_ORDER_REQUESTS = gql`
 export const FETCH_NOTES = gql`
   query FetchNotes($notableId: ID!) {
     fetchNotes(notableId: $notableId) {
-      allData {
-        author {
-          ${userpayload}
-        }
-        content
-        notableId
-        notableType
-        id
+      author {
+        ${userpayload}
       }
+      content
+      notableId
+      notableType
+      id
+      createdAt
     }
   }
 `;

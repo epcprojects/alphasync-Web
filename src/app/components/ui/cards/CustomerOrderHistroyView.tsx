@@ -17,6 +17,7 @@ type CustomerOrderHistroyViewProps = {
 
 const statusStyles: Record<string, string> = {
   Delivered: "bg-green-50 text-green-700 border border-green-200",
+  paid: "bg-green-50 text-green-700 border border-green-200",
   Processing: "bg-amber-50 text-amber-700 border border-amber-200",
   Cancelled: "bg-red-50 text-red-700 border border-red-200",
   Shipped: "bg-blue-50 text-blue-700 border border-blue-200",
@@ -57,7 +58,7 @@ export default function CustomerOrderHistroyView({
 
       {/* <div className="">{customer.status}</div> */}
       <div
-        className={`px-2 py-0.5 rounded-full text-xs font-medium text-center w-fit ${
+        className={`px-2 py-0.5 rounded-full text-xs font-medium text-center capitalize w-fit ${
           statusStyles[customer.status] ||
           "bg-gray-100 text-gray-700 border border-gray-300"
         }`}

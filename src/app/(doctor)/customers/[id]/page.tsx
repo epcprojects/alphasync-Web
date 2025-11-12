@@ -9,10 +9,10 @@ import {
   RequestApproveModal,
   Skeleton,
   Pagination,
+  AppModal,
 } from "@/app/components";
 import {
   ArrowDownIcon,
-  ArrowLeftIcon,
   BubbleChatIcon,
   NoteIcon,
   PackageOutlineIcon,
@@ -33,6 +33,7 @@ import {
   FETCH_CUSTOMER,
   PATIENT_ORDERS,
   ALL_ORDER_REQUESTS,
+  FETCH_NOTES,
 } from "@/lib/graphql/queries";
 import {
   UserAttributes,
@@ -40,7 +41,9 @@ import {
 } from "@/lib/graphql/attributes";
 import {
   APPROVE_ORDER_REQUEST,
+  CREATE_NOTE,
   DENY_ORDER_REQUEST,
+  DELETE_NOTE,
 } from "@/lib/graphql/mutations";
 
 // Interface for GraphQL response
@@ -55,6 +58,7 @@ interface PatientOrdersResponse {
   patientOrders: {
     allData: {
       id: string;
+      displayId: string;
       status: string;
       createdAt: string;
       totalPrice: number;
@@ -77,6 +81,23 @@ interface OrderRequestsResponse {
   };
 }
 
+interface NoteData {
+  id: string;
+  content: string;
+  createdAt: string;
+  notableId: string;
+  notableType: string;
+  author?: {
+    id: string;
+    fullName?: string;
+    email?: string;
+  } | null;
+}
+
+interface FetchNotesResponse {
+  fetchNotes: NoteData[];
+}
+
 export default function CustomerDetail() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -87,9 +108,11 @@ export default function CustomerDetail() {
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [isDeleteNoteModalOpen, setIsDeleteNoteModalOpen] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
     null
   );
+  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
 
   // State declarations
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -140,6 +163,19 @@ export default function CustomerDetail() {
     fetchPolicy: "network-only",
   });
 
+  const {
+    data: notesData,
+    loading: notesLoading,
+    error: notesError,
+    refetch: refetchNotes,
+  } = useQuery<FetchNotesResponse>(FETCH_NOTES, {
+    variables: {
+      notableId: params.id,
+    },
+    skip: !params.id,
+    fetchPolicy: "network-only",
+  });
+
   // GraphQL mutation to approve order request
   const [approveOrderRequest, { loading: isApproving }] = useMutation(
     APPROVE_ORDER_REQUEST
@@ -148,6 +184,8 @@ export default function CustomerDetail() {
   // GraphQL mutation to deny order request
   const [denyOrderRequest, { loading: isDenying }] =
     useMutation(DENY_ORDER_REQUEST);
+  const [createNote, { loading: isCreatingNote }] = useMutation(CREATE_NOTE);
+  const [deleteNote, { loading: isDeletingNote }] = useMutation(DELETE_NOTE);
 
   const customer = data?.fetchUser?.user;
   const patientOrders = ordersData?.patientOrders;
@@ -164,6 +202,7 @@ export default function CustomerDetail() {
   // Use GraphQL data for pagination
   const pageCount = patientOrders?.totalPages || 0;
   const currentItems = patientOrders?.allData || [];
+  const notes = notesData?.fetchNotes || [];
 
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
@@ -467,7 +506,7 @@ export default function CustomerDetail() {
                         onRowClick={() => router.push(`/orders/${order.id}`)}
                         key={order.id}
                         order={{
-                          orderId: order.id,
+                          orderId: order.displayId,
                           date: new Date(order.createdAt).toLocaleDateString(),
                           status: order.status,
                           totalAmount: order.totalPrice,
@@ -505,24 +544,39 @@ export default function CustomerDetail() {
                     }}
                   />
                 </div>
-                <NoteCard
-                  doctor="Dr. Smith"
-                  date="1/15/2024"
-                  text="Allergic to penicillin. Prefers generic medications when available."
-                  onDelete={() => showSuccessToast("Note Deleted Successfully")}
-                />
-                <NoteCard
-                  doctor="Dr. Lee"
-                  date="2/10/2024"
-                  text="Patient reports occasional headaches. Recommended hydration and regular sleep."
-                  onDelete={() => showSuccessToast("Note Deleted Successfully")}
-                />
-                <NoteCard
-                  doctor="Dr. Brown"
-                  date="3/05/2024"
-                  text="History of seasonal allergies. Advised over-the-counter antihistamines during spring."
-                  onDelete={() => showSuccessToast("Note Deleted Successfully")}
-                />
+                {notesLoading ? (
+                  <div className="space-y-4 mt-4">
+                    <Skeleton className="w-full h-16 rounded-lg" />
+                    <Skeleton className="w-full h-16 rounded-lg" />
+                  </div>
+                ) : notesError ? (
+                  <div className="text-center py-6">
+                    <p className="text-red-500">
+                      {notesError.message || "Failed to load notes."}
+                    </p>
+                  </div>
+                ) : notes.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-gray-500">No notes added yet.</p>
+                  </div>
+                ) : (
+                  notes.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      doctor={note.author?.fullName || "Unknown Author"}
+                      date={
+                        note.createdAt
+                          ? new Date(note.createdAt).toLocaleDateString()
+                          : ""
+                      }
+                      text={note.content}
+                      onDelete={() => {
+                        setSelectedNoteId(note.id);
+                        setIsDeleteNoteModalOpen(true);
+                      }}
+                    />
+                  ))
+                )}
               </TabPanel>
 
               <TabPanel className={"flex flex-col gap-2 md:gap-4"}>
@@ -638,10 +692,24 @@ export default function CustomerDetail() {
       <AddNoteModal
         isOpen={isNoteModalOpen}
         onClose={() => setIsNoteModalOpen(false)}
-        onConfirm={(note) => {
-          showSuccessToast("Note added Successfully.");
-          console.log(note);
+        onConfirm={async ({ note }) => {
+          try {
+            await createNote({
+              variables: {
+                notableId: params.id,
+                notableType: "USER",
+                content: note,
+              },
+            });
+            await refetchNotes();
+            showSuccessToast("Note added Successfully.");
+          } catch (error) {
+            showErrorToast("Failed to add note. Please try again.");
+            console.error("Error creating note:", error);
+            throw error;
+          }
         }}
+        isSubmitting={isCreatingNote}
         itemTitle={
           transformedRequests.find((r) => r.id === selectedRequestId)
             ?.displayId || ""
@@ -687,6 +755,48 @@ export default function CustomerDetail() {
           },
         ]}
       />
+
+      <AppModal
+        isOpen={isDeleteNoteModalOpen}
+        onClose={() => {
+          if (!isDeletingNote) {
+            setIsDeleteNoteModalOpen(false);
+            setSelectedNoteId(null);
+          }
+        }}
+        onConfirm={async () => {
+          if (!selectedNoteId) return;
+          try {
+            await deleteNote({
+              variables: {
+                id: selectedNoteId,
+              },
+            });
+            await refetchNotes();
+            showSuccessToast("Note deleted successfully.");
+            setIsDeleteNoteModalOpen(false);
+            setSelectedNoteId(null);
+          } catch (error) {
+            showErrorToast("Failed to delete note. Please try again.");
+            console.error("Error deleting note:", error);
+          }
+        }}
+        title="Delete Note?"
+        confirmLabel={isDeletingNote ? "Deleting..." : "Delete"}
+        cancelLabel="Cancel"
+        confimBtnDisable={isDeletingNote}
+        confirmBtnVarient="danger"
+        size="small"
+        showFooter={true}
+        disableCloseButton={isDeletingNote}
+      >
+        <div className="text-center py-4">
+          <p className="text-gray-600 mb-4">
+            Are you sure you want to delete this note? This action cannot be
+            undone.
+          </p>
+        </div>
+      </AppModal>
     </div>
   );
 }

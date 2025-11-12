@@ -471,3 +471,11 @@ export const CREATE_NOTE = gql`
     }
   }
 `;
+
+export const DELETE_NOTE = gql`
+  mutation DeleteNote($id: ID!) {
+    deleteNote(input: { id: $id }) {
+      message
+    }
+  }
+`;
