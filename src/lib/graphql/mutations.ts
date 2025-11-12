@@ -479,3 +479,39 @@ export const DELETE_NOTE = gql`
     }
   }
 `;
+export const EMAIL_NOTIFICATION_SETTINGS = gql`
+  mutation UpdateNotificationSettings($emailNotification: Boolean) {
+    updateNotificationSettings(
+      input: { settings: { emailNotification: $emailNotification } }
+    ) {
+      success
+    }
+  }
+`;
+export const SMS_NOTIFICATION_SETTINGS = gql`
+  mutation UpdateNotificationSettings($smsNotification: Boolean) {
+    updateNotificationSettings(
+      input: { settings: { smsNotification: $smsNotification } }
+    ) {
+      success
+    }
+  }
+`;
+export const ORDER_UPDATES_NOTIFICATION_SETTINGS = gql`
+  mutation UpdateNotificationSettings($orderUpdates: Boolean) {
+    updateNotificationSettings(
+      input: { settings: { orderUpdates: $orderUpdates } }
+    ) {
+      success
+    }
+  }
+`;
+export const LOW_STOCK_ALERTS_NOTIFICATION_SETTINGS = gql`
+  mutation UpdateNotificationSettings($lowStockAlerts: Boolean) {
+    updateNotificationSettings(
+      input: { settings: { lowStockAlerts: $lowStockAlerts } }
+    ) {
+      success
+    }
+  }
+`;

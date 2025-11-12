@@ -351,3 +351,15 @@ export const FETCH_NOTES = gql`
     }
   }
 `;
+
+export const FETCH_NOTIFICATION_SETTINGS = gql`
+  query NotificationSettings {
+    notificationSettings {
+      id
+      emailNotification
+      lowStockAlerts
+      orderUpdates
+      smsNotification
+    }
+  }
+`;
