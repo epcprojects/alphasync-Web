@@ -64,6 +64,7 @@ function VerifyInfoContent() {
   const dispatch = useAppDispatch();
   const { user: currentUser } = useAppSelector((state) => state.auth);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
 
   const initialValues = useMemo<VerifyInfoFormValues>(
     () => ({
@@ -100,11 +101,18 @@ function VerifyInfoContent() {
     useMutation(UPDATE_USER_ADDRESS_VERIFIED, {
       onCompleted: (data) => {
         const updatedUser = data?.updateUser?.user;
-        if (updatedUser) {
-          dispatch(setUser(updatedUser));
-          Cookies.set("user_data", JSON.stringify(updatedUser), { expires: 7 });
+        const baseUser = updatedUser || currentUser;
+        if (baseUser) {
+          const userWithVerifiedAddress = {
+            ...baseUser,
+            addressVerified: true,
+          };
+          dispatch(setUser(userWithVerifiedAddress));
+          Cookies.set("user_data", JSON.stringify(userWithVerifiedAddress), {
+            expires: 7,
+          });
         }
-        window.location.href = "/pending-payments";
+        router.replace("/pending-payments");
       },
       onError: (error) => {
         showErrorToast(
