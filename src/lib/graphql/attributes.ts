@@ -23,6 +23,7 @@ export const userpayload = `
         dateOfBirth
         patientOrdersCount
         invitationStatus
+        addressVerified
 `;
 
 export interface UserAttributes {
@@ -50,6 +51,7 @@ export interface UserAttributes {
   dateOfBirth?: string;
   patientOrdersCount?: string;
   invitationStatus?: string;
+  addressVerified?: boolean;
 }
 
 export interface ProductInfo {

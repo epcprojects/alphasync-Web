@@ -73,7 +73,11 @@ function OTPContent() {
         if (storedData?.userType === "DOCTOR") {
           window.location.href = "/inventory";
         } else if (storedData?.userType === "PATIENT") {
-          window.location.href = "/pending-payments";
+          if (user?.addressVerified) {
+            window.location.href = "/pending-payments";
+          } else {
+            window.location.href = "/verify-info";
+          }
         } else if (storedData?.userType === "ADMIN") {
           router.push(`/admin/doctors`);
         } else {

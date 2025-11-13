@@ -92,6 +92,7 @@ export const UPDATE_USER = gql`
     $status: UserStatusEnum
     $specialty: String
     $image: Upload
+    $addressVerified: Boolean
   ) {
     updateUser(
       input: {
@@ -105,6 +106,7 @@ export const UPDATE_USER = gql`
           phoneNo: $phoneNo
           medicalLicense: $medicalLicense
           status: $status
+          addressVerified: $addressVerified
         }
       }
     ) {
@@ -529,6 +531,17 @@ export const MARK_ALL_NOTIFICATIONS_AS_READ = gql`
     markAllNotificationsAsRead(input: { clientMutationId: $clientMutationId }) {
       success
       updatedCount
+    }
+  }
+`;
+export const UPDATE_USER_ADDRESS_VERIFIED = gql`
+  mutation UpdateUserAddressVerified($addressVerified: Boolean) {
+    updateUser(
+      input: { userAttributes: { addressVerified: $addressVerified } }
+    ) {
+      user {
+        ${userpayload}
+      }
     }
   }
 `;
