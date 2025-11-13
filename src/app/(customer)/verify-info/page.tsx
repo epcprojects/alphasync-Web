@@ -61,7 +61,6 @@ const formatPhoneNumber = (value: string) => {
 };
 
 function VerifyInfoContent() {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const { user: currentUser } = useAppSelector((state) => state.auth);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -105,7 +104,7 @@ function VerifyInfoContent() {
           dispatch(setUser(updatedUser));
           Cookies.set("user_data", JSON.stringify(updatedUser), { expires: 7 });
         }
-        router.push("/pending-payments");
+        window.location.href = "/pending-payments";
       },
       onError: (error) => {
         showErrorToast(
