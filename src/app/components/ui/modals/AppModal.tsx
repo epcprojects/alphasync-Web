@@ -130,9 +130,9 @@ const AppModal: React.FC<AppModalProps> = ({
           </div>
 
           <div
-            className={`flex-1 bg-white ${scrollNeeded && "overflow-y-auto"}  ${
-              !showFooter && "rounded-b-2xl"
-            } ${bodyPaddingClasses}`}
+            className={`flex-1 bg-white ${
+              scrollNeeded && "overflow-y-auto max-h-[calc(100vh-200px)]"
+            }  ${!showFooter && "rounded-b-2xl"} ${bodyPaddingClasses}`}
           >
             {children}
           </div>

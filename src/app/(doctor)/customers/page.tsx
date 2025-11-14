@@ -71,8 +71,8 @@ function CustomerContent() {
 
   const statusOptions = [
     { label: "All Status", value: null },
-    { label: "Active", value: "ACTIVE" },
-    { label: "Inactive", value: "INACTIVE" },
+    { label: "Accepted", value: "ACCEPTED" },
+    { label: "Pending", value: "PENDING" },
   ];
 
   const itemsPerPage = 10;
@@ -143,7 +143,6 @@ function CustomerContent() {
     const patient = patients?.find(
       (p) => p.id === patientId || p.id === String(patientId)
     );
-    console.log("Found patient:", patient);
     if (patient) {
       setPatientToResend({
         id: patient.id,

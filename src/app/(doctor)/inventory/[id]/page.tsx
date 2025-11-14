@@ -1,7 +1,12 @@
 "use client";
 import { ProductSwiper, ThemeButton, Loader } from "@/app/components";
 import OrderModal from "@/app/components/ui/modals/OrderModal";
-import { ArrowDownIcon, HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon } from "@/icons";
+import {
+  ArrowDownIcon,
+  HeartFilledIcon,
+  HeartOutlineIcon,
+  ShopingCartIcon,
+} from "@/icons";
 import { showSuccessToast } from "@/lib/toast";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,36 +19,41 @@ import { showErrorToast } from "@/lib/toast";
 export default function PostDetail() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
-  
+
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   // GraphQL query to fetch product data
-  const { data, loading, error, refetch } = useQuery<FetchProductResponse>(FETCH_PRODUCT, {
-    variables: {
-      id: params.id,
-    },
-    skip: !params.id,
-    fetchPolicy: "network-only",
-  });
+  const { data, loading, error, refetch } = useQuery<FetchProductResponse>(
+    FETCH_PRODUCT,
+    {
+      variables: {
+        id: params.id,
+      },
+      skip: !params.id,
+      fetchPolicy: "network-only",
+    }
+  );
 
   // GraphQL mutation to create order
-  const [createOrder, { loading: createOrderLoading }] = useMutation(CREATE_ORDER);
+  const [createOrder, { loading: createOrderLoading }] =
+    useMutation(CREATE_ORDER);
 
   // GraphQL mutation to toggle favorite
-  const [toggleFavorite, { loading: toggleFavoriteLoading }] = useMutation(TOGGLE_FAVOURITE);
+  const [toggleFavorite, { loading: toggleFavoriteLoading }] =
+    useMutation(TOGGLE_FAVOURITE);
 
   const product = data?.fetchProduct;
 
   const handleToggleFavorite = async () => {
     if (!product?.id) return;
-    
+
     try {
       await toggleFavorite({
         variables: {
           productId: product.id,
         },
       });
-      
+
       // Refetch the product to get updated favorite status
       await refetch();
     } catch (error) {
@@ -53,48 +63,37 @@ export default function PostDetail() {
   };
 
   // Transform product images for ProductSwiper with better fallback logic
+
   const productViews = (() => {
-    // First try to use the images array
-    if (product?.images && product.images.length > 0) {
-      return product.images
-        .filter(image => image.src) // Only include images with valid src
-        .map((image, index) => ({
-          id: `image-${index}`,
-          title: image.alt || product.title || "Product Image",
-          imagePath: image.src,
-          thumbnailPath: image.src,
-        }));
-    }
-    
     // Fallback to primary image
-    if (product?.primaryImage?.src) {
+    if (product?.primaryImage) {
       return [
         {
           id: "primary",
           title: product.title || "Product Image",
-          imagePath: product.primaryImage.src,
-          thumbnailPath: product.primaryImage.src,
+          imagePath: product.primaryImage,
+          thumbnailPath: product.primaryImage,
         },
       ];
     }
-    
+
     // Final fallback to default image
     return [
       {
         id: "default",
         title: product?.title || "Product Image",
-        imagePath: "/images/products/p1.png",
-        thumbnailPath: "/images/products/p1.png",
+        imagePath: "/images/products/placeholder.png",
+        thumbnailPath: "/images/products/placeholder.png",
       },
     ];
   })();
 
-  const handleConfirmOrder = async (orderData: { 
-    customer: string; 
-    price: number; 
-    productId?: string; 
-    shopifyVariantId?: string; 
-    customerId?: string 
+  const handleConfirmOrder = async (orderData: {
+    customer: string;
+    price: number;
+    productId?: string;
+    shopifyVariantId?: string;
+    customerId?: string;
   }) => {
     try {
       if (!product || !orderData.customerId) {
@@ -102,7 +101,8 @@ export default function PostDetail() {
         return;
       }
 
-      const variantId = orderData.shopifyVariantId || product.variants?.[0]?.shopifyVariantId;
+      const variantId =
+        orderData.shopifyVariantId || product.variants?.[0]?.shopifyVariantId;
       if (!variantId) {
         showErrorToast("Product variant information is missing");
         return;
@@ -114,7 +114,7 @@ export default function PostDetail() {
           variantId: variantId,
           quantity: 1,
           price: orderData.price,
-        }
+        },
       ];
 
       await createOrder({
@@ -172,7 +172,9 @@ export default function PostDetail() {
         </div>
         <div className="bg-white shadow p-3 md:p-6 rounded-3xl">
           <div className="text-center py-8">
-            <p className="text-red-500 text-lg">Error loading product: {error.message}</p>
+            <p className="text-red-500 text-lg">
+              Error loading product: {error.message}
+            </p>
           </div>
         </div>
       </div>
@@ -219,7 +221,7 @@ export default function PostDetail() {
       <div className="bg-white shadow p-3 md:p-6 rounded-3xl ">
         <div className="grid grid-cols-1 lg:grid-cols-[410px_1fr] gap-4 md:gap-6">
           <div className="bg-white flex flex-col gap-4 h-fit shadow relative border border-gray-200 p-4 rounded-xl overflow-hidden">
-            <button 
+            <button
               className="absolute top-4 end-4 z-10 cursor-pointer"
               onClick={handleToggleFavorite}
               disabled={toggleFavoriteLoading}
@@ -232,12 +234,21 @@ export default function PostDetail() {
             </button>
             <ProductSwiper productViews={productViews} />
 
-            <div className="bg-gray-50 flex items-center justify-between gap-2 backdrop-blur-sm border py-1 md:py-2 px-2 md:px-3 rounded-xl border-gray-100">
-              <span className="block w-fit rounded-full bg-gray-100 border border-gray-200 py-0.5 px-2.5 text-gray-700 font-medium text-xs md:text-sm">
-                {product.productType || "Peptide"}
-              </span>
+            <div className="bg-gray-50 flex items-start justify-between gap-2 backdrop-blur-sm border py-1 md:py-2 px-2 md:px-3 rounded-xl border-gray-100">
+              <div className="flex items-center flex-wrap gap-2">
+                {product.tags?.length && product.tags.length > 0
+                  ? product.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="inline-block rounded-full bg-gray-100 border border-gray-200 py-0.5 px-2.5 text-gray-700 font-medium text-xs md:text-sm"
+                      >
+                        {tag}
+                      </span>
+                    ))
+                  : null}
+              </div>
 
-              <span className="block text-primary text-xs md:text-sm font-semibold">
+              <span className="inline-block whitespace-nowrap text-primary text-xs md:text-sm font-semibold">
                 Stock: {product.totalInventory || 0}
               </span>
             </div>
@@ -285,9 +296,12 @@ export default function PostDetail() {
                 Product Information
               </h2>
 
-              <p className="text-gray-800 text-xs font-normal">
-                {product.description || "No description available."}
-              </p>
+              <p
+                className="text-gray-800 text-xs font-normal"
+                dangerouslySetInnerHTML={{
+                  __html: product.description || "No description available.",
+                }}
+              ></p>
             </div>
 
             <div className="grid grid-cols-1 gap-2 md:gap-4 md:grid-cols-4">
@@ -296,7 +310,7 @@ export default function PostDetail() {
                   Manufacturer
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                  {product.vendor || "PeptideLabs"}
+                  {product?.vendor}
                 </span>
               </div>
 
@@ -305,7 +319,9 @@ export default function PostDetail() {
                   Dosage
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                  {product.variants?.[0]?.price ? `${product.variants[0].price}mg vial` : "5mg vial"}
+                  {product.variants?.[0]?.price
+                    ? `${product.variants[0].price}mg vial`
+                    : "5mg vial"}
                 </span>
               </div>
 
@@ -314,18 +330,19 @@ export default function PostDetail() {
                   Active Ingredient
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                  {product.title.split(' ')[0] || "BPC-157 Acetate"}
+                  {product?.variants?.[0]?.sku}
                 </span>
               </div>
-
-              <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
-                <span className="block text-gray-800 text-xs !font-normal">
-                  Category
-                </span>
-                <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                  {product.productType || "Healing Peptides"}
-                </span>
-              </div>
+              {product?.tags && product.tags.length > 0 && (
+                <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                  <span className="block text-gray-800 text-xs !font-normal">
+                    Category
+                  </span>
+                  <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                    {product?.tags[0] || " "}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-2 md:gap-4">
@@ -353,9 +370,12 @@ export default function PostDetail() {
                   Details:
                 </h2>
               </div>
-              <div className="p-2 md:p-4">
-               {product.description}
-              </div>
+              <div
+                className="p-2 md:p-4"
+                dangerouslySetInnerHTML={{
+                  __html: product.description || "No description available.",
+                }}
+              ></div>
             </div>
           </div>
         </div>

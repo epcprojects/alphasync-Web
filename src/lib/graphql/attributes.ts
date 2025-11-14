@@ -24,6 +24,7 @@ export const userpayload = `
         patientOrdersCount
         invitationStatus
         addressVerified
+       
 `;
 
 export interface UserAttributes {

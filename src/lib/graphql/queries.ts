@@ -70,6 +70,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
         title
         totalInventory
         vendor
+        tags
         variants {
           price
           id
@@ -170,10 +171,12 @@ export const FETCH_PRODUCT = gql`
       title
       totalInventory
       vendor
+      tags
       variants {
         price
         id
         shopifyVariantId
+        sku
       }
     }
   }

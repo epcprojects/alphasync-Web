@@ -2,6 +2,7 @@
 import { HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon } from "@/icons";
 import Image from "next/image";
 import Tooltip from "../tooltip";
+import ProductImage from "@/app/components/ui/ProductImage";
 
 type Product = {
   id: number;
@@ -12,6 +13,7 @@ type Product = {
   price: string;
   image: string;
   isFavourite: boolean;
+  tags?: string[];
 };
 
 type ProductListViewProps = {
@@ -35,7 +37,7 @@ export default function ProductListView({
     >
       <div className="col-span-2 md:col-span-4 lg:col-span-5 flex items-center gap-3">
         <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 group-hover:bg-white bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
-          <Image
+          <ProductImage
             width={36}
             height={36}
             src={product.image}
@@ -46,15 +48,21 @@ export default function ProductListView({
           <h3 className="font-semibold line-clamp-1 text-gray-800 text-sm md:text-base">
             {product.title}
           </h3>
-          <p className="text-gray-800 text-[10px] font-normal md:text-xs line-clamp-1">
-            {product.description}
-          </p>
+          <p
+            className="text-gray-800 text-[10px] font-normal md:text-xs line-clamp-1"
+            dangerouslySetInnerHTML={{
+              __html: product.description || "No description available",
+            }}
+          ></p>
         </div>
       </div>
+
       <div className="col-span-1 md:col-span-3">
-        <span className="inline-block rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-xs md:text-sm font-medium text-gray-700">
-          {product.category}
-        </span>
+        {product.tags?.length && (
+          <span className="inline-block rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-xs md:text-sm font-medium text-gray-700">
+            {product.tags[0]}
+          </span>
+        )}
       </div>
 
       <div className="col-span-1 md:col-span-2 md:block flex items-start md:items-center md:justify-start justify-end">
