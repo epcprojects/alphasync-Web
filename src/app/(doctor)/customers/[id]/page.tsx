@@ -192,13 +192,6 @@ export default function CustomerDetail() {
   const orderRequests = requestsData?.allOrderRequests.allData || [];
   const requestsPageCount = requestsData?.allOrderRequests.totalPages || 1;
 
-  console.log("Requests Data:", {
-    totalPages: requestsData?.allOrderRequests.totalPages,
-    dataCount: requestsData?.allOrderRequests.dataCount,
-    requestsCurrentPage,
-    requestsPerPage,
-  });
-
   // Use GraphQL data for pagination
   const pageCount = patientOrders?.totalPages || 0;
   const currentItems = patientOrders?.allData || [];

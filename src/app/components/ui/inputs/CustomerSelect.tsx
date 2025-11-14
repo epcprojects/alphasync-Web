@@ -58,7 +58,7 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({
   } = useQuery<AllPatientsResponse>(ALL_PATIENTS, {
     variables: {
       search: "",
-      status: "ACTIVE", // Only fetch active customers
+      status: null, // Only fetch active customers
       page: 1,
       perPage: 100, // Fetch more customers for dropdown
     },
@@ -77,18 +77,20 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({
   const handleCustomerChange = (val: string | string[]) => {
     const customerName = Array.isArray(val) ? val[0] : val;
     setSelectedCustomer(customerName);
-    
+
     // Find the selected customer and call the callback
     if (onCustomerChange) {
-      const selectedCustomerData = customers.find(c => c.name === customerName);
+      const selectedCustomerData = customers.find(
+        (c) => c.name === customerName
+      );
       onCustomerChange(selectedCustomerData || null);
     }
   };
 
-  const defaultPlaceholder = customersLoading 
-    ? "Loading customers..." 
-    : customers.length === 0 
-    ? "No customers available" 
+  const defaultPlaceholder = customersLoading
+    ? "Loading customers..."
+    : customers.length === 0
+    ? "No customers available"
     : "Select a customer";
 
   return (
@@ -116,9 +118,7 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({
         showIcon={false}
         disabled={disabled || customersLoading}
       />
-      {errors && touched && (
-        <p className="text-red-500 text-xs">{errors}</p>
-      )}
+      {errors && touched && <p className="text-red-500 text-xs">{errors}</p>}
     </div>
   );
 };

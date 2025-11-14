@@ -45,6 +45,8 @@ export function getStatusClasses(status: Order["status"]) {
   switch (status) {
     case "Delivered":
       return "bg-green-50 border border-green-200 text-green-700";
+    case "paid":
+      return "bg-green-50 border border-green-200 text-green-700";
     case "Processing":
       return "bg-amber-50 border border-amber-200 text-amber-700";
     case "Pending":
@@ -104,7 +106,7 @@ export default function OrderListView({
 
           <div className=" font-medium text-xs md:text-sm text-gray-800">
             <span
-              className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+              className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
                 order.status
               )}`}
             >
@@ -201,7 +203,7 @@ export default function OrderListView({
 
       <div className=" font-medium text-xs md:text-sm text-gray-800">
         <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+          className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
             order.status
           )}`}
         >

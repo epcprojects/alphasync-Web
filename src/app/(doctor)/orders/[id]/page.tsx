@@ -15,7 +15,10 @@ import React from "react";
 import { useQuery } from "@apollo/client";
 import { FETCH_ORDER } from "@/lib/graphql/queries";
 import { UserAttributes } from "@/lib/graphql/attributes";
-import { getStatusClasses, formatStatusDisplay } from "@/app/components/ui/cards/OrderListView";
+import {
+  getStatusClasses,
+  formatStatusDisplay,
+} from "@/app/components/ui/cards/OrderListView";
 
 interface OrderItem {
   id: string;
@@ -123,7 +126,7 @@ const Page = () => {
             name={order.patient.fullName || "Unknown"}
             email={order.patient.email || ""}
             phone={order.patient.phoneNo || ""}
-            totalOrders={8}
+            totalOrders={order.patient.patientOrdersCount || 0}
             lastOrder={formatDate(order.createdAt)}
             address={order.patient.address || ""}
             onBack={() => console.log("Go back")}

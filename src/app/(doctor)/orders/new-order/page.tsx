@@ -110,13 +110,6 @@ const Page = () => {
         price: item.price,
       }));
 
-      console.log("Creating order with items:", orderItemsInput);
-      console.log("Mutation variables:", {
-        orderItems: orderItemsInput,
-        totalPrice: totalAmount,
-        patientId: selectedCustomerData.id,
-      });
-
       await createOrder({
         variables: {
           orderItems: orderItemsInput,
@@ -188,9 +181,7 @@ const Page = () => {
                     touched={touched.customer}
                     disabled={!!lockedCustomer}
                     placeholder={
-                      lockedCustomer
-                        ? "Customer locked"
-                        : "Select a customer"
+                      lockedCustomer ? "Customer locked" : "Select a customer"
                     }
                     required={true}
                     showLabel={true}
@@ -204,7 +195,9 @@ const Page = () => {
                 <div>
                   <ProductSelect
                     selectedProduct={values.product}
-                    setSelectedProduct={(product) => setFieldValue("product", product)}
+                    setSelectedProduct={(product) =>
+                      setFieldValue("product", product)
+                    }
                     errors={errors.product || ""}
                     touched={touched.product}
                     onProductChange={(selectedProduct) => {
