@@ -545,3 +545,23 @@ export const UPDATE_USER_ADDRESS_VERIFIED = gql`
     }
   }
 `;
+
+export const REORDER_ORDER = gql`
+  mutation ReorderOrder($orderId: ID!) {
+    reorderOrder(input: { orderId: $orderId }) {
+      order {
+        id
+      }
+    }
+  }
+`;
+
+export const UPDATE_AUTO_REORDER = gql`
+  mutation UpdateAutoReorder($orderId: ID!, $autoReorder: Boolean!) {
+    updateAutoReorder(input: { orderId: $orderId, autoReorder: $autoReorder }) {
+      order {
+        id
+      }
+    }
+  }
+`;

@@ -1,52 +1,197 @@
 "use client";
 
-import { ArrowLeftIcon, ReminderFilledIcon, SearchIcon } from "@/icons";
-import React, { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { reminders } from "../../../../public/data/reminders";
-import ReactPaginate from "react-paginate";
+import { ReminderFilledIcon, SearchIcon } from "@/icons";
+import React, { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
 import RefillView from "@/app/components/ui/cards/RefillView";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import ChatModal from "@/app/components/ui/modals/ChatModal";
-import { showSuccessToast } from "@/lib/toast";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { EmptyState, Loader } from "@/app/components";
+import { useMutation, useQuery } from "@apollo/client";
+import { ORDER_REMINDERS } from "@/lib/graphql/queries";
+import { REORDER_ORDER, UPDATE_AUTO_REORDER } from "@/lib/graphql/mutations";
+import { differenceInCalendarDays, format } from "date-fns";
+import Pagination from "@/app/components/ui/Pagination";
+import ReminderListSkeleton from "@/app/components/ui/ReminderListSkeleton";
+
+const REMINDER_DATE_FORMAT = "MM/dd/yyyy";
+
+type ReminderCard = {
+  id: number;
+  orderId: string;
+  customer: string;
+  product: string;
+  lastOrder: string;
+  daysSince: number;
+  autoReorder: boolean;
+};
+
+type OrderReminderItem = {
+  product?: {
+    title?: string | null;
+  } | null;
+};
+
+type OrderReminderNode = {
+  id: string;
+  shopifyOrderId?: string | null;
+  createdAt?: string | null;
+  autoReorder?: boolean | null;
+  patient?: {
+    id?: string | null;
+    fullName?: string | null;
+    address?: string | null;
+  } | null;
+  orderItems?: OrderReminderItem[] | null;
+  daysSinceCreated?: number | null;
+};
+
+type OrderRemindersResponse = {
+  orderReminders: {
+    allData: OrderReminderNode[];
+    count: number;
+    nextPage: number | null;
+    prevPage: number | null;
+    totalPages: number;
+  };
+};
+
+const mapReminderToCard = (
+  reminder: OrderReminderNode,
+  fallbackIndex: number
+): ReminderCard => {
+  const parsedId = Number(reminder.id);
+  const id = Number.isNaN(parsedId) ? fallbackIndex + 1 : parsedId;
+
+  const lastOrderDate = reminder.createdAt
+    ? new Date(reminder.createdAt)
+    : null;
+  const hasValidDate =
+    !!lastOrderDate && !Number.isNaN(lastOrderDate.getTime());
+  const lastOrder = hasValidDate
+    ? format(lastOrderDate as Date, REMINDER_DATE_FORMAT)
+    : "—";
+
+  const computedDaysSince = hasValidDate
+    ? Math.max(differenceInCalendarDays(new Date(), lastOrderDate as Date), 0)
+    : 0;
+  const daysSince =
+    typeof reminder.daysSinceCreated === "number"
+      ? reminder.daysSinceCreated
+      : computedDaysSince;
+
+  const customer =
+    reminder.patient?.fullName?.trim() ||
+    reminder.patient?.address?.trim() ||
+    (reminder.shopifyOrderId
+      ? `Order #${reminder.shopifyOrderId}`
+      : `Order ${reminder.id}`);
+
+  const product = reminder.orderItems?.[0]?.product?.title?.trim() || "—";
+  const autoReorder = Boolean(reminder.autoReorder);
+
+  return {
+    id,
+    orderId: reminder.id,
+    customer,
+    product,
+    lastOrder,
+    daysSince,
+    autoReorder,
+  };
+};
 
 function ReminderContent() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const searchParams = useSearchParams();
+
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const itemsPerPage = 10;
-  const initialPage = parseInt(searchParams.get("page") || "0", 10);
-  const [currentPage, setCurrentPage] = useState(initialPage);
-  const filteredProducts = reminders.filter((p) => {
-    const matchesSearch =
-      p.customer.toLowerCase().includes(search.toLowerCase()) ||
-      p.product.toLowerCase().includes(search.toLowerCase());
 
-    return matchesSearch;
-  });
+  const [currentPage, setCurrentPage] = useState(0);
+  const [reorderingOrderId, setReorderingOrderId] = useState<string | null>(
+    null
+  );
+  const [updatingAutoOrderId, setUpdatingAutoOrderId] = useState<string | null>(
+    null
+  );
 
-  const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
-  const offset = currentPage * itemsPerPage;
-  const currentItems = filteredProducts.slice(offset, offset + itemsPerPage);
+  const { data, loading, error, refetch } = useQuery<OrderRemindersResponse>(
+    ORDER_REMINDERS,
+    {
+      variables: {
+        page: currentPage + 1,
+        perPage: itemsPerPage,
+        search: search.trim() || undefined,
+      },
+      fetchPolicy: "network-only",
+    }
+  );
 
-  useEffect(() => {
-    setCurrentPage(0);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", "1");
-    router.replace(`?${params.toString()}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  const [reorderOrderMutation] = useMutation(REORDER_ORDER);
+  const [updateAutoReorderMutation] = useMutation(UPDATE_AUTO_REORDER);
 
-  const handlePageChange = ({ selected }: { selected: number }) => {
+  const remindersData = data?.orderReminders?.allData ?? [];
+  const pageCount = data?.orderReminders?.totalPages ?? 0;
+  const totalReminders = data?.orderReminders?.count ?? 0;
+
+  const handlePageChange = (selected: number) => {
     setCurrentPage(selected);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(selected + 1));
-    router.replace(`?${params.toString()}`);
+  };
+
+  const handleReorder = async (orderId: string) => {
+    try {
+      setReorderingOrderId(orderId);
+      await reorderOrderMutation({
+        variables: { orderId },
+      });
+      showSuccessToast("Product Reordered Successfully");
+      await refetch();
+    } catch (mutationError) {
+      console.error(mutationError);
+      showErrorToast("Unable to reorder. Please try again.");
+    } finally {
+      setReorderingOrderId(null);
+    }
+  };
+
+  const handleAutoReorder = async (orderId: string, nextState: boolean) => {
+    try {
+      setUpdatingAutoOrderId(orderId);
+      await updateAutoReorderMutation({
+        variables: { orderId, autoReorder: nextState },
+      });
+      showSuccessToast(
+        nextState ? "Auto Reorder Enabled" : "Auto Reorder Disabled"
+      );
+      await refetch();
+    } catch (mutationError) {
+      console.error(mutationError);
+      showErrorToast("Unable to update auto reorder. Please try again.");
+    } finally {
+      setUpdatingAutoOrderId(null);
+    }
   };
 
   const isMobile = useIsMobile();
+  const shouldShowPagination = !loading && !error && pageCount > 1;
+
+  const handleContactClick = (
+    patient: OrderReminderNode["patient"],
+    fallbackName: string
+  ) => {
+    const participantId =
+      (patient?.id && String(patient.id)) || "reminder-patient";
+    const participantName =
+      patient?.fullName?.trim() || fallbackName || "Patient";
+    setSelectedParticipant({ id: participantId, name: participantName });
+    setIsChatModalOpen(true);
+  };
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -63,7 +208,7 @@ function ReminderContent() {
           </h2>
           <div className="px-3 py-1 rounded-full bg-white border border-indigo-200">
             <p className="text-sm font-medium text-primary whitespace-nowrap">
-              {reminders.length}
+              {loading ? "..." : totalReminders}
             </p>
           </div>
         </div>
@@ -104,71 +249,61 @@ function ReminderContent() {
             </div>
           </div>
 
-          {currentItems.map((order) => (
-            <RefillView
-              onRowClick={() => router.push(`/orders/${order.id}`)}
-              key={order.id}
-              order={order}
-              onAutoReOrderClick={() => {
-                showSuccessToast("Auto Reorder Enabled");
-              }}
-              onContactClick={() => setIsChatModalOpen(true)}
-              onReOrderClick={() =>
-                showSuccessToast("Product Reodered Successfully")
-              }
-            />
-          ))}
+          {loading ? (
+            <ReminderListSkeleton count={3} />
+          ) : error ? (
+            <div className="flex justify-center items-center py-8">
+              <p className="text-sm text-red-500">{error.message}</p>
+            </div>
+          ) : (
+            remindersData.map((reminderNode, index) => {
+              const reminderCard = mapReminderToCard(reminderNode, index);
+              const isReorderLoading =
+                reorderingOrderId === reminderCard.orderId;
+              const isAutoReorderLoading =
+                updatingAutoOrderId === reminderCard.orderId;
+              return (
+                <RefillView
+                  onRowClick={() => router.push(`/orders/${reminderNode.id}`)}
+                  key={`${reminderNode.id}-${index}`}
+                  order={reminderCard}
+                  isReorderLoading={isReorderLoading}
+                  isAutoReorderLoading={isAutoReorderLoading}
+                  onAutoReOrderClick={(nextState) =>
+                    handleAutoReorder(reminderCard.orderId, nextState)
+                  }
+                  onContactClick={() =>
+                    handleContactClick(
+                      reminderNode.patient,
+                      reminderCard.customer
+                    )
+                  }
+                  onReOrderClick={() => handleReorder(reminderCard.orderId)}
+                />
+              );
+            })
+          )}
         </div>
         <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-          {currentItems.length < 1 && (
+          {!loading && !error && remindersData.length < 1 && (
             <EmptyState mtClasses="md:-mt-4 -mt-4  " />
           )}
 
-          <div className="w-full flex items-center justify-center">
-            <ReactPaginate
-              breakLabel="..."
-              nextLabel={
-                <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="hidden md:inline-block">Next</span>
-                  <span className="block mb-0.5 rotate-180">
-                    <ArrowLeftIcon />
-                  </span>
-                </span>
-              }
-              previousLabel={
-                <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="md:mb-0.5">
-                    <ArrowLeftIcon />
-                  </span>
-                  <span className="hidden md:inline-block">Previous</span>
-                </span>
-              }
+          {shouldShowPagination && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pageCount}
               onPageChange={handlePageChange}
-              pageRangeDisplayed={3}
-              marginPagesDisplayed={1}
-              pageCount={pageCount ? pageCount : 1}
-              forcePage={currentPage}
-              pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-              pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-              activeClassName="bg-gray-200 text-gray-900 font-medium"
-              previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-              nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-              breakClassName="px-3 py-1 font-semibold text-gray-400"
             />
-
-            <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-              Page {currentPage + 1} of {pageCount}
-            </h2>
-          </div>
+          )}
         </div>
       </div>
       <ChatModal
         isOpen={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}
-        itemTitle="REQ-001"
-        participantId="reminder-patient"
-        participantName="Patient"
+        itemTitle=""
+        participantId={selectedParticipant?.id || ""}
+        participantName={selectedParticipant?.name || ""}
       />
     </div>
   );

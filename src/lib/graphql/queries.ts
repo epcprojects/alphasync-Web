@@ -399,3 +399,29 @@ export const ALL_NOTIFICATIONS = gql`
     }
   }
 `;
+
+export const ORDER_REMINDERS = gql`
+  query OrderReminders($page: Int, $perPage: Int, $search: String) {
+    orderReminders(page: $page, search: $search, perPage: $perPage) {
+      allData {
+        id
+        shopifyOrderId
+        createdAt
+        daysSinceCreated
+        autoReorder
+        patient {
+         ${userpayload}
+        }
+        orderItems {
+          product {
+            title
+          }
+        }
+      }
+      count
+      nextPage
+      prevPage
+      totalPages
+    }
+  }
+`;

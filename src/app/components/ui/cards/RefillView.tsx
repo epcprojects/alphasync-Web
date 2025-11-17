@@ -9,14 +9,17 @@ type Order = {
   product: string;
   lastOrder: string;
   daysSince: number;
+  autoReorder: boolean;
 };
 
 type RefillViewProps = {
   order: Order;
   onContactClick: () => void;
   onReOrderClick: () => void;
-  onAutoReOrderClick: () => void;
+  onAutoReOrderClick: (nextState: boolean) => void;
   onRowClick?: () => void;
+  isReorderLoading?: boolean;
+  isAutoReorderLoading?: boolean;
 };
 
 const colorPairs = [
@@ -39,6 +42,8 @@ export default function RefillView({
   onReOrderClick,
   onAutoReOrderClick,
   onRowClick,
+  isReorderLoading = false,
+  isAutoReorderLoading = false,
 }: RefillViewProps) {
   const { bg, text } = getColorPair(order.id);
   const isMobile = useIsMobile();
@@ -111,27 +116,45 @@ export default function RefillView({
             Contact
           </button>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onReOrderClick();
-            }}
-            className="flex px-3 py-2 gap-1 md:gap-2 w-full text-xs md:text-sm bg-green-600 text-white  items-center justify-center rounded-md border cursor-pointer border-green-600"
-          >
-            <ReloadIcon />
-            Reorder
-          </button>
+          {order.autoReorder ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAutoReOrderClick(false);
+              }}
+              disabled={isAutoReorderLoading}
+              className="flex px-3 py-2 gap-1 md:gap-2 w-full whitespace-nowrap text-xs md:text-sm bg-red-500 text-white items-center justify-center rounded-md border cursor-pointer border-red-500 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <AutoReloadIcon />
+              {isAutoReorderLoading ? "Cancelling..." : "Cancel Auto-Reorder"}
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReOrderClick();
+                }}
+                disabled={isReorderLoading}
+                className="flex px-3 py-2 gap-1 md:gap-2 w-full text-xs md:text-sm bg-green-600 text-white  items-center justify-center rounded-md border cursor-pointer border-green-600 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <ReloadIcon />
+                {isReorderLoading ? "Reordering..." : "Reorder"}
+              </button>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onAutoReOrderClick();
-            }}
-            className="flex px-3 py-2 gap-1 md:gap-2 w-full whitespace-nowrap text-xs md:text-sm bg-primary text-white  items-center justify-center rounded-md border cursor-pointer border-primary"
-          >
-            <AutoReloadIcon />
-            Auto-Reorder
-          </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAutoReOrderClick(true);
+                }}
+                disabled={isAutoReorderLoading}
+                className="flex px-3 py-2 gap-1 md:gap-2 w-full whitespace-nowrap text-xs md:text-sm bg-primary text-white  items-center justify-center rounded-md border cursor-pointer border-primary disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                <AutoReloadIcon />
+                {isAutoReorderLoading ? "Saving..." : "Auto-Reorder"}
+              </button>
+            </>
+          )}
         </div>
       </div>
     );
@@ -167,42 +190,51 @@ export default function RefillView({
       </div>
 
       <div className=" flex items-center justify-end gap-2 xl:gap-3">
-        {/* hide this button when products are set to auto reorder for a customer */}
-        {order.id !== 1 && (
+        {order.autoReorder ? (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onReOrderClick();
+              onAutoReOrderClick(false);
             }}
-            className="flex px-3 py-2 gap-1 md:gap-2 md:h-8  h-6 text-xs md:text-sm bg-green-600 hover:bg-green-700 text-white  items-center justify-center rounded-md border cursor-pointer border-green-600"
+            disabled={isAutoReorderLoading}
+            className="flex px-3 py-2 gap-1 md:gap-2 md:h-8  h-6 text-xs md:text-sm bg-red-500 hover:bg-red-700 text-white items-center justify-center rounded-md border cursor-pointer border-red-500 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <ReloadIcon />
-            <span className="lg:block hidden">Reorder</span>
-          </button>
-        )}
-
-        {/* toggle cancel auto reorder to auto reorder on the basis of user autoReorder state */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onAutoReOrderClick();
-          }}
-          className={`flex px-3 py-2 gap-1 md:gap-2 md:h-8  h-6 text-xs md:text-sm ${
-            order.id === 1
-              ? "bg-red-500 hover:bg-red-800 border-red-500"
-              : "bg-primary hover:bg-blue-800 border-primary"
-          } text-white  items-center justify-center rounded-md border cursor-pointer `}
-        >
-          <AutoReloadIcon />
-          {/* just to show the cancel auto order */}
-          {order.id === 1 ? (
+            <AutoReloadIcon />
             <span className="lg:block hidden whitespace-nowrap">
-              Cancel Auto-Reorder
+              {isAutoReorderLoading ? "Cancelling..." : "Cancel Auto-Reorder"}
             </span>
-          ) : (
-            <span className="lg:block hidden">Auto-Reorder</span>
-          )}
-        </button>
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onReOrderClick();
+              }}
+              disabled={isReorderLoading}
+              className="flex px-3 py-2 gap-1 md:gap-2 md:h-8  h-6 text-xs md:text-sm bg-green-600 hover:bg-green-700 text-white  items-center justify-center rounded-md border cursor-pointer border-green-600 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <ReloadIcon />
+              <span className="lg:block hidden">
+                {isReorderLoading ? "Reordering..." : "Reorder"}
+              </span>
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAutoReOrderClick(true);
+              }}
+              disabled={isAutoReorderLoading}
+              className="flex px-3 py-2 gap-1 md:gap-2 md:h-8  h-6 text-xs md:text-sm bg-primary hover:bg-blue-800 border-primary text-white  items-center justify-center rounded-md border cursor-pointer  disabled:opacity-60 disabled:cursor-not-allowed "
+            >
+              <AutoReloadIcon />
+              <span className="lg:block hidden whitespace-nowrap">
+                {isAutoReorderLoading ? "Saving..." : "Auto-Reorder"}
+              </span>
+            </button>
+          </>
+        )}
         <button
           onClick={(e) => {
             e.stopPropagation();
