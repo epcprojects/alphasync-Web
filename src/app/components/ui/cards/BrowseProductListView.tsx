@@ -50,16 +50,17 @@ export default function BrowseProductListView({
               <h3 className="font-semibold line-clamp-1 text-gray-800 text-sm md:text-base">
                 {product.title}
               </h3>
-              <p className="text-gray-800 text-[10px] font-normal md:text-xs line-clamp-1">
-                {product.description}
-              </p>
+              <div
+                dangerouslySetInnerHTML={{ __html: product?.description }}
+                className="text-gray-800 text-[10px] font-normal md:text-xs line-clamp-1"
+              />
             </div>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-gray-600 text-sm font-normal">
               {product.productForm}
             </span>
-
+            fdlkfdklfdlkdkfllkfd
             <div className="flex items-center gap-2">
               <span
                 className={`inline-block rounded-full  border  px-2.5 py-0.5 text-xs md:text-sm font-medium  ${
@@ -133,9 +134,10 @@ export default function BrowseProductListView({
           <h3 className="font-semibold line-clamp-1 text-gray-800 text-sm md:text-base">
             {product.title}
           </h3>
-          <p className="text-gray-800 text-[10px] font-normal md:text-xs line-clamp-1">
-            {product.description}
-          </p>
+          <div
+            dangerouslySetInnerHTML={{ __html: product?.description }}
+            className="text-gray-800 text-[10px] font-normal md:text-xs line-clamp-1"
+          />
         </div>
       </div>
       <div className="lg:col-span-2 col-span-3">

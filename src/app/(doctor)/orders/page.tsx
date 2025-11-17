@@ -1,19 +1,12 @@
 "use client";
 
-import {
-  ArrowDownIcon,
-  ArrowLeftIcon,
-  PackageIcon,
-  PlusIcon,
-  SearchIcon,
-} from "@/icons";
+import { ArrowDownIcon, ArrowLeftIcon, PackageIcon, PlusIcon } from "@/icons";
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { EmptyState, Loader, ThemeButton } from "@/app/components";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import OrderListView from "@/app/components/ui/cards/OrderListView";
 import ReactPaginate from "react-paginate";
-import DateRangeSelector from "@/app/components/DateRangePicker";
 import NewOrderModal from "@/app/components/ui/modals/NewOrderModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useQuery } from "@apollo/client/react";
@@ -294,7 +287,9 @@ function OrderContent() {
               order={{
                 id: parseInt(order.id),
                 orderId: order.displayId || "---",
-                displayId: order.displayId ? parseInt(order.displayId.toString()) : parseInt(order.id),
+                displayId: order.displayId
+                  ? parseInt(order.displayId.toString())
+                  : parseInt(order.id),
                 customer: order.patient.fullName,
 
                 date: format(new Date(order.createdAt), "MM-dd-yy"),

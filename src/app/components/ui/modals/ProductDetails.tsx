@@ -13,6 +13,7 @@ import {
   Target,
   Thermometer,
 } from "@/icons";
+import ProductImage from "@/app/components/ui/ProductImage";
 
 interface ProductDetailsProps {
   isOpen: boolean;
@@ -27,6 +28,8 @@ type product = {
   productForm: string;
   category: string;
   price: string;
+  description: string;
+  primaryImage?: string;
 };
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({
@@ -36,78 +39,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   onClick,
 }) => {
   if (!product) return null;
-  const infoSections = [
-    {
-      title: "Overview",
-      description:
-        "BPC-157 is a synthetic peptide derived from a protective protein found naturally in human stomach acid. It has shown remarkable healing properties in numerous studies and is widely used for tissue repair and regeneration.",
-      icon: <Info />,
-    },
-    {
-      title: "Key Benefits",
-      list: [
-        "Accelerated wound healing and tissue repair",
-        "Reduced inflammation throughout the body",
-        "Enhanced recovery from muscle, tendon, and ligament injuries",
-        "Improved gut health and digestive function",
-        "Neuroprotective effects on brain tissue",
-        "Enhanced blood vessel formation (angiogenesis)",
-      ],
-      icon: <Target />,
-    },
-    {
-      title: "How It Works",
-      list: [
-        "Promotes collagen synthesis for tissue repair",
-        "Modulates growth factor expression",
-        "Enhances cellular migration and proliferation",
-        "Stabilizes cellular structures and reduces oxidative stress",
-      ],
-      icon: <Learning />,
-    },
-    {
-      title: "Usage & Dosing",
-      description:
-        "Typically administered via subcutaneous injection. Common dosing ranges from 200-500mcg daily, divided into 1-2 injections.",
-      icon: <Calendar />,
-    },
-    {
-      title: "Potential Side Effects",
-      list: [
-        "Generally well-tolerated with minimal side effects",
-        "Possible injection site irritation or redness",
-        "Rare cases of mild nausea or dizziness",
-      ],
-      icon: <Info />,
-    },
-    {
-      title: "Contraindications",
-      list: [
-        "Pregnancy and breastfeeding",
-        "Active cancer or tumor growth",
-        "Severe kidney or liver dysfunction",
-      ],
-      icon: <Alert />,
-    },
-    {
-      title: "Storage Instructions",
-      description:
-        "Store in refrigerator (2-8°C). Once reconstituted, use within 30 days.",
-      icon: <Thermometer />,
-    },
-    {
-      title: "Clinical Research",
-      description:
-        "Over 50 published studies demonstrate BPC-157's safety and efficacy in promoting healing and reducing inflammation.",
-      icon: <File />,
-    },
-    {
-      title: "Drug Interactions",
-      description:
-        "No known major drug interactions. Consult your physician about all medications you're taking.",
-      icon: <Doctor />,
-    },
-  ];
+
   return (
     <AppModal
       isOpen={isOpen}
@@ -127,11 +59,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         <div className="flex flex-col gap-4">
           <div className="flex items-start gap-3 border-b border-gray-200 pb-4 md:pb-8">
             <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
-              <Image
-                src="/images/products/p1.png"
-                alt="Product"
-                width={1024}
-                height={1024}
+              <ProductImage
+                width={80}
+                height={80}
+                src={product.primaryImage || ""}
+                alt={product.title}
+                className="h-full object-contain"
               />
             </div>
             <div className="flex flex-col md:flex-row md:items-start md:justify-between flex-1 gap-2 md:gap-4">
@@ -160,17 +93,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-5">
-          {infoSections.map((section, index) => (
-            <InfoBlock
-              key={index}
-              icon={section.icon}
-              title={section.title}
-              description={section.description}
-              list={section.list}
-            />
-          ))}
-        </div>
+        <div
+          className=""
+          dangerouslySetInnerHTML={{ __html: product.description || "" }}
+        ></div>
       </div>
     </AppModal>
   );

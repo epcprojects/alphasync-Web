@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { InfoIcon, ShopingCartIcon } from "@/icons";
 import ThemeButton from "../buttons/ThemeButton";
 import Tooltip from "../tooltip";
+import ProductImage from "@/app/components/ui/ProductImage";
 
 export type Product = {
   id: number;
@@ -17,6 +17,7 @@ export type Product = {
   price: string;
   image: string;
   isFavourite: boolean;
+  tags?: string[];
 };
 
 interface BrowserProductCardProps {
@@ -44,12 +45,12 @@ export default function BrowserProductCard({
         </Tooltip>
       </div>
       <div className="bg-[url(/images/productBgPattern.png)] bg-[position:0_20px] bg-cover h-52 md:h-60 pt-3 pb-2 flex items-center justify-center ">
-        <Image
+        <ProductImage
           width={280}
-          className="h-full object-contain"
           height={280}
           src={product.image}
           alt={product.title}
+          className="h-full object-contain"
         />
       </div>
 
@@ -60,9 +61,11 @@ export default function BrowserProductCard({
               <h2 className="text-gray-800 font-semibold line-clamp-1 overflow-hidden text-base md:text-lg">
                 {product.title}
               </h2>
-              <span className="block w-fit whitespace-nowrap rounded-full bg-gray-100 border border-gray-200 py-0.5 px-2.5 text-gray-700 font-medium text-xs md:text-sm">
-                {product.category}
-              </span>
+              {product.tags?.[0] && (
+                <span className="block w-fit whitespace-nowrap rounded-full bg-gray-100 border border-gray-200 py-0.5 px-2.5 text-gray-700 font-medium text-xs md:text-sm">
+                  {product.tags?.[0]}
+                </span>
+              )}
             </div>
             <h3
               className="text-gray-600 text-xs line-clamp-2 md:text-sm"
