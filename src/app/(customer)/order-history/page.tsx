@@ -134,7 +134,7 @@ function History() {
       page: Math.max(1, currentPage + 1),
       perPage: itemsPerPage,
       search: search || undefined,
-      status: statusVariable,
+      status: statusVariable ? statusVariable : "paid",
     },
     fetchPolicy: "network-only",
     notifyOnNetworkStatusChange: true,
