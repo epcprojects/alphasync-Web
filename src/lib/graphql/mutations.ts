@@ -565,3 +565,12 @@ export const UPDATE_AUTO_REORDER = gql`
     }
   }
 `;
+export const CANCEL_ORDER = gql`
+  mutation CancelOrder($orderId: ID!) {
+    cancelOrder(input: { orderId: $orderId }) {
+      order {
+        id
+      }
+    }
+  }
+`;

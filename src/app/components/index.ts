@@ -38,6 +38,7 @@ import InventorySkeleton from "./ui/InventorySkeleton";
 import RequestListSkeleton from "./ui/RequestListSkeleton";
 import NotificationListSkeleton from "./ui/NotificationListSkeleton";
 import OrderHistorySkeleton from "./ui/OrderHistorySkeleton";
+import PendingPaymentsSkeleton from "./ui/PendingPaymentsSkeleton";
 import Pagination from "./ui/Pagination";
 import NotificationList from "./ui/NotificationList";
 import ChangePassword from "@/app/components/ChangePassword";
@@ -92,6 +93,7 @@ export {
   RequestListSkeleton,
   NotificationListSkeleton,
   OrderHistorySkeleton,
+  PendingPaymentsSkeleton,
   Pagination,
   NotificationList,
   ChangePassword,

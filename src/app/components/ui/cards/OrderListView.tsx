@@ -55,8 +55,10 @@ export function getStatusClasses(status: Order["status"]) {
       return "bg-orange-50 border border-orange-200 text-orange-700";
     case "Shipped":
       return "bg-indigo-50 border border-indigo-200 text-indigo-700";
-    case "Cancelled":
+    case "cancelled":
       return "bg-gray-50 border border-gray-200 text-gray-700";
+    case "canceled":
+      return "bg-red-50 border border-red-200 text-red-700";
     default:
       return "bg-gray-100 border border-gray-200 text-gray-700";
   }

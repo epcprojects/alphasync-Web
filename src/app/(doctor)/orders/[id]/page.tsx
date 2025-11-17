@@ -12,13 +12,15 @@ import {
 } from "@/icons";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { FETCH_ORDER } from "@/lib/graphql/queries";
+import { CANCEL_ORDER } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import {
   getStatusClasses,
   formatStatusDisplay,
 } from "@/app/components/ui/cards/OrderListView";
+import AppModal from "@/app/components/ui/modals/AppModal";
 
 interface OrderItem {
   id: string;
@@ -55,12 +57,18 @@ const Page = () => {
   const params = useParams<{ id: string }>();
 
   // GraphQL query to fetch order details
-  const { data, loading, error } = useQuery<FetchOrderResponse>(FETCH_ORDER, {
-    variables: {
-      id: params.id,
-    },
-    fetchPolicy: "network-only",
-  });
+  const { data, loading, error, refetch } = useQuery<FetchOrderResponse>(
+    FETCH_ORDER,
+    {
+      variables: {
+        id: params.id,
+      },
+      fetchPolicy: "network-only",
+    }
+  );
+
+  const [cancelOrder, { loading: cancellingOrder }] = useMutation(CANCEL_ORDER);
+  const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
 
   const order = data?.fetchOrder;
 
@@ -104,6 +112,25 @@ const Page = () => {
       day: "numeric",
       year: "numeric",
     });
+  };
+
+  const isOrderCancelled =
+    order?.status?.toLowerCase() === "cancelled" ||
+    order?.status?.toLowerCase() === "canceled";
+
+  const handleCancelOrder = async () => {
+    if (!order?.id) return;
+    try {
+      await cancelOrder({
+        variables: {
+          orderId: order.id,
+        },
+      });
+      await refetch();
+      setIsCancelModalOpen(false);
+    } catch (mutationError) {
+      console.error("Failed to cancel order", mutationError);
+    }
   };
 
   return (
@@ -150,7 +177,7 @@ const Page = () => {
                 </span>
               </div>
               <span
-                className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+                className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium capitalize ${getStatusClasses(
                   order.status
                 )}`}
               >
@@ -245,15 +272,18 @@ const Page = () => {
             </div>
           </div>
           <div className="flex items-center flex-col md:flex-row flex-wrap justify-end gap-1.5 md:gap-3">
-            <ThemeButton
-              label="Cancel Order"
-              variant="outline"
-              size="medium"
-              icon={<CrossIcon fill="#EF4444" height="18" width="18" />}
-              onClick={() => {}}
-              className="w-full sm:w-fit"
-              heightClass="md:h-11 h-10"
-            />
+            {!isOrderCancelled && (
+              <ThemeButton
+                label="Cancel Order"
+                variant="outline"
+                size="medium"
+                icon={<CrossIcon fill="#EF4444" height="18" width="18" />}
+                onClick={() => setIsCancelModalOpen(true)}
+                disabled={cancellingOrder}
+                className="w-full sm:w-fit"
+                heightClass="md:h-11 h-10"
+              />
+            )}
 
             <ThemeButton
               label="Track Package"
@@ -287,6 +317,27 @@ const Page = () => {
           </div>
         </div>
       </div>
+      {!isOrderCancelled && (
+        <AppModal
+          isOpen={isCancelModalOpen}
+          onClose={() => setIsCancelModalOpen(false)}
+          title="Cancel Order"
+          subtitle=""
+          onConfirm={handleCancelOrder}
+          confirmLabel={cancellingOrder ? "Cancelling..." : "Confirm Cancel"}
+          confirmBtnVarient="danger"
+          cancelLabel="Keep Order"
+          confimBtnDisable={cancellingOrder}
+          bodyPaddingClasses="p-4 md:p-6"
+        >
+          <div className="flex flex-col gap-3">
+            <p className="text-sm md:text-base text-gray-700">
+              Are you sure you want to cancel order{" "}
+              {order.displayId || order.id}?
+            </p>
+          </div>
+        </AppModal>
+      )}
     </div>
   );
 };
