@@ -574,3 +574,24 @@ export const CANCEL_ORDER = gql`
     }
   }
 `;
+
+export const PROCESS_PAYMENT = gql`
+  mutation ProcessPayment(
+    $orderId: ID!
+    $opaqueData: OpaqueData!
+    $amount: Float!
+    $billingAddress: BillingAddress
+  ) {
+    processPayment(
+      input: {
+        orderId: $orderId
+        opaqueData: $opaqueData
+        amount: $amount
+        billingAddress: $billingAddress
+      }
+    ) {
+      success
+      transactionId
+    }
+  }
+`;
