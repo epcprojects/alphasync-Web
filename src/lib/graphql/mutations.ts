@@ -20,6 +20,10 @@ export const LOGIN_USER = gql`
     ) {
       otpSent
       message
+      token
+      user {
+        ${userpayload}
+      }
     }
   }
 `;
@@ -592,6 +596,16 @@ export const PROCESS_PAYMENT = gql`
     ) {
       success
       transactionId
+    }
+  }
+`;
+
+export const DISABLE_2FA = gql`
+  mutation UpdateUser($twoFaEnabled: Boolean) {
+    updateUser(input: { userAttributes: { twoFaEnabled: $twoFaEnabled } }) {
+      user {
+        ${userpayload}
+      }
     }
   }
 `;

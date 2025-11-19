@@ -24,6 +24,7 @@ export const userpayload = `
         patientOrdersCount
         invitationStatus
         addressVerified
+        twoFaEnabled
        
 `;
 
@@ -53,6 +54,7 @@ export interface UserAttributes {
   patientOrdersCount?: string;
   invitationStatus?: string;
   addressVerified?: boolean;
+  twoFaEnabled?: boolean;
 }
 
 export interface ProductInfo {
