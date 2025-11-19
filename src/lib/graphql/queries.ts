@@ -425,3 +425,25 @@ export const ORDER_REMINDERS = gql`
     }
   }
 `;
+
+export const DOCTOR_DASHBOARD = gql`
+  query DoctorDashboard {
+    doctorDashboard {
+      ordersCount
+      totalProfit
+      totalSales
+      averageOrderValue
+    }
+  }
+`;
+
+export const ADMIN_DASHBOARD = gql`
+  query AdminDashboard {
+    adminDashboard {
+      activeDoctors
+      inactiveDoctors
+      newDoctorsThisMonth
+      totalDoctors
+    }
+  }
+`;
