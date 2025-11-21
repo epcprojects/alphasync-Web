@@ -75,6 +75,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
           price
           id
           shopifyVariantId
+          sku
         }
       }
       count
@@ -444,6 +445,19 @@ export const ADMIN_DASHBOARD = gql`
       inactiveDoctors
       newDoctorsThisMonth
       totalDoctors
+    }
+  }
+`;
+
+export const PAYMENT_INVOICES = gql`
+  query PaymentInvoices($orderId: ID!) {
+    paymentInvoices(orderId: $orderId) {
+      amount
+      orderId
+      billingAddress
+      status
+      transactionId
+      invoiceNumber
     }
   }
 `;

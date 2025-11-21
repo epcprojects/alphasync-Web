@@ -318,11 +318,11 @@ const NotificationList: React.FC<NotificationListProps> = ({
                   <h2 className="text-xs md:text-sm text-gray-800">
                     {message.notificationType === "order_request_created" && (
                       <div>
-                        A reorder request for &quot;
+                        A New Product request for &quot;
                         {message.productNames.map((product) => (
                           <span key={product}>{product}</span>
                         ))}
-                        &quot; has been received by
+                        &quot; by
                         <span className="font-semibold">
                           {" "}
                           {message.senderName}

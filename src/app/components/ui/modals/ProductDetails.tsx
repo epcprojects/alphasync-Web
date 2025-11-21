@@ -1,18 +1,8 @@
 import React from "react";
 import AppModal, { ModalPosition } from "./AppModal";
 import OrderDetail from "../../../../../public/icons/OrdeerDetail";
-import Image from "next/image";
-import {
-  Alert,
-  Calendar,
-  Doctor,
-  File,
-  Info,
-  Learning,
-  ShopingCartIcon,
-  Target,
-  Thermometer,
-} from "@/icons";
+
+import { ShopingCartIcon } from "@/icons";
 import ProductImage from "@/app/components/ui/ProductImage";
 
 interface ProductDetailsProps {
@@ -30,6 +20,12 @@ type product = {
   price: string;
   description: string;
   primaryImage?: string;
+  tags?: string[];
+  variants?:
+    | {
+        sku?: string | null;
+      }[]
+    | null;
 };
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({
@@ -39,7 +35,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   onClick,
 }) => {
   if (!product) return null;
-
+  console.log(product);
   return (
     <AppModal
       isOpen={isOpen}
@@ -69,14 +65,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
             </div>
             <div className="flex flex-col md:flex-row md:items-start md:justify-between flex-1 gap-2 md:gap-4">
               <div className="flex flex-col gap-1">
-                <h2 className="text-base font-semibold line-clamp-1 text-gray-800">
+                <h2 className="text-base font-semibold  text-gray-800">
                   {product.title}
                 </h2>
                 <p className="text-base font-semibold text-gray-800">
                   {product.price}
                 </p>
                 <div className="flex items-center gap-2 md:gap-3 text-xs font-normal text-gray-800">
-                  <span>5 mg vial</span>
+                  <span>{product?.variants?.[0]?.sku || " "}</span>
                   <span className="border-l border-gray-200 pl-2 md:pl-3">
                     Injectable
                   </span>
@@ -85,11 +81,13 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                   </span>
                 </div>
               </div>
-              <div className="px-2.5 py-0.5 rounded-full bg-gray-100 border border-gray-200 w-fit self-start md:self-auto">
-                <p className="text-xs md:text-sm font-medium text-gray-700 whitespace-nowrap">
-                  {product.category}
-                </p>
-              </div>
+              {product?.tags?.length && (
+                <div className="px-2.5 py-0.5 rounded-full bg-gray-100 border border-gray-200 w-fit self-start md:self-auto">
+                  <p className="text-xs md:text-sm font-medium text-gray-700 whitespace-nowrap">
+                    {product?.tags[0]}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

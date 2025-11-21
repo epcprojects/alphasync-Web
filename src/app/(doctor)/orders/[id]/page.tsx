@@ -12,8 +12,8 @@ import {
 } from "@/icons";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
-import { useMutation, useQuery } from "@apollo/client";
-import { FETCH_ORDER } from "@/lib/graphql/queries";
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
+import { FETCH_ORDER, PAYMENT_INVOICES } from "@/lib/graphql/queries";
 import { CANCEL_ORDER } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import {
@@ -21,6 +21,7 @@ import {
   formatStatusDisplay,
 } from "@/app/components/ui/cards/OrderListView";
 import AppModal from "@/app/components/ui/modals/AppModal";
+import { showErrorToast } from "@/lib/toast";
 
 interface OrderItem {
   id: string;
@@ -52,6 +53,19 @@ interface FetchOrderResponse {
   };
 }
 
+interface PaymentInvoice {
+  amount: number;
+  orderId: string;
+  billingAddress: string;
+  status: string;
+  transactionId: string;
+  invoiceNumber: string;
+}
+
+interface PaymentInvoicesResponse {
+  paymentInvoices: PaymentInvoice[];
+}
+
 const Page = () => {
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -68,6 +82,9 @@ const Page = () => {
   );
 
   const [cancelOrder, { loading: cancellingOrder }] = useMutation(CANCEL_ORDER);
+  const [fetchPaymentInvoices, { loading: invoiceLoading }] =
+    useLazyQuery<PaymentInvoicesResponse>(PAYMENT_INVOICES);
+  const [isGeneratingInvoice, setIsGeneratingInvoice] = React.useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
 
   const order = data?.fetchOrder;
@@ -117,6 +134,238 @@ const Page = () => {
   const isOrderCancelled =
     order?.status?.toLowerCase() === "cancelled" ||
     order?.status?.toLowerCase() === "canceled";
+
+  const handleDownloadInvoice = async () => {
+    if (!order?.id) return;
+
+    setIsGeneratingInvoice(true);
+    try {
+      const { data: invoiceResponse } = await fetchPaymentInvoices({
+        variables: { orderId: order.id },
+        fetchPolicy: "network-only",
+      });
+
+      const invoice = invoiceResponse?.paymentInvoices?.[0];
+
+      if (!invoice) {
+        showErrorToast("No invoice data available for this order.");
+        return;
+      }
+
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      const contentWidth = pageWidth - margin * 2;
+
+      const currency = (value: number) => `$${value.toFixed(2)}`;
+      const primaryColor: [number, number, number] = [26, 64, 122];
+      const accentColor: [number, number, number] = [60, 133, 245];
+      const mutedColor: [number, number, number] = [99, 102, 241];
+      const textColor: [number, number, number] = [33, 33, 33];
+
+      const addSectionTitle = (label: string, startY: number) => {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.text(label, margin, startY);
+        doc.setDrawColor(226, 232, 240);
+        doc.line(margin, startY + 2, pageWidth - margin, startY + 2);
+        return startY + 10;
+      };
+
+      // Hero header
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(0, 0, pageWidth, 40, "F");
+      doc.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
+      doc.triangle(0, 40, 60, 0, 120, 40, "F");
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text("AlphaSync Pharmacy", margin, 18);
+      doc.setFontSize(12);
+      doc.text("Official Invoice", pageWidth - margin, 18, { align: "right" });
+
+      doc.setFontSize(10);
+      doc.text(
+        "Trusted care & pharmacy services for your patients.",
+        margin,
+        28
+      );
+
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+      let currentY = 52;
+
+      // Quick info cards
+      const infoBoxWidth = (contentWidth - 10) / 2;
+      const drawInfoCard = (
+        title: string,
+        rows: { label: string; value: string }[],
+        x: number,
+        y: number
+      ) => {
+        let dynamicHeight = 20;
+        rows.forEach((row) => {
+          const lineCount = doc.splitTextToSize(
+            row.value || "N/A",
+            infoBoxWidth - 50
+          ).length;
+          dynamicHeight += Math.max(lineCount, 1) * 6;
+        });
+        const boxHeight = dynamicHeight;
+        doc.setFillColor(248, 250, 255);
+        doc.roundedRect(x, y, infoBoxWidth, boxHeight, 4, 4, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.text(title, x + 6, y + 10);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+        let rowY = y + 18;
+        rows.forEach((row) => {
+          doc.setFont("helvetica", "bold");
+          doc.text(`${row.label}:`, x + 6, rowY);
+          doc.setFont("helvetica", "normal");
+          const valueLines = doc.splitTextToSize(
+            row.value || "N/A",
+            infoBoxWidth - 50
+          );
+          doc.text(valueLines, x + 40, rowY);
+          rowY += Math.max(valueLines.length, 1) * 6;
+        });
+        return y + boxHeight;
+      };
+
+      const invoiceBoxRows = [
+        { label: "Invoice", value: invoice.invoiceNumber || "Pending" },
+        { label: "Order", value: String(order.displayId || order.id) },
+        { label: "Transaction", value: invoice.transactionId || "Pending" },
+        { label: "Status", value: invoice.status || order.status },
+        { label: "Date", value: formatDate(order.createdAt) },
+      ];
+
+      const patientBoxRows = [
+        { label: "Patient", value: order.patient.fullName || "Unknown" },
+        { label: "Email", value: order.patient.email || "N/A" },
+        { label: "Phone", value: order.patient.phoneNo || "N/A" },
+      ];
+
+      const leftBoxEndY = drawInfoCard(
+        "Invoice Summary",
+        invoiceBoxRows,
+        margin,
+        currentY
+      );
+      const rightBoxEndY = drawInfoCard(
+        "Patient Information",
+        patientBoxRows,
+        margin + infoBoxWidth + 10,
+        currentY
+      );
+
+      currentY = Math.max(leftBoxEndY, rightBoxEndY) + 8;
+
+      currentY = addSectionTitle("Order Items", currentY);
+
+      // Table header
+      doc.setFillColor(248, 250, 255);
+      doc.roundedRect(margin, currentY - 6, contentWidth, 12, 3, 3, "F");
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Product", margin + 4, currentY);
+      doc.text("Qty", margin + contentWidth * 0.58, currentY);
+      doc.text("Unit Price", margin + contentWidth * 0.72, currentY);
+      doc.text("Total", margin + contentWidth * 0.9, currentY, {
+        align: "right",
+      });
+      doc.setFont("helvetica", "normal");
+
+      currentY += 4;
+
+      order.orderItems.forEach((item) => {
+        const productLines = doc.splitTextToSize(
+          item.product.title,
+          contentWidth * 0.5
+        );
+        const lineHeight = productLines.length * 6 + 4;
+        doc.setFillColor(255, 255, 255);
+        doc.rect(margin, currentY - 4, contentWidth, lineHeight, "F");
+        doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+        doc.text(productLines, margin + 4, currentY);
+        doc.text(String(item.quantity), margin + contentWidth * 0.58, currentY);
+        doc.text(currency(item.price), margin + contentWidth * 0.72, currentY);
+        doc.text(
+          currency(item.totalPrice),
+          margin + contentWidth * 0.9,
+          currentY,
+          {
+            align: "right",
+          }
+        );
+        currentY += lineHeight;
+        doc.setDrawColor(241, 245, 249);
+        doc.line(margin, currentY - 6, pageWidth - margin, currentY - 6);
+      });
+
+      currentY += 12;
+
+      // Totals summary
+      const summaryBoxY = currentY;
+      doc.setFillColor(249, 250, 251);
+      doc.roundedRect(margin, summaryBoxY, contentWidth, 36, 4, 4, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("Payment Summary", margin + 6, summaryBoxY + 10);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(
+        `Subtotal: ${currency(order.subtotalPrice)}`,
+        margin + 6,
+        summaryBoxY + 20
+      );
+      doc.text(
+        `Tax: ${currency(order.totalTax)}`,
+        margin + 6,
+        summaryBoxY + 28
+      );
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
+      doc.text(
+        `Grand Total: ${currency(order.totalPrice)}`,
+        pageWidth - margin,
+        summaryBoxY + 20,
+        { align: "right" }
+      );
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+
+      currentY = summaryBoxY + 50;
+
+      doc.setFontSize(10);
+      doc.setTextColor(120, 120, 120);
+      doc.text(
+        "Thank you for trusting AlphaSync with your healthcare needs.",
+        margin,
+        currentY
+      );
+      currentY += 6;
+      doc.text(
+        "Questions about this invoice? Reach us at support@alphasync.com",
+        margin,
+        currentY
+      );
+
+      doc.save(`invoice-${invoice.invoiceNumber || order.id}.pdf`);
+    } catch (invoiceError) {
+      console.error("Failed to generate invoice PDF", invoiceError);
+    } finally {
+      setIsGeneratingInvoice(false);
+    }
+  };
 
   const handleCancelOrder = async () => {
     if (!order?.id) return;
@@ -295,15 +544,18 @@ const Page = () => {
               heightClass="md:h-11 h-10"
             />
 
-            <ThemeButton
-              label="Print Invoice"
-              variant="outline"
-              size="medium"
-              icon={<PrinterIcon />}
-              onClick={() => {}}
-              className="w-full sm:w-fit"
-              heightClass="md:h-11 h-10"
-            />
+            {order.status?.toLowerCase() === "paid" && (
+              <ThemeButton
+                label="Print Invoice"
+                variant="outline"
+                size="medium"
+                icon={<PrinterIcon />}
+                onClick={handleDownloadInvoice}
+                disabled={invoiceLoading || isGeneratingInvoice}
+                className="w-full sm:w-fit"
+                heightClass="md:h-11 h-10"
+              />
+            )}
 
             <ThemeButton
               label="Send Update to Customer"
