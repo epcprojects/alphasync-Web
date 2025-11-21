@@ -260,6 +260,8 @@ const NotificationList: React.FC<NotificationListProps> = ({
                         switch (message.notificationType) {
                           case "order_request_created":
                             return <span>Request for a new product</span>;
+                          case "reorder_created":
+                            return <span>New reorder request</span>;
 
                           case "order_request_approved":
                             return (
@@ -294,8 +296,8 @@ const NotificationList: React.FC<NotificationListProps> = ({
                     <span className="w-2 h-2 rounded-full bg-gray-300 block"></span>
                     <span className="text-gray-800 font-normal md:text-sm text-xs">
                       {(message.notificationType === "message_received" ||
-                        message.notificationType ===
-                          "order_request_created") && (
+                        message.notificationType === "order_request_created" ||
+                        message.notificationType === "reorder_created") && (
                         <span className="font-semibold">
                           {message.senderName}
                         </span>
@@ -319,6 +321,20 @@ const NotificationList: React.FC<NotificationListProps> = ({
                     {message.notificationType === "order_request_created" && (
                       <div>
                         A New Product request for &quot;
+                        {message.productNames.map((product) => (
+                          <span key={product}>{product}</span>
+                        ))}
+                        &quot; by
+                        <span className="font-semibold">
+                          {" "}
+                          {message.senderName}
+                        </span>
+                        .
+                      </div>
+                    )}{" "}
+                    {message.notificationType === "reorder_created" && (
+                      <div>
+                        Reorder Product request for &quot;
                         {message.productNames.map((product) => (
                           <span key={product}>{product}</span>
                         ))}
