@@ -133,7 +133,8 @@ const Page = () => {
 
   const isOrderCancelled =
     order?.status?.toLowerCase() === "cancelled" ||
-    order?.status?.toLowerCase() === "canceled";
+    order?.status?.toLowerCase() === "canceled" ||
+    order?.status?.toLowerCase() === "paid";
 
   const handleDownloadInvoice = async () => {
     if (!order?.id) return;
@@ -534,15 +535,17 @@ const Page = () => {
               />
             )}
 
-            <ThemeButton
-              label="Track Package"
-              variant="outline"
-              size="medium"
-              icon={<ShipmentTrackingIcon />}
-              onClick={() => {}}
-              className="w-full sm:w-fit"
-              heightClass="md:h-11 h-10"
-            />
+            {order.status?.toLowerCase() === "paid" && (
+              <ThemeButton
+                label="Track Package"
+                variant="outline"
+                size="medium"
+                icon={<ShipmentTrackingIcon />}
+                onClick={() => {}}
+                className="w-full sm:w-fit"
+                heightClass="md:h-11 h-10"
+              />
+            )}
 
             {order.status?.toLowerCase() === "paid" && (
               <ThemeButton

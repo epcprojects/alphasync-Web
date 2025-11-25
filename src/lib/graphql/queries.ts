@@ -105,6 +105,8 @@ export const DOCTOR_ORDERS = gql`
           }
         }
         totalPrice
+        profit
+        netCost
         subtotalPrice
       }
       count

@@ -154,8 +154,9 @@ export default function OrderListView({
             <span className="text-black font-medium text-xs block">
               Profit:
             </span>
+
             <span className="text-green-600 text-xs font-normal block">
-              ${order.profit}
+              ${order.profit || 0}
             </span>
           </div>
 
