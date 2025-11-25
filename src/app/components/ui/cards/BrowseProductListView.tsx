@@ -105,6 +105,7 @@ export default function BrowseProductListView({
                 onAddToCart?.(product.id);
               }}
               className="flex h-7 px-2 text-xs gap-1 md:h-8 shrink-0 items-center justify-center rounded-md border cursor-pointer border-lightGray"
+              disabled={product.stock <= 0}
             >
               <ShopingCartIcon width={16} height={16} />
               Request from Doctor
@@ -200,6 +201,7 @@ export default function BrowseProductListView({
               onAddToCart?.(product.id);
             }}
             className="flex h-6 w-6 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-md border group-hover:bg-white cursor-pointer border-lightGray"
+            disabled={product.stock <= 0}
           >
             <ShopingCartIcon width={16} height={16} />
           </button>

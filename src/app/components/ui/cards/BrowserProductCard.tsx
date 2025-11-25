@@ -104,6 +104,7 @@ export default function BrowserProductCard({
                 variant="outline"
                 className="w-full"
                 heightClass="h-10 md:h-11"
+                disabled={product.stock <= 0}
               />
 
               <h2 className="text-primary font-semibold text-sm md:text-xl min-w-16 text-end">

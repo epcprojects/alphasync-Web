@@ -390,6 +390,22 @@ export const ALL_NOTIFICATIONS = gql`
           id
           displayId
           status
+          requestedItems {
+            title
+            price
+            product {
+              id
+              title
+              description
+              primaryImage
+              productType
+              vendor
+              tags
+              variants {
+                sku
+              }
+            }
+          }
         }
         user {
           id
