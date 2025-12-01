@@ -13,7 +13,7 @@ export type Product = {
   prescription: boolean;
   category: string;
   productForm: string;
-  stock: number;
+  stock: boolean;
   price: string;
   image: string;
   isFavourite: boolean;
@@ -104,7 +104,7 @@ export default function BrowserProductCard({
                 variant="outline"
                 className="w-full"
                 heightClass="h-10 md:h-11"
-                disabled={product.stock <= 0}
+                disabled={!product.stock}
               />
 
               <h2 className="text-primary font-semibold text-sm md:text-xl min-w-16 text-end">

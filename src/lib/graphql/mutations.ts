@@ -298,6 +298,7 @@ export const CREATE_ORDER = gql`
     $orderItems: [OrderItemAttributes!]!
     $totalPrice: Float!
     $patientId: ID!
+    $useCustomPricing: Boolean
   ) {
     createOrder(
       input: {
@@ -305,6 +306,7 @@ export const CREATE_ORDER = gql`
           orderItems: $orderItems
           totalPrice: $totalPrice
           patientId: $patientId
+          useCustomPricing: $useCustomPricing
         }
       }
     ) {
