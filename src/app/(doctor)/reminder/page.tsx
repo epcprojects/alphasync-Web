@@ -35,7 +35,7 @@ type OrderReminderItem = {
 
 type OrderReminderNode = {
   id: string;
-  shopifyOrderId?: string | null;
+
   createdAt?: string | null;
   autoReorder?: boolean | null;
   patient?: {
@@ -84,9 +84,7 @@ const mapReminderToCard = (
   const customer =
     reminder.patient?.fullName?.trim() ||
     reminder.patient?.address?.trim() ||
-    (reminder.shopifyOrderId
-      ? `Order #${reminder.shopifyOrderId}`
-      : `Order ${reminder.id}`);
+    reminder.id;
 
   const product = reminder.orderItems?.[0]?.product?.title?.trim() || "—";
   const autoReorder = Boolean(reminder.autoReorder);

@@ -424,7 +424,7 @@ export const ORDER_REMINDERS = gql`
     orderReminders(page: $page, search: $search, perPage: $perPage) {
       allData {
         id
-        shopifyOrderId
+        
         createdAt
         daysSinceCreated
         autoReorder
