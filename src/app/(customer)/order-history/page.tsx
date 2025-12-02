@@ -175,6 +175,7 @@ function History() {
 
         return {
           id: item.id ?? `${order.id}-${index}`,
+
           medicineName: item.product?.title || "Unknown Product",
           quantity,
           price: unitPrice,

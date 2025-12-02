@@ -19,6 +19,7 @@ type LoginType = "Patient" | "Doctor";
 
 function LoginContext() {
   const router = useRouter();
+
   const dispatch = useAppDispatch();
   const [loginType, setLoginType] = useState("Doctor");
   const searchParams = useSearchParams();
