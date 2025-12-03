@@ -456,17 +456,6 @@ export const DOCTOR_DASHBOARD = gql`
   }
 `;
 
-export const ADMIN_DASHBOARD = gql`
-  query AdminDashboard {
-    adminDashboard {
-      activeDoctors
-      inactiveDoctors
-      newDoctorsThisMonth
-      totalDoctors
-    }
-  }
-`;
-
 export const PAYMENT_INVOICES = gql`
   query PaymentInvoices($orderId: ID!) {
     paymentInvoices(orderId: $orderId) {
@@ -476,6 +465,65 @@ export const PAYMENT_INVOICES = gql`
       status
       transactionId
       invoiceNumber
+    }
+  }
+`;
+export const ADMIN_DASHBOARD = gql`
+  query AdminDashboard {
+    adminDashboard {
+      totalProductsSold
+      totalDoctors
+      salesAmountToday
+      salesAmountThisMonth
+      salesAmountPastMonth
+      newDoctorsThisMonth
+      inactiveDoctors
+      activeDoctors
+      topSellingProducts {
+        productId
+        productTitle
+        salesCount
+        salesPercentage
+      }
+      topPerformingDoctors {
+        doctorName
+        totalSalesAmount
+        doctorEmail
+      }
+      newlyOnboardedDoctors {
+        doctorEmail
+        doctorId
+        doctorName
+        onboardedAt
+      }
+    }
+  }
+`;
+export const ORDERS_GRAPH = gql`
+  query OrdersGraph($period: OrdersGraphPeriodEnum!) {
+    ordersGraph(period: $period) {
+      period
+      totalOrders
+
+      dataPoints {
+        date
+        label
+        ordersCount
+      }
+    }
+  }
+`;
+
+export const REVENUE_GRAPH = gql`
+  query RevenueGraph($period: OrdersGraphPeriodEnum!) {
+    revenueGraph(period: $period) {
+      dataPoints {
+        date
+        revenueAmount
+        label
+      }
+      period
+      totalRevenue
     }
   }
 `;
