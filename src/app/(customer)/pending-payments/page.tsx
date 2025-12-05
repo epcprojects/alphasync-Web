@@ -522,11 +522,15 @@ function PendingPayments() {
       {selectedOrder && isPaymentModelOpen && (
         <CustomerOrderPayment
           isOpen={isPaymentModelOpen}
-          onClose={() => setIsPaymentModelOpen(false)}
+          onClose={() => {
+            setIsPaymentModelOpen(false);
+            refetchPatientOrders();
+          }}
           order={selectedOrder}
           onClick={() => {
             setIsPaymentModelOpen(false);
             setIsSuccess(true);
+            refetchPatientOrders();
           }}
         />
       )}
