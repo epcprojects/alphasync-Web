@@ -19,6 +19,7 @@ import {
   Product,
   transformGraphQLProduct,
 } from "@/types/products";
+import ProductImage from "@/app/components/ui/ProductImage";
 
 // Interface for SyncProducts response
 interface SyncProductsResponse {
@@ -179,14 +180,12 @@ function ProductsContent() {
                 className="grid grid-cols-12 gap-4 px-2 py-3 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow"
               >
                 <div className="col-span-3 flex items-center gap-3">
-                  <img
+                  <ProductImage
+                    width={60}
+                    height={60}
                     src={product.image}
                     alt={product.title}
-                    className="w-8 h-8 md:w-12 md:h-12 rounded-lg object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/images/fallbackImages/medicine-syrup.svg";
-                    }}
+                    className="h-full object-contain"
                   />
                   <div className="min-w-0 flex-1">
                     <h3 className="font-medium text-sm md:text-base text-black truncate">

@@ -33,9 +33,9 @@ export default function ChatMessage({
             )} */}
             <Image
               alt=""
-              width={256}
-              height={256}
-              src={"/images/reviewImage1.jpg"}
+              width={40}
+              height={40}
+              src={"/images/arinaProfile.png"}
               className="rounded-full w-full max-h-7 max-w-7 h-full"
             />
             <span className="block whitespace-nowrap font-medium text-gray-700 text-xs md:text-sm">

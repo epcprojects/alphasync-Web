@@ -3,6 +3,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { InfoIcon, ShopingCartIcon } from "@/icons";
 import Image from "next/image";
 import Tooltip from "../tooltip";
+import ProductImage from "@/app/components/ui/ProductImage";
 
 type Product = {
   id: number;
@@ -39,11 +40,12 @@ export default function BrowseProductListView({
         <div className="flex flex-col gap-3">
           <div className=" flex items-center gap-3">
             <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
-              <Image
-                width={36}
-                height={36}
+              <ProductImage
+                width={60}
+                height={60}
                 src={product.image}
                 alt={product.title}
+                className="h-full object-contain"
               />
             </div>
             <div>
@@ -123,12 +125,13 @@ export default function BrowseProductListView({
       className="grid cursor-pointer grid-cols-2 group hover:bg-gray-100  md:grid-cols-12  md:gap-4 items-center rounded-xl bg-white p-3 shadow-table"
     >
       <div className="lg:col-span-3 col-span-4 flex items-center gap-3">
-        <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 group-hover:bg-white bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
-          <Image
-            width={36}
-            height={36}
+        <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 rounded-md md:rounded-lg flex items-center justify-center">
+          <ProductImage
+            width={60}
+            height={60}
             src={product.image}
             alt={product.title}
+            className="h-full object-contain"
           />
         </div>
         <div>
