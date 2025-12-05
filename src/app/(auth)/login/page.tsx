@@ -27,9 +27,10 @@ function LoginContext() {
 
   const [loginUser, { loading: loginLoading }] = useMutation(LOGIN_USER, {
     onCompleted: (data) => {
+      const message = data?.loginUser?.message;
       if (!!data?.loginUser?.user?.twoFaEnabled) {
         router.push("/otp");
-        showSuccessToast("OTP sent successfully!");
+        showSuccessToast(message);
       } else {
         const token = data?.loginUser?.token ?? "";
         const user = data?.loginUser?.user ?? null;
@@ -37,7 +38,7 @@ function LoginContext() {
         Cookies.set("auth_token", token, { expires: 7 });
         Cookies.set("user_data", JSON.stringify(user), { expires: 7 });
         window.location.href = "/inventory";
-        showSuccessToast("Logged in successfully!");
+        showSuccessToast(message);
       }
     },
     onError: (error) => {
@@ -46,8 +47,9 @@ function LoginContext() {
   });
 
   const [sendOtp, { loading: sendOtpLoading }] = useMutation(SEND_OTP, {
-    onCompleted: () => {
-      showSuccessToast("OTP sent successfully!");
+    onCompleted: (data) => {
+      const message = data?.sendOtp?.message;
+      showSuccessToast(message);
       router.push("/otp");
     },
     onError: (error) => {
