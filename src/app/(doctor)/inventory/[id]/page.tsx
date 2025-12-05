@@ -9,10 +9,14 @@ import {
 } from "@/icons";
 import { showSuccessToast } from "@/lib/toast";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { FETCH_PRODUCT } from "@/lib/graphql/queries";
-import { CREATE_ORDER, TOGGLE_FAVOURITE } from "@/lib/graphql/mutations";
+import {
+  CREATE_ORDER,
+  TOGGLE_FAVOURITE,
+  UPDATE_PRODUCT_PRICE,
+} from "@/lib/graphql/mutations";
 import { FetchProductResponse } from "@/types/products";
 import { showErrorToast } from "@/lib/toast";
 
@@ -21,6 +25,7 @@ export default function PostDetail() {
   const params = useParams<{ id: string }>();
 
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [price, setPrice] = useState<string>("");
 
   // GraphQL query to fetch product data
   const { data, loading, error, refetch } = useQuery<FetchProductResponse>(
@@ -42,7 +47,20 @@ export default function PostDetail() {
   const [toggleFavorite, { loading: toggleFavoriteLoading }] =
     useMutation(TOGGLE_FAVOURITE);
 
+  // GraphQL mutation to update product price
+  const [updateProductPrice, { loading: updatePriceLoading }] =
+    useMutation(UPDATE_PRODUCT_PRICE);
+
   const product = data?.fetchProduct;
+
+  // Initialize price when product data is loaded
+  useEffect(() => {
+    if (product) {
+      const currentPrice =
+        product.customPrice || product.variants?.[0]?.price || 0;
+      setPrice(currentPrice.toString());
+    }
+  }, [product]);
 
   const handleToggleFavorite = async () => {
     if (!product?.id) return;
@@ -59,6 +77,32 @@ export default function PostDetail() {
     } catch (error) {
       console.error("Error toggling favorite:", error);
       showErrorToast("Failed to update favorite status. Please try again.");
+    }
+  };
+
+  const handleSavePrice = async () => {
+    if (!product?.id) return;
+
+    const priceValue = parseFloat(price);
+    if (isNaN(priceValue) || priceValue < 0) {
+      showErrorToast("Please enter a valid price");
+      return;
+    }
+
+    try {
+      await updateProductPrice({
+        variables: {
+          productId: product.id,
+          price: priceValue,
+        },
+      });
+
+      // Refetch the product to get updated price
+      await refetch();
+      showSuccessToast("Price updated successfully!");
+    } catch (error) {
+      console.error("Error updating price:", error);
+      showErrorToast("Failed to update price. Please try again.");
     }
   };
 
@@ -266,11 +310,14 @@ export default function PostDetail() {
               </h2>
 
               <span className="text-primary font-semibold text-sm md:text-lg xl:text-xl">
-                ${product.variants?.[0]?.price || product.customPrice || "0.00"}
+                $
+                {product?.customPrice ||
+                  product?.variants?.[0]?.price ||
+                  "0.00"}
               </span>
             </div>
 
-            {/* <div>
+            <div>
               <label
                 htmlFor="input-group-1"
                 className="block mb-1 text-sm font-normal text-gray-600"
@@ -290,12 +337,15 @@ export default function PostDetail() {
                   className={`border border-gray-200 [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none  outline-none bg-white text-gray-900 text-sm rounded-lg focus:ring-gray-200 focus:ring-1 block w-full ps-8 pe-16 p-1.5 max-w-44`}
                   placeholder=""
                 />
-                <button className="rounded-md py-1.5 cursor-pointer text-primary font-semibold hover:bg-gray-300 px-3 absolute bg-porcelan text-xs  end-1">
-                  Save
+                <button
+                  onClick={handleSavePrice}
+                  disabled={updatePriceLoading}
+                  className="rounded-md py-1.5 cursor-pointer text-primary font-semibold hover:bg-gray-300 px-3 absolute bg-porcelan text-xs end-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updatePriceLoading ? "Saving..." : "Save"}
                 </button>
               </div>
-            
-            </div> */}
+            </div>
 
             <div className="">
               <h2 className="text-black font-medium text-sm md:text-base ">
@@ -391,7 +441,7 @@ export default function PostDetail() {
         onConfirm={handleConfirmOrder}
         productId={product.id}
         shopifyVariantId={product.variants?.[0]?.shopifyVariantId}
-        defaultPrice={product.variants?.[0]?.price || product.customPrice}
+        defaultPrice={product.customPrice || product.variants?.[0]?.price || 0}
         isLoading={createOrderLoading}
         onClose={() => setIsOrderModalOpen(false)}
       />

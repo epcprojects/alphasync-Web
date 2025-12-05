@@ -63,6 +63,8 @@ export interface ProductDropdownItem {
   productId?: string;
   variantId?: string;
   price?: number;
+  customPrice?: number;
+  originalPrice?: number;
 }
 
 // Helper function to transform GraphQL product data to UI format
@@ -143,11 +145,16 @@ export const transformToDropdownItem = (
   product: AllProductsResponse["allProducts"]["allData"][0]
 ): ProductDropdownItem => {
   const firstVariant = product.variants?.[0];
+  const originalPrice = firstVariant?.price;
+  // Use customPrice if available, otherwise use original price
+  const price = product.customPrice ?? originalPrice;
   return {
     name: product.title,
     displayName: product.title,
     productId: product.id,
     variantId: firstVariant?.shopifyVariantId,
-    price: firstVariant?.price,
+    price: price,
+    customPrice: product.customPrice,
+    originalPrice: originalPrice,
   };
 };

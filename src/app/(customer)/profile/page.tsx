@@ -31,7 +31,7 @@ interface ProfileFormValues {
   city: string;
   state: string;
   postalCode: string;
-  country: string;
+
   emergencyContactName: string;
   emergencyContactPhone: string;
 }
@@ -64,16 +64,6 @@ const Page = () => {
     city: Yup.string().required("City is required"),
     state: Yup.string().required("State is required"),
     postalCode: Yup.string().required("Postal code is required"),
-    country: Yup.string().required("Country is required"),
-    emergencyContactName: Yup.string().required(
-      "Emergency Contact Name is required"
-    ),
-    emergencyContactPhone: Yup.string()
-      .required("Phone number is required")
-      .matches(
-        /^\(\d{3}\)\s\d{3}-\d{4}$/,
-        "Phone number must be in format (512) 312-3123"
-      ),
   });
 
   const informationSchema = Yup.object().shape({
@@ -173,7 +163,7 @@ const Page = () => {
         city: values.city || undefined,
         state: values.state || undefined,
         postalCode: values.postalCode || undefined,
-        country: values.country || undefined,
+
         emergencyContactName: values.emergencyContactName,
         emergencyContactPhone: values.emergencyContactPhone,
         image: selectedImage,
@@ -217,7 +207,7 @@ const Page = () => {
         city: "",
         state: "",
         postalCode: "",
-        country: "",
+
         emergencyContactName: "",
         emergencyContactPhone: "",
         medicalHistory: "",
@@ -238,7 +228,7 @@ const Page = () => {
       city: user.city || "",
       state: user.state || "",
       postalCode: user.postalCode || "",
-      country: user.country || "",
+
       emergencyContactName: user.emergencyContactName || "",
       emergencyContactPhone: user.emergencyContactPhone || "",
       medicalHistory: user.medicalHistory || "",
@@ -580,30 +570,6 @@ const Page = () => {
                           />
                           <ErrorMessage
                             name="postalCode"
-                            component="div"
-                            className="text-red-500 text-xs"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
-                          <label
-                            htmlFor=""
-                            className="text-xs md:text-sm text-gray-700 font-semibold"
-                          >
-                            Country
-                          </label>
-                        </div>
-                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
-                          <ThemeInput
-                            type="text"
-                            name="country"
-                            value={values.country}
-                            onChange={handleChange}
-                          />
-                          <ErrorMessage
-                            name="country"
                             component="div"
                             className="text-red-500 text-xs"
                           />

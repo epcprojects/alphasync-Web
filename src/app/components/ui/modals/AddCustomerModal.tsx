@@ -36,7 +36,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     city: "",
     state: "",
     postalCode: "",
-    country: "",
+
     emergencyName: "",
     emergencyPhone: "",
     medicalHistory: "",
@@ -76,18 +76,8 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       city: Yup.string().required("City is required"),
       state: Yup.string().required("State is required"),
       postalCode: Yup.string().required("Postal code is required"),
-      country: Yup.string().required("Country is required"),
     }),
     Yup.object({
-      emergencyName: Yup.string().required(
-        "Emergency contact name is required"
-      ),
-      emergencyPhone: Yup.string()
-        .required("Emergency contact phone is required")
-        .matches(
-          /^\(\d{3}\)\s\d{3}-\d{4}$/,
-          "Please enter a valid phone number in format (316) 555-0116"
-        ),
       medicalHistory: Yup.string().optional(),
       allergies: Yup.string().optional(),
       medications: Yup.string().optional(),
@@ -190,7 +180,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               city: formData.city || null,
               state: formData.state || null,
               postalCode: formData.postalCode || null,
-              country: formData.country || null,
+
               emergencyContactName: formData.emergencyName,
               emergencyContactPhone: formData.emergencyPhone,
               medicalHistory: formData.medicalHistory || null,
@@ -225,7 +215,6 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       city: "",
       state: "",
       postalCode: "",
-      country: "",
       emergencyName: "",
       emergencyPhone: "",
       medicalHistory: "",
@@ -527,21 +516,6 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                   className="w-full"
                 />
               </div>
-              <div className="w-full">
-                <ThemeInput
-                  required
-                  label="Country"
-                  placeholder="Enter country"
-                  name="country"
-                  error={!!errors.country}
-                  errorMessage={errors.country}
-                  id="country"
-                  onChange={(e) => handleChange("country", e.target.value)}
-                  type="text"
-                  value={formData.country}
-                  className="w-full"
-                />
-              </div>
             </div>
           </div>
         )}
@@ -551,7 +525,6 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
             <div className="flex items-center gap-2 w-full">
               <div className="w-full">
                 <ThemeInput
-                  required
                   label="Emergency Contact Name"
                   placeholder="Enter emergency contact name"
                   name="emergencyName"
@@ -568,7 +541,6 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               </div>
               <div className="w-full">
                 <ThemeInput
-                  required
                   label="Emergency Contact Phone"
                   placeholder="(316) 555-0116"
                   name="emergencyPhone"

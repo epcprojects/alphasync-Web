@@ -40,6 +40,8 @@ const Page = () => {
     productId?: string;
     variantId?: string;
     price?: number;
+    customPrice?: number;
+    originalPrice?: number;
   } | null>(null);
   const [selectedCustomerData, setSelectedCustomerData] = useState<{
     name: string;
@@ -63,7 +65,12 @@ const Page = () => {
     // lock on first item
     if (!lockedCustomer) setLockedCustomer(values.customer);
 
-    const originalPrice = selectedProductData?.price || values.price;
+    // Use customPrice if present, otherwise use originalPrice, fallback to entered price
+    const originalPrice =
+      selectedProductData?.customPrice ??
+      selectedProductData?.originalPrice ??
+      selectedProductData?.price ??
+      values.price;
 
     const newItem: OrderItem = {
       product: values.product,
@@ -213,8 +220,14 @@ const Page = () => {
                     onProductChange={(selectedProduct) => {
                       setSelectedProductData(selectedProduct);
                       // Auto-populate price when product is selected
-                      if (selectedProduct && selectedProduct.price) {
-                        setFieldValue("price", selectedProduct.price);
+                      // Use customPrice if present, otherwise use originalPrice
+                      if (selectedProduct) {
+                        const priceToUse =
+                          selectedProduct.customPrice ??
+                          selectedProduct.originalPrice ??
+                          selectedProduct.price ??
+                          0;
+                        setFieldValue("price", priceToUse);
                       }
                     }}
                   />
@@ -244,6 +257,7 @@ const Page = () => {
                       type="number"
                       id="price"
                       required={true}
+                      disabled={true}
                     />
                     {errors.price && touched.price && (
                       <p className="text-red-500 text-xs">{errors.price}</p>
@@ -319,6 +333,7 @@ const Page = () => {
                     <div>
                       <input
                         type="number"
+                        disabled={true}
                         value={item.price}
                         onChange={(e) =>
                           handleUpdateItem(

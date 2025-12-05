@@ -635,3 +635,11 @@ export const DISABLE_2FA = gql`
     }
   }
 `;
+export const UPDATE_PRODUCT_PRICE = gql`
+  mutation UpdateProductPrice($productId: ID!, $price: Float!) {
+    updateProductPrice(input: { productId: $productId, price: $price }) {
+      customPrice
+      id
+    }
+  }
+`;

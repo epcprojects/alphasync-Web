@@ -37,7 +37,7 @@ type VerifyInfoFormValues = {
   city: string;
   state: string;
   postalCode: string;
-  country: string;
+
   dateOfBirth: Date | null;
 };
 
@@ -55,7 +55,7 @@ const validationSchema = Yup.object().shape({
   city: Yup.string().required("City is required"),
   state: Yup.string().required("State is required"),
   postalCode: Yup.string().required("Postal code is required"),
-  country: Yup.string().required("Country is required"),
+
   dateOfBirth: Yup.date().nullable().required("Date of Birth is required"),
 });
 
@@ -89,7 +89,7 @@ function VerifyInfoContent() {
       city: currentUser?.city || "",
       state: currentUser?.state || "",
       postalCode: currentUser?.postalCode || "",
-      country: currentUser?.country || "",
+
       dateOfBirth: currentUser?.dateOfBirth
         ? new Date(currentUser.dateOfBirth)
         : null,
@@ -164,7 +164,7 @@ function VerifyInfoContent() {
       city: values.city || undefined,
       state: values.state || undefined,
       postalCode: values.postalCode || undefined,
-      country: values.country || undefined,
+
       dateOfBirth: values.dateOfBirth
         ? values.dateOfBirth.toISOString().split("T")[0]
         : undefined,
@@ -231,10 +231,7 @@ function VerifyInfoContent() {
                   label: "Postal Code",
                   value: currentUser?.postalCode,
                 },
-                {
-                  label: "Country",
-                  value: currentUser?.country,
-                },
+
                 {
                   label: "Address",
                   value: currentUser?.address,
@@ -476,26 +473,6 @@ function VerifyInfoContent() {
                         errorMessage={
                           formik.touched.postalCode
                             ? (formik.errors.postalCode as string)
-                            : undefined
-                        }
-                        className="w-full"
-                      />
-                    </div>
-                    <div className="w-full">
-                      <ThemeInput
-                        required
-                        label="Country"
-                        name="country"
-                        placeholder="Enter country"
-                        value={formik.values.country}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        error={Boolean(
-                          formik.touched.country && formik.errors.country
-                        )}
-                        errorMessage={
-                          formik.touched.country
-                            ? (formik.errors.country as string)
                             : undefined
                         }
                         className="w-full"

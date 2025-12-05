@@ -3,8 +3,11 @@ import React from "react";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
 import { useQuery } from "@apollo/client/react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
-import { AllProductsResponse, ProductDropdownItem, transformToDropdownItem } from "@/types/products";
-
+import {
+  AllProductsResponse,
+  ProductDropdownItem,
+  transformToDropdownItem,
+} from "@/types/products";
 
 interface ProductSelectProps {
   selectedProduct: string;
@@ -19,7 +22,6 @@ interface ProductSelectProps {
   paddingClasses?: string;
   optionPaddingClasses?: string;
 }
-
 
 const ProductSelect: React.FC<ProductSelectProps> = ({
   selectedProduct,
@@ -41,26 +43,30 @@ const ProductSelect: React.FC<ProductSelectProps> = ({
     error: productsError,
   } = useQuery<AllProductsResponse>(ALL_PRODUCTS_INVENTORY, {
     fetchPolicy: "network-only",
+    variables: {
+      perPage: 200,
+    },
   });
 
   // Transform GraphQL product data to match dropdown format
-  const products = productsData?.allProducts.allData?.map(transformToDropdownItem) || [];
+  const products =
+    productsData?.allProducts.allData?.map(transformToDropdownItem) || [];
 
   const handleProductChange = (val: string | string[]) => {
     const productName = Array.isArray(val) ? val[0] : val;
     setSelectedProduct(productName);
-    
+
     // Find the selected product and call the callback
     if (onProductChange) {
-      const selectedProductData = products.find(p => p.name === productName);
+      const selectedProductData = products.find((p) => p.name === productName);
       onProductChange(selectedProductData || null);
     }
   };
 
-  const defaultPlaceholder = productsLoading 
-    ? "Loading products..." 
-    : products.length === 0 
-    ? "No products available" 
+  const defaultPlaceholder = productsLoading
+    ? "Loading products..."
+    : products.length === 0
+    ? "No products available"
     : "Select a product";
 
   return (
@@ -88,9 +94,7 @@ const ProductSelect: React.FC<ProductSelectProps> = ({
         showIcon={false}
         disabled={disabled || productsLoading}
       />
-      {errors && touched && (
-        <p className="text-red-500 text-xs">{errors}</p>
-      )}
+      {errors && touched && <p className="text-red-500 text-xs">{errors}</p>}
     </div>
   );
 };

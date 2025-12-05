@@ -5,7 +5,13 @@ import { AppModal, CustomerSelect } from "@/components";
 interface OrderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: { customer: string; price: number; productId?: string; shopifyVariantId?: string; customerId?: string }) => void;
+  onConfirm: (data: {
+    customer: string;
+    price: number;
+    productId?: string;
+    shopifyVariantId?: string;
+    customerId?: string;
+  }) => void;
   productId?: string;
   shopifyVariantId?: string;
   defaultPrice?: number;
@@ -62,12 +68,12 @@ const OrderModal: React.FC<OrderModalProps> = ({
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      onConfirm({ 
-        customer: selectedUser, 
+      onConfirm({
+        customer: selectedUser,
         price: Number(price),
         productId,
         shopifyVariantId,
-        customerId: selectedCustomerData?.id
+        customerId: selectedCustomerData?.id,
       });
       // Don't close modal here - let the parent handle it after successful mutation
     }
@@ -83,7 +89,9 @@ const OrderModal: React.FC<OrderModalProps> = ({
       onConfirm={handleConfirm}
       outSideClickClose={false}
       confirmLabel={isLoading ? "Creating Order..." : "Create Order"}
-      confimBtnDisable={!selectedUser || !price || Number(price) <= 0 || isLoading}
+      confimBtnDisable={
+        !selectedUser || !price || Number(price) <= 0 || isLoading
+      }
       scrollNeeded={false}
     >
       <div className="w-full flex flex-col justify-between  md:min-h-20 gap-4">
@@ -126,6 +134,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
             <input
               type="number"
               id="input-group-1"
+              disabled={true}
               value={price}
               onChange={(e) => {
                 setPrice(e.target.value);
