@@ -158,6 +158,8 @@ export default function Notifications({ userType }: NotificationsProps) {
     switch (message.notificationType) {
       case "order_request_created":
         return "Request for a new product";
+      case "reorder_created":
+        return "New reorder request";
       case "order_request_approved":
         return `Dr. ${message.doctorName} has approved your order`;
       case "order_request_denied":
@@ -170,7 +172,10 @@ export default function Notifications({ userType }: NotificationsProps) {
   };
 
   const getNotificationDescription = (message: NotificationData) => {
-    if (message.notificationType === "order_request_created") {
+    if (
+      message.notificationType === "order_request_created" ||
+      message.notificationType === "reorder_created"
+    ) {
       return (
         <div>
           <span>{message.senderName} </span>has requested a new product
