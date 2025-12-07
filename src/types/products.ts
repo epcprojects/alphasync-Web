@@ -21,6 +21,7 @@ export interface AllProductsResponse {
         id: string;
         shopifyVariantId: string;
         price: number;
+        sku?: string;
       }[];
     }[];
     count: number;
@@ -31,13 +32,20 @@ export interface AllProductsResponse {
 }
 
 // Transformed product interface for UI components
+export interface ProductVariant {
+  id?: string;
+  shopifyVariantId?: string;
+  price?: number;
+  sku?: string;
+}
+
 export interface Product {
   id: number;
   originalId: string; // Add the original GraphQL ID
   title: string;
   description: string;
   category: string;
-  stock: number;
+  stock: boolean;
   price: string;
   image: string;
   isFavourite: boolean;
@@ -45,6 +53,7 @@ export interface Product {
   productForm: string;
   primaryImage?: string;
   tags?: string[];
+  variants?: ProductVariant[];
 }
 
 // Product select dropdown item interface
@@ -62,19 +71,43 @@ export const transformGraphQLProduct = (
   index: number
 ): Product => {
   const firstVariant = product.variants?.[0];
+  const fallbackImage =
+    product.images?.find(
+      (image): image is string =>
+        typeof image === "string" && image.trim().length > 0
+    ) ?? "";
+  const normalizedPrimaryImage =
+    typeof product.primaryImage === "string" &&
+    product.primaryImage.trim().length > 0
+      ? product.primaryImage
+      : fallbackImage;
+
+  // Use customPrice if available, otherwise use variant price
+  const priceValue =
+    product.customPrice != null && product.customPrice !== undefined
+      ? product.customPrice
+      : firstVariant?.price ?? 0;
+
   return {
     id: parseInt(product.id) || index + 1,
     originalId: product.id, // Store the original GraphQL ID
     title: product.title,
     description: product.description || "",
     category: product.productType || "Peptide",
-    stock: product.totalInventory || 0,
-    price: firstVariant ? `$${firstVariant.price}` : "$0.00",
-    image: product.primaryImage || "",
+    stock: product.inStock ?? false,
+    price: `$${priceValue.toFixed(2)}`,
+    image: normalizedPrimaryImage,
+    primaryImage: normalizedPrimaryImage || undefined,
     isFavourite: product.isFavorited || false,
     prescription: false, // Default value, can be enhanced later
     productForm: "Injectable", // Default value, can be enhanced later
     tags: product.tags?.length ? product.tags : undefined,
+    variants: product.variants?.map((variant) => ({
+      id: variant.id,
+      shopifyVariantId: variant.shopifyVariantId,
+      price: variant.price,
+      sku: variant.sku,
+    })),
   };
 };
 

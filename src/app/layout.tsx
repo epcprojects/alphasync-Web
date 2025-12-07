@@ -4,7 +4,7 @@ import "./globals.css";
 import CustomToastContainer from "./components/ToastContainer";
 import { GraphQLProvider } from "../lib/graphql/GraphQLProvider";
 import { ReduxProvider } from "@/lib/store/ReduxProvider";
-
+import Script from "next/script";
 
 const poppins_init = Poppins({
   style: ["normal"],
@@ -54,9 +54,12 @@ export default function RootLayout({
           <ReduxProvider>
             {children}
             <CustomToastContainer />
-            
           </ReduxProvider>
         </GraphQLProvider>
+        <Script
+          src="https://jstest.authorize.net/v1/Accept.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

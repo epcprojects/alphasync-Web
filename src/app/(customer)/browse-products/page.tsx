@@ -311,7 +311,7 @@ function InventoryContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
               {currentItems.map((product) => (
                 <BrowserProductCard
-                  key={product.id}
+                  key={product.originalId}
                   product={product}
                   onAddToCart={() => handleAddToCart(product)}
                   onCardClick={handleCardClick}
@@ -335,7 +335,7 @@ function InventoryContent() {
               {currentItems.map((product) => (
                 <BrowseProductListView
                   onRowClick={() => {}}
-                  key={product.id}
+                  key={product.originalId}
                   product={product}
                   onInfoBtn={handleCardClick}
                   onAddToCart={() => handleAddToCart(product)}

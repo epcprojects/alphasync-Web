@@ -1,10 +1,5 @@
 "use client";
-import {
-  AuthHeader,
-  Loader,
-  ThemeButton,
-  ThemeInput,
-} from "@/app/components";
+import { AuthHeader, Loader, ThemeButton, ThemeInput } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import Link from "next/link";
 import React, { Suspense, useState } from "react";
@@ -16,19 +11,34 @@ import { TickIcon } from "@/icons";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN_USER, SEND_OTP } from "@/lib/graphql/mutations";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import Cookies from "js-cookie";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/slices/authSlice";
 
 type LoginType = "Patient" | "Doctor";
 
 function LoginContext() {
   const router = useRouter();
+
+  const dispatch = useAppDispatch();
   const [loginType, setLoginType] = useState("Doctor");
   const searchParams = useSearchParams();
   const isAdminLogin = searchParams.get("admin") === "admin";
 
   const [loginUser, { loading: loginLoading }] = useMutation(LOGIN_USER, {
-    onCompleted: () => {
-      showSuccessToast("OTP sent successfully!");
-      router.push("/otp");
+    onCompleted: (data) => {
+      if (!!data?.loginUser?.user?.twoFaEnabled) {
+        router.push("/otp");
+        showSuccessToast("OTP sent successfully!");
+      } else {
+        const token = data?.loginUser?.token ?? "";
+        const user = data?.loginUser?.user ?? null;
+        dispatch(setUser(user));
+        Cookies.set("auth_token", token, { expires: 7 });
+        Cookies.set("user_data", JSON.stringify(user), { expires: 7 });
+        window.location.href = "/inventory";
+        showSuccessToast("Logged in successfully!");
+      }
     },
     onError: (error) => {
       showErrorToast(error.message);

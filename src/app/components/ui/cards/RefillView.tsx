@@ -175,7 +175,7 @@ export default function RefillView({
         </h2>
       </div>
 
-      <div className="text-xs md:text-sm text-gray-800 font-normal">
+      <div className="text-xs md:text-sm text-gray-800 font-normal line-clamp-1">
         {order.product}
       </div>
 
