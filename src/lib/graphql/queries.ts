@@ -2,8 +2,8 @@ import { userpayload } from "@/lib/graphql/attributes";
 import { gql } from "@apollo/client";
 
 export const ALL_DOCTORS = gql`
-  query AllDoctors($status: UserStatusEnum $search: String, $page: Int, $perPage: Int) {
-    allDoctors(status: $status, search: $search, page: $page, perPage: $perPage) {
+  query AllDoctors($pendingInvites: Boolean, $status: UserStatusEnum $search: String, $page: Int, $perPage: Int) {
+    allDoctors(pendingInvites: $pendingInvites, status: $status, search: $search, page: $page, perPage: $perPage) {
       allData {
        ${userpayload}
       }
@@ -25,8 +25,8 @@ export const FETCH_USER = gql`
   }
 `;
 export const ALL_PATIENTS = gql`
-  query allPatients($status: UserStatusEnum $search: String, $page: Int, $perPage: Int) {
-    allPatients(status: $status, search: $search, page: $page, perPage: $perPage) {
+  query allPatients($pendingInvites: Boolean,$status: UserStatusEnum $search: String, $page: Int, $perPage: Int) {
+    allPatients(pendingInvites: $pendingInvites, status: $status, search: $search, page: $page, perPage: $perPage) {
       allData {
        ${userpayload}
       }
@@ -88,6 +88,7 @@ export const DOCTOR_ORDERS = gql`
     doctorOrders(status: $status, page: $page, perPage: $perPage) {
       allData {
         id
+        displayId
         patient {
          ${userpayload}
         }
@@ -125,6 +126,7 @@ export const FETCH_ORDER = gql`
   query FetchOrder($id: ID!) {
     fetchOrder(id: $id) {
       id
+      displayId
       createdAt
       status
       subtotalPrice
@@ -223,6 +225,70 @@ export const MESSAGE_ADDED = gql`
         __typename
         ${userpayload}
       }
+    }
+  }
+`;
+
+export const PATIENT_ORDERS = gql`
+  query PatientOrders($patientId: ID, $page: Int, $perPage: Int) {
+    patientOrders(patientId: $patientId, page: $page, perPage: $perPage) {
+      allData {
+        id
+        status
+        createdAt
+        totalPrice
+      }
+      count
+      nextPage
+      prevPage
+      totalPages
+    }
+  }
+`;
+
+export const ALL_ORDER_REQUESTS = gql`
+  query AllOrderRequests(
+    $search: String
+    $patientId: ID
+    $status: String
+    $page: Int
+    $perPage: Int
+  ) {
+    allOrderRequests(
+      search: $search
+      patientId: $patientId
+      status: $status
+      page: $page
+      perPage: $perPage
+    ) {
+      allData {
+        displayId
+        id
+        status
+        doctorMessage
+        reason
+        doctor {
+          ${userpayload}
+        }
+        patient {
+          ${userpayload}
+        }
+        requestedItems {
+          title
+          price
+          product {
+            id
+            title
+            description
+            productType
+            vendor
+          }
+        }
+      }
+      dataCount
+      nextPage
+      prevPage
+      totalPages
     }
   }
 `;

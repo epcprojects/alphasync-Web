@@ -22,6 +22,7 @@ export const userpayload = `
         userType
         dateOfBirth
         patientOrdersCount
+        invitationStatus
 `;
 
 export interface UserAttributes {
@@ -48,4 +49,32 @@ export interface UserAttributes {
   userType?: string;
   dateOfBirth?: string;
   patientOrdersCount?: string;
+  invitationStatus?: string;
+}
+
+export interface ProductInfo {
+  id?: string;
+  title?: string;
+  description?: string;
+  productType?: string;
+  vendor?: string;
+}
+
+export interface RequestedItem {
+  id?: number | string;
+  title?: string;
+  totalPrice?: string | number;
+  price?: string | number;
+  product?: ProductInfo;
+}
+
+export interface OrderRequestAttributes {
+  displayId?: string;
+  id?: number | string;
+  status?: string;
+  doctorMessage?: string;
+  reason?: string;
+  doctor?: UserAttributes;
+  patient?: UserAttributes;
+  requestedItems?: RequestedItem[];
 }

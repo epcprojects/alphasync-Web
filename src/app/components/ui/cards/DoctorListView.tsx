@@ -1,5 +1,5 @@
 "use client";
-import { PencilEditIcon, TrashBinIcon } from "@/icons";
+import { PencilEditIcon, TrashBinIcon, MailIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
@@ -8,6 +8,7 @@ type DoctorListingProps = {
   doctor: UserAttributes;
   onEditDoctor?: (id: number) => void;
   onDeleteDoctor?: (id: number) => void;
+  onResendInvitation?: (id: string | number) => void;
 };
 
 const colorPairs = [
@@ -42,6 +43,7 @@ export default function DoctorListView({
   doctor,
   onDeleteDoctor,
   onEditDoctor,
+  onResendInvitation,
 }: DoctorListingProps) {
   const { bg, text } = getColorPair(doctor.id);
 
@@ -49,7 +51,7 @@ export default function DoctorListView({
     <div
       // onClick={onRowClick}
       key={doctor.id}
-      className="grid  grid-cols-12 gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
+      className="grid  grid-cols-12 gap-2 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div className="flex items-center gap-2 col-span-3">
         <span
@@ -75,7 +77,7 @@ export default function DoctorListView({
         {doctor.medicalLicense ?? "—"}
       </div>
 
-      <div className="font-medium text-xs md:text-sm text-gray-800 col-span-2">
+      <div className="font-medium text-xs md:text-sm text-gray-800 col-span-1">
         <span
           className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
             doctor.status
@@ -85,7 +87,7 @@ export default function DoctorListView({
         </span>
       </div>
 
-      <div className="flex items-center justify-start gap-2">
+      <div className="flex items-center justify-start gap-1">
         <Tooltip content="Edit">
           <button
             onClick={(e) => {
@@ -97,6 +99,20 @@ export default function DoctorListView({
             <PencilEditIcon width="15" height="15" fill={"currentColor"} />
           </button>
         </Tooltip>
+        {doctor.invitationStatus === "pending" && (
+          <Tooltip content="Resend Invitation">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("Resend button clicked for doctor:", doctor.id, "invitationStatus:", doctor.invitationStatus);
+                if (doctor.id) onResendInvitation?.(doctor.id);
+              }}
+              className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+              >
+              <MailIcon />
+            </button>
+          </Tooltip>
+        )}
         <Tooltip content="Delete">
           <button
             onClick={(e) => {

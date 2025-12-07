@@ -6,7 +6,8 @@ import Tooltip from "../tooltip";
 
 type Order = {
   id: number;
-  orderId: string;
+  orderId: string | number;
+  displayId: number;
   date: string;
   customer: string;
 
@@ -48,12 +49,23 @@ export function getStatusClasses(status: Order["status"]) {
       return "bg-amber-50 border border-amber-200 text-amber-700";
     case "Pending":
       return "bg-red-50 border border-red-200 text-red-700";
+    case "pending_payment":
+      return "bg-orange-50 border border-orange-200 text-orange-700";
     case "Shipped":
       return "bg-indigo-50 border border-indigo-200 text-indigo-700";
     case "Cancelled":
       return "bg-gray-50 border border-gray-200 text-gray-700";
     default:
       return "bg-gray-100 border border-gray-200 text-gray-700";
+  }
+}
+
+export function formatStatusDisplay(status: string) {
+  switch (status) {
+    case "pending_payment":
+      return "Pending Payment";
+    default:
+      return status;
   }
 }
 
@@ -87,7 +99,6 @@ export default function OrderListView({
               <h2 className="text-gray-800 text-xs md:text-sm font-medium">
                 {order.customer}
               </h2>
-             
             </div>
           </div>
 
@@ -97,7 +108,7 @@ export default function OrderListView({
                 order.status
               )}`}
             >
-              {order.status}
+              {formatStatusDisplay(order.status)}
             </span>
           </div>
         </div>
@@ -148,7 +159,7 @@ export default function OrderListView({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onViewOrderDetail?.(order.id);
+                onViewOrderDetail?.(order.displayId);
               }}
               className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
             >
@@ -182,7 +193,6 @@ export default function OrderListView({
           <h2 className="text-gray-800 text-xs md:text-sm font-medium">
             {order.customer}
           </h2>
-         
         </div>
       </div>
       <div className="text-xs md:text-sm font-normal text-gray-600 ">
@@ -195,7 +205,7 @@ export default function OrderListView({
             order.status
           )}`}
         >
-          {order.status}
+          {formatStatusDisplay(order.status)}
         </span>
       </div>
 
@@ -222,7 +232,7 @@ export default function OrderListView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onViewOrderDetail?.(order.id);
+              onViewOrderDetail?.(order.displayId);
             }}
             className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >

@@ -6,7 +6,7 @@ import TextAreaField from "../inputs/TextAreaField";
 interface RequestModelProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: { reason: string }) => void;
+  onConfirm: (data: { reason: string }) => void | Promise<void>;
 }
 
 const RequestModel: React.FC<RequestModelProps> = ({
@@ -15,17 +15,25 @@ const RequestModel: React.FC<RequestModelProps> = ({
   onConfirm,
 }) => {
   const [reason, setReason] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleClose = () => {
     onClose();
     setReason(""); // reset on close
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (reason.trim()) {
-      onConfirm({ reason });
-      setReason(""); // reset after confirm
-      onClose();
+      setIsSubmitting(true);
+      try {
+        await onConfirm({ reason });
+        setReason(""); // reset after confirm
+        // Don't close here - let parent component handle it
+      } catch (error) {
+        console.error("Error in onConfirm:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -35,10 +43,10 @@ const RequestModel: React.FC<RequestModelProps> = ({
       onClose={handleClose}
       title="Reason of Request"
       onConfirm={handleConfirm}
-      confirmLabel="Send Request"
+      confirmLabel={isSubmitting ? "Sending Request..." : "Send Request"}
       outSideClickClose={false}
       icon={<CreditCardOutlineIcon />}
-      confimBtnDisable={!reason.trim()}
+      confimBtnDisable={!reason.trim() || isSubmitting}
     >
       <TextAreaField
         value={reason}

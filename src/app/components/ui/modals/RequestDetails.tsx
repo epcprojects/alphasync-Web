@@ -21,11 +21,13 @@ export type requestDetails = {
   requestedDate?: string;
   reviewedDate?: string;
   doctorName?: string;
+  doctorId?: string;
   price?: string;
   userNotes?: string;
   physicianNotes?: string;
   denialReason?: string;
   category?: string;
+  displayId?: string;
 };
 
 const RequestDetails: React.FC<requestDetailsProps> = ({
@@ -52,6 +54,7 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
           userNotes: request.userNotes,
           physicianNotes: request.physicianNotes,
           denialReason: request.denialReason,
+          description: request.description,
         }
       : null;
 
@@ -64,8 +67,12 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
       subtitle="Request ID #REQ-001"
       position={ModalPosition.RIGHT}
       showFooter={true}
-      hideConfirmButton={request.status === "Approved" ? false : true} 
-      hideCancelBtn={request.status === "Approved" || request.status === "Denied" ? true : false}
+      hideConfirmButton={request.status === "Approved" ? false : true}
+      hideCancelBtn={
+        request.status === "Approved" || request.status === "Denied"
+          ? true
+          : false
+      }
       cancelLabel="Follow up with Physician"
       onConfirm={onClick}
       onCancel={oncancel}

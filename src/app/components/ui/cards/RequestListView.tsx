@@ -21,7 +21,6 @@ type RequestListViewProps = {
   onAcceptBtn?: () => void;
   onRejectBtn?: () => void;
   onChatBtn: () => void;
-  onRowClick?: () => void;
 };
 
 const colorPairs = [
@@ -56,7 +55,6 @@ export default function RequestListView({
   onAcceptBtn,
   onRejectBtn,
   onChatBtn,
-  onRowClick,
 }: RequestListViewProps) {
   const { bg, text } = getColorPair(request.id);
 
@@ -190,9 +188,8 @@ export default function RequestListView({
 
   return (
     <div
-      onClick={onRowClick}
       key={request.id}
-      className="hidden sm:grid cursor-pointer hover:bg-gray-100 grid-cols-[1fr_14rem_1fr_1fr_160px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
+      className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div>
         <h2 className="text-gray-800 text-xs md:text-sm font-normal whitespace-nowrap">

@@ -9,13 +9,14 @@ import {
   ThemeButton,
   Pagination,
 } from "@/app/components";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { Menu, MenuButton, MenuItem, MenuItems, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useQuery, useMutation } from "@apollo/client/react";
 
 import DoctorListView from "@/app/components/ui/cards/DoctorListView";
 import AddEditDoctorModal from "@/app/components/ui/modals/AddEditDoctorModal";
 import CsvImportDoctorModal from "@/app/components/ui/modals/CsvImportDoctorModal";
 import DoctorDeleteModal from "@/app/components/ui/modals/DoctorDeleteModal";
+import ResendInvitationModal from "@/app/components/ui/modals/ResendInvitationModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ALL_DOCTORS } from "@/lib/graphql/queries";
 import { MODIFY_ACCESSS_USER } from "@/lib/graphql/mutations";
@@ -48,8 +49,14 @@ function DoctorContent() {
   const [isModalOpne, setIsModalOpen] = useState(false);
   const [isCsvImportModalOpen, setIsCsvImportModalOpen] = useState(false);
   const [isDeleteModalOpne, setIsDeleteModalOpen] = useState(false);
+  const [isResendModalOpen, setIsResendModalOpen] = useState(false);
   const [editDoctor, setEditDoctor] = useState<DoctorFormData>();
   const [doctorToDelete, setDoctorToDelete] = useState<DoctorFormData>();
+  const [doctorToResend, setDoctorToResend] = useState<DoctorFormData>();
+  
+  // Tab state for Active/Pending doctors
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+  
   const orderStatuses = [
     { label: "All Status", value: null },
     { label: "Active", value: "ACTIVE" },
@@ -71,6 +78,7 @@ function DoctorContent() {
           selectedStatus === "All Status"
             ? undefined
             : selectedStatus.toUpperCase(),
+        pendingInvites: selectedTabIndex === 1, // true for pending doctors (index 1), false for active doctors (index 0)
         page: currentPage + 1,
         perPage: itemsPerPage,
       },
@@ -84,6 +92,9 @@ function DoctorContent() {
 
   // Transform GraphQL data to match Doctor interface
   const doctors = data?.allDoctors.allData;
+  
+  // Debug log to check doctors data
+  console.log("All doctors:", doctors?.map(d => ({ id: d.id, name: d.fullName, invitationStatus: d.invitationStatus })));
 
   const pageCount = data?.allDoctors.totalPages;
 
@@ -127,6 +138,25 @@ function DoctorContent() {
     } catch (error) {
       console.error("Error revoking doctor access:", error);
       showErrorToast("Failed to delete doctor. Please try again.");
+    }
+  };
+
+  const handleResendInvitation = (doctorId: string | number) => {
+    console.log("handleResendInvitation called with doctorId:", doctorId);
+    const doctor = doctors?.find(d => d.id === doctorId || d.id === String(doctorId));
+    console.log("Found doctor:", doctor);
+    if (doctor) {
+      setDoctorToResend({
+        id: doctor.id,
+        fullName: doctor.fullName,
+        email: doctor.email,
+        phoneNo: doctor.phoneNo,
+        medicalLicense: doctor.medicalLicense,
+        specialty: doctor.specialty,
+        status: doctor.status,
+      });
+      setIsResendModalOpen(true);
+      console.log("Modal should be opening now");
     }
   };
 
@@ -194,7 +224,23 @@ function DoctorContent() {
         </div>
       </div>
 
-      <div className="space-y-1">
+      {/* Tabs for Active/Pending Doctors */}
+      <div className="bg-white rounded-xl shadow-table">
+        <TabGroup selectedIndex={selectedTabIndex} onChange={setSelectedTabIndex}>
+          <TabList className="flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-6">
+            {["All Doctors", "Pending Doctors"].map((tab, index) => (
+              <Tab
+                key={index}
+                as="button"
+                className="flex items-center gap-1 md:gap-2 w-full justify-center text-[11px] hover:bg-gray-50 whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-2 py-3 md:py-4 md:px-6"
+              >
+                {tab}
+              </Tab>
+            ))}
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <div className="space-y-1 p-4 md:p-6 pt-0">
         <div className="grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
           <div className="col-span-3">
             <h2>Name</h2>
@@ -208,7 +254,7 @@ function DoctorContent() {
           <div className="col-span-2">
             <h2>Medical License</h2>
           </div>
-          <div className="col-span-2">
+          <div className="col-span-1">
             <h2>Status</h2>
           </div>
           <div className="col-span-1">
@@ -237,6 +283,7 @@ function DoctorContent() {
                 doctor={doctor}
                 onEditDoctor={() => handleEdit(doctor)}
                 onDeleteDoctor={() => handleDelete(doctor)}
+                onResendInvitation={() => doctor.id && handleResendInvitation(doctor.id)}
               />
             ))}
           </>
@@ -250,6 +297,69 @@ function DoctorContent() {
             onPageChange={handlePageChange}
           />
         )}
+      </div>
+            </TabPanel>
+            <TabPanel>
+              <div className="space-y-1 p-4 md:p-6 pt-0">
+                <div className="grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                  <div className="col-span-3">
+                    <h2>Name</h2>
+                  </div>
+                  <div className="col-span-2">
+                    <h2>Specialty</h2>
+                  </div>
+                  <div className="col-span-2">
+                    <h2>Phone</h2>
+                  </div>
+                  <div className="col-span-2">
+                    <h2>Medical License</h2>
+                  </div>
+                  <div className="col-span-1">
+                    <h2>Status</h2>
+                  </div>
+                  <div className="col-span-1">
+                    <h2>Actions</h2>
+                  </div>
+                </div>
+                {error && (
+                  <div className="text-center">
+                    <p className="text-red-500 mb-4">{error.message}</p>
+                  </div>
+                )}
+
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                  </div>
+                ) : (
+                  <>
+                    {doctors?.map((doctor: UserAttributes) => (
+                      <DoctorListView
+                        key={doctor.id}
+                        doctor={doctor}
+                        onEditDoctor={() => handleEdit(doctor)}
+                        onDeleteDoctor={() => handleDelete(doctor)}
+                        onResendInvitation={() => doctor.id && handleResendInvitation(doctor.id)}
+                      />
+                    ))}
+                  </>
+                )}
+                {(!doctors || doctors.length === 0) && !loading && <EmptyState />}
+
+                {pageCount && pageCount > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pageCount}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </div>
+            </TabPanel>
+          </TabPanels>
+        </TabGroup>
       </div>
       <AddEditDoctorModal
         isOpen={isModalOpne}
@@ -286,6 +396,19 @@ function DoctorContent() {
         subtitle="Are you sure you want to delete this doctor? This action cannot be undone."
         title="Delete Doctor?"
         isLoading={modifyLoading}
+      />
+
+      <ResendInvitationModal
+        isOpen={isResendModalOpen}
+        onClose={() => {
+          setIsResendModalOpen(false);
+          setDoctorToResend(undefined);
+        }}
+        doctorName={doctorToResend?.fullName}
+        doctorId={doctorToResend?.id}
+        onSuccess={() => {
+          refetch(); // Refetch data after resending invitation
+        }}
       />
     </div>
   );

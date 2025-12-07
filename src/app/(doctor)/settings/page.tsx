@@ -135,11 +135,11 @@ const Page = () => {
       .email("Invalid email address")
       .required("Email is required"),
     phoneNo: Yup.string()
+      .required("Phone number is required")
       .matches(
-        /^\+?[1-9]\d{0,15}$/,
-        "Must be a valid phone number (e.g. +1234567890)"
-      )
-      .required("Phone number is required"),
+        /^\(\d{3}\)\s\d{3}-\d{4}$/,
+        "Phone number must be in format (512) 312-3123"
+      ),
     medicalLicense: Yup.string().required("Medical license is required"),
     specialty: Yup.string().required("Specialty is required"),
   });

@@ -31,7 +31,7 @@ interface DoctorOrdersResponse {
   doctorOrders: {
     allData: {
       id: string;
-
+      displayId?: string | number;
       patient: {
         email: string;
         fullName: string;
@@ -293,7 +293,8 @@ function OrderContent() {
               key={order.id}
               order={{
                 id: parseInt(order.id),
-                orderId: order.id,
+                orderId: order.displayId || "---",
+                displayId: order.displayId ? parseInt(order.displayId.toString()) : parseInt(order.id),
                 customer: order.patient.fullName,
 
                 date: format(new Date(order.createdAt), "MM-dd-yy"),

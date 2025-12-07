@@ -28,7 +28,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    phone: "",
+    phoneNo: "",
     dateOfBirth: null as Date | null,
     address: "",
     emergencyName: "",
@@ -56,17 +56,25 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     Yup.object({
       fullName: Yup.string().required("Full name is required"),
       email: Yup.string().email("Invalid email").required("Email is required"),
-      phone: Yup.string().required("Phone number is required"),
-      dateOfBirth: Yup.string().required("Date of Birth is required"),
+      phoneNo: Yup.string()
+        .required("Phone number is required")
+        .matches(
+          /^[\+]?[\d]{10,15}$|^\(\d{3}\)\s\d{3}-\d{4}$|^\d{3}-\d{3}-\d{4}$|^\d{3}\s\d{3}\s\d{4}$/,
+          "Please enter a valid phone number (e.g., 1234567890, (123) 456-7890)"
+        ),
+      dateOfBirth: Yup.date().required("Date of Birth is required"),
       address: Yup.string().required("Address is required"),
     }),
     Yup.object({
       emergencyName: Yup.string().required(
         "Emergency contact name is required"
       ),
-      emergencyPhone: Yup.string().required(
-        "Emergency contact phone is required"
-      ),
+      emergencyPhone: Yup.string()
+        .required("Emergency contact phone is required")
+        .matches(
+          /^[\+]?[\d]{10,15}$|^\(\d{3}\)\s\d{3}-\d{4}$|^\d{3}-\d{3}-\d{4}$|^\d{3}\s\d{3}\s\d{4}$/,
+          "Please enter a valid phone number (e.g., 1234567890, (123) 456-7890)"
+        ),
       medicalHistory: Yup.string().optional(),
       allergies: Yup.string().optional(),
       medications: Yup.string().optional(),
@@ -115,7 +123,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
             variables: {
               fullName: formData.fullName,
               email: formData.email,
-              phoneNo: formData.phone,
+              phoneNo: formData.phoneNo,
               dateOfBirth: formData.dateOfBirth?.toISOString(),
               address: formData.address,
               emergencyContactName: formData.emergencyName,
@@ -144,7 +152,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     setFormData({
       fullName: "",
       email: "",
-      phone: "",
+      phoneNo: "",
       dateOfBirth: new Date(),
       address: "",
       emergencyName: "",
@@ -168,7 +176,8 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     try {
       schemas[step - 1].validateSync(formData, { abortEarly: false });
       return true;
-    } catch {
+    } catch (err: any) {
+      console.log("Validation errors:", err.inner?.map((e: any) => ({ path: e.path, message: e.message })) || err.message);
       return false;
     }
   };
@@ -239,13 +248,13 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                   required
                   label="Phone Number"
                   placeholder="(316) 555-0116"
-                  name="phone"
-                  error={!!errors.phone}
-                  errorMessage={errors.phone}
-                  id="phone"
-                  onChange={(e) => handleChange("phone", e.target.value)}
-                  type="number"
-                  value={formData.phone}
+                  name="phoneNo"
+                  error={!!errors.phoneNo}
+                  errorMessage={errors.phoneNo}
+                  id="phoneNo"
+                  onChange={(e) => handleChange("phoneNo", e.target.value)}
+                  type="tel"
+                  value={formData.phoneNo}
                   className="w-full [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
@@ -357,7 +366,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                   onChange={(e) =>
                     handleChange("emergencyPhone", e.target.value)
                   }
-                  type="number"
+                  type="tel"
                   value={formData.emergencyPhone}
                   className="w-full [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                 />

@@ -21,13 +21,15 @@ import ProductDetails from "@/app/components/ui/modals/ProductDetails";
 import Tooltip from "@/app/components/ui/tooltip";
 import { EmptyState } from "@/app/components";
 import InventorySkeleton from "@/app/components/ui/InventorySkeleton";
-import { useQuery } from "@apollo/client/react";
-import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
+import { useQuery, useMutation } from "@apollo/client/react";
+import { ALL_PRODUCTS_INVENTORY, FETCH_DOCTOR } from "@/lib/graphql/queries";
+import { REQUEST_ORDER } from "@/lib/graphql/mutations";
 import {
   AllProductsResponse,
   Product,
   transformGraphQLProduct,
 } from "@/types/products";
+import { showErrorToast } from "@/lib/toast";
 
 const orderCategories = [
   { label: "All Categories" },
@@ -54,6 +56,14 @@ function InventoryContent() {
   );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+
+  // GraphQL query to fetch doctor data
+  const { data: doctorData } = useQuery(FETCH_DOCTOR, {
+    fetchPolicy: "network-only",
+  });
+
+  // GraphQL mutation for requesting order
+  const [requestOrder] = useMutation(REQUEST_ORDER);
 
   // GraphQL query to fetch products with search and pagination
   const {
@@ -107,13 +117,75 @@ function InventoryContent() {
     router.replace(`?${params.toString()}`);
   };
 
-  const handleConfirmOrder = () => {
-    setIsOrderModalOpen(false);
-    showSuccessToast("Order created successfully!");
+  const handleConfirmOrder = async (reason: string) => {
+    if (!selectedProduct || !doctorData?.fetchUser?.user?.doctor?.id) {
+      showErrorToast(
+        "Please select a product and ensure you have a doctor assigned."
+      );
+      return;
+    }
+
+    try {
+      const doctorId = doctorData.fetchUser.user.doctor.id;
+
+      // Get the product details from GraphQL to get variant information
+      const originalProduct = productsData?.allProducts.allData?.find(
+        (p) => p.id === selectedProduct.originalId
+      );
+
+      if (
+        !originalProduct ||
+        !originalProduct.variants ||
+        originalProduct.variants.length === 0
+      ) {
+        showErrorToast("Product variant information is missing");
+        return;
+      }
+
+      const firstVariant = originalProduct.variants[0];
+      const requestedItems = [
+        {
+          productId: selectedProduct.originalId,
+          variantId: firstVariant.shopifyVariantId || firstVariant.id,
+          quantity: 1,
+          price: firstVariant.price,
+        },
+      ];
+
+      console.log("Requesting order with:", {
+        doctorId,
+        reason,
+        requestedItems,
+      });
+
+      const result = await requestOrder({
+        variables: {
+          doctorId,
+          reason,
+          requestedItems,
+        },
+      });
+
+      console.log("Order request result:", result);
+      setIsOrderModalOpen(false);
+      showSuccessToast("Order request sent successfully!");
+    } catch (error) {
+      console.error("Error in request order:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to send order request. Please try again.";
+      showErrorToast(errorMessage);
+    }
   };
   const handleCardClick = (product: Product) => {
     setSelectedProduct(product);
     setIsProductModalOpen(true);
+  };
+
+  const handleAddToCart = (product: Product) => {
+    setSelectedProduct(product);
+    setIsOrderModalOpen(true);
   };
 
   // Show loading state
@@ -244,7 +316,7 @@ function InventoryContent() {
                 <BrowserProductCard
                   key={product.id}
                   product={product}
-                  onAddToCart={() => setIsOrderModalOpen(true)}
+                  onAddToCart={() => handleAddToCart(product)}
                   onCardClick={handleCardClick}
                 />
               ))}
@@ -269,7 +341,7 @@ function InventoryContent() {
                   key={product.id}
                   product={product}
                   onInfoBtn={handleCardClick}
-                  onAddToCart={() => setIsOrderModalOpen(true)}
+                  onAddToCart={() => handleAddToCart(product)}
                 />
               ))}
             </div>
@@ -322,9 +394,8 @@ function InventoryContent() {
       )}
       <RequestModel
         isOpen={isOrderModalOpen}
-        onConfirm={(reason) => {
-          handleConfirmOrder();
-          console.log(reason);
+        onConfirm={async ({ reason }) => {
+          await handleConfirmOrder(reason);
         }}
         onClose={() => setIsOrderModalOpen(false)}
       />

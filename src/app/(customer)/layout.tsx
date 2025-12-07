@@ -8,7 +8,7 @@ import {
 } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
-import { Header } from "../components";
+import { Header, CustomerRoute } from "../components";
 import { useAppSelector } from "@/lib/store/hooks";
 
 interface AuthLayoutProps {
@@ -89,29 +89,31 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   );
 
   return (
-    <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
-      <div className="px-2 py-3 md:p-4 md:pb-6 lg:p-5 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-[20px] !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
-        <Header menuItems={menuItems} />
+    <CustomerRoute>
+      <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
+        <div className="px-2 py-3 md:p-4 md:pb-6 lg:p-5 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-[20px] !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
+          <Header menuItems={menuItems} />
 
-        <div className="flex items-center flex-col">
-          {pathname.startsWith(menuItems[0].href) && (
-            <h2 className="text-white font-normal mb-3 text-base md:text-2xl">
-              👋 Welcome {user?.fullName}
-            </h2>
-          )}
-          {hideStats && (
-            <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
-              {heading}
-            </h2>
-          )}
-          {showSubHeads && (
-            <h2 className="text-white/80 mt-1 text-base  md:text-xl">
-              {subheading}
-            </h2>
-          )}
+          <div className="flex items-center flex-col">
+            {pathname.startsWith(menuItems[0].href) && (
+              <h2 className="text-white font-normal mb-3 text-base md:text-2xl">
+                👋 Welcome {user?.fullName}
+              </h2>
+            )}
+            {hideStats && (
+              <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
+                {heading}
+              </h2>
+            )}
+            {showSubHeads && (
+              <h2 className="text-white/80 mt-1 text-base  md:text-xl">
+                {subheading}
+              </h2>
+            )}
+          </div>
         </div>
+        <main className="px-3  pb-3">{children}</main>
       </div>
-      <main className="px-3  pb-3">{children}</main>
-    </div>
+    </CustomerRoute>
   );
 }

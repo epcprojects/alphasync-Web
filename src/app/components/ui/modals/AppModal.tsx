@@ -34,6 +34,7 @@ interface AppModalProps {
   scrollNeeded?: boolean;
   hideConfirmButton?: boolean;
   cancelBtnIcon?: React.ReactNode;
+  disableCloseButton?: boolean;
 }
 
 const sizeClasses = {
@@ -67,6 +68,7 @@ const AppModal: React.FC<AppModalProps> = ({
   btnIcon,
   scrollNeeded = true,
   cancelBtnIcon,
+  disableCloseButton = false,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -115,8 +117,13 @@ const AppModal: React.FC<AppModalProps> = ({
             </div>
 
             <button
-              onClick={onClose}
-              className="md:p-1 p-1 hover:bg-gray-200 rounded-md cursor-pointer"
+              onClick={disableCloseButton ? undefined : onClose}
+              disabled={disableCloseButton}
+              className={`md:p-1 p-1 hover:bg-gray-200 rounded-md ${
+                disableCloseButton
+                  ? "cursor-not-allowed opacity-50"
+                  : "cursor-pointer"
+              }`}
             >
               <CrossIcon />
             </button>

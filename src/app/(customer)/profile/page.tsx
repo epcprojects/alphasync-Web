@@ -24,10 +24,10 @@ interface ProfileFormValues {
   fullName: string;
   email: string;
   phoneNo: string;
-  dob: Date;
+  dateOfBirth: Date;
   address: string;
-  ename: string;
-  ephone: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
 }
 
 interface InformationFormValues {
@@ -46,18 +46,22 @@ const Page = () => {
       .email("Invalid email address")
       .required("Email is required"),
     phoneNo: Yup.string()
+      .required("Phone number is required")
       .matches(
-        /^\+?[1-9]\d{0,15}$/,
-        "Must be a valid phone number (e.g. +1234567890)"
-      )
-      .required("Phone number is required"),
-    dob: Yup.string().required("Date of Birth is required"),
+        /^\(\d{3}\)\s\d{3}-\d{4}$/,
+        "Phone number must be in format (512) 312-3123"
+      ),
+    dateOfBirth: Yup.string().required("Date of Birth is required"),
     address: Yup.string().required("Address is required"),
-    ename: Yup.string().required("Emergency Contact Name is required"),
-    ephone: Yup.string().matches(
-      /^\+?[1-9]\d{0,15}$/,
-      "Must be a valid phone number (e.g. +1234567890)"
+    emergencyContactName: Yup.string().required(
+      "Emergency Contact Name is required"
     ),
+    emergencyContactPhone: Yup.string()
+      .required("Phone number is required")
+      .matches(
+        /^\(\d{3}\)\s\d{3}-\d{4}$/,
+        "Phone number must be in format (512) 312-3123"
+      ),
   });
 
   const informationSchema = Yup.object().shape({
@@ -145,16 +149,15 @@ const Page = () => {
   };
 
   const handleProfileSubmit = async (values: ProfileFormValues) => {
-    console.log("Profile form values:", values);
     try {
       const variables = {
         fullName: values.fullName,
         phoneNo: values.phoneNo,
         email: values.email,
-        dateOfBirth: values.dob,
+        dateOfBirth: values.dateOfBirth,
         address: values.address,
-        emergencyContactName: values.ename,
-        emergencyContactPhone: values.ephone,
+        emergencyContactName: values.emergencyContactName,
+        emergencyContactPhone: values.emergencyContactPhone,
         image: selectedImage,
       };
       console.log("Mutation variables:", variables);
@@ -189,10 +192,10 @@ const Page = () => {
         fullName: "",
         email: "",
         phoneNo: "",
-        dob: new Date(),
+        dateOfBirth: new Date(),
         address: "",
-        ename: "",
-        ephone: "",
+        emergencyContactName: "",
+        emergencyContactPhone: "",
         medicalHistory: "",
         knownAllergies: "",
         currentMedications: "",
@@ -204,10 +207,10 @@ const Page = () => {
       fullName: user.fullName || "",
       email: user.email || "",
       phoneNo: user.phoneNo || "",
-      dob: user.dateOfBirth ? new Date(user.dateOfBirth) : new Date(),
+      dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : new Date(),
       address: user.address || "",
-      ename: user.emergencyContactName || "",
-      ephone: user.emergencyContactPhone || "",
+      emergencyContactName: user.emergencyContactName || "",
+      emergencyContactPhone: user.emergencyContactPhone || "",
       medicalHistory: user.medicalHistory || "",
       knownAllergies: user.knownAllergies || "",
       currentMedications: user.currentMedications || "",
@@ -373,15 +376,21 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <DatePicker
-                            name="dob"
+                            name="dateOfBirth"
                             showMonthDropdown
                             showYearDropdown
                             dropdownMode="select"
                             wrapperClassName="w-full"
                             placeholderText="mm/dd/yyyy"
                             toggleCalendarOnIconClick
-                            selected={values.dob ? new Date(values.dob) : null}
-                            onChange={(date) => setFieldValue("dob", date)}
+                            selected={
+                              values.dateOfBirth
+                                ? new Date(values.dateOfBirth)
+                                : null
+                            }
+                            onChange={(date) =>
+                              setFieldValue("dateOfBirth", date)
+                            }
                             className={`border border-lightGray rounded-lg flex px-2 md:px-3 outline-none focus:ring focus:ring-gray-100 
           placeholder:text-gray-600 text-gray-800 items-center !py-3 h-11 !w-full`}
                             maxDate={new Date()}
@@ -418,7 +427,7 @@ const Page = () => {
                             }
                           />
                           <ErrorMessage
-                            name="dob"
+                            name="dateOfBirth"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -460,13 +469,13 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="ename"
-                            name="ename"
-                            value={values.ename}
+                            type="emergencyContactName"
+                            name="emergencyContactName"
+                            value={values.emergencyContactName}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="ename"
+                            name="emergencyContactName"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -484,13 +493,13 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="ephone"
-                            name="ephone"
-                            value={values.ephone}
+                            type="emergencyContactPhone"
+                            name="emergencyContactPhone"
+                            value={values.emergencyContactPhone}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="ephone"
+                            name="emergencyContactPhone"
                             component="div"
                             className="text-red-500 text-xs"
                           />
