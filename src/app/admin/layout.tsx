@@ -1,14 +1,25 @@
 "use client";
 import React, { ReactNode } from "react";
+import { useQuery } from "@apollo/client";
 import { DashboardStats, Header, AdminRoute } from "../components";
 import { OrdersIcon, DashDoctor, PackageIcon } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useAppSelector } from "@/lib/store/hooks";
+import { ADMIN_DASHBOARD } from "@/lib/graphql/queries";
 
 interface AuthLayoutProps {
   children: ReactNode;
+}
+
+interface AdminDashboardResponse {
+  adminDashboard: {
+    totalDoctors: number;
+    activeDoctors: number;
+    inactiveDoctors: number;
+    newDoctorsThisMonth: number;
+  };
 }
 
 const poppins_init = Poppins({
@@ -20,6 +31,11 @@ const poppins_init = Poppins({
 });
 
 const menuItems = [
+  {
+    label: "Dashboard",
+    href: "/admin/dashboard",
+    icon: OrdersIcon,
+  },
   {
     label: "Doctors",
     href: "/admin/doctors",
@@ -34,12 +50,18 @@ const menuItems = [
 ];
 
 const headings: Record<string, string> = {
+  "/admin/dashboard": "Admin Dashboard",
   "/admin/doctors": "Trusted Peptide Solutions",
   "/admin/products": "Product Management",
   "/admin/settings": "Settings",
 };
 
-const noStatsRoutes = ["/admin/settings"];
+const noStatsRoutes = ["/admin/settings", "/admin/dashboard"];
+
+const numberFormatter = new Intl.NumberFormat("en-US");
+
+const formatNumber = (value?: number | null) =>
+  value === null || value === undefined ? "--" : numberFormatter.format(value);
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   const user = useAppSelector((state) => state.auth.user);
@@ -52,6 +74,74 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const hideStats = noStatsRoutes.some((route) => pathname.startsWith(route));
   const isMobile = useIsMobile();
 
+  const {
+    data: dashboardData,
+    loading: dashboardLoading,
+    error: dashboardError,
+  } = useQuery<AdminDashboardResponse>(ADMIN_DASHBOARD, {
+    skip: !user?.id,
+    fetchPolicy: "network-only",
+  });
+
+  if (dashboardError) {
+    console.error("Failed to load admin dashboard stats:", dashboardError);
+  }
+
+  const stats = [
+    {
+      label: "Total Doctors",
+      value: dashboardLoading
+        ? "..."
+        : formatNumber(dashboardData?.adminDashboard?.totalDoctors),
+      icon: (
+        <DashDoctor
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-purple-500",
+    },
+    {
+      label: "Active Doctors",
+      value: dashboardLoading
+        ? "..."
+        : formatNumber(dashboardData?.adminDashboard?.activeDoctors),
+      icon: (
+        <DashDoctor
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-emerald-400",
+    },
+    {
+      label: "Inactive Doctors",
+      value: dashboardLoading
+        ? "..."
+        : formatNumber(dashboardData?.adminDashboard?.inactiveDoctors),
+      icon: (
+        <DashDoctor
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-pink-400",
+    },
+    {
+      label: "New This Month",
+      value: dashboardLoading
+        ? "..."
+        : formatNumber(dashboardData?.adminDashboard?.newDoctorsThisMonth),
+      icon: (
+        <DashDoctor
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-orange-400",
+    },
+  ];
+
   return (
     <AdminRoute>
       <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
@@ -63,60 +153,20 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
               showUserName={pathname.startsWith("/orders") ? false : true}
               username={user?.fullName || "----"}
               heading={heading}
-              stats={[
-                {
-                  label: "Total Doctors",
-                  value: "128",
-                  icon: (
-                    <DashDoctor
-                      height={isMobile ? "16" : "32"}
-                      width={isMobile ? "16" : "32"}
-                    />
-                  ),
-                  bgColor: "bg-purple-500",
-                },
-                {
-                  label: "Active Doctors",
-                  value: "102",
-                  icon: (
-                    <DashDoctor
-                      height={isMobile ? "16" : "32"}
-                      width={isMobile ? "16" : "32"}
-                    />
-                  ),
-                  bgColor: "bg-emerald-400",
-                },
-                {
-                  label: "Inactive Doctors",
-                  value: "26",
-                  icon: (
-                    <DashDoctor
-                      height={isMobile ? "16" : "32"}
-                      width={isMobile ? "16" : "32"}
-                    />
-                  ),
-                  bgColor: "bg-pink-400",
-                },
-                {
-                  label: "New This Month",
-                  value: "08",
-                  icon: (
-                    <DashDoctor
-                      height={isMobile ? "16" : "32"}
-                      width={isMobile ? "16" : "32"}
-                    />
-                  ),
-                  bgColor: "bg-orange-400",
-                },
-              ]}
+              stats={stats}
             />
           )}
           {hideStats && (
             <div className="flex items-center flex-col">
               {hideStats && (
-                <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
-                  {heading}
-                </h2>
+                <>
+                  <h2 className="text-white font-normal text-base md:text-2xl">
+                    👋 Welcome {user?.fullName || "----"},
+                  </h2>
+                  <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
+                    {heading}
+                  </h2>
+                </>
               )}
             </div>
           )}

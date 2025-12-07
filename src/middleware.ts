@@ -6,6 +6,25 @@ export function middleware(request: NextRequest) {
   const userCookie = request.cookies.get("user_data")?.value;
   const { pathname } = request.nextUrl;
 
+  type ParsedUser = {
+    userType?: string;
+    addressVerified?: boolean;
+  };
+
+  let parsedUser: ParsedUser | null = null;
+  let userType: string | null = null;
+  let isAddressVerified = false;
+
+  if (userCookie) {
+    try {
+      parsedUser = JSON.parse(userCookie);
+      userType = parsedUser?.userType?.toLowerCase() || null;
+      isAddressVerified = Boolean(parsedUser?.addressVerified);
+    } catch (err) {
+      console.error("Invalid user cookie:", err);
+    }
+  }
+
   // Public routes (accessible without login)
   const publicRoutes = [
     "/login",
@@ -34,6 +53,8 @@ export function middleware(request: NextRequest) {
     "/order-history",
     "/pending-payments",
     "/profile",
+    "/customer-notifications",
+    "/verify-info",
   ];
 
   // All protected routes
@@ -46,15 +67,11 @@ export function middleware(request: NextRequest) {
 
   // 2️⃣ If token exists and user tries to access public routes (e.g. login)
   if (token && isPublicRoute) {
-    let userType: string | null = null;
-
-    try {
-      if (userCookie) {
-        const parsedUser = JSON.parse(userCookie);
-        userType = parsedUser?.userType?.toLowerCase() || null;
-      }
-    } catch (err) {
-      console.error("Invalid user cookie:", err);
+    if (
+      (userType === "customer" || userType === "patient") &&
+      !isAddressVerified
+    ) {
+      return NextResponse.redirect(new URL("/verify-info", request.url));
     }
 
     // Redirect logged-in user to their dashboard
@@ -71,15 +88,12 @@ export function middleware(request: NextRequest) {
 
   // 3️⃣ Role-based access control for protected routes
   if (token && protectedRoutes.some((route) => pathname.startsWith(route))) {
-    let userType: string | null = null;
-
-    try {
-      if (userCookie) {
-        const parsedUser = JSON.parse(userCookie);
-        userType = parsedUser?.userType?.toLowerCase() || null;
-      }
-    } catch (err) {
-      console.error("Invalid user cookie:", err);
+    if (
+      (userType === "customer" || userType === "patient") &&
+      !isAddressVerified &&
+      !pathname.startsWith("/verify-info")
+    ) {
+      return NextResponse.redirect(new URL("/verify-info", request.url));
     }
 
     // Check if user is trying to access routes they're not authorized for
@@ -151,5 +165,7 @@ export const config = {
     "/order-history/:path*",
     "/pending-payments/:path*",
     "/profile/:path*",
+    "/verify-info",
+    "/customer-notifications",
   ],
 };

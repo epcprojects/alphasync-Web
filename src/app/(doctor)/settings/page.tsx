@@ -16,8 +16,15 @@ import {
   SecurityLock,
   UserIcon,
 } from "@/icons";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import React, { useState } from "react";
+import {
+  Switch,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+} from "@headlessui/react";
+import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
 import { useMutation, useQuery } from "@apollo/client";
@@ -31,6 +38,7 @@ import {
   SMS_NOTIFICATION_SETTINGS,
   ORDER_UPDATES_NOTIFICATION_SETTINGS,
   LOW_STOCK_ALERTS_NOTIFICATION_SETTINGS,
+  DISABLE_2FA,
 } from "@/lib/graphql/mutations";
 import { FETCH_NOTIFICATION_SETTINGS } from "@/lib/graphql/queries";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
@@ -40,6 +48,7 @@ const Page = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [isTwoFaEnabled, setIsTwoFaEnabled] = useState(!!user?.twoFaEnabled);
   const [toggles, setToggles] = useState({
     email: true,
     sms: false,
@@ -48,6 +57,10 @@ const Page = () => {
   });
 
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    setIsTwoFaEnabled(!!user?.twoFaEnabled);
+  }, [user?.twoFaEnabled]);
 
   // Fetch notification settings
   const { loading: notificationLoading } = useQuery(
@@ -186,6 +199,9 @@ const Page = () => {
 
   const INITIAL_AVATAR = "/images/arinaProfile.png";
 
+  const [toggleTwoFactor, { loading: twoFaUpdating }] =
+    useMutation(DISABLE_2FA);
+
   const handleImageRemove = async () => {
     try {
       await removeImage({
@@ -196,6 +212,39 @@ const Page = () => {
       });
     } catch (error) {
       console.error("Error removing image:", error);
+    }
+  };
+
+  const handleTwoFaToggle = async (value: boolean) => {
+    const previousValue = isTwoFaEnabled;
+    setIsTwoFaEnabled(value);
+
+    try {
+      const { data } = await toggleTwoFactor({
+        variables: {
+          twoFaEnabled: value,
+        },
+      });
+
+      if (data?.updateUser?.user) {
+        dispatch(setUser(data.updateUser.user));
+        Cookies.set("user_data", JSON.stringify(data.updateUser.user), {
+          expires: 7,
+        });
+      }
+
+      showSuccessToast(
+        value
+          ? "Two-factor authentication enabled"
+          : "Two-factor authentication disabled"
+      );
+    } catch (error) {
+      setIsTwoFaEnabled(previousValue);
+      showErrorToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to update two-factor authentication"
+      );
     }
   };
 
@@ -494,13 +543,26 @@ const Page = () => {
                       </p>
                     </div>
 
-                    <div className="flex">
-                      <ThemeButton
-                        variant="outline"
-                        label="Configure"
-                        onClick={() => {}}
-                        className="w-full md:w-fit"
-                      />
+                    <div className="flex flex-col items-center gap-1">
+                      <Switch
+                        checked={isTwoFaEnabled}
+                        onChange={handleTwoFaToggle}
+                        disabled={twoFaUpdating}
+                        className={`group inline-flex h-7 w-14 items-center rounded-full bg-gray-200 transition data-checked:bg-gradient-to-r data-checked:from-[#3C85F5] data-checked:to-[#1A407A] ${
+                          twoFaUpdating
+                            ? "opacity-60 cursor-not-allowed"
+                            : "cursor-pointer"
+                        }`}
+                      >
+                        <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-8" />
+                      </Switch>
+                      <p className="text-xs text-gray-600">
+                        {twoFaUpdating
+                          ? "Updating..."
+                          : isTwoFaEnabled
+                          ? "Enabled"
+                          : "Disabled"}
+                      </p>
                     </div>
                   </div>
                 </div>

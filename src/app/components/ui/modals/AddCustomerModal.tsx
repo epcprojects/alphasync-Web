@@ -31,6 +31,12 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     phoneNo: "",
     dateOfBirth: null as Date | null,
     address: "",
+    street1: "",
+    street2: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "",
     emergencyName: "",
     emergencyPhone: "",
     medicalHistory: "",
@@ -40,6 +46,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
 
   const [createInvitation, { loading, error }] = useMutation(CREATE_CUSTOMER, {
     onCompleted: (data) => {
@@ -59,11 +66,17 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       phoneNo: Yup.string()
         .required("Phone number is required")
         .matches(
-          /^[\+]?[\d]{10,15}$|^\(\d{3}\)\s\d{3}-\d{4}$|^\d{3}-\d{3}-\d{4}$|^\d{3}\s\d{3}\s\d{4}$/,
-          "Please enter a valid phone number (e.g., 1234567890, (123) 456-7890)"
+          /^\(\d{3}\)\s\d{3}-\d{4}$/,
+          "Please enter a valid phone number in format (316) 555-0116"
         ),
       dateOfBirth: Yup.date().required("Date of Birth is required"),
-      address: Yup.string().required("Address is required"),
+      address: Yup.string().optional(),
+      street1: Yup.string().required("Street address is required"),
+      street2: Yup.string().optional(),
+      city: Yup.string().required("City is required"),
+      state: Yup.string().required("State is required"),
+      postalCode: Yup.string().required("Postal code is required"),
+      country: Yup.string().required("Country is required"),
     }),
     Yup.object({
       emergencyName: Yup.string().required(
@@ -72,8 +85,8 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       emergencyPhone: Yup.string()
         .required("Emergency contact phone is required")
         .matches(
-          /^[\+]?[\d]{10,15}$|^\(\d{3}\)\s\d{3}-\d{4}$|^\d{3}-\d{3}-\d{4}$|^\d{3}\s\d{3}\s\d{4}$/,
-          "Please enter a valid phone number (e.g., 1234567890, (123) 456-7890)"
+          /^\(\d{3}\)\s\d{3}-\d{4}$/,
+          "Please enter a valid phone number in format (316) 555-0116"
         ),
       medicalHistory: Yup.string().optional(),
       allergies: Yup.string().optional(),
@@ -84,8 +97,39 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     }),
   ];
 
+  // Format phone number to (XXX) XXX-XXXX format
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-digit characters
+    const numbers = value.replace(/\D/g, "");
+
+    // Limit to 10 digits
+    const limitedNumbers = numbers.slice(0, 10);
+
+    // Format based on length
+    if (limitedNumbers.length === 0) return "";
+    if (limitedNumbers.length <= 3) return `(${limitedNumbers}`;
+    if (limitedNumbers.length <= 6) {
+      return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(3)}`;
+    }
+    return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(
+      3,
+      6
+    )}-${limitedNumbers.slice(6)}`;
+  };
+
   const handleChange = (field: string, value: string | Date | null) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Auto-format phone numbers
+    if (
+      (field === "phoneNo" || field === "emergencyPhone") &&
+      typeof value === "string"
+    ) {
+      const formatted = formatPhoneNumber(value);
+      setFormData((prev) => ({ ...prev, [field]: formatted }));
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
+    // Mark field as touched when user interacts with it
+    setTouchedFields((prev) => new Set(prev).add(field));
   };
 
   const validateStep = async () => {
@@ -95,10 +139,25 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       return true;
     } catch (err: any) {
       const newErrors: Record<string, string> = {};
+      const fieldsToTouch = new Set<string>();
       err.inner.forEach((e: any) => {
-        if (e.path) newErrors[e.path] = e.message;
+        if (e.path) {
+          newErrors[e.path] = e.message;
+          fieldsToTouch.add(e.path);
+        }
       });
-      setErrors(newErrors);
+      // Mark all fields with errors as touched first, then set errors
+      // This ensures errors are displayed immediately
+      setTouchedFields((prev) => {
+        const updated = new Set(prev);
+        fieldsToTouch.forEach((field) => updated.add(field));
+        return updated;
+      });
+      // Set errors immediately - this will trigger a re-render and show errors
+      setErrors((prevErrors) => {
+        // Merge with existing errors to ensure all validation errors are shown
+        return { ...prevErrors, ...newErrors };
+      });
       return false;
     }
   };
@@ -125,7 +184,13 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               email: formData.email,
               phoneNo: formData.phoneNo,
               dateOfBirth: formData.dateOfBirth?.toISOString(),
-              address: formData.address,
+              address: formData.address || null,
+              street1: formData.street1 || null,
+              street2: formData.street2 || null,
+              city: formData.city || null,
+              state: formData.state || null,
+              postalCode: formData.postalCode || null,
+              country: formData.country || null,
               emergencyContactName: formData.emergencyName,
               emergencyContactPhone: formData.emergencyPhone,
               medicalHistory: formData.medicalHistory || null,
@@ -153,8 +218,14 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       fullName: "",
       email: "",
       phoneNo: "",
-      dateOfBirth: new Date(),
+      dateOfBirth: null,
       address: "",
+      street1: "",
+      street2: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "",
       emergencyName: "",
       emergencyPhone: "",
       medicalHistory: "",
@@ -162,25 +233,81 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       medications: "",
       notes: "",
     });
+    setSelectedDate(null);
   };
 
   useEffect(() => {
     if (!isOpen) {
       resetForm();
       setErrors({});
+      setTouchedFields(new Set());
       setStep(1);
     }
   }, [isOpen]);
 
-  const isStepValid = () => {
+  // Clear errors when step changes (user navigates back)
+  useEffect(() => {
+    if (isOpen) {
+      setErrors({});
+    }
+  }, [step, isOpen]);
+
+  // Validate and show errors on form data changes (only for touched fields)
+  useEffect(() => {
+    if (!isOpen) return;
+
     try {
       schemas[step - 1].validateSync(formData, { abortEarly: false });
-      return true;
+      // Clear all errors for the current step when validation passes
+      setErrors((prevErrors) => {
+        const updatedErrors = { ...prevErrors };
+        // Get all field names for the current step schema
+        const stepFields = Object.keys(schemas[step - 1].fields || {});
+        // Clear errors for all fields in the current step
+        stepFields.forEach((field) => {
+          delete updatedErrors[field];
+        });
+        return updatedErrors;
+      });
     } catch (err: any) {
-      console.log("Validation errors:", err.inner?.map((e: any) => ({ path: e.path, message: e.message })) || err.message);
-      return false;
+      // Set errors when validation fails, but only for touched fields
+      const newErrors: Record<string, string> = {};
+      const fieldsWithErrors = new Set<string>();
+
+      if (err.inner) {
+        err.inner.forEach((e: any) => {
+          // Show error if field has been touched
+          if (e.path && touchedFields.has(e.path)) {
+            newErrors[e.path] = e.message;
+            fieldsWithErrors.add(e.path);
+          }
+        });
+      }
+
+      // Update errors: add new errors, remove errors for fields that are now valid
+      setErrors((prevErrors) => {
+        const updatedErrors = { ...prevErrors };
+
+        // Get all field names for the current step schema
+        const stepFields = Object.keys(schemas[step - 1].fields || {});
+
+        // Remove errors for fields that are touched but no longer have errors
+        stepFields.forEach((field) => {
+          if (touchedFields.has(field) && !fieldsWithErrors.has(field)) {
+            delete updatedErrors[field];
+          }
+        });
+
+        // Add/update errors for fields with validation errors
+        Object.keys(newErrors).forEach((field) => {
+          updatedErrors[field] = newErrors[field];
+        });
+
+        return updatedErrors;
+      });
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData, step, isOpen, touchedFields]);
 
   return (
     <AppModal
@@ -200,7 +327,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       outSideClickClose={false}
       onCancel={handleCancel}
       cancelLabel={step === 1 ? "Cancel" : "Back"}
-      confimBtnDisable={!isStepValid() || loading}
+      confimBtnDisable={loading}
     >
       <div className="flex flex-col gap-8">
         <Stepper activeStep={step} steps={steps} />
@@ -275,9 +402,19 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                   setSelectedDate(date);
                   handleChange("dateOfBirth", date);
                 }}
+                onFocus={() => {
+                  // Mark field as touched when user focuses on the DatePicker
+                  setTouchedFields((prev) => new Set(prev).add("dateOfBirth"));
+                }}
+                onCalendarOpen={() => {
+                  // Mark field as touched when user opens the calendar
+                  setTouchedFields((prev) => new Set(prev).add("dateOfBirth"));
+                }}
                 className={`border ${
-                  errors.dateOfBirth ? "border-red-500" : "border-lightGray"
-                } rounded-lg flex px-2 md:px-3 outline-none focus:ring focus:ring-gray-100 
+                  errors.dateOfBirth
+                    ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200 bg-red-50"
+                    : "border-lightGray focus:ring focus:ring-gray-100"
+                } rounded-lg flex px-2 md:px-3 outline-none 
        placeholder:text-gray-600 text-gray-800 items-center !py-3 h-11 !w-full`}
                 maxDate={new Date()}
                 minDate={new Date(1900, 0, 1)}
@@ -321,16 +458,91 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
 
             <ThemeInput
               required
-              label="Address"
-              placeholder="Enter complete address"
-              name="address"
-              error={!!errors.address}
-              errorMessage={errors.address}
-              id="address"
-              onChange={(e) => handleChange("address", e.target.value)}
+              label="Street Address"
+              placeholder="Enter street address"
+              name="street1"
+              error={!!errors.street1}
+              errorMessage={errors.street1}
+              id="street1"
+              onChange={(e) => handleChange("street1", e.target.value)}
               type="text"
-              value={formData.address}
+              value={formData.street1}
             />
+            <ThemeInput
+              label="Street Address 2 (Optional)"
+              placeholder="Apartment, suite, etc. (optional)"
+              name="street2"
+              error={!!errors.street2}
+              errorMessage={errors.street2}
+              id="street2"
+              onChange={(e) => handleChange("street2", e.target.value)}
+              type="text"
+              value={formData.street2}
+            />
+            <div className="flex items-center gap-3 md:gap-5 w-full">
+              <div className="w-full">
+                <ThemeInput
+                  required
+                  label="City"
+                  placeholder="Enter city"
+                  name="city"
+                  error={!!errors.city}
+                  errorMessage={errors.city}
+                  id="city"
+                  onChange={(e) => handleChange("city", e.target.value)}
+                  type="text"
+                  value={formData.city}
+                  className="w-full"
+                />
+              </div>
+              <div className="w-full">
+                <ThemeInput
+                  required
+                  label="State"
+                  placeholder="Enter state"
+                  name="state"
+                  error={!!errors.state}
+                  errorMessage={errors.state}
+                  id="state"
+                  onChange={(e) => handleChange("state", e.target.value)}
+                  type="text"
+                  value={formData.state}
+                  className="w-full"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 md:gap-5 w-full">
+              <div className="w-full">
+                <ThemeInput
+                  required
+                  label="Postal Code"
+                  placeholder="Enter postal code"
+                  name="postalCode"
+                  error={!!errors.postalCode}
+                  errorMessage={errors.postalCode}
+                  id="postalCode"
+                  onChange={(e) => handleChange("postalCode", e.target.value)}
+                  type="text"
+                  value={formData.postalCode}
+                  className="w-full"
+                />
+              </div>
+              <div className="w-full">
+                <ThemeInput
+                  required
+                  label="Country"
+                  placeholder="Enter country"
+                  name="country"
+                  error={!!errors.country}
+                  errorMessage={errors.country}
+                  id="country"
+                  onChange={(e) => handleChange("country", e.target.value)}
+                  type="text"
+                  value={formData.country}
+                  className="w-full"
+                />
+              </div>
+            </div>
           </div>
         )}
 
