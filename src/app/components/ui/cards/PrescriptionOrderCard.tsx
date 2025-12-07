@@ -42,6 +42,7 @@ interface PrescriptionOrderCardProps {
   btnTitle: string;
   icon: React.ReactNode;
   type: pageVarient;
+  btnDisabled?: boolean;
 }
 
 const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
@@ -52,12 +53,13 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   btnTitle,
   icon,
   type = "order",
+  btnDisabled,
 }) => {
   const getOrderTags = (status?: string) => {
     switch (status) {
       case "Due Today":
         return "bg-red-50 border border-red-200 text-red-700";
-      case "Processing":
+      case "pending_payment":
         return "bg-amber-50 border border-amber-200 text-amber-700";
       case "Ready for Pickup":
         return "bg-blue-50 border border-blue-200 text-blue-700";
@@ -65,10 +67,6 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
         return "bg-green-50 border border-green-200 text-green-700";
     }
   };
-
-  {
-    console.log("hello", orders);
-  }
 
   return (
     <div className="flex flex-col gap-4 cursor-pointer">
@@ -84,11 +82,13 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               {order.displayId}
             </h2>
             <span
-              className={`${getOrderTags(
-                type === "order" ? order.status : order.isDueToday
+              className={` capitalize ${getOrderTags(
+                order.status
               )} px-3 py-0.5 rounded-full text-sm font-medium whitespace-nowrap`}
             >
-              {type === "order" ? order.status : order.isDueToday}
+              {order.status === "pending_payment"
+                ? "Pending Payment"
+                : order.status}
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-8 mt-4 md:mt-0 mb-2">
@@ -179,6 +179,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               <ThemeButton
                 variant="outline"
                 label={btnTitle}
+                disabled={btnDisabled}
                 onClick={(e) => {
                   e.stopPropagation();
                   onPay?.(order);

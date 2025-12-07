@@ -18,7 +18,7 @@ import {
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
-import React, { Suspense, useState, useEffect, useCallback } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
 import { useQuery, useMutation } from "@apollo/client/react";
@@ -90,8 +90,8 @@ function InventoryContent() {
   const pageCount = productsData?.allProducts.totalPages || 1;
 
   // Apply only favorites filtering on the frontend (search is handled by backend)
-  const displayProducts = showFavourites 
-    ? products.filter((p) => p.isFavourite) 
+  const displayProducts = showFavourites
+    ? products.filter((p) => p.isFavourite)
     : products;
 
   const handlePageChange = (selectedPage: number) => {
@@ -136,6 +136,10 @@ function InventoryContent() {
     }
 
     try {
+      // Check if price has been changed from original
+      const originalPrice = selectedProduct?.price || 0;
+      const useCustomPricing = data.price !== originalPrice;
+
       // Create order with single item
       await createOrder({
         variables: {
@@ -149,6 +153,7 @@ function InventoryContent() {
           ],
           totalPrice: data.price,
           patientId: data.customerId,
+          useCustomPricing: useCustomPricing,
         },
       });
 
@@ -262,14 +267,14 @@ function InventoryContent() {
         </div>
       </div>
       {productsLoading && !isRefetchingFavorites ? (
-        <InventorySkeleton />
+        <InventorySkeleton viewMode={showGridView ? "grid" : "list"} />
       ) : (
         <div className="flex flex-col gap-2 md:gap-6">
           {showGridView ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
               {displayProducts.map((product) => (
                 <ProductCard
-                  key={product.id}
+                  key={product.originalId}
                   product={product}
                   onAddToCart={(id) => {
                     // Find the transformed product to get the originalId
@@ -328,7 +333,7 @@ function InventoryContent() {
                   onRowClick={() =>
                     router.push(`/inventory/${product.originalId}`)
                   }
-                  key={product.id}
+                  key={product.originalId}
                   product={product}
                   onToggleFavourite={(id) => {
                     // Find the transformed product to get the originalId
@@ -377,7 +382,9 @@ function InventoryContent() {
               <Pagination
                 currentPage={currentPage - 1} // Convert 1-based to 0-based for pagination component
                 totalPages={pageCount}
-                onPageChange={(selectedPage) => handlePageChange(selectedPage + 1)} // Convert 0-based back to 1-based
+                onPageChange={(selectedPage) =>
+                  handlePageChange(selectedPage + 1)
+                } // Convert 0-based back to 1-based
               />
             )}
           </div>
