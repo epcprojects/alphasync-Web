@@ -1,9 +1,13 @@
 "use client";
-import { PrescriptionRequestCard, Loader } from "@/app/components";
+import {
+  PrescriptionRequestCard,
+  Loader,
+  EmptyState,
+  RequestListSkeleton,
+} from "@/app/components";
 import AddNoteModal from "@/app/components/ui/modals/AddNoteModal";
 import { RequestFilledIcon, SearchIcon } from "@/icons";
 import Pagination from "@/app/components/ui/Pagination";
-import { showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import React, { useState, Suspense, useEffect } from "react";
 import RequestDetails, {
@@ -14,9 +18,11 @@ import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
 import CustomerOrderSummary from "@/app/components/ui/modals/CustomerOrderSummary";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import ChatWithPhysician from "@/app/components/ui/modals/CharWithPyhsicianModel";
-import { useQuery } from "@apollo/client";
-import { ALL_ORDER_REQUESTS } from "@/lib/graphql/queries";
+import { useMutation, useQuery } from "@apollo/client";
+import { ALL_ORDER_REQUESTS, FETCH_NOTES } from "@/lib/graphql/queries";
 import { OrderRequestAttributes } from "@/lib/graphql/attributes";
+import { CREATE_NOTE } from "@/lib/graphql/mutations";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 interface OrderRequestsResponse {
   allOrderRequests: {
@@ -31,6 +37,11 @@ interface OrderRequestsResponse {
 function CustomerRequestContent() {
   const [search, setSearch] = useState("");
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [noteTargetRequest, setNoteTargetRequest] = useState<{
+    originalId: string | number | null | undefined;
+    displayId?: string | null;
+    title?: string;
+  } | null>(null);
   const [isDetailModelOpen, setIsDetailModelOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<requestDetails | null>(
     null
@@ -71,6 +82,7 @@ function CustomerRequestContent() {
     data: orderRequestsData,
     loading: orderRequestsLoading,
     error: orderRequestsError,
+    refetch: refetchOrderRequests,
   } = useQuery<OrderRequestsResponse>(ALL_ORDER_REQUESTS, {
     variables: {
       search: search || undefined,
@@ -82,9 +94,11 @@ function CustomerRequestContent() {
     notifyOnNetworkStatusChange: true,
   });
 
+  const [createNote, { loading: isCreatingNote }] = useMutation(CREATE_NOTE);
+
   // Transform GraphQL data to match the card format
   const transformedRequests =
-    orderRequestsData?.allOrderRequests.allData?.map((request) => {
+    orderRequestsData?.allOrderRequests.allData?.map((request, index) => {
       // Normalize status to match component expectations
       const normalizeStatus = (status: string | undefined) => {
         if (!status) return "Pending Review";
@@ -99,11 +113,23 @@ function CustomerRequestContent() {
       const firstItem = request.requestedItems?.[0];
       const productInfo = firstItem?.product;
 
+      // Generate a unique ID - use original ID if valid, otherwise use displayId or index
+      const getUniqueId = () => {
+        if (request.id !== null && request.id !== undefined) {
+          const parsed =
+            typeof request.id === "number"
+              ? request.id
+              : parseInt(String(request.id), 10);
+          if (!isNaN(parsed)) return parsed;
+        }
+        if (request.displayId) {
+          return `display-${request.displayId}-${index}`;
+        }
+        return `request-${index}`;
+      };
+
       return {
-        id:
-          typeof request.id === "number"
-            ? request.id
-            : parseInt(String(request.id || 1)),
+        id: getUniqueId(),
         title: productInfo?.title || firstItem?.title || "Requested Item",
         subtitle: "",
         description: productInfo?.description || firstItem?.title || "",
@@ -119,9 +145,9 @@ function CustomerRequestContent() {
           "Dr. " +
           (request.doctor?.fullName || request.patient?.fullName || "Unknown"),
         price: `$${firstItem?.price || 0}`,
-        userNotes: "",
+        userNotes: request.notes || [],
         physicianNotes: request.doctorMessage || "",
-        denialReason: request.reason || "",
+        customerReason: request.reason || "",
         category: productInfo?.productType || "",
         imageSrc: "/images/fallbackImages/medicine-syrup.svg",
         originalId: request.id,
@@ -129,6 +155,9 @@ function CustomerRequestContent() {
         doctorId: request.doctor?.id ? String(request.doctor.id) : "",
       };
     }) || [];
+
+  const showEmptyState =
+    !orderRequestsLoading && transformedRequests.length < 1;
 
   const handleApprove = (title: string) => {
     showSuccessToast("Patient request approved successfully.");
@@ -139,9 +168,13 @@ function CustomerRequestContent() {
     console.log(title);
   };
 
-  const handleAddNote = (title: string) => {
+  const handleAddNote = (request: {
+    originalId: string | number | null | undefined;
+    displayId?: string | null;
+    title?: string;
+  }) => {
+    setNoteTargetRequest(request);
     setIsNoteModalOpen(true);
-    console.log(title);
   };
 
   const handleRequests = (request: requestDetails) => {
@@ -167,27 +200,20 @@ function CustomerRequestContent() {
 
   const isMobile = useIsMobile();
 
-  // Show loader while fetching data
-  if (orderRequestsLoading) {
-    return (
-      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
-        <Loader />
-      </div>
-    );
-  }
-
   // Show error message if query fails
   if (orderRequestsError) {
     return (
       <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
         <div className="text-red-600 text-center">
-          {orderRequestsError.message}
+          Due to some technical issues, we are unable to fetch the requests.
+          Please try again later.
         </div>
       </div>
     );
   }
 
   const requestCount = orderRequestsData?.allOrderRequests.dataCount || 0;
+  const showSkeleton = orderRequestsLoading;
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -249,94 +275,118 @@ function CustomerRequestContent() {
           </TabList>
           <TabPanels>
             <TabPanel>
-              {transformedRequests.map((item) => (
-                <PrescriptionRequestCard
-                  key={item.id}
-                  cardVarient="Customer"
-                  onApprove={() => handleApprove(item.title)}
-                  onReject={() => handleReject(item.title)}
-                  onAddNote={() => handleAddNote(item.title)}
-                  onViewDetails={() => handleRequests(item)}
-                  onChat={() => {
-                    setSelectedChatInfo({
-                      doctorId: item.doctorId || "",
-                      doctorName: item.doctorName || "Physician",
-                      requestDisplayId: item.displayId || "",
-                    });
-                    setIsChatModel(true);
-                  }}
-                  onPayment={() => {
-                    handlePayment(item);
-                  }}
-                  {...item}
-                />
-              ))}
+              {showSkeleton ? (
+                <RequestListSkeleton />
+              ) : showEmptyState ? (
+                <EmptyState />
+              ) : (
+                transformedRequests.map((item) => (
+                  <PrescriptionRequestCard
+                    key={item.id}
+                    cardVarient="Customer"
+                    onApprove={() => handleApprove(item.title)}
+                    onReject={() => handleReject(item.title)}
+                    onAddNote={() => handleAddNote(item)}
+                    onViewDetails={() => handleRequests(item)}
+                    onChat={() => {
+                      setSelectedChatInfo({
+                        doctorId: item.doctorId || "",
+                        doctorName: item.doctorName || "Physician",
+                        requestDisplayId: item.displayId || "",
+                      });
+                      setIsChatModel(true);
+                    }}
+                    onPayment={() => {
+                      handlePayment(item);
+                    }}
+                    {...item}
+                  />
+                ))
+              )}
             </TabPanel>
 
             <TabPanel>
-              {transformedRequests.map((item) => (
-                <PrescriptionRequestCard
-                  key={item.id}
-                  cardVarient="Customer"
-                  onApprove={() => handleApprove(item.title)}
-                  onReject={() => handleReject(item.title)}
-                  onAddNote={() => handleAddNote(item.title)}
-                  onViewDetails={() => handleRequests(item)}
-                  onChat={() => {
-                    setSelectedChatInfo({
-                      doctorId: item.doctorId || "",
-                      doctorName: item.doctorName || "Physician",
-                      requestDisplayId: item.displayId || "",
-                    });
-                    setIsChatModel(true);
-                  }}
-                  onPayment={() => {
-                    handlePayment(item);
-                  }}
-                  {...item}
-                />
-              ))}
+              {showSkeleton ? (
+                <RequestListSkeleton />
+              ) : showEmptyState ? (
+                <EmptyState />
+              ) : (
+                transformedRequests.map((item) => (
+                  <PrescriptionRequestCard
+                    key={item.id}
+                    cardVarient="Customer"
+                    onApprove={() => handleApprove(item.title)}
+                    onReject={() => handleReject(item.title)}
+                    onAddNote={() => handleAddNote(item)}
+                    onViewDetails={() => handleRequests(item)}
+                    onChat={() => {
+                      setSelectedChatInfo({
+                        doctorId: item.doctorId || "",
+                        doctorName: item.doctorName || "Physician",
+                        requestDisplayId: item.displayId || "",
+                      });
+                      setIsChatModel(true);
+                    }}
+                    onPayment={() => {
+                      handlePayment(item);
+                    }}
+                    {...item}
+                  />
+                ))
+              )}
             </TabPanel>
 
             <TabPanel>
-              {transformedRequests.map((item) => (
-                <PrescriptionRequestCard
-                  key={item.id}
-                  cardVarient="Customer"
-                  onApprove={() => handleApprove(item.title)}
-                  onReject={() => handleReject(item.title)}
-                  onAddNote={() => handleAddNote(item.title)}
-                  onViewDetails={() => handleRequests(item)}
-                  onPayment={() => {
-                    handlePayment(item);
-                  }}
-                  {...item}
-                />
-              ))}
+              {showSkeleton ? (
+                <RequestListSkeleton />
+              ) : showEmptyState ? (
+                <EmptyState />
+              ) : (
+                transformedRequests.map((item) => (
+                  <PrescriptionRequestCard
+                    key={item.id}
+                    cardVarient="Customer"
+                    onApprove={() => handleApprove(item.title)}
+                    onReject={() => handleReject(item.title)}
+                    onAddNote={() => handleAddNote(item)}
+                    onViewDetails={() => handleRequests(item)}
+                    onPayment={() => {
+                      handlePayment(item);
+                    }}
+                    {...item}
+                  />
+                ))
+              )}
             </TabPanel>
 
             <TabPanel>
-              {transformedRequests.map((item) => (
-                <PrescriptionRequestCard
-                  key={item.id}
-                  cardVarient="Customer"
-                  onApprove={() => handleApprove(item.title)}
-                  onReject={() => handleReject(item.title)}
-                  onAddNote={() => handleAddNote(item.title)}
-                  onViewDetails={() => handleRequests(item)}
-                  {...item}
-                  onPayment={() => {
-                    handlePayment(item);
-                  }}
-                />
-              ))}
+              {showSkeleton ? (
+                <RequestListSkeleton />
+              ) : showEmptyState ? (
+                <EmptyState />
+              ) : (
+                transformedRequests.map((item) => (
+                  <PrescriptionRequestCard
+                    key={item.id}
+                    cardVarient="Customer"
+                    onApprove={() => handleApprove(item.title)}
+                    onReject={() => handleReject(item.title)}
+                    onAddNote={() => handleAddNote(item)}
+                    onViewDetails={() => handleRequests(item)}
+                    {...item}
+                    onPayment={() => {
+                      handlePayment(item);
+                    }}
+                  />
+                ))
+              )}
             </TabPanel>
           </TabPanels>
         </TabGroup>
       </div>
 
       {/* Pagination */}
-      {transformedRequests.length > 0 && pageCount > 1 && (
+      {!showSkeleton && transformedRequests.length > 0 && pageCount > 1 && (
         <div className="flex justify-center flex-col gap-2 md:gap-6">
           <Pagination
             currentPage={currentPage}
@@ -415,7 +465,7 @@ function CustomerRequestContent() {
         isOpen={isSummaryModel}
         onClose={() => setIsSummaryModel(false)}
         order={{
-          orderNumber: "123456",
+          displayId: "123456",
           orderedOn: "8/8/2025",
           doctorName: "Dr. Arina Baker",
           totalPrice: 120,
@@ -432,12 +482,39 @@ function CustomerRequestContent() {
       />
       <AddNoteModal
         isOpen={isNoteModalOpen}
-        onClose={() => setIsNoteModalOpen(false)}
-        onConfirm={(note) => {
-          showSuccessToast("Note added Successfully.");
-          console.log(note);
+        onClose={() => {
+          setIsNoteModalOpen(false);
+          setNoteTargetRequest(null);
         }}
-        itemTitle="ORD-004"
+        onConfirm={async ({ note }) => {
+          if (!noteTargetRequest?.originalId) {
+            showErrorToast("Unable to determine the selected request.");
+            throw new Error("Missing notable ID");
+          }
+
+          try {
+            await createNote({
+              variables: {
+                notableId: String(noteTargetRequest.originalId),
+                notableType: "ORDER_REQUEST",
+                content: note,
+              },
+            });
+            showSuccessToast("Note added successfully.");
+            setIsNoteModalOpen(false);
+            setNoteTargetRequest(null);
+            refetchOrderRequests();
+          } catch (error) {
+            console.error("Error creating note:", error);
+            showErrorToast("Failed to add note. Please try again.");
+            throw error;
+          }
+        }}
+        itemTitle={
+          noteTargetRequest?.displayId || noteTargetRequest?.title || ""
+        }
+        isSubmitting={isCreatingNote}
+        disableAutoClose
       />
     </div>
   );

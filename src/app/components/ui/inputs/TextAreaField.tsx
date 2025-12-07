@@ -8,6 +8,7 @@ interface TextAreaFieldProps {
   placeholder?: string;
   required?: boolean;
   heightClasses?: string;
+  disabled?: boolean;
 }
 
 const TextAreaField: React.FC<TextAreaFieldProps> = ({
@@ -18,6 +19,7 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
   name,
   required = false,
   heightClasses = "min-h-32 max-h-44",
+  disabled = false,
 }) => {
   return (
     <div>
@@ -29,6 +31,7 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
         name={name}
         onChange={onChange}
         placeholder={placeholder}
+        disabled={disabled}
         className={`${heightClasses} w-full focus:ring p-2 md:px-3 md:py-2.5  border rounded-lg outline-none text-gray-900 placeholder:text-gravel border-lightGray focus:ring-gray-200`}
       ></textarea>
     </div>

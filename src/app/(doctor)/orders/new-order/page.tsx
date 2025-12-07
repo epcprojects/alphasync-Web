@@ -18,6 +18,7 @@ interface OrderItem {
   variantId: string;
   quantity: number;
   price: number;
+  originalPrice: number;
 }
 
 const Page = () => {
@@ -62,12 +63,15 @@ const Page = () => {
     // lock on first item
     if (!lockedCustomer) setLockedCustomer(values.customer);
 
+    const originalPrice = selectedProductData?.price || values.price;
+
     const newItem: OrderItem = {
       product: values.product,
       productId: selectedProductData?.productId || "",
       variantId: selectedProductData?.variantId || "",
       quantity: values.quantity,
       price: values.price,
+      originalPrice: originalPrice,
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -110,18 +114,17 @@ const Page = () => {
         price: item.price,
       }));
 
-      console.log("Creating order with items:", orderItemsInput);
-      console.log("Mutation variables:", {
-        orderItems: orderItemsInput,
-        totalPrice: totalAmount,
-        patientId: selectedCustomerData.id,
-      });
+      // Check if any product price has been changed from original
+      const useCustomPricing = orderItems.some(
+        (item) => item.price !== item.originalPrice
+      );
 
       await createOrder({
         variables: {
           orderItems: orderItemsInput,
           totalPrice: totalAmount,
           patientId: selectedCustomerData.id,
+          useCustomPricing: useCustomPricing,
         },
       });
 
@@ -188,9 +191,7 @@ const Page = () => {
                     touched={touched.customer}
                     disabled={!!lockedCustomer}
                     placeholder={
-                      lockedCustomer
-                        ? "Customer locked"
-                        : "Select a customer"
+                      lockedCustomer ? "Customer locked" : "Select a customer"
                     }
                     required={true}
                     showLabel={true}
@@ -204,7 +205,9 @@ const Page = () => {
                 <div>
                   <ProductSelect
                     selectedProduct={values.product}
-                    setSelectedProduct={(product) => setFieldValue("product", product)}
+                    setSelectedProduct={(product) =>
+                      setFieldValue("product", product)
+                    }
                     errors={errors.product || ""}
                     touched={touched.product}
                     onProductChange={(selectedProduct) => {

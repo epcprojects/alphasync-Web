@@ -16,15 +16,31 @@ import {
   SecurityLock,
   UserIcon,
 } from "@/icons";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import React, { useState } from "react";
+import {
+  Switch,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+} from "@headlessui/react";
+import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
-import { useMutation } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import Cookies from "js-cookie";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
-import { UPDATE_DOCTOR, REMOVE_IMAGE } from "@/lib/graphql/mutations";
+import {
+  UPDATE_DOCTOR,
+  REMOVE_IMAGE,
+  EMAIL_NOTIFICATION_SETTINGS,
+  SMS_NOTIFICATION_SETTINGS,
+  ORDER_UPDATES_NOTIFICATION_SETTINGS,
+  LOW_STOCK_ALERTS_NOTIFICATION_SETTINGS,
+  DISABLE_2FA,
+} from "@/lib/graphql/mutations";
+import { FETCH_NOTIFICATION_SETTINGS } from "@/lib/graphql/queries";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
 
@@ -32,6 +48,7 @@ const Page = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [isTwoFaEnabled, setIsTwoFaEnabled] = useState(!!user?.twoFaEnabled);
   const [toggles, setToggles] = useState({
     email: true,
     sms: false,
@@ -40,6 +57,112 @@ const Page = () => {
   });
 
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    setIsTwoFaEnabled(!!user?.twoFaEnabled);
+  }, [user?.twoFaEnabled]);
+
+  // Fetch notification settings
+  const { loading: notificationLoading } = useQuery(
+    FETCH_NOTIFICATION_SETTINGS,
+    {
+      onCompleted: (data) => {
+        if (data?.notificationSettings) {
+          const settings = data.notificationSettings;
+          setToggles({
+            email: settings.emailNotification ?? true,
+            sms: settings.smsNotification ?? false,
+            orders: settings.orderUpdates ?? true,
+            stock: settings.lowStockAlerts ?? true,
+          });
+        }
+      },
+      onError: (error) => {
+        console.error("Error fetching notification settings:", error);
+      },
+    }
+  );
+
+  // Mutation hooks for each notification type
+  const [updateEmailNotification] = useMutation(EMAIL_NOTIFICATION_SETTINGS, {
+    onCompleted: () => {
+      showSuccessToast("Email notification settings updated");
+    },
+    onError: (error) => {
+      showErrorToast(error.message || "Failed to update email notification");
+    },
+  });
+
+  const [updateSmsNotification] = useMutation(SMS_NOTIFICATION_SETTINGS, {
+    onCompleted: () => {
+      showSuccessToast("SMS notification settings updated");
+    },
+    onError: (error) => {
+      showErrorToast(error.message || "Failed to update SMS notification");
+    },
+  });
+
+  const [updateOrderUpdates] = useMutation(
+    ORDER_UPDATES_NOTIFICATION_SETTINGS,
+    {
+      onCompleted: () => {
+        showSuccessToast("Order updates notification settings updated");
+      },
+      onError: (error) => {
+        showErrorToast(
+          error.message || "Failed to update order updates notification"
+        );
+      },
+    }
+  );
+
+  const [updateLowStockAlerts] = useMutation(
+    LOW_STOCK_ALERTS_NOTIFICATION_SETTINGS,
+    {
+      onCompleted: () => {
+        showSuccessToast("Low stock alerts notification settings updated");
+      },
+      onError: (error) => {
+        showErrorToast(
+          error.message || "Failed to update low stock alerts notification"
+        );
+      },
+    }
+  );
+
+  // Handler for toggle changes
+  const handleToggleChange = async (key: string, value: boolean) => {
+    setToggles((prev) => ({ ...prev, [key]: value }));
+
+    try {
+      switch (key) {
+        case "email":
+          await updateEmailNotification({
+            variables: { emailNotification: value },
+          });
+          break;
+        case "sms":
+          await updateSmsNotification({
+            variables: { smsNotification: value },
+          });
+          break;
+        case "orders":
+          await updateOrderUpdates({
+            variables: { orderUpdates: value },
+          });
+          break;
+        case "stock":
+          await updateLowStockAlerts({
+            variables: { lowStockAlerts: value },
+          });
+          break;
+      }
+    } catch (error) {
+      // Revert toggle on error
+      setToggles((prev) => ({ ...prev, [key]: !value }));
+      console.error("Error updating notification setting:", error);
+    }
+  };
 
   const [updateDoctor, { loading: updateLoading }] = useMutation(
     UPDATE_DOCTOR,
@@ -76,6 +199,9 @@ const Page = () => {
 
   const INITIAL_AVATAR = "/images/arinaProfile.png";
 
+  const [toggleTwoFactor, { loading: twoFaUpdating }] =
+    useMutation(DISABLE_2FA);
+
   const handleImageRemove = async () => {
     try {
       await removeImage({
@@ -86,6 +212,39 @@ const Page = () => {
       });
     } catch (error) {
       console.error("Error removing image:", error);
+    }
+  };
+
+  const handleTwoFaToggle = async (value: boolean) => {
+    const previousValue = isTwoFaEnabled;
+    setIsTwoFaEnabled(value);
+
+    try {
+      const { data } = await toggleTwoFactor({
+        variables: {
+          twoFaEnabled: value,
+        },
+      });
+
+      if (data?.updateUser?.user) {
+        dispatch(setUser(data.updateUser.user));
+        Cookies.set("user_data", JSON.stringify(data.updateUser.user), {
+          expires: 7,
+        });
+      }
+
+      showSuccessToast(
+        value
+          ? "Two-factor authentication enabled"
+          : "Two-factor authentication disabled"
+      );
+    } catch (error) {
+      setIsTwoFaEnabled(previousValue);
+      showErrorToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to update two-factor authentication"
+      );
     }
   };
 
@@ -384,30 +543,49 @@ const Page = () => {
                       </p>
                     </div>
 
-                    <div className="flex">
-                      <ThemeButton
-                        variant="outline"
-                        label="Configure"
-                        onClick={() => {}}
-                        className="w-full md:w-fit"
-                      />
+                    <div className="flex flex-col items-center gap-1">
+                      <Switch
+                        checked={isTwoFaEnabled}
+                        onChange={handleTwoFaToggle}
+                        disabled={twoFaUpdating}
+                        className={`group inline-flex h-7 w-14 items-center rounded-full bg-gray-200 transition data-checked:bg-gradient-to-r data-checked:from-[#3C85F5] data-checked:to-[#1A407A] ${
+                          twoFaUpdating
+                            ? "opacity-60 cursor-not-allowed"
+                            : "cursor-pointer"
+                        }`}
+                      >
+                        <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-8" />
+                      </Switch>
+                      <p className="text-xs text-gray-600">
+                        {twoFaUpdating
+                          ? "Updating..."
+                          : isTwoFaEnabled
+                          ? "Enabled"
+                          : "Disabled"}
+                      </p>
                     </div>
                   </div>
                 </div>
               </TabPanel>
               <TabPanel className={"flex flex-col p-5 lg:py-0 gap-4 md:gap-6"}>
-                {notifications.map((item) => (
-                  <NotificationToggle
-                    key={item.key}
-                    icon={item.icon}
-                    title={item.title}
-                    subtitle={item.subtitle}
-                    enabled={toggles[item.key as keyof typeof toggles]}
-                    onChange={(val) =>
-                      setToggles((prev) => ({ ...prev, [item.key]: val }))
-                    }
-                  />
-                ))}
+                {notificationLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-gray-500">
+                      Loading notification settings...
+                    </p>
+                  </div>
+                ) : (
+                  notifications.map((item) => (
+                    <NotificationToggle
+                      key={item.key}
+                      icon={item.icon}
+                      title={item.title}
+                      subtitle={item.subtitle}
+                      enabled={toggles[item.key as keyof typeof toggles]}
+                      onChange={(val) => handleToggleChange(item.key, val)}
+                    />
+                  ))
+                )}
               </TabPanel>
             </TabPanels>
           </TabGroup>
