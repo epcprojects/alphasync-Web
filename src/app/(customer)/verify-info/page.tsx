@@ -32,6 +32,12 @@ type VerifyInfoFormValues = {
   email: string;
   phoneNo: string;
   address: string;
+  street1: string;
+  street2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
   dateOfBirth: Date | null;
 };
 
@@ -43,7 +49,13 @@ const validationSchema = Yup.object().shape({
   phoneNo: Yup.string()
     .required("Phone number is required")
     .matches(phoneNumberRegex, PHONE_MESSAGE),
-  address: Yup.string().required("Address is required"),
+  address: Yup.string().optional(),
+  street1: Yup.string().required("Street address is required"),
+  street2: Yup.string().optional(),
+  city: Yup.string().required("City is required"),
+  state: Yup.string().required("State is required"),
+  postalCode: Yup.string().required("Postal code is required"),
+  country: Yup.string().required("Country is required"),
   dateOfBirth: Yup.date().nullable().required("Date of Birth is required"),
 });
 
@@ -72,6 +84,12 @@ function VerifyInfoContent() {
       email: currentUser?.email || "",
       phoneNo: formatPhoneNumber(currentUser?.phoneNo || ""),
       address: currentUser?.address || "",
+      street1: currentUser?.street1 || "",
+      street2: currentUser?.street2 || "",
+      city: currentUser?.city || "",
+      state: currentUser?.state || "",
+      postalCode: currentUser?.postalCode || "",
+      country: currentUser?.country || "",
       dateOfBirth: currentUser?.dateOfBirth
         ? new Date(currentUser.dateOfBirth)
         : null,
@@ -141,6 +159,12 @@ function VerifyInfoContent() {
       email: values.email || undefined,
       phoneNo: values.phoneNo || undefined,
       address: values.address || undefined,
+      street1: values.street1 || undefined,
+      street2: values.street2 || undefined,
+      city: values.city || undefined,
+      state: values.state || undefined,
+      postalCode: values.postalCode || undefined,
+      country: values.country || undefined,
       dateOfBirth: values.dateOfBirth
         ? values.dateOfBirth.toISOString().split("T")[0]
         : undefined,
@@ -186,6 +210,30 @@ function VerifyInfoContent() {
                         }
                       )
                     : undefined,
+                },
+                {
+                  label: "Street Address",
+                  value: currentUser?.street1,
+                },
+                {
+                  label: "Street Address 2",
+                  value: currentUser?.street2,
+                },
+                {
+                  label: "City",
+                  value: currentUser?.city,
+                },
+                {
+                  label: "State",
+                  value: currentUser?.state,
+                },
+                {
+                  label: "Postal Code",
+                  value: currentUser?.postalCode,
+                },
+                {
+                  label: "Country",
+                  value: currentUser?.country,
                 },
                 {
                   label: "Address",
@@ -277,6 +325,7 @@ function VerifyInfoContent() {
                     errorMessage={
                       formik.touched.email ? formik.errors.email : undefined
                     }
+                    disabled={true}
                   />
 
                   <ThemeInput
@@ -334,20 +383,125 @@ function VerifyInfoContent() {
                   </div>
 
                   <ThemeInput
-                    label="Address"
-                    name="address"
-                    value={formik.values.address}
+                    required
+                    label="Street Address"
+                    name="street1"
+                    placeholder="Enter street address"
+                    value={formik.values.street1}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     error={Boolean(
-                      formik.touched.address && formik.errors.address
+                      formik.touched.street1 && formik.errors.street1
                     )}
                     errorMessage={
-                      formik.touched.address
-                        ? (formik.errors.address as string)
+                      formik.touched.street1
+                        ? (formik.errors.street1 as string)
                         : undefined
                     }
                   />
+
+                  <ThemeInput
+                    label="Street Address 2 (Optional)"
+                    name="street2"
+                    placeholder="Apartment, suite, etc. (optional)"
+                    value={formik.values.street2}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={Boolean(
+                      formik.touched.street2 && formik.errors.street2
+                    )}
+                    errorMessage={
+                      formik.touched.street2
+                        ? (formik.errors.street2 as string)
+                        : undefined
+                    }
+                  />
+
+                  <div className="flex items-center gap-3 md:gap-5 w-full">
+                    <div className="w-full">
+                      <ThemeInput
+                        required
+                        label="City"
+                        name="city"
+                        placeholder="Enter city"
+                        value={formik.values.city}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={Boolean(
+                          formik.touched.city && formik.errors.city
+                        )}
+                        errorMessage={
+                          formik.touched.city
+                            ? (formik.errors.city as string)
+                            : undefined
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="w-full">
+                      <ThemeInput
+                        required
+                        label="State"
+                        name="state"
+                        placeholder="Enter state"
+                        value={formik.values.state}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={Boolean(
+                          formik.touched.state && formik.errors.state
+                        )}
+                        errorMessage={
+                          formik.touched.state
+                            ? (formik.errors.state as string)
+                            : undefined
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 md:gap-5 w-full">
+                    <div className="w-full">
+                      <ThemeInput
+                        required
+                        label="Postal Code"
+                        name="postalCode"
+                        placeholder="Enter postal code"
+                        value={formik.values.postalCode}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={Boolean(
+                          formik.touched.postalCode && formik.errors.postalCode
+                        )}
+                        errorMessage={
+                          formik.touched.postalCode
+                            ? (formik.errors.postalCode as string)
+                            : undefined
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="w-full">
+                      <ThemeInput
+                        required
+                        label="Country"
+                        name="country"
+                        placeholder="Enter country"
+                        value={formik.values.country}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={Boolean(
+                          formik.touched.country && formik.errors.country
+                        )}
+                        errorMessage={
+                          formik.touched.country
+                            ? (formik.errors.country as string)
+                            : undefined
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
                 </Form>
               </AppModal>
             );

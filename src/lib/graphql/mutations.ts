@@ -243,6 +243,12 @@ export const CREATE_CUSTOMER = gql`
     $additionalNotes: String
     $address: String
     $userType: UserTypeEnum
+    $street1: String
+    $street2: String
+    $city: String
+    $state: String
+    $postalCode: String
+    $country: String
   ) {
     createInvitation(
       input: {
@@ -259,6 +265,12 @@ export const CREATE_CUSTOMER = gql`
           additionalNotes: $additionalNotes
           address: $address
           userType: $userType
+          street1: $street1
+          street2: $street2
+          city: $city
+          state: $state
+          postalCode: $postalCode
+          country: $country
         }
       }
     ) {
@@ -331,6 +343,12 @@ export const UPDATE_CUSTOMER_PROFILE = gql`
     $currentMedications: String
     $additionalNotes: String
     $image: Upload
+    $street1: String
+    $street2: String
+    $city: String
+    $state: String
+    $postalCode: String
+    $country: String
   ) {
     updateUser(
       input: {
@@ -346,7 +364,13 @@ export const UPDATE_CUSTOMER_PROFILE = gql`
           knownAllergies: $knownAllergies
           currentMedications: $currentMedications
           additionalNotes: $additionalNotes
-          image: $image
+          image: $image 
+          street1: $street1
+          street2: $street2
+          city: $city
+          state: $state
+          postalCode: $postalCode
+          country: $country
         }
       }
     ) {
