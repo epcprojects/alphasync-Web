@@ -16,7 +16,7 @@ const InfoList: React.FC<InfoListProps> = ({ items }) => {
       {items.map((item, index) => (
         <div
           key={index}
-          className="flex items-center py-1.5 md:py-2.5 last:border-b-0 border-b gap-1 md:gap-2 border-b-gray-200 justify-between"
+          className="flex items-center py-1.5 md:py-2.5 last:border-b-0 border-b gap-1 md:gap-4 border-b-gray-200 justify-between"
         >
           <span className="text-gray-900 text-xs md:text-sm block">
             {item.label}

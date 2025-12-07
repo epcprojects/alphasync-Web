@@ -30,6 +30,7 @@ interface OrderItem {
   variantId: string;
   quantity: number;
   price: number;
+  originalPrice: number;
 }
 
 interface NewOrderModalProps {
@@ -75,7 +76,8 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(
     currentCustomer?.displayName || null
   );
-  const [selectedProductData, setSelectedProductData] = useState<DropdownItem | null>(null);
+  const [selectedProductData, setSelectedProductData] =
+    useState<DropdownItem | null>(null);
 
   const handleAddItem = (values: {
     customer: string;
@@ -86,12 +88,15 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     // lock on first item
     if (!lockedCustomer) setLockedCustomer(values.customer);
 
+    const originalPrice = selectedProductData?.price || values.price;
+
     const newItem: OrderItem = {
       product: values.product,
       productId: selectedProductData?.productId || "",
       variantId: selectedProductData?.variantId || "",
       quantity: values.quantity,
       price: values.price,
+      originalPrice: originalPrice,
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -125,7 +130,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
 
     try {
       // Validate that patientId exists
-      
 
       // Transform order items to match the expected GraphQL input format
       const orderItemsInput = orderItems.map((item) => ({
@@ -135,12 +139,17 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
         price: item.price,
       }));
 
-    
+      // Check if any product price has been changed from original
+      const useCustomPricing = orderItems.some(
+        (item) => item.price !== item.originalPrice
+      );
+
       await createOrder({
         variables: {
           orderItems: orderItemsInput,
           totalPrice: totalAmount,
           patientId: patientId,
+          useCustomPricing: useCustomPricing,
         },
       });
 
@@ -159,7 +168,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       if (!currentCustomer) {
         setLockedCustomer(null);
       }
-      
+
       showSuccessToast("Order created successfully");
       onClose();
     } catch (error) {
@@ -240,7 +249,9 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                 )}
                 <ProductSelect
                   selectedProduct={values.product}
-                  setSelectedProduct={(product) => setFieldValue("product", product)}
+                  setSelectedProduct={(product) =>
+                    setFieldValue("product", product)
+                  }
                   errors={errors.product || ""}
                   touched={touched.product}
                   onProductChange={(selectedProduct) => {

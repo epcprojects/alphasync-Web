@@ -7,7 +7,6 @@ import { ProfileIcon, LogoutIcon, RequestIcon } from "@/icons";
 import HeaderMenuNavItems from "./HeaderMenuNavItems";
 import Notifications from "../ui/Notifications";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { notifications } from "../../../../public/data/notifications";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import Cookies from "js-cookie";
 import { clearUser } from "@/lib/store/slices/authSlice";
@@ -87,10 +86,10 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
   );
   const user = useAppSelector((state) => state.auth.user);
   const INITIAL_AVATAR = "/images/arinaProfile.png";
-  
+
   const handleLogout = async () => {
     if (isLoggingOut) return;
-    
+
     setIsLoggingOut(true);
     try {
       // Clear cookies
@@ -100,18 +99,17 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
       dispatch(clearUser());
       // Clear Apollo Client cache
       await apolloClient.clearStore();
-      
+
       // Close any open menus
       closeMenu();
-      
+
       // Navigate to login page
       router.push("/login");
-      
+
       // Force a page reload to ensure clean state
       setTimeout(() => {
         window.location.href = "/login";
       }, 100);
-      
     } catch (error) {
       console.error("Logout error:", error);
       router.push("/login");
@@ -202,7 +200,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
               </Link>
             )}
 
-            {!isAdminHeader && <Notifications notifications={notifications} />}
+            {!isAdminHeader && <Notifications />}
 
             <div className="text-right w-8 h-8 md:h-11 md:w-11">
               <Menu>
@@ -249,7 +247,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                       disabled={isLoggingOut}
                       className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <LogoutIcon /> 
+                      <LogoutIcon />
                       {isLoggingOut ? "Logging out..." : "Logout"}
                     </button>
                   </MenuItem>
