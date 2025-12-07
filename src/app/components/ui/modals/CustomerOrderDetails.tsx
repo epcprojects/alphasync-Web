@@ -55,7 +55,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
     switch (status) {
       case "Due Today":
         return "bg-red-50 border border-red-200 text-red-700";
-      case "Processing":
+      case "pending_payment":
         return "bg-amber-50 border border-amber-200 text-amber-700";
       case "Ready for Pickup":
         return "bg-blue-50 border border-blue-200 text-blue-700";
@@ -63,9 +63,6 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
         return "bg-green-50 border border-green-200 text-green-700";
     }
   };
-  {
-    console.log("order in details", order);
-  }
   return (
     <AppModal
       isOpen={isOpen}
@@ -85,16 +82,16 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
 
           <div className="flex flex-col gap-4 px-2.5 md:px-0 border-b border-gray-200 pb-4 ">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-normal text-gray-800">
-                Due days
-              </span>
+              <span className="text-sm font-normal text-gray-800">Status</span>
               <div className="flex items-center justify-between">
                 <span
                   className={`${getOrderTags(
-                    type === "order" ? order.status : order.isDueToday
+                    order.status
                   )} px-3 py-0.5 rounded-full text-sm font-medium`}
                 >
-                  {type === "order" ? order.status : order.isDueToday}
+                  {order.status === "pending_payment"
+                    ? "Pending Payment"
+                    : order.status}
                 </span>
               </div>
             </div>

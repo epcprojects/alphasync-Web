@@ -1,34 +1,116 @@
 "use client";
 import {
-  ArrowLeftIcon,
   CrossIcon,
   DeliveryBoxIcon,
   FilterIcon,
   SearchIcon,
   TrashBinIcon,
 } from "@/icons";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useMutation, useQuery } from "@apollo/client";
 import React, { Suspense, useEffect, useRef, useState } from "react";
-import ReactPaginate from "react-paginate";
 import PrescriptionOrderCard, {
   PrescriptionOrder,
 } from "@/app/components/ui/cards/PrescriptionOrderCard";
-import { paymentOrders } from "../../../../public/data/orders";
 import { filterOptions } from "../../../../public/data/Filters";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import CustomerOrderDetails from "@/app/components/ui/modals/CustomerOrderDetails";
 import CustomerOrderPayment from "@/app/components/ui/modals/CustomerOrderPayment";
 import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
 import CustomerOrderSummary from "@/app/components/ui/modals/CustomerOrderSummary";
-import { showErrorToast } from "@/lib/toast";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
-import { EmptyState, Loader } from "@/app/components";
+import {
+  EmptyState,
+  Pagination,
+  PendingPaymentsSkeleton,
+} from "@/app/components";
+import AppModal from "@/app/components/ui/modals/AppModal";
+import { PATIENT_ORDERS } from "@/lib/graphql/queries";
+import { CANCEL_ORDER } from "@/lib/graphql/mutations";
+
+interface PatientOrderItemData {
+  id?: string | null;
+  quantity?: number | null;
+  price?: number | null;
+  totalPrice?: number | null;
+  product?: {
+    title?: string | null;
+    description?: string | null;
+    variants?:
+      | {
+          sku?: string | null;
+        }[]
+      | null;
+    images?: (string | null)[] | null;
+    primaryImage?: string | null;
+  } | null;
+}
+
+interface PatientOrderData {
+  id: string;
+  displayId?: string | null;
+  status?: string | null;
+  createdAt: string;
+  totalPrice?: number | null;
+  orderItems?: PatientOrderItemData[] | null;
+  doctor?: {
+    fullName?: string | null;
+  } | null;
+  patient?: {
+    address?: string | null;
+  } | null;
+}
+
+interface PatientOrdersResponse {
+  patientOrders: {
+    allData: PatientOrderData[];
+    count: number;
+    nextPage: number | null;
+    prevPage: number | null;
+    totalPages: number;
+  };
+}
+
+const normalizeAddress = (value?: string | null) => {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+};
+
+const getDueLabel = (orderDate: Date, today: Date) => {
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const normalizedOrderDate = new Date(
+    orderDate.getFullYear(),
+    orderDate.getMonth(),
+    orderDate.getDate()
+  );
+  const normalizedToday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+  const diffInDays = Math.round(
+    (normalizedOrderDate.getTime() - normalizedToday.getTime()) / msPerDay
+  );
+
+  if (diffInDays === 0) return "Due Today";
+  if (diffInDays === 1) return "Due Tomorrow";
+  if (diffInDays > 1 && diffInDays <= 3) return "Due in Three Days";
+  if (diffInDays > 3 && diffInDays <= 7) return "Due this Week";
+  if (
+    diffInDays > 7 &&
+    normalizedOrderDate.getMonth() === normalizedToday.getMonth() &&
+    normalizedOrderDate.getFullYear() === normalizedToday.getFullYear()
+  ) {
+    return "Due this month";
+  }
+
+  return diffInDays < 0 ? "Overdue" : "Upcoming";
+};
 
 function PendingPayments() {
   const [search, setSearch] = useState("");
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [isDetailModelOpen, setIsDetailModelOpen] = useState(false);
@@ -40,20 +122,35 @@ function PendingPayments() {
   const [selectedOrder, setSelectedOrder] = useState<PrescriptionOrder | null>(
     null
   );
-  const today = new Date();
-  const normalizedPaymentOrders: PrescriptionOrder[] = paymentOrders.map(
-    ({ orderNumber, ...rest }) =>
-      ({
-        ...rest,
-        displayId: String(
-          // @ts-expect-error legacy datasets may still include displayId
-          rest.displayId ?? orderNumber ?? rest.id
-        ),
-      } as PrescriptionOrder)
+  const [orderToCancel, setOrderToCancel] = useState<PrescriptionOrder | null>(
+    null
   );
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(
+    null
+  );
+  const today = new Date();
   const itemsPerPage = 10;
-  const initialPage = parseInt(searchParams.get("page") || "0", 10);
-  const [currentPage, setCurrentPage] = useState(initialPage);
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const {
+    data: patientOrdersData,
+    loading: patientOrdersLoading,
+    error: patientOrdersError,
+    refetch: refetchPatientOrders,
+  } = useQuery<PatientOrdersResponse>(PATIENT_ORDERS, {
+    variables: {
+      patientId: null,
+      page: currentPage + 1,
+      perPage: itemsPerPage,
+      search: search,
+      status: "pending_payment",
+    },
+    fetchPolicy: "network-only",
+    notifyOnNetworkStatusChange: true,
+  });
+
+  const [cancelOrderMutation] = useMutation(CANCEL_ORDER);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -71,18 +168,9 @@ function PendingPayments() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    setCurrentPage(0);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", "0");
-    router.replace(`?${params.toString()}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, selectedFilter]);
-
   const handleFilterSelect = (filterId: string) => {
     setSelectedFilter(filterId);
     setShowFilterDropdown(false);
-    console.log("Selected filter:", filterId);
   };
 
   const toDate = (dateString: string): Date => {
@@ -95,10 +183,60 @@ function PendingPayments() {
     date1.getMonth() === date2.getMonth() &&
     date1.getDate() === date2.getDate();
 
-  const filteredOrders = normalizedPaymentOrders.filter((order) => {
-    if (selectedFilter !== "all") {
-      const orderDate = toDate(order.orderedOn);
+  const rawOrders = patientOrdersData?.patientOrders?.allData ?? [];
 
+  const transformedOrders: PrescriptionOrder[] = rawOrders.map((order) => {
+    const orderDate = order.createdAt ? new Date(order.createdAt) : null;
+    const orderItems =
+      order.orderItems?.map((item, index) => {
+        const quantity = item.quantity ?? 0;
+        const unitPrice = item.price ?? 0;
+        const lineTotal = item.totalPrice ?? unitPrice * quantity;
+        const imageData = Array.isArray(item.product?.images)
+          ? item.product?.images.find(
+              (image): image is string =>
+                typeof image === "string" && image.trim().length > 0
+            )
+          : undefined;
+        const primaryImage = item.product?.primaryImage
+          ? String(item.product.primaryImage)
+          : imageData;
+
+        return {
+          id: item.id ?? `${order.id}-${index}`,
+          medicineName: item.product?.title || "Unknown Product",
+          quantity,
+          price: unitPrice,
+          amount: `$${lineTotal.toFixed(2)}`,
+          description: item.product?.description ?? undefined,
+          product: {
+            primaryImage,
+          },
+        };
+      }) ?? [];
+
+    return {
+      id: order.id,
+      displayId: String(order.displayId ?? order.id),
+      doctorName: order.doctor?.fullName || "Unknown Doctor",
+      orderItems,
+      orderedOn: orderDate ? orderDate.toLocaleDateString("en-US") : "--",
+      totalPrice: order.totalPrice ?? 0,
+      isDueToday: orderDate ? getDueLabel(orderDate, today) : undefined,
+      status: order.status ?? undefined,
+      patient: order.patient
+        ? {
+            address: normalizeAddress(order.patient.address),
+          }
+        : undefined,
+    };
+  });
+
+  const filteredOrders = transformedOrders.filter((order) => {
+    if (selectedFilter !== "all") {
+      if (!order.orderedOn) return false;
+      const orderDate = toDate(order.orderedOn);
+      if (Number.isNaN(orderDate.getTime())) return false;
       switch (selectedFilter) {
         case "due-today":
           if (!isSameDay(orderDate, today)) return false;
@@ -156,15 +294,51 @@ function PendingPayments() {
     return true;
   });
 
-  const pageCount = Math.ceil(filteredOrders.length / itemsPerPage);
-  const offset = currentPage * itemsPerPage;
-  const currentItems = filteredOrders.slice(offset, offset + itemsPerPage);
+  const pageCountFromServer = patientOrdersData?.patientOrders?.totalPages ?? 0;
+  const currentItems = filteredOrders;
+  const pendingCount = patientOrdersData?.patientOrders?.count ?? 0;
+  const totalPages = pageCountFromServer > 0 ? pageCountFromServer : 1;
+  const pendingCountLabel = patientOrdersLoading
+    ? "Loading..."
+    : `${pendingCount} Pending ${pendingCount === 1 ? "Order" : "Orders"}`;
+  const showEmptyState =
+    !patientOrdersLoading &&
+    !patientOrdersError &&
+    transformedOrders.length === 0;
+  const showSkeleton = patientOrdersLoading && currentItems.length === 0;
 
-  const handlePageChange = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(selected));
-    router.replace(`?${params.toString()}`);
+  const handlePageChange = (selectedPage: number) => {
+    setCurrentPage(selectedPage);
+  };
+
+  const handleCancelOrder = async () => {
+    if (!orderToCancel?.id || cancellingOrderId === orderToCancel.id) return;
+    try {
+      setCancellingOrderId(orderToCancel.id);
+      await cancelOrderMutation({
+        variables: { orderId: orderToCancel.id },
+      });
+      await refetchPatientOrders();
+      showSuccessToast("Order cancelled");
+      setIsCancelModalOpen(false);
+      setOrderToCancel(null);
+    } catch (error) {
+      console.error("Failed to cancel order", error);
+      showErrorToast("Failed to cancel order");
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
+  const handleOpenCancelModal = (order: PrescriptionOrder) => {
+    setOrderToCancel(order);
+    setIsCancelModalOpen(true);
+  };
+
+  const handleCloseCancelModal = () => {
+    if (cancellingOrderId) return;
+    setIsCancelModalOpen(false);
+    setOrderToCancel(null);
   };
 
   const handleOrderClick = (order: PrescriptionOrder) => {
@@ -189,7 +363,7 @@ function PendingPayments() {
           </h2>
           <div className=" px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-white border border-indigo-200">
             <p className=" text-xs md:text-sm font-medium text-primary whitespace-nowrap">
-              3 Pending Order
+              {pendingCountLabel}
             </p>
           </div>
         </div>
@@ -296,64 +470,48 @@ function PendingPayments() {
         </div>
       </div>
       <div className="flex flex-col gap-2 md:gap-4">
-        {currentItems.map((order) => (
-          <PrescriptionOrderCard
-            key={order.id}
-            orders={[order]}
-            onPress={handleOrderClick}
-            btnTitle="Pay Now"
-            onPay={(o) => {
-              setSelectedOrder(o);
-              setIsPaymentModelOpen(true);
-            }}
-            onDelete={() => {
-              showErrorToast("Order Cancelled");
-            }}
-            icon={<TrashBinIcon />}
-            type="Pending-page"
-          />
-        ))}
+        {showSkeleton ? (
+          <PendingPaymentsSkeleton />
+        ) : patientOrdersError ? (
+          <div className="bg-white border border-red-200 rounded-2xl p-6">
+            <p className="text-sm font-medium text-red-500">
+              {patientOrdersError.message}
+            </p>
+          </div>
+        ) : (
+          currentItems.map((order) => (
+            <PrescriptionOrderCard
+              key={order.id}
+              orders={[order]}
+              onPress={handleOrderClick}
+              btnTitle="Pay Now"
+              onPay={(o) => {
+                setSelectedOrder(o);
+                setIsPaymentModelOpen(true);
+              }}
+              onDelete={() => handleOpenCancelModal(order)}
+              icon={
+                cancellingOrderId === order.id ? (
+                  <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <TrashBinIcon />
+                )
+              }
+              type="Pending-page"
+            />
+          ))
+        )}
       </div>
       <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-        {currentItems.length < 1 && <EmptyState mtClasses="-mt-6" />}
+        {showEmptyState && <EmptyState mtClasses="-mt-6" />}
 
-        <div className="w-full flex items-center justify-center">
-          <ReactPaginate
-            breakLabel="..."
-            nextLabel={
-              <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                <span className="hidden md:inline-block">Next</span>
-                <span className="block mb-0.5 rotate-180">
-                  <ArrowLeftIcon />
-                </span>
-              </span>
-            }
-            previousLabel={
-              <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                <span className="md:mb-0.5">
-                  <ArrowLeftIcon />
-                </span>
-                <span className="hidden md:inline-block">Previous</span>
-              </span>
-            }
+        {!showSkeleton && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
             onPageChange={handlePageChange}
-            pageRangeDisplayed={3}
-            marginPagesDisplayed={1}
-            pageCount={pageCount ? pageCount : 1}
-            forcePage={currentPage}
-            pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-            containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-            pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-            activeClassName="bg-gray-200 text-gray-900 font-medium"
-            previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-            nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-            breakClassName="px-3 py-1 font-semibold text-gray-400"
           />
-
-          <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-            Page {currentPage + 1} of {pageCount}
-          </h2>
-        </div>
+        )}
       </div>
       <CustomerOrderDetails
         isOpen={isDetailModelOpen}
@@ -386,13 +544,49 @@ function PendingPayments() {
         onClose={() => setIsSummaryModalOpen(false)}
         order={selectedOrder}
       />
+      <AppModal
+        isOpen={isCancelModalOpen}
+        onClose={handleCloseCancelModal}
+        onCancel={handleCloseCancelModal}
+        title="Cancel Order"
+        subtitle="This action cannot be undone"
+        confirmLabel={
+          cancellingOrderId && orderToCancel?.id === cancellingOrderId
+            ? "Cancelling..."
+            : "Confirm Cancel"
+        }
+        cancelLabel="Keep Order"
+        confirmBtnVarient="danger"
+        confimBtnDisable={
+          Boolean(cancellingOrderId) && orderToCancel?.id === cancellingOrderId
+        }
+        disableCloseButton={
+          Boolean(cancellingOrderId) && orderToCancel?.id === cancellingOrderId
+        }
+        outSideClickClose={
+          !(
+            Boolean(cancellingOrderId) &&
+            orderToCancel?.id === cancellingOrderId
+          )
+        }
+        bodyPaddingClasses="p-4 md:p-6"
+        onConfirm={handleCancelOrder}
+      >
+        <p className="text-sm md:text-base text-gray-700">
+          Are you sure you want to cancel order{" "}
+          <span className="font-semibold">
+            {orderToCancel?.displayId || orderToCancel?.id}
+          </span>
+          ? This action cannot be undone.
+        </p>
+      </AppModal>
     </div>
   );
 }
 
 export default function Page() {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<PendingPaymentsSkeleton />}>
       <PendingPayments />
     </Suspense>
   );

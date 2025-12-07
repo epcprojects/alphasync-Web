@@ -270,18 +270,16 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             className="w-full sm:w-fit"
           />
         )}
-        {onAddNote &&
-          status !== "Approved" &&
-          !(customerReason && cardVarient !== "Customer") && (
-            <ThemeButton
-              label="Add note"
-              icon={<NoteIcon />}
-              onClick={onAddNote}
-              variant="outline"
-              heightClass="h-10"
-              className="w-full sm:w-fit"
-            />
-          )}
+        {onAddNote && cardVarient === "Customer" && (
+          <ThemeButton
+            label="Add note"
+            icon={<NoteIcon />}
+            onClick={onAddNote}
+            variant="outline"
+            heightClass="h-10"
+            className="w-full sm:w-fit"
+          />
+        )}
       </div>
     </div>
   );

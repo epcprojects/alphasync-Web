@@ -9,6 +9,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/thumbs";
+import ProductImage from "@/app/components/ui/ProductImage";
 
 // Define a type for product views
 interface ProductView {
@@ -55,8 +56,14 @@ const ProductSwiper: React.FC<ProductSwiperProps> = ({ productViews = [] }) => {
                 {view.imagePath ? (
                   <div className="col-span-8 col-start-3 p-4 bg-[url(/images/productBgPattern.png)] !bg-bottom bg-contain flex items-center justify-center ">
                     <div className="w-full h-full">
-                      <Image
+                      {/* <Image
                         className="!relative w-full h-full"
+                        src={view.imagePath}
+                        alt={view.title}
+                        width={1080}
+                        height={1080}
+                      /> */}
+                      <ProductImage
                         src={view.imagePath}
                         alt={view.title}
                         width={1080}

@@ -10,7 +10,7 @@ const Page = () => {
 
   const { data, refetch, loading, error } = useQuery(ALL_NOTIFICATIONS, {
     variables: {
-      page: currentPage + 1,
+      page: currentPage + 1, // GraphQL uses 1-based pagination
       perPage: itemsPerPage,
     },
     fetchPolicy: "network-only",
@@ -22,7 +22,6 @@ const Page = () => {
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
   };
-  console.log("notifications", notifications);
 
   return (
     <NotificationList
@@ -33,7 +32,7 @@ const Page = () => {
       currentPage={currentPage}
       onPageChange={handlePageChange}
       refetch={refetch}
-      userType="doctor"
+      userType="customer"
     />
   );
 };

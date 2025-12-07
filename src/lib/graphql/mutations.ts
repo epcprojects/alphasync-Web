@@ -20,6 +20,10 @@ export const LOGIN_USER = gql`
     ) {
       otpSent
       message
+      token
+      user {
+        ${userpayload}
+      }
     }
   }
 `;
@@ -92,6 +96,7 @@ export const UPDATE_USER = gql`
     $status: UserStatusEnum
     $specialty: String
     $image: Upload
+    $addressVerified: Boolean
   ) {
     updateUser(
       input: {
@@ -105,6 +110,7 @@ export const UPDATE_USER = gql`
           phoneNo: $phoneNo
           medicalLicense: $medicalLicense
           status: $status
+          addressVerified: $addressVerified
         }
       }
     ) {
@@ -237,6 +243,12 @@ export const CREATE_CUSTOMER = gql`
     $additionalNotes: String
     $address: String
     $userType: UserTypeEnum
+    $street1: String
+    $street2: String
+    $city: String
+    $state: String
+    $postalCode: String
+    $country: String
   ) {
     createInvitation(
       input: {
@@ -253,6 +265,12 @@ export const CREATE_CUSTOMER = gql`
           additionalNotes: $additionalNotes
           address: $address
           userType: $userType
+          street1: $street1
+          street2: $street2
+          city: $city
+          state: $state
+          postalCode: $postalCode
+          country: $country
         }
       }
     ) {
@@ -292,6 +310,7 @@ export const CREATE_ORDER = gql`
     $orderItems: [OrderItemAttributes!]!
     $totalPrice: Float!
     $patientId: ID!
+    $useCustomPricing: Boolean
   ) {
     createOrder(
       input: {
@@ -299,6 +318,7 @@ export const CREATE_ORDER = gql`
           orderItems: $orderItems
           totalPrice: $totalPrice
           patientId: $patientId
+          useCustomPricing: $useCustomPricing
         }
       }
     ) {
@@ -323,6 +343,12 @@ export const UPDATE_CUSTOMER_PROFILE = gql`
     $currentMedications: String
     $additionalNotes: String
     $image: Upload
+    $street1: String
+    $street2: String
+    $city: String
+    $state: String
+    $postalCode: String
+    $country: String
   ) {
     updateUser(
       input: {
@@ -338,7 +364,13 @@ export const UPDATE_CUSTOMER_PROFILE = gql`
           knownAllergies: $knownAllergies
           currentMedications: $currentMedications
           additionalNotes: $additionalNotes
-          image: $image
+          image: $image 
+          street1: $street1
+          street2: $street2
+          city: $city
+          state: $state
+          postalCode: $postalCode
+          country: $country
         }
       }
     ) {
@@ -467,6 +499,138 @@ export const CREATE_NOTE = gql`
     ) {
       note {
         id
+      }
+    }
+  }
+`;
+
+export const DELETE_NOTE = gql`
+  mutation DeleteNote($id: ID!) {
+    deleteNote(input: { id: $id }) {
+      message
+    }
+  }
+`;
+export const EMAIL_NOTIFICATION_SETTINGS = gql`
+  mutation UpdateNotificationSettings($emailNotification: Boolean) {
+    updateNotificationSettings(
+      input: { settings: { emailNotification: $emailNotification } }
+    ) {
+      success
+    }
+  }
+`;
+export const SMS_NOTIFICATION_SETTINGS = gql`
+  mutation UpdateNotificationSettings($smsNotification: Boolean) {
+    updateNotificationSettings(
+      input: { settings: { smsNotification: $smsNotification } }
+    ) {
+      success
+    }
+  }
+`;
+export const ORDER_UPDATES_NOTIFICATION_SETTINGS = gql`
+  mutation UpdateNotificationSettings($orderUpdates: Boolean) {
+    updateNotificationSettings(
+      input: { settings: { orderUpdates: $orderUpdates } }
+    ) {
+      success
+    }
+  }
+`;
+export const LOW_STOCK_ALERTS_NOTIFICATION_SETTINGS = gql`
+  mutation UpdateNotificationSettings($lowStockAlerts: Boolean) {
+    updateNotificationSettings(
+      input: { settings: { lowStockAlerts: $lowStockAlerts } }
+    ) {
+      success
+    }
+  }
+`;
+
+export const DELETE_NOTIFICATION = gql`
+  mutation DeleteNotification($notificationId: ID!) {
+    deleteNotification(input: { notificationId: $notificationId }) {
+      message
+      success
+    }
+  }
+`;
+export const MARK_ALL_NOTIFICATIONS_AS_READ = gql`
+  mutation MarkAllNotificationsAsRead($clientMutationId: String) {
+    markAllNotificationsAsRead(input: { clientMutationId: $clientMutationId }) {
+      success
+      updatedCount
+    }
+  }
+`;
+export const UPDATE_USER_ADDRESS_VERIFIED = gql`
+  mutation UpdateUserAddressVerified($addressVerified: Boolean) {
+    updateUser(
+      input: { userAttributes: { addressVerified: $addressVerified } }
+    ) {
+      user {
+        ${userpayload}
+      }
+    }
+  }
+`;
+
+export const REORDER_ORDER = gql`
+  mutation ReorderOrder($orderId: ID!) {
+    reorderOrder(input: { orderId: $orderId }) {
+      order {
+        id
+      }
+    }
+  }
+`;
+
+export const UPDATE_AUTO_REORDER = gql`
+  mutation UpdateAutoReorder($orderId: ID!, $autoReorder: Boolean!) {
+    updateAutoReorder(input: { orderId: $orderId, autoReorder: $autoReorder }) {
+      order {
+        id
+      }
+    }
+  }
+`;
+export const CANCEL_ORDER = gql`
+  mutation CancelOrder($orderId: ID!) {
+    cancelOrder(input: { orderId: $orderId }) {
+      order {
+        id
+      }
+    }
+  }
+`;
+
+export const PROCESS_PAYMENT = gql`
+  mutation ProcessPayment(
+    $orderId: ID!
+    $opaqueData: OpaqueData!
+    $amount: Float!
+    $billingAddress: BillingAddress
+  ) {
+    processPayment(
+      input: {
+        orderId: $orderId
+        opaqueData: $opaqueData
+        amount: $amount
+        billingAddress: $billingAddress
+      }
+    ) {
+      success
+      transactionId
+    }
+  }
+`;
+
+export const DISABLE_2FA = gql`
+  mutation UpdateUser($twoFaEnabled: Boolean) {
+    updateUser(input: { userAttributes: { twoFaEnabled: $twoFaEnabled } }) {
+      user {
+        ${userpayload}
       }
     }
   }

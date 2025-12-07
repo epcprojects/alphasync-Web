@@ -14,6 +14,7 @@ type Customer = {
   totalOrder: number;
   status: string;
   patientOrdersCount?: string;
+  invitationStatus?: string;
 };
 
 type CustomerDatabaseViewProps = {
@@ -42,10 +43,12 @@ function getColorPair(seed: number | string | undefined) {
 
 function getStatusClasses(status?: string) {
   switch (status) {
-    case "Active":
+    case "accepted":
       return "bg-green-50 border border-green-200 text-green-700";
     case "Inactive":
       return "bg-red-50 border border-red-200 text-red-700";
+    case "pending":
+      return "bg-yellow-50 border border-yellow-200 text-yellow-700";
     default:
       return "bg-gray-100 border border-gray-200 text-gray-700";
   }
@@ -70,12 +73,13 @@ export default function CustomerDatabaseView({
     ? new Date(patient.lastSignInAt).toLocaleDateString()
     : customer?.lastOrder;
   const totalOrder = patient?.patientOrdersCount;
+  const invitationStatus = patient?.invitationStatus;
   const status =
-    patient?.status === "ACTIVE"
-      ? "Active"
-      : patient?.status === "INACTIVE"
-      ? "Inactive"
-      : patient?.status || customer?.status;
+    invitationStatus === "accepted"
+      ? "Accepted"
+      : invitationStatus === "pending"
+      ? "Pending"
+      : "Unknown";
 
   const { bg, text } = getColorPair(id);
 
@@ -125,10 +129,10 @@ export default function CustomerDatabaseView({
       <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
         <span
           className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
-            status
+            invitationStatus
           )}`}
         >
-          {status || "Unknown"}
+          {invitationStatus || "Unknown"}
         </span>
       </div>
 
@@ -143,11 +147,11 @@ export default function CustomerDatabaseView({
               }}
               className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
             >
-              <MailIcon  />
+              <MailIcon />
             </button>
           </Tooltip>
         )}
-        
+
         <Tooltip content="View Customer">
           <button
             onClick={(e) => {

@@ -16,7 +16,7 @@ const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   className = "",
 }) => {
-  const handlePageChange = ({ selected }: { selected: number }) => {
+  const handlePageChange = (selected: number) => {
     onPageChange(selected);
   };
 
@@ -30,7 +30,7 @@ const Pagination: React.FC<PaginationProps> = ({
         <div className="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3 h-12 md:h-full rounded-2xl bg-white shadow-table">
           {/* Previous Button */}
           <button
-            onClick={() => handlePageChange({ selected: currentPage - 1 })}
+            onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 0}
             className="md:px-4 md:py-2 rounded-full absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -45,7 +45,7 @@ const Pagination: React.FC<PaginationProps> = ({
           {/* Page Numbers */}
           <div className="flex items-center gap-2">
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNumber;
+              let pageNumber: number;
               if (totalPages <= 5) {
                 pageNumber = i;
               } else if (currentPage < 3) {
@@ -59,7 +59,7 @@ const Pagination: React.FC<PaginationProps> = ({
               return (
                 <button
                   key={pageNumber}
-                  onClick={() => handlePageChange({ selected: pageNumber })}
+                  onClick={() => handlePageChange(pageNumber)}
                   className={`px-4 py-2 rounded-lg h-11 w-11 leading-8 text-center cursor-pointer hidden md:block ${
                     currentPage === pageNumber
                       ? "bg-gray-200 text-gray-900 font-medium"
@@ -81,7 +81,7 @@ const Pagination: React.FC<PaginationProps> = ({
             {/* Show last page if not already visible */}
             {totalPages > 5 && currentPage < totalPages - 3 && (
               <button
-                onClick={() => handlePageChange({ selected: totalPages - 1 })}
+                onClick={() => handlePageChange(totalPages - 1)}
                 className="px-4 py-2 rounded-lg h-11 w-11 leading-8 text-center cursor-pointer hidden md:block text-gray-600 hover:bg-gray-100"
               >
                 {totalPages}
@@ -91,7 +91,7 @@ const Pagination: React.FC<PaginationProps> = ({
 
           {/* Next Button */}
           <button
-            onClick={() => handlePageChange({ selected: currentPage + 1 })}
+            onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= totalPages - 1}
             className="md:px-4 md:py-2 rounded-full bg-gray-50 absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >

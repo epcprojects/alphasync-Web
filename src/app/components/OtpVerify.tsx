@@ -25,10 +25,10 @@ const OTPVerify = () => {
 
       const token = data?.loginWithOtp?.token ?? "";
       const user = data?.loginWithOtp?.user ?? null;
-      
+
       // Store token in localStorage
       localStorage.setItem("auth_token", token);
-      
+
       // Store user in Redux
       dispatch(setUser(user));
       toastAlert("Login successful!", true);
@@ -37,7 +37,11 @@ const OTPVerify = () => {
       if (loginType === "Doctor") {
         router.push("/inventory");
       } else if (loginType === "Customer") {
-        router.push(`/verify-info?email=${email}`);
+        if (user?.addressVerified === true) {
+          router.push("/pending-payments");
+        } else {
+          router.push(`/verify-info`);
+        }
       } else if (loginType === "admin") {
         router.push(`/admin/doctors`);
       } else {
