@@ -2,10 +2,12 @@
 import {
   ThemeButton,
   RequestApproveModal,
+  RequestRejectModal,
   NotificationListSkeleton,
   AppModal,
   Pagination,
 } from "@/app/components";
+import ProductDetails from "@/app/components/ui/modals/ProductDetails";
 import Tooltip from "@/app/components/ui/tooltip";
 import {
   ChatIcon,
@@ -22,12 +24,46 @@ import { formatDistanceToNow } from "date-fns";
 import { useMutation } from "@apollo/client";
 import {
   APPROVE_ORDER_REQUEST,
+  DENY_ORDER_REQUEST,
   DELETE_NOTIFICATION,
   MARK_ALL_NOTIFICATIONS_AS_READ,
 } from "@/lib/graphql/mutations";
 
 interface NotificationUser {
   id: string;
+}
+
+interface RequestedProductVariant {
+  sku?: string | null;
+}
+
+interface RequestedProduct {
+  id?: string;
+  title?: string;
+  description?: string;
+  primaryImage?: string;
+  productType?: string;
+  vendor?: string;
+  tags?: string[];
+  variants?: RequestedProductVariant[] | null;
+}
+
+interface RequestedItem {
+  title?: string;
+  price?: string | number | null;
+  product?: RequestedProduct | null;
+}
+
+interface ProductDetailsModalProduct {
+  id: number;
+  title: string;
+  productForm: string;
+  category: string;
+  price: string;
+  description: string;
+  primaryImage?: string;
+  tags?: string[];
+  variants?: RequestedProductVariant[] | null;
 }
 
 export interface NotificationData {
@@ -43,6 +79,7 @@ export interface NotificationData {
     id: string;
     status: string;
     displayId: string;
+    requestedItems?: RequestedItem[];
   };
   message: {
     content: string;
@@ -77,7 +114,11 @@ const NotificationList: React.FC<NotificationListProps> = ({
 }) => {
   const router = useRouter();
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
+  const [selectedProductDetails, setSelectedProductDetails] =
+    useState<ProductDetailsModalProduct | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedNotificationId, setSelectedNotificationId] = useState<
     string | null
@@ -86,6 +127,9 @@ const NotificationList: React.FC<NotificationListProps> = ({
   const [approveOrderRequest, { loading: isApproving }] = useMutation(
     APPROVE_ORDER_REQUEST
   );
+
+  const [denyOrderRequest, { loading: isDenying }] =
+    useMutation(DENY_ORDER_REQUEST);
 
   const [deleteNotification, { loading: isDeleting }] =
     useMutation(DELETE_NOTIFICATION);
@@ -116,6 +160,16 @@ const NotificationList: React.FC<NotificationListProps> = ({
     setIsApproveModalOpen(true);
   };
 
+  const handleRejectClick = (message: NotificationData) => {
+    const requestId = message.orderRequest?.id;
+    if (!requestId) {
+      showErrorToast("Unable to find request details.");
+      return;
+    }
+    setSelectedRequest(requestId);
+    setIsRejectModalOpen(true);
+  };
+
   const handleApproveConfirm = async ({
     doctorMessage,
   }: {
@@ -139,6 +193,28 @@ const NotificationList: React.FC<NotificationListProps> = ({
     } catch (error) {
       showErrorToast("Failed to approve request. Please try again.");
       console.error("Error approving request:", error);
+    }
+  };
+
+  const handleRejectConfirm = async ({ reason }: { reason: string }) => {
+    if (!selectedRequest) {
+      showErrorToast("No request selected.");
+      return;
+    }
+    try {
+      await denyOrderRequest({
+        variables: {
+          requestId: selectedRequest,
+          doctorMessage: reason,
+        },
+      });
+      showSuccessToast("Patient request denied successfully.");
+      await refetch();
+      setIsRejectModalOpen(false);
+      setSelectedRequest(null);
+    } catch (error) {
+      showErrorToast("Failed to deny request. Please try again.");
+      console.error("Error denying request:", error);
     }
   };
 
@@ -200,12 +276,60 @@ const NotificationList: React.FC<NotificationListProps> = ({
   };
 
   const handleViewDetails = (notification: NotificationData) => {
+    const handledByModal = tryOpenProductDetails(notification);
+    if (handledByModal) {
+      return;
+    }
+
     if (onViewDetails) {
       onViewDetails(notification);
-    } else if (userType === "doctor" && notification.sender?.id) {
+      return;
+    }
+
+    if (userType === "doctor" && notification.sender?.id) {
       router.push(`/customers/${notification.sender.id}`);
     }
     // For customers, we might not need navigation or handle it differently
+  };
+
+  const tryOpenProductDetails = (message: NotificationData): boolean => {
+    if (
+      message.notificationType !== "order_request_created" &&
+      message.notificationType !== "reorder_created"
+    ) {
+      return false;
+    }
+
+    const requestedItem = message.orderRequest?.requestedItems?.[0];
+    const product = requestedItem?.product;
+
+    if (!requestedItem || !product) {
+      showErrorToast("Product details unavailable for this request.");
+      return false;
+    }
+
+    const numericPrice = requestedItem.price
+      ? Number(requestedItem.price)
+      : null;
+
+    const modalProduct: ProductDetailsModalProduct = {
+      id: product.id ? Number(product.id) || 0 : 0,
+      title: product.title || requestedItem.title || "Requested Product",
+      productForm: product.productType || "N/A",
+      category: product.vendor || "N/A",
+      price:
+        numericPrice && !Number.isNaN(numericPrice)
+          ? `$${numericPrice.toFixed(2)}`
+          : requestedItem.price?.toString() || "N/A",
+      description: product.description || "",
+      primaryImage: product.primaryImage,
+      tags: product.tags || [],
+      variants: product.variants || [],
+    };
+
+    setSelectedProductDetails(modalProduct);
+    setIsProductModalOpen(true);
+    return true;
   };
 
   return (
@@ -356,6 +480,15 @@ const NotificationList: React.FC<NotificationListProps> = ({
                           {message.message?.content}
                           &quot;
                         </span>
+                        {userType === "doctor" && (
+                          <button
+                            type="button"
+                            className="ml-2 text-primary font-semibold underline"
+                            onClick={() => handleViewDetails(message)}
+                          >
+                            View Details
+                          </button>
+                        )}
                       </div>
                     )}{" "}
                     {message.notificationType === "order_request_approved" && (
@@ -384,14 +517,24 @@ const NotificationList: React.FC<NotificationListProps> = ({
                     {userType === "doctor" &&
                       message.notificationType !== "message_received" &&
                       message.orderRequest?.status === "pending" && (
-                        <ThemeButton
-                          label="Approve"
-                          size="medium"
-                          variant="success"
-                          className="w-fit"
-                          heightClass="h-9"
-                          onClick={() => handleApproveClick(message)}
-                        />
+                        <>
+                          <ThemeButton
+                            label="Approve"
+                            size="medium"
+                            variant="success"
+                            className="w-fit"
+                            heightClass="h-9"
+                            onClick={() => handleApproveClick(message)}
+                          />
+                          <ThemeButton
+                            label="Decline"
+                            size="medium"
+                            variant="danger"
+                            className="w-fit"
+                            heightClass="h-9"
+                            onClick={() => handleRejectClick(message)}
+                          />
+                        </>
                       )}
                   </div>
                 </div>
@@ -444,6 +587,39 @@ const NotificationList: React.FC<NotificationListProps> = ({
               )?.orderRequest?.displayId || ""
             : undefined
         }
+      />
+
+      <RequestRejectModal
+        isOpen={isRejectModalOpen}
+        onClose={() => {
+          if (!isDenying) {
+            setIsRejectModalOpen(false);
+            setSelectedRequest(null);
+          }
+        }}
+        onConfirm={handleRejectConfirm}
+        isSubmitting={isDenying}
+        itemTitle={
+          selectedRequest
+            ? notifications?.find(
+                (n: NotificationData) => n.orderRequest?.id === selectedRequest
+              )?.orderRequest?.displayId || ""
+            : undefined
+        }
+      />
+
+      <ProductDetails
+        isOpen={isProductModalOpen}
+        onClose={() => {
+          setIsProductModalOpen(false);
+          setSelectedProductDetails(null);
+        }}
+        product={selectedProductDetails}
+        onClick={() => {
+          setIsProductModalOpen(false);
+          setSelectedProductDetails(null);
+        }}
+        showActionButton={false}
       />
 
       <AppModal

@@ -25,6 +25,12 @@ export const userpayload = `
         invitationStatus
         addressVerified
         twoFaEnabled
+        city
+          country
+            state
+            street1
+            street2
+            postalCode
        
 `;
 
@@ -55,6 +61,12 @@ export interface UserAttributes {
   invitationStatus?: string;
   addressVerified?: boolean;
   twoFaEnabled?: boolean;
+  city?: string;
+  country?: string;
+  state?: string;
+  street1?: string;
+  street2?: string;
+  postalCode?: string;
 }
 
 export interface ProductInfo {
