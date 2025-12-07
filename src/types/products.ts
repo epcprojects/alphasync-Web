@@ -45,7 +45,7 @@ export interface Product {
   title: string;
   description: string;
   category: string;
-  stock: number;
+  stock: boolean;
   price: string;
   image: string;
   isFavourite: boolean;
@@ -81,14 +81,21 @@ export const transformGraphQLProduct = (
     product.primaryImage.trim().length > 0
       ? product.primaryImage
       : fallbackImage;
+
+  // Use customPrice if available, otherwise use variant price
+  const priceValue =
+    product.customPrice != null && product.customPrice !== undefined
+      ? product.customPrice
+      : firstVariant?.price ?? 0;
+
   return {
     id: parseInt(product.id) || index + 1,
     originalId: product.id, // Store the original GraphQL ID
     title: product.title,
     description: product.description || "",
     category: product.productType || "Peptide",
-    stock: product.totalInventory || 0,
-    price: firstVariant ? `$${firstVariant.price}` : "$0.00",
+    stock: product.inStock ?? false,
+    price: `$${priceValue.toFixed(2)}`,
     image: normalizedPrimaryImage,
     primaryImage: normalizedPrimaryImage || undefined,
     isFavourite: product.isFavorited || false,

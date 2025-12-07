@@ -31,6 +31,12 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     phoneNo: "",
     dateOfBirth: null as Date | null,
     address: "",
+    street1: "",
+    street2: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "",
     emergencyName: "",
     emergencyPhone: "",
     medicalHistory: "",
@@ -64,7 +70,13 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
           "Please enter a valid phone number in format (316) 555-0116"
         ),
       dateOfBirth: Yup.date().required("Date of Birth is required"),
-      address: Yup.string().required("Address is required"),
+      address: Yup.string().optional(),
+      street1: Yup.string().required("Street address is required"),
+      street2: Yup.string().optional(),
+      city: Yup.string().required("City is required"),
+      state: Yup.string().required("State is required"),
+      postalCode: Yup.string().required("Postal code is required"),
+      country: Yup.string().required("Country is required"),
     }),
     Yup.object({
       emergencyName: Yup.string().required(
@@ -172,7 +184,13 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               email: formData.email,
               phoneNo: formData.phoneNo,
               dateOfBirth: formData.dateOfBirth?.toISOString(),
-              address: formData.address,
+              address: formData.address || null,
+              street1: formData.street1 || null,
+              street2: formData.street2 || null,
+              city: formData.city || null,
+              state: formData.state || null,
+              postalCode: formData.postalCode || null,
+              country: formData.country || null,
               emergencyContactName: formData.emergencyName,
               emergencyContactPhone: formData.emergencyPhone,
               medicalHistory: formData.medicalHistory || null,
@@ -202,6 +220,12 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       phoneNo: "",
       dateOfBirth: null,
       address: "",
+      street1: "",
+      street2: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "",
       emergencyName: "",
       emergencyPhone: "",
       medicalHistory: "",
@@ -434,16 +458,91 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
 
             <ThemeInput
               required
-              label="Address"
-              placeholder="Enter complete address"
-              name="address"
-              error={!!errors.address}
-              errorMessage={errors.address}
-              id="address"
-              onChange={(e) => handleChange("address", e.target.value)}
+              label="Street Address"
+              placeholder="Enter street address"
+              name="street1"
+              error={!!errors.street1}
+              errorMessage={errors.street1}
+              id="street1"
+              onChange={(e) => handleChange("street1", e.target.value)}
               type="text"
-              value={formData.address}
+              value={formData.street1}
             />
+            <ThemeInput
+              label="Street Address 2 (Optional)"
+              placeholder="Apartment, suite, etc. (optional)"
+              name="street2"
+              error={!!errors.street2}
+              errorMessage={errors.street2}
+              id="street2"
+              onChange={(e) => handleChange("street2", e.target.value)}
+              type="text"
+              value={formData.street2}
+            />
+            <div className="flex items-center gap-3 md:gap-5 w-full">
+              <div className="w-full">
+                <ThemeInput
+                  required
+                  label="City"
+                  placeholder="Enter city"
+                  name="city"
+                  error={!!errors.city}
+                  errorMessage={errors.city}
+                  id="city"
+                  onChange={(e) => handleChange("city", e.target.value)}
+                  type="text"
+                  value={formData.city}
+                  className="w-full"
+                />
+              </div>
+              <div className="w-full">
+                <ThemeInput
+                  required
+                  label="State"
+                  placeholder="Enter state"
+                  name="state"
+                  error={!!errors.state}
+                  errorMessage={errors.state}
+                  id="state"
+                  onChange={(e) => handleChange("state", e.target.value)}
+                  type="text"
+                  value={formData.state}
+                  className="w-full"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 md:gap-5 w-full">
+              <div className="w-full">
+                <ThemeInput
+                  required
+                  label="Postal Code"
+                  placeholder="Enter postal code"
+                  name="postalCode"
+                  error={!!errors.postalCode}
+                  errorMessage={errors.postalCode}
+                  id="postalCode"
+                  onChange={(e) => handleChange("postalCode", e.target.value)}
+                  type="text"
+                  value={formData.postalCode}
+                  className="w-full"
+                />
+              </div>
+              <div className="w-full">
+                <ThemeInput
+                  required
+                  label="Country"
+                  placeholder="Enter country"
+                  name="country"
+                  error={!!errors.country}
+                  errorMessage={errors.country}
+                  id="country"
+                  onChange={(e) => handleChange("country", e.target.value)}
+                  type="text"
+                  value={formData.country}
+                  className="w-full"
+                />
+              </div>
+            </div>
           </div>
         )}
 

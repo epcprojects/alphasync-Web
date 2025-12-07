@@ -10,6 +10,7 @@ interface ProductDetailsProps {
   onClose: () => void;
   product: product | null;
   onClick: () => void;
+  showActionButton?: boolean;
 }
 
 type product = {
@@ -21,6 +22,9 @@ type product = {
   description: string;
   primaryImage?: string;
   tags?: string[];
+  stock?: number | boolean;
+  totalInventory?: number;
+  inStock?: boolean;
   variants?:
     | {
         sku?: string | null;
@@ -33,9 +37,23 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   onClose,
   product,
   onClick,
+  showActionButton = true,
 }) => {
   if (!product) return null;
-  console.log(product);
+
+  const resolvedStock =
+    typeof product.stock === "number"
+      ? product.stock
+      : typeof product.totalInventory === "number"
+      ? product.totalInventory
+      : undefined;
+  const isOutOfStock =
+    typeof resolvedStock === "number"
+      ? resolvedStock <= 0
+      : typeof product.stock === "boolean"
+      ? !product.stock
+      : product.inStock === false;
+
   return (
     <AppModal
       isOpen={isOpen}
@@ -43,13 +61,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       icon={<OrderDetail />}
       title="Product Details"
       position={ModalPosition.RIGHT}
-      showFooter={true}
-      onConfirm={onClick}
+      showFooter={showActionButton}
+      onConfirm={showActionButton ? onClick : undefined}
       confirmLabel="Request from Doctor"
       hideCancelBtn={true}
       outSideClickClose={false}
-      btnFullWidth={true}
-      btnIcon={<ShopingCartIcon fill="#fff" />}
+      btnFullWidth={showActionButton}
+      btnIcon={showActionButton ? <ShopingCartIcon fill="#fff" /> : undefined}
+      confimBtnDisable={showActionButton ? isOutOfStock : undefined}
     >
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4">
