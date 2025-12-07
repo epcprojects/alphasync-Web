@@ -18,6 +18,7 @@ interface OrderItem {
   variantId: string;
   quantity: number;
   price: number;
+  originalPrice: number;
 }
 
 const Page = () => {
@@ -62,12 +63,15 @@ const Page = () => {
     // lock on first item
     if (!lockedCustomer) setLockedCustomer(values.customer);
 
+    const originalPrice = selectedProductData?.price || values.price;
+
     const newItem: OrderItem = {
       product: values.product,
       productId: selectedProductData?.productId || "",
       variantId: selectedProductData?.variantId || "",
       quantity: values.quantity,
       price: values.price,
+      originalPrice: originalPrice,
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -110,11 +114,17 @@ const Page = () => {
         price: item.price,
       }));
 
+      // Check if any product price has been changed from original
+      const useCustomPricing = orderItems.some(
+        (item) => item.price !== item.originalPrice
+      );
+
       await createOrder({
         variables: {
           orderItems: orderItemsInput,
           totalPrice: totalAmount,
           patientId: selectedCustomerData.id,
+          useCustomPricing: useCustomPricing,
         },
       });
 

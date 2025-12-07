@@ -19,6 +19,9 @@ import {
 } from "@/icons";
 import OrderItemCard, { OrderItemProps } from "../cards/OrderItemCards";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { getToken, AcceptOpaqueData } from "@/lib/authorizeNet";
+import { useMutation } from "@apollo/client";
+import { PROCESS_PAYMENT } from "@/lib/graphql/mutations";
 
 type OrderItem = {
   id: string | number;
@@ -29,6 +32,7 @@ type OrderItem = {
 };
 
 type order = {
+  id: string | number;
   displayId: string;
   doctorName: string;
   orderedOn: string;
@@ -53,7 +57,7 @@ interface CustomerOrderPaymentProps {
   isOpen: boolean;
   onClose: () => void;
   order?: order;
-  onClick: () => void;
+  onClick: (token: AcceptOpaqueData) => unknown | Promise<unknown>;
   request?: requestProps;
 }
 
@@ -101,8 +105,11 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const [expiryError, setExpiryError] = useState("");
   const [cardNumberError, setCardNumberError] = useState("");
+  const [paymentError, setPaymentError] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useBodyScrollLock(isOpen);
+  const [processPaymentMutation] = useMutation(PROCESS_PAYMENT);
 
   useEffect(() => {
     const checkScreenSize = () => setIsMobile(window.innerWidth < 768); // md breakpoint
@@ -129,7 +136,8 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       0
     ) ?? 0;
 
-  const tax = (subTotal * 0.08).toFixed(2);
+  const taxAmount = subTotal * 0.08;
+  const tax = taxAmount.toFixed(2);
   const total = (subTotal + parseFloat(tax)).toFixed(2);
 
   const detectCardType = (number: string): void => {
@@ -433,6 +441,77 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     };
   }
 
+  const handlePaymentSubmit = async () => {
+    if (!showForm && window.innerWidth < 768) {
+      handleContinue();
+      return;
+    }
+
+    if (!isAnyFieldValid() || cardType === "Default" || isProcessing) {
+      validateExpiry(expiryDate);
+      validateCardNumber(cardNumber, cardType as CardType);
+      return;
+    }
+
+    const cleanCardNumber = cardNumber.replace(/\s/g, "");
+    const [month, year] = expiryDate.split("/");
+
+    setPaymentError("");
+    setIsProcessing(true);
+
+    try {
+      const token = await getToken({
+        cardNumber: cleanCardNumber,
+        expiryMonth: month,
+        expiryYear: year,
+        cvv,
+      });
+      if (order?.id) {
+        const amountValue = parseFloat(total);
+
+        if (!Number.isFinite(amountValue) || amountValue <= 0) {
+          throw new Error("Invalid order amount");
+        }
+
+        const billingAddressInput =
+          cardHolderName || billingAddress || zipCode
+            ? {
+                fullName: cardHolderName.trim(),
+                address: billingAddress.trim(),
+                zip: zipCode.trim(),
+              }
+            : null;
+
+        const { data } = await processPaymentMutation({
+          variables: {
+            orderId: String(order.id),
+            amount: amountValue,
+            opaqueData: {
+              dataDescriptor: token.dataDescriptor,
+              dataValue: token.dataValue,
+            },
+            billingAddress: billingAddressInput,
+          },
+        });
+
+        if (!data?.processPayment?.success) {
+          throw new Error("Unable to process payment");
+        }
+      }
+      await Promise.resolve(onClick(token));
+    } catch (error) {
+      setPaymentError(
+        typeof error === "string"
+          ? error
+          : error instanceof Error
+          ? error.message
+          : "Unable to process payment"
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <AppModal
       isOpen={isOpen}
@@ -447,11 +526,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       showFooter={true}
       onConfirm={(e) => {
         e.preventDefault();
-        if (!showForm && window.innerWidth < 768) {
-          handleContinue();
-        } else {
-          onClick();
-        }
+        void handlePaymentSubmit();
       }}
       onCancel={() => {
         if (isMobile && showForm) {
@@ -462,11 +537,14 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
         }
       }}
       confimBtnDisable={
-        (showForm || !isMobile) &&
-        (!isAnyFieldValid() || cardType === "Default")
+        ((showForm || !isMobile) &&
+          (!isAnyFieldValid() || cardType === "Default")) ||
+        isProcessing
       }
       confirmLabel={
-        isMobile && !request
+        isProcessing
+          ? "Processing..."
+          : isMobile && !request
           ? showForm
             ? `Pay $${total}`
             : "Continue"
@@ -558,6 +636,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
             className={`${!showForm && isMobile ? "hidden" : "block"}
             flex flex-col gap-4`}
           >
+            {paymentError && (
+              <p className="text-sm text-red-600 font-medium">{paymentError}</p>
+            )}
             <div className="flex items-center gap-3 py-2 px-4 bg-blue-50 md:hidden rounded-xl">
               <Lock />
               <span className="text-sm font-medium text-blue-900">

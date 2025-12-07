@@ -22,6 +22,7 @@ const Page = () => {
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
   };
+  console.log("notifications", notifications);
 
   return (
     <NotificationList
