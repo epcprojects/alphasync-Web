@@ -26,6 +26,12 @@ interface ProfileFormValues {
   phoneNo: string;
   dateOfBirth: Date;
   address: string;
+  street1: string;
+  street2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
 }
@@ -52,7 +58,13 @@ const Page = () => {
         "Phone number must be in format (512) 312-3123"
       ),
     dateOfBirth: Yup.string().required("Date of Birth is required"),
-    address: Yup.string().required("Address is required"),
+    address: Yup.string().optional(),
+    street1: Yup.string().required("Street address is required"),
+    street2: Yup.string().optional(),
+    city: Yup.string().required("City is required"),
+    state: Yup.string().required("State is required"),
+    postalCode: Yup.string().required("Postal code is required"),
+    country: Yup.string().required("Country is required"),
     emergencyContactName: Yup.string().required(
       "Emergency Contact Name is required"
     ),
@@ -155,7 +167,13 @@ const Page = () => {
         phoneNo: values.phoneNo,
         email: values.email,
         dateOfBirth: values.dateOfBirth,
-        address: values.address,
+        address: values.address || undefined,
+        street1: values.street1 || undefined,
+        street2: values.street2 || undefined,
+        city: values.city || undefined,
+        state: values.state || undefined,
+        postalCode: values.postalCode || undefined,
+        country: values.country || undefined,
         emergencyContactName: values.emergencyContactName,
         emergencyContactPhone: values.emergencyContactPhone,
         image: selectedImage,
@@ -194,6 +212,12 @@ const Page = () => {
         phoneNo: "",
         dateOfBirth: new Date(),
         address: "",
+        street1: "",
+        street2: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        country: "",
         emergencyContactName: "",
         emergencyContactPhone: "",
         medicalHistory: "",
@@ -209,6 +233,12 @@ const Page = () => {
       phoneNo: user.phoneNo || "",
       dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : new Date(),
       address: user.address || "",
+      street1: user.street1 || "",
+      street2: user.street2 || "",
+      city: user.city || "",
+      state: user.state || "",
+      postalCode: user.postalCode || "",
+      country: user.country || "",
       emergencyContactName: user.emergencyContactName || "",
       emergencyContactPhone: user.emergencyContactPhone || "",
       medicalHistory: user.medicalHistory || "",
@@ -333,6 +363,7 @@ const Page = () => {
                             name="email"
                             value={values.email}
                             onChange={handleChange}
+                            disabled={true}
                           />
                           <ErrorMessage
                             name="email"
@@ -440,18 +471,139 @@ const Page = () => {
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
                           >
-                            Address
+                            Street Address
                           </label>
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="address"
-                            name="address"
-                            value={values.address}
+                            type="text"
+                            name="street1"
+                            value={values.street1}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="address"
+                            name="street1"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Street Address 2 (Optional)
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="street2"
+                            value={values.street2}
+                            onChange={handleChange}
+                            placeholder="Apartment, suite, etc. (optional)"
+                          />
+                          <ErrorMessage
+                            name="street2"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            City
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="city"
+                            value={values.city}
+                            onChange={handleChange}
+                          />
+                          <ErrorMessage
+                            name="city"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            State
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="state"
+                            value={values.state}
+                            onChange={handleChange}
+                          />
+                          <ErrorMessage
+                            name="state"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Postal Code
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="postalCode"
+                            value={values.postalCode}
+                            onChange={handleChange}
+                          />
+                          <ErrorMessage
+                            name="postalCode"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Country
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="country"
+                            value={values.country}
+                            onChange={handleChange}
+                          />
+                          <ErrorMessage
+                            name="country"
                             component="div"
                             className="text-red-500 text-xs"
                           />

@@ -32,6 +32,11 @@ const poppins_init = Poppins({
 
 const menuItems = [
   {
+    label: "Dashboard",
+    href: "/admin/dashboard",
+    icon: OrdersIcon,
+  },
+  {
     label: "Doctors",
     href: "/admin/doctors",
     icon: OrdersIcon,
@@ -45,12 +50,13 @@ const menuItems = [
 ];
 
 const headings: Record<string, string> = {
+  "/admin/dashboard": "Admin Dashboard",
   "/admin/doctors": "Trusted Peptide Solutions",
   "/admin/products": "Product Management",
   "/admin/settings": "Settings",
 };
 
-const noStatsRoutes = ["/admin/settings"];
+const noStatsRoutes = ["/admin/settings", "/admin/dashboard"];
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 
@@ -153,9 +159,14 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           {hideStats && (
             <div className="flex items-center flex-col">
               {hideStats && (
-                <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
-                  {heading}
-                </h2>
+                <>
+                  <h2 className="text-white font-normal text-base md:text-2xl">
+                    👋 Welcome {user?.fullName || "----"},
+                  </h2>
+                  <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
+                    {heading}
+                  </h2>
+                </>
               )}
             </div>
           )}
