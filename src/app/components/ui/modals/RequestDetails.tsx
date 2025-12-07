@@ -3,6 +3,7 @@ import AppModal, { ModalPosition } from "./AppModal";
 import { BubbleChatIcon, ShopingCartIcon } from "@/icons";
 import OrderItemCard from "../cards/OrderItemCards";
 import Card from "../../../../../public/icons/Card";
+import { NoteAttributes } from "@/lib/graphql/attributes";
 
 interface requestDetailsProps {
   isOpen: boolean;
@@ -23,9 +24,9 @@ export type requestDetails = {
   doctorName?: string;
   doctorId?: string;
   price?: string;
-  userNotes?: string;
+  userNotes?: NoteAttributes[];
   physicianNotes?: string;
-  denialReason?: string;
+  customerReason?: string;
   category?: string;
   displayId?: string;
 };
@@ -38,7 +39,7 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
   oncancel,
 }) => {
   if (!request) return null;
-  console.log("request in model", request);
+
   const transformedItem =
     request && request.price
       ? {
@@ -51,9 +52,11 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
           strength: request.subtitle,
           doctorName: request.doctorName,
           requestedOn: request.requestedDate,
-          userNotes: request.userNotes,
+          userNotes: request.userNotes
+            ?.map((note) => note?.content)
+            .filter((content): content is string => Boolean(content)),
           physicianNotes: request.physicianNotes,
-          denialReason: request.denialReason,
+          customerReason: request?.customerReason,
           description: request.description,
         }
       : null;

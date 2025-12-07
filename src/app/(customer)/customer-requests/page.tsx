@@ -1,9 +1,13 @@
 "use client";
-import { PrescriptionRequestCard, Loader, EmptyState } from "@/app/components";
+import {
+  PrescriptionRequestCard,
+  Loader,
+  EmptyState,
+  RequestListSkeleton,
+} from "@/app/components";
 import AddNoteModal from "@/app/components/ui/modals/AddNoteModal";
 import { RequestFilledIcon, SearchIcon } from "@/icons";
 import Pagination from "@/app/components/ui/Pagination";
-import { showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import React, { useState, Suspense, useEffect } from "react";
 import RequestDetails, {
@@ -14,9 +18,11 @@ import PaymentSuccess from "@/app/components/ui/modals/PaymentSuccess";
 import CustomerOrderSummary from "@/app/components/ui/modals/CustomerOrderSummary";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import ChatWithPhysician from "@/app/components/ui/modals/CharWithPyhsicianModel";
-import { useQuery } from "@apollo/client";
-import { ALL_ORDER_REQUESTS } from "@/lib/graphql/queries";
+import { useMutation, useQuery } from "@apollo/client";
+import { ALL_ORDER_REQUESTS, FETCH_NOTES } from "@/lib/graphql/queries";
 import { OrderRequestAttributes } from "@/lib/graphql/attributes";
+import { CREATE_NOTE } from "@/lib/graphql/mutations";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 interface OrderRequestsResponse {
   allOrderRequests: {
@@ -31,6 +37,11 @@ interface OrderRequestsResponse {
 function CustomerRequestContent() {
   const [search, setSearch] = useState("");
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [noteTargetRequest, setNoteTargetRequest] = useState<{
+    originalId: string | number | null | undefined;
+    displayId?: string | null;
+    title?: string;
+  } | null>(null);
   const [isDetailModelOpen, setIsDetailModelOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<requestDetails | null>(
     null
@@ -71,6 +82,7 @@ function CustomerRequestContent() {
     data: orderRequestsData,
     loading: orderRequestsLoading,
     error: orderRequestsError,
+    refetch: refetchOrderRequests,
   } = useQuery<OrderRequestsResponse>(ALL_ORDER_REQUESTS, {
     variables: {
       search: search || undefined,
@@ -81,6 +93,8 @@ function CustomerRequestContent() {
     fetchPolicy: "network-only",
     notifyOnNetworkStatusChange: true,
   });
+
+  const [createNote, { loading: isCreatingNote }] = useMutation(CREATE_NOTE);
 
   // Transform GraphQL data to match the card format
   const transformedRequests =
@@ -131,9 +145,9 @@ function CustomerRequestContent() {
           "Dr. " +
           (request.doctor?.fullName || request.patient?.fullName || "Unknown"),
         price: `$${firstItem?.price || 0}`,
-        userNotes: "",
+        userNotes: request.notes || [],
         physicianNotes: request.doctorMessage || "",
-        denialReason: request.reason || "",
+        customerReason: request.reason || "",
         category: productInfo?.productType || "",
         imageSrc: "/images/fallbackImages/medicine-syrup.svg",
         originalId: request.id,
@@ -154,9 +168,13 @@ function CustomerRequestContent() {
     console.log(title);
   };
 
-  const handleAddNote = (title: string) => {
+  const handleAddNote = (request: {
+    originalId: string | number | null | undefined;
+    displayId?: string | null;
+    title?: string;
+  }) => {
+    setNoteTargetRequest(request);
     setIsNoteModalOpen(true);
-    console.log(title);
   };
 
   const handleRequests = (request: requestDetails) => {
@@ -182,27 +200,20 @@ function CustomerRequestContent() {
 
   const isMobile = useIsMobile();
 
-  // Show loader while fetching data
-  if (orderRequestsLoading) {
-    return (
-      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
-        <Loader />
-      </div>
-    );
-  }
-
   // Show error message if query fails
   if (orderRequestsError) {
     return (
       <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
         <div className="text-red-600 text-center">
-          {orderRequestsError.message}
+          Due to some technical issues, we are unable to fetch the requests.
+          Please try again later.
         </div>
       </div>
     );
   }
 
   const requestCount = orderRequestsData?.allOrderRequests.dataCount || 0;
+  const showSkeleton = orderRequestsLoading;
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -264,7 +275,9 @@ function CustomerRequestContent() {
           </TabList>
           <TabPanels>
             <TabPanel>
-              {showEmptyState ? (
+              {showSkeleton ? (
+                <RequestListSkeleton />
+              ) : showEmptyState ? (
                 <EmptyState />
               ) : (
                 transformedRequests.map((item) => (
@@ -273,7 +286,7 @@ function CustomerRequestContent() {
                     cardVarient="Customer"
                     onApprove={() => handleApprove(item.title)}
                     onReject={() => handleReject(item.title)}
-                    onAddNote={() => handleAddNote(item.title)}
+                    onAddNote={() => handleAddNote(item)}
                     onViewDetails={() => handleRequests(item)}
                     onChat={() => {
                       setSelectedChatInfo({
@@ -293,7 +306,9 @@ function CustomerRequestContent() {
             </TabPanel>
 
             <TabPanel>
-              {showEmptyState ? (
+              {showSkeleton ? (
+                <RequestListSkeleton />
+              ) : showEmptyState ? (
                 <EmptyState />
               ) : (
                 transformedRequests.map((item) => (
@@ -302,7 +317,7 @@ function CustomerRequestContent() {
                     cardVarient="Customer"
                     onApprove={() => handleApprove(item.title)}
                     onReject={() => handleReject(item.title)}
-                    onAddNote={() => handleAddNote(item.title)}
+                    onAddNote={() => handleAddNote(item)}
                     onViewDetails={() => handleRequests(item)}
                     onChat={() => {
                       setSelectedChatInfo({
@@ -322,7 +337,9 @@ function CustomerRequestContent() {
             </TabPanel>
 
             <TabPanel>
-              {showEmptyState ? (
+              {showSkeleton ? (
+                <RequestListSkeleton />
+              ) : showEmptyState ? (
                 <EmptyState />
               ) : (
                 transformedRequests.map((item) => (
@@ -331,7 +348,7 @@ function CustomerRequestContent() {
                     cardVarient="Customer"
                     onApprove={() => handleApprove(item.title)}
                     onReject={() => handleReject(item.title)}
-                    onAddNote={() => handleAddNote(item.title)}
+                    onAddNote={() => handleAddNote(item)}
                     onViewDetails={() => handleRequests(item)}
                     onPayment={() => {
                       handlePayment(item);
@@ -343,7 +360,9 @@ function CustomerRequestContent() {
             </TabPanel>
 
             <TabPanel>
-              {showEmptyState ? (
+              {showSkeleton ? (
+                <RequestListSkeleton />
+              ) : showEmptyState ? (
                 <EmptyState />
               ) : (
                 transformedRequests.map((item) => (
@@ -352,7 +371,7 @@ function CustomerRequestContent() {
                     cardVarient="Customer"
                     onApprove={() => handleApprove(item.title)}
                     onReject={() => handleReject(item.title)}
-                    onAddNote={() => handleAddNote(item.title)}
+                    onAddNote={() => handleAddNote(item)}
                     onViewDetails={() => handleRequests(item)}
                     {...item}
                     onPayment={() => {
@@ -367,7 +386,7 @@ function CustomerRequestContent() {
       </div>
 
       {/* Pagination */}
-      {transformedRequests.length > 0 && pageCount > 1 && (
+      {!showSkeleton && transformedRequests.length > 0 && pageCount > 1 && (
         <div className="flex justify-center flex-col gap-2 md:gap-6">
           <Pagination
             currentPage={currentPage}
@@ -463,12 +482,39 @@ function CustomerRequestContent() {
       />
       <AddNoteModal
         isOpen={isNoteModalOpen}
-        onClose={() => setIsNoteModalOpen(false)}
-        onConfirm={(note) => {
-          showSuccessToast("Note added Successfully.");
-          console.log(note);
+        onClose={() => {
+          setIsNoteModalOpen(false);
+          setNoteTargetRequest(null);
         }}
-        itemTitle="ORD-004"
+        onConfirm={async ({ note }) => {
+          if (!noteTargetRequest?.originalId) {
+            showErrorToast("Unable to determine the selected request.");
+            throw new Error("Missing notable ID");
+          }
+
+          try {
+            await createNote({
+              variables: {
+                notableId: String(noteTargetRequest.originalId),
+                notableType: "ORDER_REQUEST",
+                content: note,
+              },
+            });
+            showSuccessToast("Note added successfully.");
+            setIsNoteModalOpen(false);
+            setNoteTargetRequest(null);
+            refetchOrderRequests();
+          } catch (error) {
+            console.error("Error creating note:", error);
+            showErrorToast("Failed to add note. Please try again.");
+            throw error;
+          }
+        }}
+        itemTitle={
+          noteTargetRequest?.displayId || noteTargetRequest?.title || ""
+        }
+        isSubmitting={isCreatingNote}
+        disableAutoClose
       />
     </div>
   );

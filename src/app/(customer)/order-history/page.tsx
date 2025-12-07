@@ -6,7 +6,7 @@ import {
   OrderHistory,
   SearchIcon,
 } from "@/icons";
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import PrescriptionOrderCard, {
@@ -20,6 +20,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
 import { EmptyState, OrderHistorySkeleton, Pagination } from "@/app/components";
 import { PATIENT_ORDERS } from "@/lib/graphql/queries";
+import { REORDER_ORDER } from "@/lib/graphql/mutations";
 
 interface PatientOrderItemData {
   id?: string | null;
@@ -80,6 +81,9 @@ function History() {
   const itemsPerPage = 10;
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
+  const [reorderingOrderId, setReorderingOrderId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -96,26 +100,6 @@ function History() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const statusLabelMap: Record<string, string> = {
-    paid: "Processing",
-    fulfilled: "Delivered",
-  };
-
-  const formatStatusLabel = (status?: string | null) => {
-    if (!status) return "Processing";
-
-    const normalizedStatus = status.toUpperCase();
-    if (statusLabelMap[normalizedStatus]) {
-      return statusLabelMap[normalizedStatus];
-    }
-
-    const normalized = status.replace(/_/g, " ").toLowerCase();
-    return normalized.replace(/\b\w/g, (char) => char.toUpperCase());
-  };
-
-  const normalizeStatus = (status?: string | null) =>
-    (status || "").toLowerCase().replace(/\s+/g, "-").replace(/_/g, "-");
 
   const mapFilterToStatusVariable = (filterId: string) => {
     const filterToStatusMap: Record<string, string | undefined> = {
@@ -143,13 +127,14 @@ function History() {
     data: patientOrdersData,
     loading: patientOrdersLoading,
     error: patientOrdersError,
+    refetch: refetchPatientOrders,
   } = useQuery<PatientOrdersResponse>(PATIENT_ORDERS, {
     variables: {
       patientId: null,
       page: Math.max(1, currentPage + 1),
       perPage: itemsPerPage,
       search: search || undefined,
-      status: statusVariable,
+      status: statusVariable ? statusVariable : "paid",
     },
     fetchPolicy: "network-only",
     notifyOnNetworkStatusChange: true,
@@ -190,6 +175,7 @@ function History() {
 
         return {
           id: item.id ?? `${order.id}-${index}`,
+
           medicineName: item.product?.title || "Unknown Product",
           quantity,
           price: unitPrice,
@@ -211,7 +197,7 @@ function History() {
         ? new Date(order.createdAt).toLocaleDateString()
         : "--",
       totalPrice: order.totalPrice ?? 0,
-      status: formatStatusLabel(order.status),
+      status: order.status ?? undefined,
       patient: order.patient
         ? {
             address: normalizeAddress(order.patient.address),
@@ -220,13 +206,13 @@ function History() {
     };
   });
 
-  const filteredOrders = transformedOrders.filter((order) => {
-    if (selectedFilter !== "all") {
-      if (normalizeStatus(order.status) !== selectedFilter) return false;
-    }
-
-    return true;
-  });
+  const filteredOrders =
+    selectedFilter === "all" || !statusVariable
+      ? transformedOrders
+      : transformedOrders.filter((order) => {
+          const orderStatus = (order.status ?? "").toUpperCase();
+          return orderStatus === statusVariable.toUpperCase();
+        });
 
   const totalResults =
     patientOrdersData?.patientOrders?.count ?? filteredOrders.length;
@@ -244,9 +230,6 @@ function History() {
     const nextPage = Math.max(0, selectedPage);
     if (nextPage === currentPage) return;
     setCurrentPage(nextPage);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(nextPage));
-    router.replace(`?${params.toString()}`);
   };
 
   const handleOrderClick = (order: PrescriptionOrder) => {
@@ -255,6 +238,26 @@ function History() {
   };
 
   const isMobile = useIsMobile();
+  const [reorderOrder] = useMutation(REORDER_ORDER);
+
+  const handleReorder = async (order: PrescriptionOrder) => {
+    if (!order?.id) return;
+    try {
+      setReorderingOrderId(order.id);
+      await reorderOrder({
+        variables: {
+          orderId: order.id,
+        },
+      });
+      await refetchPatientOrders();
+      showSuccessToast("Reorder request submitted");
+    } catch (error) {
+      showErrorToast("Failed to submit reorder request");
+      console.error("Failed to reorder order:", error);
+    } finally {
+      setReorderingOrderId(null);
+    }
+  };
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -390,10 +393,11 @@ function History() {
               key={order.id}
               orders={[order]}
               onPress={handleOrderClick}
-              btnTitle={"Reorder"}
-              onPay={() => {
-                showSuccessToast("Reorder Request Submitted");
-              }}
+              btnTitle={
+                reorderingOrderId === order.id ? "Processing..." : "Reorder"
+              }
+              btnDisabled={reorderingOrderId === order.id}
+              onPay={handleReorder}
               onDelete={() => {
                 showErrorToast("Order Cancelled");
               }}

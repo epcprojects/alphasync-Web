@@ -1,3 +1,4 @@
+import type { NoteAttributes } from "@/lib/graphql/attributes";
 import ProductImage from "../ProductImage";
 
 export interface OrderItemProps {
@@ -11,9 +12,10 @@ export interface OrderItemProps {
     strength?: string;
     doctorName?: string;
     requestedOn?: string;
-    userNotes?: string;
+    userNotes?: string | Array<string | NoteAttributes>;
     physicianNotes?: string;
     denialReason?: string;
+    customerReason?: string;
     description?: string;
     variants?: {
       sku?: string | null;
@@ -75,9 +77,29 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
         ];
 
   const notes: Note[] = [
-    item.userNotes ? { label: "Your Notes:", value: item.userNotes } : null,
+    ...(Array.isArray(item.userNotes)
+      ? item.userNotes
+          .map((note) =>
+            typeof note === "string" ? note : note?.content ?? ""
+          )
+          .filter((note): note is string => Boolean(note))
+          .map((note, index) => ({
+            label: index === 0 ? "Your Notes:" : "",
+            value: note,
+          }))
+      : typeof item.userNotes === "string"
+      ? [
+          {
+            label: "Your Notes:",
+            value: item.userNotes,
+          },
+        ]
+      : []),
     item.physicianNotes
       ? { label: "Physician Notes:", value: item.physicianNotes }
+      : null,
+    item.customerReason
+      ? { label: "Request Reason:", value: item.customerReason }
       : null,
     item.denialReason
       ? { label: "Reason for Denial:", value: item.denialReason }

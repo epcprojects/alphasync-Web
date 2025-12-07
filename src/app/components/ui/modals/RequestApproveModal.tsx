@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AppModal from "./AppModal";
 import { ApproveCheckIcon } from "@/icons";
 import TextAreaField from "../inputs/TextAreaField";
@@ -21,10 +21,17 @@ const RequestApproveModal: React.FC<RequestApproveModalProps> = ({
 }) => {
   const [doctorMessage, setDoctorMessage] = useState("");
 
+  // Reset message when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setDoctorMessage("");
+    }
+  }, [isOpen]);
+
   const handleClose = () => {
     if (!isSubmitting) {
-      onClose();
       setDoctorMessage(""); // reset on close
+      onClose();
     }
   };
 

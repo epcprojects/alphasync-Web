@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeftIcon,
   FilterIcon,
   GridViewIcon,
   ListViewIcon,
@@ -11,7 +10,7 @@ import {
 import { showSuccessToast } from "@/lib/toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
-import ReactPaginate from "react-paginate";
+import Pagination from "@/app/components/ui/Pagination";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import BrowserProductCard from "@/app/components/ui/cards/BrowserProductCard";
 import RequestModel from "@/app/components/ui/modals/RequestModel";
@@ -49,7 +48,11 @@ function InventoryContent() {
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
   const itemsPerPage = 9;
-  const initialPage = parseInt(searchParams.get("page") || "0", 10);
+  // URL uses 1-based pagination, convert to 0-based for internal use
+  const initialPage = Math.max(
+    0,
+    parseInt(searchParams.get("page") || "1", 10) - 1
+  );
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [selectedCategory, setSelectedCategory] = useState<string>(
     orderCategories[0].label
@@ -110,10 +113,10 @@ function InventoryContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory]);
 
-  const handlePageChange = ({ selected }: { selected: number }) => {
+  const handlePageChange = (selected: number) => {
     setCurrentPage(selected);
     const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(selected));
+    params.set("page", String(selected + 1)); // Convert 0-based to 1-based for URL
     router.replace(`?${params.toString()}`);
   };
 
@@ -308,7 +311,7 @@ function InventoryContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
               {currentItems.map((product) => (
                 <BrowserProductCard
-                  key={product.id}
+                  key={product.originalId}
                   product={product}
                   onAddToCart={() => handleAddToCart(product)}
                   onCardClick={handleCardClick}
@@ -332,7 +335,7 @@ function InventoryContent() {
               {currentItems.map((product) => (
                 <BrowseProductListView
                   onRowClick={() => {}}
-                  key={product.id}
+                  key={product.originalId}
                   product={product}
                   onInfoBtn={handleCardClick}
                   onAddToCart={() => handleAddToCart(product)}
@@ -346,43 +349,13 @@ function InventoryContent() {
               <EmptyState mtClasses="-mt-3 md:-mt-6" />
             )}
 
-            <div className="w-full flex items-center justify-center">
-              <ReactPaginate
-                breakLabel="..."
-                nextLabel={
-                  <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                    <span className="hidden md:inline-block">Next</span>
-                    <span className="block mb-0.5 rotate-180">
-                      <ArrowLeftIcon />
-                    </span>
-                  </span>
-                }
-                previousLabel={
-                  <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                    <span className="md:mb-0.5">
-                      <ArrowLeftIcon />
-                    </span>
-                    <span className="hidden md:inline-block">Previous</span>
-                  </span>
-                }
+            {currentItems.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={pageCount || 1}
                 onPageChange={handlePageChange}
-                pageRangeDisplayed={3}
-                marginPagesDisplayed={1}
-                pageCount={pageCount ? pageCount : 1}
-                forcePage={currentPage}
-                pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-                containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-                pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-                activeClassName="bg-gray-200 text-gray-900 font-medium"
-                previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-                nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-                breakClassName="px-3 py-1 font-semibold text-gray-400"
               />
-
-              <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-                Page {currentPage + 1} of {pageCount}
-              </h2>
-            </div>
+            )}
           </div>
         </div>
       )}

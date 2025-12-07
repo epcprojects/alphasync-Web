@@ -1,5 +1,6 @@
 "use client";
 import React, { ReactNode } from "react";
+import { useQuery } from "@apollo/client";
 import { DashboardStats, Header, DoctorRoute } from "../components";
 import {
   SyrupIcon,
@@ -14,9 +15,19 @@ import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useAppSelector } from "@/lib/store/hooks";
+import { DOCTOR_DASHBOARD } from "@/lib/graphql/queries";
 
 interface AuthLayoutProps {
   children: ReactNode;
+}
+
+interface DoctorDashboardResponse {
+  doctorDashboard: {
+    ordersCount: number;
+    totalProfit: number;
+    totalSales: number;
+    averageOrderValue: number;
+  };
 }
 
 const poppins_init = Poppins({
@@ -65,6 +76,22 @@ const noStatsRoutes = [
 
 const showSubHeading = ["/reminder", "/requests", "/notifications"];
 
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
+
+const numberFormatter = new Intl.NumberFormat("en-US");
+
+const formatCurrency = (value?: number | null) =>
+  value === null || value === undefined
+    ? "--"
+    : currencyFormatter.format(value);
+
+const formatNumber = (value?: number | null) =>
+  value === null || value === undefined ? "--" : numberFormatter.format(value);
+
 export default function AuthLayout({ children }: AuthLayoutProps) {
   const user = useAppSelector((state) => state.auth.user);
   const pathname = usePathname();
@@ -88,6 +115,74 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
   const isMobile = useIsMobile();
 
+  const {
+    data: dashboardData,
+    loading: dashboardLoading,
+    error: dashboardError,
+  } = useQuery<DoctorDashboardResponse>(DOCTOR_DASHBOARD, {
+    skip: !user?.id,
+    fetchPolicy: "network-only",
+  });
+
+  if (dashboardError) {
+    console.error("Failed to load doctor dashboard stats:", dashboardError);
+  }
+
+  const stats = [
+    {
+      label: "Total Sales",
+      value: dashboardLoading
+        ? "..."
+        : formatCurrency(dashboardData?.doctorDashboard?.totalSales),
+      icon: (
+        <SyrupIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-purple-500",
+    },
+    {
+      label: "Total Profit",
+      value: dashboardLoading
+        ? "..."
+        : formatCurrency(dashboardData?.doctorDashboard?.totalProfit),
+      icon: (
+        <SyrupIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-emerald-400",
+    },
+    {
+      label: "Avg. Order Value",
+      value: dashboardLoading
+        ? "..."
+        : formatCurrency(dashboardData?.doctorDashboard?.averageOrderValue),
+      icon: (
+        <SyrupIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-pink-400",
+    },
+    {
+      label: "Orders Count",
+      value: dashboardLoading
+        ? "..."
+        : formatNumber(dashboardData?.doctorDashboard?.ordersCount),
+      icon: (
+        <SyrupIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-orange-400",
+    },
+  ];
+
   return (
     <DoctorRoute>
       <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
@@ -99,52 +194,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
               showUserName={pathname.startsWith("/orders") ? false : true}
               username={user?.fullName || "noname"}
               heading={heading}
-              stats={[
-                {
-                  label: "Sales This Year",
-                  value: "$67,890.41",
-                  icon: (
-                    <SyrupIcon
-                      height={isMobile ? "16" : "32"}
-                      width={isMobile ? "16" : "32"}
-                    />
-                  ),
-                  bgColor: "bg-purple-500",
-                },
-                {
-                  label: "Sales This Month",
-                  value: "$8,932.12",
-                  icon: (
-                    <SyrupIcon
-                      height={isMobile ? "16" : "32"}
-                      width={isMobile ? "16" : "32"}
-                    />
-                  ),
-                  bgColor: "bg-emerald-400",
-                },
-                {
-                  label: "Sales This Week",
-                  value: "$2,114.77",
-                  icon: (
-                    <SyrupIcon
-                      height={isMobile ? "16" : "32"}
-                      width={isMobile ? "16" : "32"}
-                    />
-                  ),
-                  bgColor: "bg-pink-400",
-                },
-                {
-                  label: "Top Ordered Product",
-                  value: "BPC-157",
-                  icon: (
-                    <SyrupIcon
-                      height={isMobile ? "16" : "32"}
-                      width={isMobile ? "16" : "32"}
-                    />
-                  ),
-                  bgColor: "bg-orange-400",
-                },
-              ]}
+              stats={stats}
             />
           )}
           {hideStats && (
