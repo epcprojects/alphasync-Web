@@ -117,11 +117,17 @@ export default function PostDetail() {
         },
       ];
 
+      // Check if price has been changed from original
+      const originalPrice =
+        product.variants?.[0]?.price || product.customPrice || 0;
+      const useCustomPricing = orderData.price !== originalPrice;
+
       await createOrder({
         variables: {
           orderItems,
           totalPrice: orderData.price,
           patientId: orderData.customerId,
+          useCustomPricing: useCustomPricing,
         },
       });
 

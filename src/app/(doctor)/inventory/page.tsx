@@ -136,6 +136,10 @@ function InventoryContent() {
     }
 
     try {
+      // Check if price has been changed from original
+      const originalPrice = selectedProduct?.price || 0;
+      const useCustomPricing = data.price !== originalPrice;
+
       // Create order with single item
       await createOrder({
         variables: {
@@ -149,6 +153,7 @@ function InventoryContent() {
           ],
           totalPrice: data.price,
           patientId: data.customerId,
+          useCustomPricing: useCustomPricing,
         },
       });
 

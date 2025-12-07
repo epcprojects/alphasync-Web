@@ -1,6 +1,5 @@
 "use client";
 import { HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon } from "@/icons";
-import Image from "next/image";
 import Tooltip from "../tooltip";
 import ProductImage from "@/app/components/ui/ProductImage";
 
@@ -9,7 +8,7 @@ type Product = {
   title: string;
   description: string;
   category: string;
-  stock: number;
+  stock: boolean;
   price: string;
   image: string;
   isFavourite: boolean;
@@ -69,8 +68,14 @@ export default function ProductListView({
         <span className="font-medium text-xs inline-flex pe-1 md:hidden text-primary">
           Stock:
         </span>
-        <span className="text-primary text-xs md:text-sm font-normal md:font-medium">
-          {product.stock} units
+        <span
+          className={`text-xs md:text-sm font-normal md:font-medium rounded-full py-0.5 px-2.5 border ${
+            product.stock
+              ? "bg-blue-50 border-blue-200 text-blue-700"
+              : "bg-red-50 border-red-200 text-red-700"
+          }`}
+        >
+          {product.stock ? "In Stock" : "Out Stock"}
         </span>
       </div>
 

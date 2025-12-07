@@ -41,10 +41,12 @@ interface DoctorOrdersResponse {
       }[];
       totalPrice: number;
       subtotalPrice: number;
+      netCost: number | null;
+      profit: number | null;
     }[];
     count: number;
-    nextPage: number | null;
-    prevPage: number | null;
+    nextPage: number;
+    prevPage: number;
     totalPages: number;
   };
 }
@@ -296,8 +298,8 @@ function OrderContent() {
                 status: order.status,
                 items: order.orderItems.length,
                 total: order.totalPrice,
-                netCost: order.subtotalPrice,
-                profit: order.totalPrice - order.subtotalPrice,
+                netCost: order.netCost ?? 0,
+                profit: order.profit ?? 0,
               }}
               onViewOrderDetail={() => router.push(`/orders/${order.id}`)}
             />
