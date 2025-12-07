@@ -27,6 +27,7 @@ type ThemeInputProps = {
   autoComplete?: string;
   icon?: React.ReactNode;
   maxLength?: number;
+  disabled?: boolean;
 };
 
 const ThemeInput: React.FC<ThemeInputProps> = ({
@@ -46,6 +47,7 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
   icon,
   maxLength,
   onBlur,
+  disabled = false,
 }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -88,6 +90,7 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
                 ? "border-red-500 focus:ring-red-200"
                 : "border-lightGray focus:ring-gray-200"
             }
+            ${disabled ? "bg-gray-100 cursor-not-allowed opacity-60" : ""}
             ${className}`}
           name={name}
           onBlur={onBlur}
@@ -98,6 +101,7 @@ const ThemeInput: React.FC<ThemeInputProps> = ({
           autoComplete={resolvedAutoComplete}
           inputMode={isEmail ? "email" : undefined}
           maxLength={maxLength}
+          disabled={disabled}
         />
 
         {error && showErrorIcon && (

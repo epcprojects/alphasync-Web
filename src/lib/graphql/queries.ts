@@ -70,10 +70,12 @@ export const ALL_PRODUCTS_INVENTORY = gql`
         title
         totalInventory
         vendor
+        tags
         variants {
           price
           id
           shopifyVariantId
+          sku
         }
       }
       count
@@ -103,6 +105,8 @@ export const DOCTOR_ORDERS = gql`
           }
         }
         totalPrice
+        profit
+        netCost
         subtotalPrice
       }
       count
@@ -170,10 +174,12 @@ export const FETCH_PRODUCT = gql`
       title
       totalInventory
       vendor
+      tags
       variants {
         price
         id
         shopifyVariantId
+        sku
       }
     }
   }
@@ -384,6 +390,22 @@ export const ALL_NOTIFICATIONS = gql`
           id
           displayId
           status
+          requestedItems {
+            title
+            price
+            product {
+              id
+              title
+              description
+              primaryImage
+              productType
+              vendor
+              tags
+              variants {
+                sku
+              }
+            }
+          }
         }
         user {
           id
@@ -393,6 +415,115 @@ export const ALL_NOTIFICATIONS = gql`
       nextPage
       prevPage
       totalPages
+    }
+  }
+`;
+
+export const ORDER_REMINDERS = gql`
+  query OrderReminders($page: Int, $perPage: Int, $search: String) {
+    orderReminders(page: $page, search: $search, perPage: $perPage) {
+      allData {
+        id
+        
+        createdAt
+        daysSinceCreated
+        autoReorder
+        patient {
+         ${userpayload}
+        }
+        orderItems {
+          product {
+            title
+          }
+        }
+      }
+      count
+      nextPage
+      prevPage
+      totalPages
+    }
+  }
+`;
+
+export const DOCTOR_DASHBOARD = gql`
+  query DoctorDashboard {
+    doctorDashboard {
+      ordersCount
+      totalProfit
+      totalSales
+      averageOrderValue
+    }
+  }
+`;
+
+export const PAYMENT_INVOICES = gql`
+  query PaymentInvoices($orderId: ID!) {
+    paymentInvoices(orderId: $orderId) {
+      amount
+      orderId
+      billingAddress
+      status
+      transactionId
+      invoiceNumber
+    }
+  }
+`;
+export const ADMIN_DASHBOARD = gql`
+  query AdminDashboard {
+    adminDashboard {
+      totalProductsSold
+      totalDoctors
+      salesAmountToday
+      salesAmountThisMonth
+      salesAmountPastMonth
+      newDoctorsThisMonth
+      inactiveDoctors
+      activeDoctors
+      topSellingProducts {
+        productId
+        productTitle
+        salesCount
+        salesPercentage
+      }
+      topPerformingDoctors {
+        doctorName
+        totalSalesAmount
+        doctorEmail
+      }
+      newlyOnboardedDoctors {
+        doctorEmail
+        doctorId
+        doctorName
+        onboardedAt
+      }
+    }
+  }
+`;
+export const ORDERS_GRAPH = gql`
+  query OrdersGraph($period: OrdersGraphPeriodEnum!) {
+    ordersGraph(period: $period) {
+      period
+      totalOrders
+
+      dataPoints {
+        date
+        label
+        ordersCount
+      }
+    }
+  }
+`;
+
+export const REVENUE_GRAPH = gql`
+  query RevenueGraph($period: OrdersGraphPeriodEnum!) {
+    revenueGraph(period: $period) {
+      dataPoints {
+        date
+        revenueAmount
+        label
+      }
+      period
+      totalRevenue
     }
   }
 `;

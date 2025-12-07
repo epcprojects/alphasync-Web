@@ -19,7 +19,8 @@ const statusStyles: Record<string, string> = {
   Delivered: "bg-green-50 text-green-700 border border-green-200",
   paid: "bg-green-50 text-green-700 border border-green-200",
   Processing: "bg-amber-50 text-amber-700 border border-amber-200",
-  Cancelled: "bg-red-50 text-red-700 border border-red-200",
+  cancelled: "bg-red-50 text-red-700 border border-red-200",
+  canceled: "bg-red-50 text-red-700 border border-red-200",
   Shipped: "bg-blue-50 text-blue-700 border border-blue-200",
   pending_payment: "bg-orange-50 text-orange-700 border border-orange-200",
 };
@@ -28,6 +29,10 @@ function formatStatusDisplay(status: string) {
   switch (status) {
     case "pending_payment":
       return "Pending Payment";
+    case "canceled":
+      return "Cancelled";
+    case "cancelled":
+      return "cancelled";
     default:
       return status;
   }
