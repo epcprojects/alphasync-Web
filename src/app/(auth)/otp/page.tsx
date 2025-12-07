@@ -79,7 +79,7 @@ function OTPContent() {
             window.location.href = "/verify-info";
           }
         } else if (storedData?.userType === "ADMIN") {
-          router.push(`/admin/doctors`);
+          router.push(`/admin/dashboard`);
         } else {
           router.push("/login");
         }

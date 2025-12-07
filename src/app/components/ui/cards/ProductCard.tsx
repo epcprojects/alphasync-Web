@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon } from "@/icons"; // adjust import based on your project
 import ThemeButton from "../buttons/ThemeButton";
 import ProductImage from "@/app/components/ui/ProductImage";
@@ -10,7 +9,7 @@ type Product = {
   title: string;
   description: string;
   category: string;
-  stock: number;
+  stock: boolean;
   price: string;
   image: string;
   isFavourite: boolean;
@@ -76,7 +75,7 @@ export default function ProductCard({
               </span>
 
               <span className="block text-primary text-xs md:text-sm font-semibold">
-                Stock: {product.stock}
+                {product.stock ? "In Stock" : "Out Stock"}
               </span>
             </div>
 

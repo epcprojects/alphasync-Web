@@ -22,7 +22,7 @@ type product = {
   description: string;
   primaryImage?: string;
   tags?: string[];
-  stock?: number;
+  stock?: number | boolean;
   totalInventory?: number;
   inStock?: boolean;
   variants?:
@@ -50,6 +50,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   const isOutOfStock =
     typeof resolvedStock === "number"
       ? resolvedStock <= 0
+      : typeof product.stock === "boolean"
+      ? !product.stock
       : product.inStock === false;
 
   return (

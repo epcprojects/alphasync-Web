@@ -195,10 +195,14 @@ function ProductsContent() {
                   </div>
                 </div>
                 <div className="col-span-2 flex items-center">
-                  <span className="text-sm text-gray-700">{product.category}</span>
+                  <span className="text-sm text-gray-700">
+                    {product.category}
+                  </span>
                 </div>
                 <div className="col-span-2 flex items-center">
-                  <span className="text-sm text-gray-700">{product.productForm}</span>
+                  <span className="text-sm text-gray-700">
+                    {product.productForm}
+                  </span>
                 </div>
                 <div className="col-span-2 flex items-center">
                   <span
@@ -219,12 +223,12 @@ function ProductsContent() {
                 <div className="col-span-1 flex items-center">
                   <span
                     className={`text-xs px-2 py-1 rounded-full ${
-                      product.stock > 0
+                      product.stock
                         ? "bg-green-100 text-green-700"
                         : "bg-red-100 text-red-700"
                     }`}
                   >
-                    {product.stock}
+                    {product.stock ? "In Stock" : "Out Stock"}
                   </span>
                 </div>
               </div>
