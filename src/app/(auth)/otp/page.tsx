@@ -1,60 +1,132 @@
 "use client";
 import { AuthHeader, Loader, ThemeButton } from "@/app/components";
 import { Images } from "@/app/ui/images";
-import { InfoIcon } from "@/icons";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { Suspense, useEffect, useState } from "react";
 import OTPInput from "react-otp-input";
-import { toast } from "react-toastify";
+import { useMutation } from "@apollo/client/react";
+import { LOGIN_WITH_OTP, RESEND_OTP } from "@/lib/graphql/mutations";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/slices/authSlice";
+import { UserAttributes } from "@/lib/graphql/attributes";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import Cookies from "js-cookie";
+
+interface LoginWithOtpResponse {
+  loginWithOtp: {
+    token?: string;
+    user?: UserAttributes;
+  };
+}
+interface StoredOtpData {
+  userType?: string;
+  email?: string;
+  rememberMe?: boolean;
+}
 
 function OTPContent() {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState(false);
-  const searchParams = useSearchParams();
+  const [storedData, setStoredData] = useState<StoredOtpData>({});
+  const [timer, setTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
-  const loginType = searchParams.get("loginType"); // "Doctor" or "Customer"
-  const email = searchParams.get("email");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const data = JSON.parse(localStorage.getItem("dataForOtp") || "{}");
+      setStoredData(data);
+    }
+  }, []);
 
-  const handleVerify = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("verify");
-
-    if (otp === "123456") {
-      setError(false);
-      console.log("OTP Verified");
-      if (loginType === "Doctor") {
-        router.push("/inventory");
-      } else if (loginType === "Customer") {
-        router.push(`/verify-info?email=${email}`);
-      } else if (loginType === "admin") {
-        router.push(`/admin/doctors`);
-      } else {
-        router.push("/login");
-      }
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
     } else {
-      setError(true);
-      toast.error(`Incorrect OTP`, {
-        position: "top-left",
-        icon: <InfoIcon />,
-        closeButton: false,
-        autoClose: 3000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        style: {
-          position: "fixed",
-          top: "20%",
-          left: "20%",
-          width: "160px",
-          maxHeight: "44px",
-          minHeight: "44px",
-          backgroundColor: "#FEF3F2",
-          padding: "8px",
-          color: "#111827",
+      setCanResend(true);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  const [loginWithOtp, { loading: otpLoading }] =
+    useMutation<LoginWithOtpResponse>(LOGIN_WITH_OTP, {
+      onCompleted: (data) => {
+        const token = data?.loginWithOtp?.token ?? "";
+        const user = data?.loginWithOtp?.user ?? null;
+
+        if (token) {
+          Cookies.set("auth_token", token, { expires: 7 });
+        }
+
+        if (user) {
+          Cookies.set("user_data", JSON.stringify(user), { expires: 7 });
+        }
+        dispatch(setUser(user));
+
+        showSuccessToast("Logged in successfully!");
+
+        if (storedData?.userType === "DOCTOR") {
+          window.location.href = "/inventory";
+        } else if (storedData?.userType === "PATIENT") {
+          if (user?.addressVerified) {
+            window.location.href = "/pending-payments";
+          } else {
+            window.location.href = "/verify-info";
+          }
+        } else if (storedData?.userType === "ADMIN") {
+          router.push(`/admin/dashboard`);
+        } else {
+          router.push("/login");
+        }
+      },
+      onError: (error) => {
+        showErrorToast(error.message);
+      },
+    });
+
+  const [resendOtp, { loading: resendLoading }] = useMutation(RESEND_OTP, {
+    onCompleted: () => {
+      showSuccessToast("OTP sent successfully!");
+      setTimer(60);
+      setCanResend(false);
+    },
+    onError: (error) => {
+      showErrorToast(error.message);
+    },
+  });
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      await loginWithOtp({
+        variables: {
+          email: storedData?.email,
+          otp: otp,
+          rememberMe: storedData?.rememberMe,
         },
       });
+    } catch (error) {
+      console.error("OTP verification error:", error);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!canResend || resendLoading) return;
+
+    try {
+      await resendOtp({
+        variables: {
+          email: storedData?.email,
+        },
+      });
+    } catch (error) {
+      console.error("Resend OTP error:", error);
     }
   };
   return (
@@ -73,7 +145,7 @@ function OTPContent() {
             value={otp}
             onChange={(value) => {
               setOtp(value);
-              if (error) setError(false); // reset error when typing
+              if (error) setError(false);
             }}
             numInputs={6}
             placeholder="000000"
@@ -88,23 +160,27 @@ function OTPContent() {
           />
         </div>
         <ThemeButton
-          disabled={otp.length < 6 || error}
-          label="Verify"
+          disabled={otp.length < 6 || error || otpLoading}
+          label={otpLoading ? "Verifying..." : "Verify"}
           type="submit"
           heightClass="h-11"
         />
       </form>
       <div className="flex items-center gap-1">
-        <h2 className="text-sm text-vampire-gray">Didn’t receive the OTP?</h2>
-        <button
-          onClick={() => {
-            setOtp("");
-            setError(false);
-          }}
-          className="text-primary cursor-pointer text-sm font-semibold"
-        >
-          Click to resend
-        </button>
+        <h2 className="text-sm text-vampire-gray">
+          {"Didn't receive the OTP?"}
+        </h2>
+        {canResend ? (
+          <button
+            onClick={handleResendOtp}
+            disabled={resendLoading}
+            className="text-primary cursor-pointer text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {resendLoading ? "Sending..." : "Click to resend"}
+          </button>
+        ) : (
+          <span className="text-sm text-gray-500">Resend in {timer}s</span>
+        )}
       </div>
     </div>
   );

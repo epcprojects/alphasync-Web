@@ -7,12 +7,24 @@ interface ProductRequestDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   itemTitle?: string;
+  requestData?: {
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    status?: string;
+    requestedDate?: string;
+    price?: string;
+    doctorName?: string;
+    reason?: string;
+    imageSrc?: string;
+  };
 }
 
 const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
   isOpen,
   onClose,
   itemTitle,
+  requestData,
 }) => {
   const handleClose = () => {
     onClose();
@@ -36,22 +48,35 @@ const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
               width={1080}
               height={1080}
               className="h-10 md:h-16 md:w-16 w-10"
-              src={"/images/products/bpc-157.png"}
-              alt={""}
+              src={
+                requestData?.imageSrc ||
+                "/images/fallbackImages/medicine-syrup.svg"
+              }
+              alt={requestData?.title || ""}
             />
           </div>
           <div className="flex items-start gap-0.5 md:gap-2 flex-col">
             <h2 className="text-gray-800 font-semibold text-xs md:text-sm">
-              2X Blend CJC-1295 No DAC (5mg) / Ipamorelin (5mg)
+              {requestData?.title || "Product Request"}
             </h2>
 
             <p className="text-[10px] md:text-xs text-gray-800">
-              A 1:1 blend of CJC-1295 No DAC (5mg) and Ipamorelin (5mg)
+              {requestData?.description ||
+                requestData?.subtitle ||
+                "No description"}
             </p>
 
             <div>
-              <span className="inline-block rounded-full px-2.5 py-0.5 text-xs md:text-xs font-medium bg-amber-50 border border-amber-200 text-amber-700">
-                Pending Review
+              <span
+                className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-xs font-medium ${
+                  requestData?.status === "Approved"
+                    ? "bg-green-50 border border-green-200 text-green-700"
+                    : requestData?.status === "Denied"
+                    ? "bg-red-50 border border-red-200 text-red-500"
+                    : "bg-amber-50 border border-amber-200 text-amber-700"
+                }`}
+              >
+                {requestData?.status || "Pending Review"}
               </span>
             </div>
           </div>
@@ -60,26 +85,10 @@ const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
         <div className="bg-gray-50 rounded-lg md:py-3 md:px-4 px-2 py-1 flex flex-col gap-2 md:gap-3">
           <div className="flex items-center justify-between">
             <span className="block text-xs md:text-sm text-gray-800 font-normal">
-              Strength:
-            </span>
-            <span className="block text-xs md:text-sm text-gray-800 font-medium">
-              5 mg vial
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="block text-xs md:text-sm text-gray-800 font-normal">
-              Dosage Form:
-            </span>
-            <span className="block text-xs md:text-sm text-gray-800 font-medium">
-              Injectable
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="block text-xs md:text-sm text-gray-800 font-normal">
               Doctor Name:
             </span>
             <span className="block text-xs md:text-sm text-gray-800 font-medium">
-              Dr. Sarah Mitchell
+              {requestData?.doctorName || "N/A"}
             </span>
           </div>
           <div className="flex items-center justify-between">
@@ -87,7 +96,7 @@ const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
               Requested:
             </span>
             <span className="block text-xs md:text-sm text-gray-800 font-medium">
-              8/8/2025
+              {requestData?.requestedDate || "N/A"}
             </span>
           </div>
           <div className="flex items-center justify-between">
@@ -95,25 +104,26 @@ const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
               Price
             </span>
             <span className="block text-sm md:text-base text-primary font-semibold">
-              $20.99
+              {requestData?.price || "$0.00"}
             </span>
           </div>
         </div>
 
-        <hr className=" text-gray-200" />
-
-        <div className="w-full">
-          <h2 className="text-gray-900 mb-1.5 font-medium text-xs md:text-sm">
-            Your Notes:
-          </h2>
-          <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
-            <p className="text-[10px] md:text-xs text-gray-600">
-              Requesting this for a recent shoulder injury that&apos;s been slow
-              to heal. Been dealing with inflammation and limited mobility for 3
-              weeks.
-            </p>
-          </div>
-        </div>
+        {requestData?.reason && (
+          <>
+            <hr className=" text-gray-200" />
+            <div className="w-full">
+              <h2 className="text-gray-900 mb-1.5 font-medium text-xs md:text-sm">
+                Reason:
+              </h2>
+              <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
+                <p className="text-[10px] md:text-xs text-gray-600">
+                  {requestData.reason}
+                </p>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </AppModal>
   );

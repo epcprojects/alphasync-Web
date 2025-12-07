@@ -1,21 +1,23 @@
 "use client";
 
-import Image from "next/image";
 import { InfoIcon, ShopingCartIcon } from "@/icons";
 import ThemeButton from "../buttons/ThemeButton";
 import Tooltip from "../tooltip";
+import ProductImage from "@/app/components/ui/ProductImage";
 
 export type Product = {
   id: number;
+  originalId: string;
   title: string;
   description: string;
   prescription: boolean;
   category: string;
   productForm: string;
-  stock: number;
+  stock: boolean;
   price: string;
   image: string;
   isFavourite: boolean;
+  tags?: string[];
 };
 
 interface BrowserProductCardProps {
@@ -29,6 +31,7 @@ export default function BrowserProductCard({
   onAddToCart,
   onCardClick,
 }: BrowserProductCardProps) {
+  console.log(product);
   return (
     <div className="rounded-2xl pb-2  flex-col bg-white shadow-table border relative border-gray-200 px-2 flex items-center justify-center">
       <div className="absolute top-4  end-4">
@@ -42,12 +45,12 @@ export default function BrowserProductCard({
         </Tooltip>
       </div>
       <div className="bg-[url(/images/productBgPattern.png)] bg-[position:0_20px] bg-cover h-52 md:h-60 pt-3 pb-2 flex items-center justify-center ">
-        <Image
+        <ProductImage
           width={280}
-          className="h-full object-contain"
           height={280}
           src={product.image}
           alt={product.title}
+          className="h-full object-contain"
         />
       </div>
 
@@ -58,13 +61,16 @@ export default function BrowserProductCard({
               <h2 className="text-gray-800 font-semibold line-clamp-1 overflow-hidden text-base md:text-lg">
                 {product.title}
               </h2>
-              <span className="block w-fit whitespace-nowrap rounded-full bg-gray-100 border border-gray-200 py-0.5 px-2.5 text-gray-700 font-medium text-xs md:text-sm">
-                {product.category}
-              </span>
+              {product.tags?.[0] && (
+                <span className="block w-fit whitespace-nowrap rounded-full bg-gray-100 border border-gray-200 py-0.5 px-2.5 text-gray-700 font-medium text-xs md:text-sm">
+                  {product.tags?.[0]}
+                </span>
+              )}
             </div>
-            <h3 className="text-gray-600 text-xs line-clamp-2 md:text-sm">
-              {product.description}
-            </h3>
+            <h3
+              className="text-gray-600 text-xs line-clamp-2 md:text-sm"
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            ></h3>
           </div>
 
           <div className="flex flex-col gap-2 md:gap-3">
@@ -98,6 +104,7 @@ export default function BrowserProductCard({
                 variant="outline"
                 className="w-full"
                 heightClass="h-10 md:h-11"
+                disabled={!product.stock}
               />
 
               <h2 className="text-primary font-semibold text-sm md:text-xl min-w-16 text-end">

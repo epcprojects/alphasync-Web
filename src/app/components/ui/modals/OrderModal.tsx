@@ -1,40 +1,54 @@
 "use client";
 import React, { useState } from "react";
-import { AppModal, SelectGroupDropdown } from "@/components";
-
-type Customer = {
-  name: string;
-  displayName: string;
-  email: string;
-};
+import { AppModal, CustomerSelect } from "@/components";
 
 interface OrderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: { customer: string; price: number }) => void;
-  customers: Customer[];
+  onConfirm: (data: {
+    customer: string;
+    price: number;
+    productId?: string;
+    shopifyVariantId?: string;
+    customerId?: string;
+  }) => void;
+  productId?: string;
+  shopifyVariantId?: string;
+  defaultPrice?: number;
+  isLoading?: boolean;
 }
 
 const OrderModal: React.FC<OrderModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  customers,
+  productId,
+  shopifyVariantId,
+  defaultPrice,
+  isLoading = false,
 }) => {
   const [selectedUser, setSelectedUser] = useState("");
   const [price, setPrice] = useState("");
   const [errors, setErrors] = useState<{ user?: string; price?: string }>({});
+  const [selectedCustomerData, setSelectedCustomerData] = useState<{
+    name: string;
+    displayName: string;
+    email: string;
+    id: string;
+  } | null>(null);
 
-  const handleGroupSelect = (user: string | string[]) => {
-    const userSelected = Array.isArray(user) ? user[0] : user;
-    setErrors({});
-    setSelectedUser(userSelected);
-  };
+  // Auto-populate price when defaultPrice changes
+  React.useEffect(() => {
+    if (defaultPrice && defaultPrice > 0) {
+      setPrice(defaultPrice.toString());
+    }
+  }, [defaultPrice]);
 
   const handleClose = () => {
     setSelectedUser("");
     setPrice("");
     setErrors({});
+    setSelectedCustomerData(null);
     onClose();
   };
 
@@ -54,8 +68,14 @@ const OrderModal: React.FC<OrderModalProps> = ({
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      onConfirm({ customer: selectedUser, price: Number(price) });
-      handleClose();
+      onConfirm({
+        customer: selectedUser,
+        price: Number(price),
+        productId,
+        shopifyVariantId,
+        customerId: selectedCustomerData?.id,
+      });
+      // Don't close modal here - let the parent handle it after successful mutation
     }
   };
 
@@ -65,32 +85,34 @@ const OrderModal: React.FC<OrderModalProps> = ({
     <AppModal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Order"
+      title="Create Order"
       onConfirm={handleConfirm}
       outSideClickClose={false}
-      confirmLabel="Create Order"
-      confimBtnDisable={!selectedUser || !price || Number(price) <= 0}
+      confirmLabel={isLoading ? "Creating Order..." : "Create Order"}
+      confimBtnDisable={
+        !selectedUser || !price || Number(price) <= 0 || isLoading
+      }
       scrollNeeded={false}
     >
       <div className="w-full flex flex-col justify-between  md:min-h-20 gap-4">
         {/* Customer Selection */}
         <div>
-          <SelectGroupDropdown
-            selectedGroup={selectedUser}
-            setSelectedGroup={handleGroupSelect}
-            groups={customers}
+          <CustomerSelect
+            selectedCustomer={selectedUser}
+            setSelectedCustomer={(customer) => {
+              setErrors({});
+              setSelectedUser(customer);
+            }}
             errors={errors.user || ""}
-            name="Select Customer"
-            multiple={false}
-            placeholder="Select User"
-            searchTerm={""}
-            setSearchTerm={() => {}}
-            isShowDrop={true}
-            required={false}
+            touched={!!errors.user}
+            placeholder="Select Customer"
+            required={true}
+            showLabel={true}
             paddingClasses="py-1 px-2"
             optionPaddingClasses="p-1"
-            showLabel={true}
-            showIcon
+            onCustomerChange={(customer) => {
+              setSelectedCustomerData(customer);
+            }}
           />
           {errors.user && (
             <p className="text-red-500 text-xs mt-1">{errors.user}</p>
@@ -112,6 +134,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
             <input
               type="number"
               id="input-group-1"
+              disabled={true}
               value={price}
               onChange={(e) => {
                 setPrice(e.target.value);

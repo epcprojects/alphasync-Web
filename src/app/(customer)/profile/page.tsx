@@ -1,29 +1,69 @@
 "use client";
-import { TextAreaField, ThemeButton, ThemeInput } from "@/app/components";
+import {
+  TextAreaField,
+  ThemeButton,
+  ThemeInput,
+  ImageUpload,
+} from "@/app/components";
 import { InfoIcon, UserIcon } from "@/icons";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
-import AvatarUploader from "@/app/components/AvatarUploader";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useMutation } from "@apollo/client";
+import { UPDATE_CUSTOMER_PROFILE, REMOVE_IMAGE } from "@/lib/graphql/mutations";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
+import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/slices/authSlice";
+import Cookies from "js-cookie";
+
+interface ProfileFormValues {
+  fullName: string;
+  email: string;
+  phoneNo: string;
+  dateOfBirth: Date;
+  address: string;
+  street1: string;
+  street2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+}
+
+interface InformationFormValues {
+  medicalHistory: string;
+  knownAllergies: string;
+  currentMedications: string;
+  additionalNotes: string;
+}
+
 const Page = () => {
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
   const profileSchema = Yup.object().shape({
     fullName: Yup.string().required("Full name is required"),
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
-    phone: Yup.string()
-      .matches(/^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, "Invalid phone number")
-      .required("Phone number is required"),
-    dob: Yup.string().required("Date of Birth is required"),
-    address: Yup.string().required("Address is required"),
-    ename: Yup.string().required("Emergency Contact Name is required"),
-    ephone: Yup.string()
-      .matches(/^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, "Invalid phone number")
-      .required("Emergency Contact Phone is required"),
+    phoneNo: Yup.string()
+      .required("Phone number is required")
+      .matches(
+        /^\(\d{3}\)\s\d{3}-\d{4}$/,
+        "Phone number must be in format (512) 312-3123"
+      ),
+    dateOfBirth: Yup.string().required("Date of Birth is required"),
+    address: Yup.string().optional(),
+    street1: Yup.string().required("Street address is required"),
+    street2: Yup.string().optional(),
+    city: Yup.string().required("City is required"),
+    state: Yup.string().required("State is required"),
+    postalCode: Yup.string().required("Postal code is required"),
   });
 
   const informationSchema = Yup.object().shape({
@@ -36,6 +76,180 @@ const Page = () => {
   });
 
   const isMobile = useIsMobile();
+
+  // Get user data from Redux store
+  const user = useAppSelector((state) => state.auth.user);
+  const dispatch = useAppDispatch();
+
+  // Fallback: If user is not in Redux but exists in cookies, load it
+  useEffect(() => {
+    if (!user) {
+      const userDataFromCookie = Cookies.get("user_data");
+      if (userDataFromCookie) {
+        try {
+          const parsedUser = JSON.parse(userDataFromCookie);
+          dispatch(setUser(parsedUser));
+        } catch (error) {
+          console.error("Error parsing user data from cookie:", error);
+        }
+      }
+    }
+  }, [user, dispatch]);
+
+  // Update customer profile mutation
+  const [updateCustomerProfile, { loading: updateLoading }] = useMutation(
+    UPDATE_CUSTOMER_PROFILE,
+    {
+      onCompleted: (data) => {
+        // Update Redux store with the latest user data
+        if (data?.updateUser?.user) {
+          dispatch(setUser(data.updateUser.user));
+          // Also update the cookie with the latest data
+          Cookies.set("user_data", JSON.stringify(data.updateUser.user), {
+            expires: 7,
+          });
+        }
+        showSuccessToast("Profile updated successfully!");
+      },
+      onError: (error) => {
+        showErrorToast(error.message || "Failed to update profile");
+      },
+    }
+  );
+
+  // Remove image mutation
+  const [removeImage] = useMutation(REMOVE_IMAGE, {
+    onCompleted: (data) => {
+      if (data?.removeImage?.user) {
+        dispatch(setUser(data.removeImage.user));
+        Cookies.set("user_data", JSON.stringify(data.removeImage.user), {
+          expires: 7,
+        });
+        showSuccessToast("Image removed successfully!");
+      }
+    },
+    onError: (error) => {
+      showErrorToast(error.message || "Failed to remove image");
+    },
+  });
+
+  const handleImageChange = (file: File | null) => {
+    setSelectedImage(file);
+  };
+
+  const handleImageRemove = async () => {
+    try {
+      await removeImage({
+        variables: {
+          id: user?.id,
+          removeImage: true,
+        },
+      });
+    } catch (error) {
+      console.error("Error removing image:", error);
+    }
+  };
+
+  const handleProfileSubmit = async (values: ProfileFormValues) => {
+    try {
+      const variables = {
+        fullName: values.fullName,
+        phoneNo: values.phoneNo,
+        email: values.email,
+        dateOfBirth: values.dateOfBirth,
+        address: values.address || undefined,
+        street1: values.street1 || undefined,
+        street2: values.street2 || undefined,
+        city: values.city || undefined,
+        state: values.state || undefined,
+        postalCode: values.postalCode || undefined,
+
+        emergencyContactName: values.emergencyContactName,
+        emergencyContactPhone: values.emergencyContactPhone,
+        image: selectedImage,
+      };
+      console.log("Mutation variables:", variables);
+      await updateCustomerProfile({ variables });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+
+  const handleInformationSubmit = async (values: InformationFormValues) => {
+    console.log("Information form values:", values);
+    try {
+      const variables = {
+        medicalHistory: values.medicalHistory,
+        knownAllergies: values.knownAllergies,
+        currentMedications: values.currentMedications,
+        additionalNotes: values.additionalNotes,
+      };
+      console.log("Information mutation variables:", variables);
+      await updateCustomerProfile({ variables });
+    } catch (error) {
+      console.error("Error updating information:", error);
+    }
+  };
+
+  const INITIAL_AVATAR = "/images/arinaProfile.png";
+
+  // Convert user data to form initial values
+  const getInitialValues = () => {
+    if (!user) {
+      return {
+        fullName: "",
+        email: "",
+        phoneNo: "",
+        dateOfBirth: new Date(),
+        address: "",
+        street1: "",
+        street2: "",
+        city: "",
+        state: "",
+        postalCode: "",
+
+        emergencyContactName: "",
+        emergencyContactPhone: "",
+        medicalHistory: "",
+        knownAllergies: "",
+        currentMedications: "",
+        additionalNotes: "",
+      };
+    }
+
+    return {
+      fullName: user.fullName || "",
+      email: user.email || "",
+      phoneNo: user.phoneNo || "",
+      dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : new Date(),
+      address: user.address || "",
+      street1: user.street1 || "",
+      street2: user.street2 || "",
+      city: user.city || "",
+      state: user.state || "",
+      postalCode: user.postalCode || "",
+
+      emergencyContactName: user.emergencyContactName || "",
+      emergencyContactPhone: user.emergencyContactPhone || "",
+      medicalHistory: user.medicalHistory || "",
+      knownAllergies: user.knownAllergies || "",
+      currentMedications: user.currentMedications || "",
+      additionalNotes: user.additionalNotes || "",
+    };
+  };
+
+  // Show loading if user data is not available yet
+  if (!user) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="bg-white rounded-xl p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-gray-500">Loading profile...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -86,33 +300,24 @@ const Page = () => {
                     </span>
                   </div>
 
-                  <AvatarUploader
-                    initialImage="/images/arinaProfile.png"
-                    onChange={(file) => {
-                      if (file) {
-                        console.log("New image selected:", file);
-                        // send to API
-                      } else {
-                        console.log("Image deleted");
-                        // handle delete API call
-                      }
-                    }}
+                  <ImageUpload
+                    imageUrl={
+                      user?.imageUrl
+                        ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${user?.imageUrl}`
+                        : undefined
+                    }
+                    onChange={handleImageChange}
+                    onImageRemove={handleImageRemove}
+                    placeholder={INITIAL_AVATAR}
+                    className="col-span-12 md:col-span-8 lg:col-span-8"
+                    showTitle={false}
                   />
                 </div>
                 <Formik
-                  initialValues={{
-                    fullName: "Daniel Baker",
-                    email: "daniel.baker@alphasync.com",
-                    phone: "(316) 555-0116",
-                    dob: new Date(),
-                    address: "123 Main St",
-                    ename: "Daniel Baker",
-                    ephone: "(316) 555-0116",
-                  }}
+                  initialValues={getInitialValues()}
                   validationSchema={profileSchema}
-                  onSubmit={(values) => {
-                    console.log("Profile Values:", values);
-                  }}
+                  onSubmit={handleProfileSubmit}
+                  enableReinitialize={true}
                 >
                   {({ handleChange, values, setFieldValue }) => (
                     <Form>
@@ -148,6 +353,7 @@ const Page = () => {
                             name="email"
                             value={values.email}
                             onChange={handleChange}
+                            disabled={true}
                           />
                           <ErrorMessage
                             name="email"
@@ -168,12 +374,12 @@ const Page = () => {
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="phone"
-                            name="phone"
-                            value={values.phone}
+                            name="phoneNo"
+                            value={values.phoneNo}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="phone"
+                            name="phoneNo"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -191,15 +397,21 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <DatePicker
-                            name="dob"
+                            name="dateOfBirth"
                             showMonthDropdown
                             showYearDropdown
                             dropdownMode="select"
                             wrapperClassName="w-full"
                             placeholderText="mm/dd/yyyy"
                             toggleCalendarOnIconClick
-                            selected={values.dob ? new Date(values.dob) : null}
-                            onChange={(date) => setFieldValue("dob", date)}
+                            selected={
+                              values.dateOfBirth
+                                ? new Date(values.dateOfBirth)
+                                : null
+                            }
+                            onChange={(date) =>
+                              setFieldValue("dateOfBirth", date)
+                            }
                             className={`border border-lightGray rounded-lg flex px-2 md:px-3 outline-none focus:ring focus:ring-gray-100 
           placeholder:text-gray-600 text-gray-800 items-center !py-3 h-11 !w-full`}
                             maxDate={new Date()}
@@ -236,7 +448,7 @@ const Page = () => {
                             }
                           />
                           <ErrorMessage
-                            name="dob"
+                            name="dateOfBirth"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -249,18 +461,115 @@ const Page = () => {
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
                           >
-                            Address
+                            Street Address
                           </label>
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="address"
-                            name="address"
-                            value={values.address}
+                            type="text"
+                            name="street1"
+                            value={values.street1}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="address"
+                            name="street1"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Street Address 2 (Optional)
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="street2"
+                            value={values.street2}
+                            onChange={handleChange}
+                            placeholder="Apartment, suite, etc. (optional)"
+                          />
+                          <ErrorMessage
+                            name="street2"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            City
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="city"
+                            value={values.city}
+                            onChange={handleChange}
+                          />
+                          <ErrorMessage
+                            name="city"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            State
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="state"
+                            value={values.state}
+                            onChange={handleChange}
+                          />
+                          <ErrorMessage
+                            name="state"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Postal Code
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="postalCode"
+                            value={values.postalCode}
+                            onChange={handleChange}
+                          />
+                          <ErrorMessage
+                            name="postalCode"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -278,13 +587,13 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="ename"
-                            name="ename"
-                            value={values.ename}
+                            type="emergencyContactName"
+                            name="emergencyContactName"
+                            value={values.emergencyContactName}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="ename"
+                            name="emergencyContactName"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -302,13 +611,13 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="ephone"
-                            name="ephone"
-                            value={values.ephone}
+                            type="emergencyContactPhone"
+                            name="emergencyContactPhone"
+                            value={values.emergencyContactPhone}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="ephone"
+                            name="emergencyContactPhone"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -316,10 +625,11 @@ const Page = () => {
                       </div>
                       <div className="flex pt-3 md:pt-6 justify-end">
                         <ThemeButton
-                          label="Save Changes"
+                          label={updateLoading ? "Saving..." : "Save Changes"}
                           heightClass="h-10"
                           type="submit"
                           className="w-full md:w-fit"
+                          disabled={updateLoading}
                         />
                       </div>
                     </Form>
@@ -330,15 +640,14 @@ const Page = () => {
               <TabPanel className={"px-4 md:px-8"}>
                 <Formik
                   initialValues={{
-                    medicalHistory: "",
-                    knownAllergies: "",
-                    currentMedications: "",
-                    additionalNotes: "",
+                    medicalHistory: user?.medicalHistory || "",
+                    knownAllergies: user?.knownAllergies || "",
+                    currentMedications: user?.currentMedications || "",
+                    additionalNotes: user?.additionalNotes || "",
                   }}
                   validationSchema={informationSchema}
-                  onSubmit={(values) => {
-                    console.log("Password Values:", values);
-                  }}
+                  onSubmit={handleInformationSubmit}
+                  enableReinitialize={true}
                 >
                   {({ handleChange, values }) => (
                     <Form className="flex flex-col w-full">
@@ -441,11 +750,11 @@ const Page = () => {
 
                       <div className="flex pt-3 md:pt-6 justify-end">
                         <ThemeButton
-                          label="Update Password"
+                          label={updateLoading ? "Saving..." : "Save Changes"}
                           heightClass="h-10"
                           type="submit"
                           className="w-full md:w-fit"
-                          disabled
+                          disabled={updateLoading}
                         />
                       </div>
                     </Form>

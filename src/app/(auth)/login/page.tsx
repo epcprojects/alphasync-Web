@@ -8,19 +8,57 @@ import * as Yup from "yup";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "@headlessui/react";
 import { TickIcon } from "@/icons";
+import { useMutation } from "@apollo/client/react";
+import { LOGIN_USER, SEND_OTP } from "@/lib/graphql/mutations";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import Cookies from "js-cookie";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/slices/authSlice";
 
-type LoginType = "Customer" | "Doctor";
+type LoginType = "Patient" | "Doctor";
 
 function LoginContext() {
-  const [loginType, setLoginType] = useState("Doctor");
   const router = useRouter();
-  const params = useSearchParams();
-  const redirectedFrom = params.get("redirectedFrom");
 
-  console.log(redirectedFrom);
+  const dispatch = useAppDispatch();
+  const [loginType, setLoginType] = useState("Doctor");
+  const searchParams = useSearchParams();
+  const isAdminLogin = searchParams.get("admin") === "admin";
+
+  const [loginUser, { loading: loginLoading }] = useMutation(LOGIN_USER, {
+    onCompleted: (data) => {
+      const message = data?.loginUser?.message;
+      if (!!data?.loginUser?.user?.twoFaEnabled) {
+        router.push("/otp");
+        showSuccessToast(message);
+      } else {
+        const token = data?.loginUser?.token ?? "";
+        const user = data?.loginUser?.user ?? null;
+        dispatch(setUser(user));
+        Cookies.set("auth_token", token, { expires: 7 });
+        Cookies.set("user_data", JSON.stringify(user), { expires: 7 });
+        window.location.href = "/inventory";
+        showSuccessToast(message);
+      }
+    },
+    onError: (error) => {
+      showErrorToast(error.message);
+    },
+  });
+
+  const [sendOtp, { loading: sendOtpLoading }] = useMutation(SEND_OTP, {
+    onCompleted: (data) => {
+      const message = data?.sendOtp?.message;
+      showSuccessToast(message);
+      router.push("/otp");
+    },
+    onError: (error) => {
+      showErrorToast(error.message);
+    },
+  });
 
   const validationSchema = Yup.object().shape({
-    loginType: Yup.mixed<LoginType>().oneOf(["Customer", "Doctor"]).required(),
+    loginType: Yup.mixed<LoginType>().oneOf(["Patient", "Doctor"]).required(),
     email: Yup.string()
       .email("Please enter a valid email address.")
       .required("Email is required."),
@@ -42,34 +80,39 @@ function LoginContext() {
     },
     validationSchema,
     onSubmit: (values) => {
-      console.log("Form submitted:", values);
+      const dataForOtp = {
+        userType: isAdminLogin ? "ADMIN" : loginType.toUpperCase(),
+        email: values.email,
+        rememberMe: values.rememberMe,
+      };
+      localStorage.setItem("dataForOtp", JSON.stringify(dataForOtp));
 
-      const loginTypeIs =
-        redirectedFrom === "admin" ? redirectedFrom : values.loginType;
-
-      router.push(
-        `/otp?loginType=${loginTypeIs}&email=${values.email}&rememberMe=${values.rememberMe}`
-      );
+      // Use SEND_OTP for Patient type, LOGIN_USER for Doctor/Admin
+      if (loginType === "Patient") {
+        sendOtp({
+          variables: {
+            email: values.email,
+          },
+        });
+      } else {
+        loginUser({
+          variables: {
+            email: values.email,
+            password: values.password,
+            rememberMe: values.rememberMe,
+            userType: isAdminLogin ? "ADMIN" : values.loginType.toUpperCase(),
+          },
+        });
+      }
     },
     enableReinitialize: true,
   });
 
   return (
     <div className="relative flex flex-col items-center justify-center h-screen">
-      {redirectedFrom === "admin" ? (
+      {isAdminLogin ? (
         <AuthHeader
           logo={Images.auth.logo}
-          // defaultValue={loginType}
-          // options={["Customer", "Doctor"]}
-          // onToggleChange={(val) => {
-          //   setLoginType(val);
-          //   formik.setFieldValue("loginType", val);
-          //   if (val !== "Doctor") {
-          //     formik.setFieldValue("password", "");
-          //     formik.setFieldTouched("password", false);
-          //   }
-          //   formik.validateForm();
-          // }}
           subtitle="Please enter your details to log in"
           title="Welcome back"
         />
@@ -77,7 +120,7 @@ function LoginContext() {
         <AuthHeader
           logo={Images.auth.logo}
           defaultValue={loginType}
-          options={["Customer", "Doctor"]}
+          options={["Patient", "Doctor"]}
           onToggleChange={(val) => {
             setLoginType(val);
             formik.setFieldValue("loginType", val);
@@ -154,7 +197,7 @@ function LoginContext() {
         <ThemeButton
           label="Login"
           type="submit"
-          disabled={formik.isSubmitting}
+          disabled={loginLoading || sendOtpLoading}
           onClick={() => {}}
           heightClass="h-11"
         />

@@ -10,10 +10,13 @@ import {
   NoteIcon,
   CreditCardOutlineIcon,
 } from "@/icons";
+import type { NoteAttributes } from "@/lib/graphql/attributes";
 import InfoGrid from "./InfoGrid";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 export type cardVariantType = "Customer" | "Doctor";
+type UserNote = NoteAttributes;
+
 interface PrescriptionRequestCardProps {
   imageSrc?: string;
   title?: string;
@@ -24,9 +27,9 @@ interface PrescriptionRequestCardProps {
   reviewedDate?: string;
   doctorName?: string;
   price?: string;
-  userNotes?: string;
+  userNotes?: UserNote[];
   physicianNotes?: string;
-  denialReason?: string;
+  customerReason?: string;
   onApprove?: () => void;
   onReject?: () => void;
   onChat?: () => void;
@@ -49,7 +52,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   price,
   userNotes,
   physicianNotes,
-  denialReason,
+  customerReason,
   onApprove,
   onReject,
   onChat,
@@ -81,6 +84,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   };
 
   const isMobile = useIsMobile();
+  console.log("userNotes", userNotes);
 
   return (
     <div className={`${baseClasses} ${variantClasses[cardVarient]}`}>
@@ -106,9 +110,10 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
                   )}
                 </h2>
                 {description && (
-                  <p className="text-[10px] md:text-xs mb-1.5 text-gray-800">
-                    {description}
-                  </p>
+                  <p
+                    className="text-[10px] md:text-xs mb-1.5 text-gray-800"
+                    dangerouslySetInnerHTML={{ __html: description }}
+                  />
                 )}
               </div>
 
@@ -145,61 +150,82 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
           />
         )}
       </div>
-
-      {userNotes && (
-        <div className="w-full">
-          <h2 className="text-gray-900 mb-1.5 font-medium text-xs md:text-sm">
-            Your Notes:
-          </h2>
-          <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
-            <p className="text-xs sm:text-sm md:text-base text-gray-600">
-              {userNotes}
-            </p>
+      {cardVarient === "Customer" &&
+        Array.isArray(userNotes) &&
+        userNotes.length > 0 && (
+          <div className="w-full">
+            <h2 className="text-gray-900 mb-1.5 font-medium text-xs md:text-sm">
+              Your Notes:
+            </h2>
+            <div>
+              {userNotes.map((note, index) => (
+                <div
+                  className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full mb-2"
+                  key={index}
+                >
+                  <div className="text-xs sm:text-sm md:text-base text-gray-600">
+                    {note?.content}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {physicianNotes && (
         <div className="w-full">
           <h2 className="text-gray-900  mb-1.5 font-medium text-xs md:text-sm">
             Physician Notes:
           </h2>
-          <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
-            <p className="text-xs sm:text-sm md:text-base text-gray-600">
+          <div
+            className={
+              status === "Denied"
+                ? "bg-red-100 p-1.5 md:p-3 rounded-lg w-full"
+                : "bg-porcelan p-1.5 md:p-3 rounded-lg w-full"
+            }
+          >
+            <p
+              className={
+                status === "Denied"
+                  ? "text-xs sm:text-sm md:text-base font-medium text-red-900"
+                  : "text-xs sm:text-sm md:text-base text-gray-600"
+              }
+            >
               {physicianNotes}
             </p>
           </div>
         </div>
       )}
 
-      {denialReason && (
+      {customerReason && (
         <div className="w-full">
           <h2 className="text-gray-900  mb-1.5 font-medium text-xs md:text-sm">
-            Reason for Denial:
+            Request Reason:
           </h2>
-          <div className="bg-red-100 p-1.5 md:p-3 rounded-lg w-full">
-            <p className="text-xs sm:text-sm md:text-base font-medium text-red-900">
-              {denialReason}
+          <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
+            <p className="text-xs sm:text-sm md:text-base text-gray-600">
+              {customerReason}
             </p>
           </div>
         </div>
       )}
 
       <div className="flex items-center flex-col sm:flex-row justify-end gap-1 w-full md:gap-2">
-        {onApprove && status !== "Approved" && cardVarient === "Doctor" && (
-          <ThemeButton
-            label="Approve"
-            icon={<ApproveCheckIcon />}
-            onClick={onApprove}
-            variant="outline"
-            heightClass="h-10"
-            className="w-full sm:w-fit"
-          />
-        )}
+        {onApprove &&
+          status === "Pending Review" &&
+          cardVarient === "Doctor" && (
+            <ThemeButton
+              label="Approve"
+              icon={<ApproveCheckIcon />}
+              onClick={onApprove}
+              variant="outline"
+              heightClass="h-10"
+              className="w-full sm:w-fit"
+            />
+          )}
         {onReject &&
-          !denialReason &&
           cardVarient === "Doctor" &&
-          status !== "Approved" && (
+          status === "Pending Review" && (
             <ThemeButton
               label="Reject"
               icon={<RejectIcon />}
@@ -244,18 +270,16 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             className="w-full sm:w-fit"
           />
         )}
-        {onAddNote &&
-          status !== "Approved" &&
-          !(denialReason && cardVarient !== "Customer") && (
-            <ThemeButton
-              label="Add note"
-              icon={<NoteIcon />}
-              onClick={onAddNote}
-              variant="outline"
-              heightClass="h-10"
-              className="w-full sm:w-fit"
-            />
-          )}
+        {onAddNote && cardVarient === "Customer" && (
+          <ThemeButton
+            label="Add note"
+            icon={<NoteIcon />}
+            onClick={onAddNote}
+            variant="outline"
+            heightClass="h-10"
+            className="w-full sm:w-fit"
+          />
+        )}
       </div>
     </div>
   );

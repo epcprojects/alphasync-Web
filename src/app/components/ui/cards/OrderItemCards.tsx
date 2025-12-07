@@ -1,4 +1,5 @@
-import Image from "next/image";
+import type { NoteAttributes } from "@/lib/graphql/attributes";
+import ProductImage from "../ProductImage";
 
 export interface OrderItemProps {
   item: {
@@ -11,9 +12,17 @@ export interface OrderItemProps {
     strength?: string;
     doctorName?: string;
     requestedOn?: string;
-    userNotes?: string;
+    userNotes?: string | Array<string | NoteAttributes>;
     physicianNotes?: string;
     denialReason?: string;
+    customerReason?: string;
+    description?: string;
+    variants?: {
+      sku?: string | null;
+    };
+    tags?: string[];
+    imageUrl?: string;
+    primaryImage?: string;
   };
   requestStatus?: boolean;
   paymentRequest?: boolean;
@@ -43,7 +52,6 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
   requestStatus,
   paymentRequest,
 }) => {
-  console.log(item);
   const details =
     requestStatus && !paymentRequest
       ? [
@@ -51,17 +59,17 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
           { label: "Dosage Form:", value: "Injectable" },
           { label: "Doctor Name:", value: item.doctorName },
           { label: "Requested:", value: item.requestedOn },
-          { label: "Category:", value: "Recovery" },
+          { label: "Category:", value: item.amount ?? "N/A" },
         ]
       : paymentRequest
       ? [
-          { label: "Strength", value: item.strength },
+          { label: "Strength:", value: item.strength },
           { label: "Dosage Form:", value: "Injectable" },
           { label: "Doctor Name:", value: item.doctorName },
-          { label: "Requested:", value: "8/8/2025" },
-          { label: "Category:", value: "Recovery" },
-          { label: "Subtotal:", value: "$125.99" },
-          { label: "Tax (8%):", value: "$12.00" },
+          { label: "Requested:", value: item.requestedOn },
+          { label: "Category:", value: item.amount ?? "N/A" },
+          { label: "Subtotal:", value: `$${item.price.toFixed(2)}` },
+          { label: "Tax (8%):", value: `$${(item.price * 0.08).toFixed(2)}` },
         ]
       : [
           { label: "Quantity", value: item.quantity },
@@ -69,15 +77,35 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
         ];
 
   const notes: Note[] = [
-    item.userNotes ? { label: "Your Notes:", value: item.userNotes } : null,
+    ...(Array.isArray(item.userNotes)
+      ? item.userNotes
+          .map((note) =>
+            typeof note === "string" ? note : note?.content ?? ""
+          )
+          .filter((note): note is string => Boolean(note))
+          .map((note, index) => ({
+            label: index === 0 ? "Your Notes:" : "",
+            value: note,
+          }))
+      : typeof item.userNotes === "string"
+      ? [
+          {
+            label: "Your Notes:",
+            value: item.userNotes,
+          },
+        ]
+      : []),
     item.physicianNotes
       ? { label: "Physician Notes:", value: item.physicianNotes }
       : null,
+    item.customerReason
+      ? { label: "Request Reason:", value: item.customerReason }
+      : null,
     item.denialReason
-      ? { label: "Reason for Denial", value: item.denialReason }
+      ? { label: "Reason for Denial:", value: item.denialReason }
       : null,
   ].filter((note): note is Note => note !== null);
-
+  console.log("primaryImage", item.primaryImage);
   return (
     <div
       key={item.id}
@@ -87,9 +115,9 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
     >
       <div className="flex items-start gap-3 md:border-b md:border-gray-200 md:pb-4">
         <div className="w-18 h-18 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
-          <Image
-            alt="#"
-            src={"/images/products/p1.png"}
+          <ProductImage
+            alt="prduct"
+            src={item.primaryImage}
             width={1024}
             height={1024}
           />
@@ -99,12 +127,14 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
             {item.medicineName}
           </h3>
           <div className={`${requestStatus ? "block" : "hidden"} md:flex`}>
-            <p className="text-sm font-normal text-gray-800 line-clamp-2">
-              A synthetic peptide known for its healing properties. BPC-157
-              promotes tissue...
-            </p>
+            <p
+              className="text-sm font-normal text-gray-800"
+              dangerouslySetInnerHTML={{
+                __html: item.description || "No description available",
+              }}
+            />
           </div>
-          <div className="flex justify-between items-center text-sm text-gray-500">
+          <div className="flex justify-between gap-3 items-start text-sm text-gray-500">
             <div
               className={`flex items-center ${item.status ? "gap-2" : "gap-0"}`}
             >
@@ -122,17 +152,29 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                 </div>
               )}
               {!requestStatus && (
-                <div>
-                  <span
-                    className={`inline-block whitespace-nowrap border border-gray-200 rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium`}
-                  >
-                    Recovery & Healing
-                  </span>
+                <div className="flex flex-wrap items-center gap-1">
+                  {item.tags && item.tags.length > 0 ? (
+                    item.tags.map((tag, index) => (
+                      <span
+                        key={`${item.id}-tag-${index}`}
+                        className="inline-flex items-center whitespace-nowrap border border-gray-200 rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="inline-flex items-center whitespace-nowrap border border-gray-200 rounded-full px-2.5 bg-gray-100 text-gray-700 py-0.5 text-xs md:text-sm font-medium">
+                      N/A
+                    </span>
+                  )}
                 </div>
               )}
             </div>
-            {item.amount && !requestStatus && (
-              <p className="text-xs font-normal text-gray-800">{item.amount}</p>
+
+            {item.variants?.sku && !requestStatus && (
+              <p className="text-xs font-normal text-gray-800 flex-shrink-0">
+                {item.variants?.sku}
+              </p>
             )}
           </div>
           {/* Desktop version - hidden on mobile, shown on desktop */}
@@ -236,10 +278,10 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs font-normal text-gray-800">
-                      Category
+                      Category:
                     </span>
                     <span className="text-xs font-medium text-gray-800">
-                      Recovery
+                      {item.amount ?? "N/A"}
                     </span>
                   </div>
                 </>
@@ -272,14 +314,14 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
               </p>
               <div
                 className={`${
-                  note.label === "Reason for Denial"
+                  note.label === "Reason for Denial:"
                     ? "bg-red-100"
                     : "bg-porcelan"
                 } p-3 rounded-lg mt-1`}
               >
                 <p
                   className={`text-base font-normal ${
-                    note.label === "Reason for Denial"
+                    note.label === "Reason for Denial:"
                       ? "text-red-900"
                       : "text-gray-600"
                   }`}

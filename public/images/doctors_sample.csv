@@ -1,0 +1,6 @@
+email,full_name,phone_no,medical_license,specialty,status
+john.doe@example.com,John Doe,+1234567890,MD123456,Cardiology,ACTIVE
+jane.smith@example.com,Jane Smith,+1987654321,MD789012,Neurology,ACTIVE
+bob.wilson@example.com,Bob Wilson,+1555123456,MD345678,Orthopedics,ACTIVE
+sarah.jones@example.com,Sarah Jones,+1555123457,MD456789,Dermatology,ACTIVE
+mike.brown@example.com,Mike Brown,+1555123458,MD567890,Cardiology,INACTIVE

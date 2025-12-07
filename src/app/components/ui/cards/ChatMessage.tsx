@@ -1,6 +1,5 @@
 "use client";
 
-import { getInitials } from "@/lib/helpers";
 import Image from "next/image";
 
 type ChatMessageProps = {
@@ -27,16 +26,16 @@ export default function ChatMessage({
       >
         <div className="flex items-center w-full md:gap-3 justify-between gap-1">
           <div className="flex gap-1 md:gap-2 items-center">
-            {!isUser && (
+            {/* {!isUser && (
               <span className="bg-red-100 text-red-600 h-7 w-7 justify-center font-medium rounded-full text-xs shrink-0  flex items-center">
                 {getInitials(sender)}
               </span>
-            )}
+            )} */}
             <Image
               alt=""
-              width={256}
-              height={256}
-              src={"/images/reviewImage1.jpg"}
+              width={40}
+              height={40}
+              src={"/images/arinaProfile.png"}
               className="rounded-full w-full max-h-7 max-w-7 h-full"
             />
             <span className="block whitespace-nowrap font-medium text-gray-700 text-xs md:text-sm">

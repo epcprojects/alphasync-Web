@@ -1,28 +1,55 @@
 "use client";
 
-import {
-  ArrowDownIcon,
-  ArrowLeftIcon,
-  PackageIcon,
-  PlusIcon,
-  SearchIcon,
-} from "@/icons";
+import { ArrowDownIcon, ArrowLeftIcon, PackageIcon, PlusIcon } from "@/icons";
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { EmptyState, Loader, ThemeButton } from "@/app/components";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import OrderListView from "@/app/components/ui/cards/OrderListView";
-import { orders } from "../../../../public/data/OrderManagement";
 import ReactPaginate from "react-paginate";
-import DateRangeSelector from "@/app/components/DateRangePicker";
 import NewOrderModal from "@/app/components/ui/modals/NewOrderModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useQuery } from "@apollo/client/react";
+import { DOCTOR_ORDERS } from "@/lib/graphql/queries";
+import { format } from "date-fns";
 
 type Selection = {
   startDate: Date;
   endDate: Date;
   key: "selection";
 };
+
+// Interface for GraphQL response
+interface DoctorOrdersResponse {
+  doctorOrders: {
+    allData: {
+      id: string;
+      displayId?: string | number;
+      patient: {
+        email: string;
+        fullName: string;
+      };
+      createdAt: string;
+      status: string;
+      orderItems: {
+        id: string;
+        quantity: number;
+        price: number;
+        product: {
+          title: string;
+        };
+      }[];
+      totalPrice: number;
+      subtotalPrice: number;
+      netCost: number | null;
+      profit: number | null;
+    }[];
+    count: number;
+    nextPage: number;
+    prevPage: number;
+    totalPages: number;
+  };
+}
 
 function OrderContent() {
   const router = useRouter();
@@ -42,72 +69,60 @@ function OrderContent() {
     endDate: new Date(),
     key: "selection",
   });
-  const startOfDay = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
 
-  const endOfDay = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getOrderDate = (o: any): Date | null => {
-    const raw = o.date ?? o.orderDate ?? o.createdAt;
-    if (!raw) return null;
-    const dt = raw instanceof Date ? raw : new Date(raw);
-    return isNaN(dt.getTime()) ? null : dt;
-  };
-
-  const rangeStart = startOfDay(range.startDate);
-  const rangeEnd = endOfDay(range.endDate);
-
-  // const fmt = (d: Date) =>
-  //   d.toLocaleDateString(undefined, {
-  //     year: "numeric",
-  //     month: "short",
-  //     day: "numeric",
-  //   });
   const itemsPerPage = 10;
   const [selectedStatus, setSelectedStatus] = useState<string>("All Status");
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const filteredProducts = orders.filter((p) => {
-    const matchesSearch = p.customer
-      .toLowerCase()
-      .includes(search.toLowerCase());
 
-    const matchesStatus =
-      selectedStatus === "All Status" ? true : p.status === selectedStatus;
+  // GraphQL query to fetch orders
+  const { data, loading, error, refetch } = useQuery<DoctorOrdersResponse>(
+    DOCTOR_ORDERS,
+    {
+      variables: {
+        status: selectedStatus === "All Status" ? undefined : selectedStatus,
+        page: currentPage + 1, // GraphQL pagination is 1-based
+        perPage: itemsPerPage,
+      },
+      fetchPolicy: "network-only",
+    }
+  );
 
-    const orderDate = getOrderDate(p);
-    const matchesDate = orderDate
-      ? orderDate >= rangeStart && orderDate <= rangeEnd
-      : false;
+  const orders = data?.doctorOrders.allData || [];
+  const pageCount = data?.doctorOrders.totalPages;
 
-    return matchesSearch && matchesStatus && matchesDate;
-  });
-
-  const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
-  const offset = currentPage * itemsPerPage;
-  const currentItems = filteredProducts.slice(offset, offset + itemsPerPage);
   const defaultRange: Selection = {
     startDate: new Date(2000, 0, 1),
     endDate: new Date(),
     key: "selection",
   };
+
   const isFiltered =
     selectedStatus !== "All Status" ||
     range.startDate.getTime() !== defaultRange.startDate.getTime();
+
+  // Refetch data when search, status, or page changes
   useEffect(() => {
     setCurrentPage(0);
     const params = new URLSearchParams(searchParams.toString());
-    params.set("page", "1");
-    router.replace(`?${params.toString()}`);
+    params.delete("page"); // Remove page parameter for first page
+    const queryString = params.toString();
+    router.replace(queryString ? `?${queryString}` : "/orders");
+    refetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, selectedStatus]);
 
   const handlePageChange = ({ selected }: { selected: number }) => {
     setCurrentPage(selected);
     const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(selected + 1));
-    router.replace(`?${params.toString()}`);
+    if (selected === 0) {
+      params.delete("page"); // Remove page parameter for first page
+    } else {
+      params.set("page", String(selected + 1));
+    }
+    const queryString = params.toString();
+    router.replace(queryString ? `?${queryString}` : "/orders");
+    refetch();
   };
 
   const handleCreateOrder = (data: {
@@ -137,7 +152,7 @@ function OrderContent() {
         </div>
 
         <div className="md:bg-white rounded-full flex md:flex-row flex-col w-full items-center gap-2 md:p-2  md:shadow-table lg:w-fit">
-          <div className="flex items-center relative w-full md:shadow-none bg-white md:bg-transparent md:p-0  p-2 rounded-full shadow-table">
+          {/* <div className="flex items-center relative w-full md:shadow-none bg-white md:bg-transparent md:p-0  p-2 rounded-full shadow-table">
             <span className="absolute left-3">
               <SearchIcon
                 height={isMobile ? "16" : "20"}
@@ -150,15 +165,15 @@ function OrderContent() {
               placeholder="Search"
               className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
-          </div>
+          </div> */}
           <div className="flex items-center w-fit gap-1 md:gap-2 md:bg-transparent md:p-0 md:shadow-none bg-white rounded-full p-2 w-full shadow-table">
-            <DateRangeSelector
+            {/* <DateRangeSelector
               value={range}
               onApply={(next) => {
                 setRange(next);
                 setCurrentPage(0);
               }}
-            />
+            /> */}
             <Menu>
               <MenuButton className="inline-flex whitespace-nowrap py-1.5 md:w-fit w-full md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline justify-between data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
                 {selectedStatus} <ArrowDownIcon fill="#717680" />
@@ -174,6 +189,7 @@ function OrderContent() {
                     onClick={() => {
                       setSelectedStatus("All Status");
                       setCurrentPage(0);
+                      refetch();
                     }}
                     className="text-gray-500 hover:bg-gray-100 w-full py-2 px-2.5 rounded-md text-xs md:text-sm text-start"
                   >
@@ -186,6 +202,7 @@ function OrderContent() {
                       onClick={() => {
                         setSelectedStatus(status.label);
                         setCurrentPage(0);
+                        refetch();
                       }}
                       className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${status.color}`}
                     >
@@ -206,6 +223,7 @@ function OrderContent() {
                   key: "selection",
                 });
                 setCurrentPage(0);
+                refetch();
               }}
               className="bg-gray-100 hover:bg-gray-300 rounded-full flex h-9 md:h-10 px-3 text-xs md:text-sm py-2.5 text-gray-700 md:leading-5 cursor-pointer disabled:text-gray-400 disabled:cursor-not-allowed disabled:bg-gray-200"
             >
@@ -255,55 +273,83 @@ function OrderContent() {
           </div>
         </div>
 
-        {currentItems.map((order) => (
-          <OrderListView
-            onRowClick={() => router.push(`/orders/${order.orderId}`)}
-            key={order.orderId}
-            order={order}
-            onViewOrderDetail={() => router.push(`/orders/${order.orderId}`)}
-          />
-        ))}
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <Loader />
+          </div>
+        ) : error ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="text-red-500">{error.message}</div>
+          </div>
+        ) : (
+          orders.map((order) => (
+            <OrderListView
+              onRowClick={() => router.push(`/orders/${order.id}`)}
+              key={order.id}
+              order={{
+                id: parseInt(order.id),
+                orderId: order.displayId || "---",
+                displayId: order.displayId
+                  ? parseInt(order.displayId.toString())
+                  : parseInt(order.id),
+                customer: order.patient.fullName,
+
+                date: format(new Date(order.createdAt), "MM-dd-yy"),
+                status: order.status,
+                items: order.orderItems.length,
+                total: order.totalPrice,
+                netCost: order.netCost ?? 0,
+                profit: order.profit ?? 0,
+              }}
+              onViewOrderDetail={() => router.push(`/orders/${order.id}`)}
+            />
+          ))
+        )}
       </div>
       <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-        {currentItems.length < 1 && <EmptyState mtClasses=" -mt-3 md:-mt-4" />}
+        {!loading && !error && orders.length < 1 && (
+          <EmptyState mtClasses=" -mt-3 md:-mt-4" />
+        )}
 
-        <div className="w-full flex items-center justify-center">
-          <ReactPaginate
-            breakLabel="..."
-            nextLabel={
-              <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                <span className="hidden md:inline-block">Next</span>
-                <span className="block mb-0.5 rotate-180">
-                  <ArrowLeftIcon />
+        {!loading && !error && (pageCount || 0) > 1 && (
+          <div className="w-full flex items-center justify-center">
+            <ReactPaginate
+              breakLabel="..."
+              nextLabel={
+                <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
+                  <span className="hidden md:inline-block">Next</span>
+                  <span className="block mb-0.5 rotate-180">
+                    <ArrowLeftIcon />
+                  </span>
                 </span>
-              </span>
-            }
-            previousLabel={
-              <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                <span className="md:mb-0.5">
-                  <ArrowLeftIcon />
+              }
+              previousLabel={
+                <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
+                  <span className="md:mb-0.5">
+                    <ArrowLeftIcon />
+                  </span>
+                  <span className="hidden md:inline-block">Previous</span>
                 </span>
-                <span className="hidden md:inline-block">Previous</span>
-              </span>
-            }
-            onPageChange={handlePageChange}
-            pageRangeDisplayed={3}
-            marginPagesDisplayed={1}
-            pageCount={pageCount ? pageCount : 1}
-            forcePage={currentPage}
-            pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-            containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-            pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-            activeClassName="bg-gray-200 text-gray-900 font-medium"
-            previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-            nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-            breakClassName="px-3 py-1 font-semibold text-gray-400"
-          />
+              }
+              onPageChange={handlePageChange}
+              pageRangeDisplayed={3}
+              marginPagesDisplayed={1}
+              pageCount={pageCount ? pageCount : 1}
+              forcePage={currentPage}
+              pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
+              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
+              pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
+              activeClassName="bg-gray-200 text-gray-900 font-medium"
+              previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
+              nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
+              breakClassName="px-3 py-1 font-semibold text-gray-400"
+            />
 
-          <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-            Page {currentPage + 1} of {pageCount}
-          </h2>
-        </div>
+            <h2 className="absolute md:hidden text-gravel font-medium text-sm">
+              Page {currentPage + 1} of {pageCount}
+            </h2>
+          </div>
+        )}
       </div>
       <NewOrderModal
         isOpen={isOrderModalOpen}
@@ -323,20 +369,6 @@ function OrderContent() {
             name: "Emily Chen",
             displayName: "Emily Chen",
             email: "Emily.smith@email.com",
-          },
-        ]}
-        products={[
-          {
-            name: "BPC-157",
-            displayName: "BPC-157",
-          },
-          {
-            name: "TB-500",
-            displayName: "TB-500",
-          },
-          {
-            name: "CJC-1295",
-            displayName: "CJC-1295",
           },
         ]}
       />

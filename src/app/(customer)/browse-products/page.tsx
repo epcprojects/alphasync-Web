@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeftIcon,
   FilterIcon,
   GridViewIcon,
   ListViewIcon,
@@ -11,18 +10,25 @@ import {
 import { showSuccessToast } from "@/lib/toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
-import ReactPaginate from "react-paginate";
-import { products } from "../../../../public/data/products";
+import Pagination from "@/app/components/ui/Pagination";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import BrowserProductCard, {
-  Product,
-} from "@/app/components/ui/cards/BrowserProductCard";
+import BrowserProductCard from "@/app/components/ui/cards/BrowserProductCard";
 import RequestModel from "@/app/components/ui/modals/RequestModel";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import BrowseProductListView from "@/app/components/ui/cards/BrowseProductListView";
 import ProductDetails from "@/app/components/ui/modals/ProductDetails";
 import Tooltip from "@/app/components/ui/tooltip";
-import { EmptyState, Loader } from "@/app/components";
+import { EmptyState } from "@/app/components";
+import InventorySkeleton from "@/app/components/ui/InventorySkeleton";
+import { useQuery, useMutation } from "@apollo/client/react";
+import { ALL_PRODUCTS_INVENTORY, FETCH_DOCTOR } from "@/lib/graphql/queries";
+import { REQUEST_ORDER } from "@/lib/graphql/mutations";
+import {
+  AllProductsResponse,
+  Product,
+  transformGraphQLProduct,
+} from "@/types/products";
+import { showErrorToast } from "@/lib/toast";
 
 const orderCategories = [
   { label: "All Categories" },
@@ -42,7 +48,11 @@ function InventoryContent() {
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
   const itemsPerPage = 9;
-  const initialPage = parseInt(searchParams.get("page") || "0", 10);
+  // URL uses 1-based pagination, convert to 0-based for internal use
+  const initialPage = Math.max(
+    0,
+    parseInt(searchParams.get("page") || "1", 10) - 1
+  );
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [selectedCategory, setSelectedCategory] = useState<string>(
     orderCategories[0].label
@@ -50,20 +60,42 @@ function InventoryContent() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.title.toLowerCase().includes(search.toLowerCase()) ||
-      p.description.toLowerCase().includes(search.toLowerCase());
-
-    const matchesCategory =
-      selectedCategory === "All Categories" || p.category === selectedCategory;
-
-    return matchesSearch && matchesCategory;
+  // GraphQL query to fetch doctor data
+  const { data: doctorData } = useQuery(FETCH_DOCTOR, {
+    fetchPolicy: "network-only",
   });
 
-  const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
-  const offset = currentPage * itemsPerPage;
-  const currentItems = filteredProducts.slice(offset, offset + itemsPerPage);
+  // GraphQL mutation for requesting order
+  const [requestOrder] = useMutation(REQUEST_ORDER);
+
+  // GraphQL query to fetch products with search and pagination
+  const {
+    data: productsData,
+    loading: productsLoading,
+    error: productsError,
+  } = useQuery<AllProductsResponse>(ALL_PRODUCTS_INVENTORY, {
+    variables: {
+      search: search || undefined,
+      page: currentPage + 1, // GraphQL uses 1-based pagination
+      perPage: itemsPerPage,
+    },
+    fetchPolicy: "network-only",
+  });
+
+  // Transform GraphQL product data to match the expected format
+  const products: Product[] =
+    productsData?.allProducts.allData?.map(transformGraphQLProduct) || [];
+
+  // Filter by category on frontend since GraphQL doesn't support category filtering
+  const filteredProducts = products.filter((p) => {
+    const matchesCategory =
+      selectedCategory === "All Categories" || p.category === selectedCategory;
+    return matchesCategory;
+  });
+
+  // Use GraphQL pagination data
+  const pageCount = productsData?.allProducts.totalPages || 1;
+  const currentItems = filteredProducts;
 
   useEffect(() => {
     setCurrentPage(0);
@@ -73,21 +105,101 @@ function InventoryContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
-  const handlePageChange = ({ selected }: { selected: number }) => {
+  useEffect(() => {
+    setCurrentPage(0);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", "1");
+    router.replace(`?${params.toString()}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory]);
+
+  const handlePageChange = (selected: number) => {
     setCurrentPage(selected);
     const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(selected));
+    params.set("page", String(selected + 1)); // Convert 0-based to 1-based for URL
     router.replace(`?${params.toString()}`);
   };
 
-  const handleConfirmOrder = () => {
-    setIsOrderModalOpen(false);
-    showSuccessToast("Order created successfully!");
+  const handleConfirmOrder = async (reason: string) => {
+    if (!selectedProduct || !doctorData?.fetchUser?.user?.doctor?.id) {
+      showErrorToast(
+        "Please select a product and ensure you have a doctor assigned."
+      );
+      return;
+    }
+
+    try {
+      const doctorId = doctorData.fetchUser.user.doctor.id;
+
+      // Get the product details from GraphQL to get variant information
+      const originalProduct = productsData?.allProducts.allData?.find(
+        (p) => p.id === selectedProduct.originalId
+      );
+
+      if (
+        !originalProduct ||
+        !originalProduct.variants ||
+        originalProduct.variants.length === 0
+      ) {
+        showErrorToast("Product variant information is missing");
+        return;
+      }
+
+      const firstVariant = originalProduct.variants[0];
+      const requestedItems = [
+        {
+          productId: selectedProduct.originalId,
+          variantId: firstVariant.shopifyVariantId || firstVariant.id,
+          quantity: 1,
+          price: firstVariant.price,
+        },
+      ];
+
+      const result = await requestOrder({
+        variables: {
+          doctorId,
+          reason,
+          requestedItems,
+        },
+      });
+
+      console.log("Order request result:", result);
+      setIsOrderModalOpen(false);
+      showSuccessToast("Order request sent successfully!");
+    } catch (error) {
+      console.error("Error in request order:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to send order request. Please try again.";
+      showErrorToast(errorMessage);
+    }
   };
   const handleCardClick = (product: Product) => {
     setSelectedProduct(product);
     setIsProductModalOpen(true);
   };
+
+  const handleAddToCart = (product: Product) => {
+    setSelectedProduct(product);
+    setIsOrderModalOpen(true);
+  };
+
+  // Show loading state
+
+  // Show error state
+  if (productsError) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="text-center py-8">
+          <p className="text-red-500 text-lg">
+            Error loading products: {productsError.message}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
@@ -103,7 +215,7 @@ function InventoryContent() {
           </h2>
           <div className="px-2.5 py-0.5 rounded-full bg-white border border-indigo-200">
             <p className="text-sm font-medium text-primary whitespace-nowrap">
-              {products.length}
+              {productsData?.allProducts.count || 0}
             </p>
           </div>
         </div>
@@ -125,11 +237,11 @@ function InventoryContent() {
           </div>
 
           <Menu>
-            <Tooltip content="Filter by category">
+            {/* <Tooltip content="Filter by category">
               <MenuButton className="h-8 w-8 md:h-11 md:w-11 shrink-0 flex justify-center cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full  text-sm/6 font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
                 <FilterIcon />
               </MenuButton>
-            </Tooltip>
+            </Tooltip> */}
 
             <MenuItems
               transition
@@ -191,93 +303,66 @@ function InventoryContent() {
           </Tooltip>
         </div>
       </div>
-
-      <div className="flex flex-col gap-2 md:gap-6">
-        {showGridView ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
-            {currentItems.map((product) => (
-              <BrowserProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={() => setIsOrderModalOpen(true)}
-                onCardClick={handleCardClick}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-1">
-            <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-table">
-              <div className="lg:col-span-3 sm:col-span-4">Product</div>
-              <div className="lg:col-span-2 sm:col-span-3">Category</div>
-              <div className="col-span-2">Form</div>
-              <div className="col-span-2 lg:block hidden">Prescription</div>
-              <div className="xl:block hidden col-span-1">Stock</div>
-              <div className="col-span-1">Price</div>
-
-              <div className="col-span-1 md:col-span-2 lg:col-span-1 text-center">
-                Actions
-              </div>
+      {productsLoading ? (
+        <InventorySkeleton />
+      ) : (
+        <div className="flex flex-col gap-2 md:gap-6">
+          {showGridView ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
+              {currentItems.map((product) => (
+                <BrowserProductCard
+                  key={product.originalId}
+                  product={product}
+                  onAddToCart={() => handleAddToCart(product)}
+                  onCardClick={handleCardClick}
+                />
+              ))}
             </div>
-            {currentItems.map((product) => (
-              <BrowseProductListView
-                onRowClick={() => {}}
-                key={product.id}
-                product={product}
-                onInfoBtn={handleCardClick}
-                onAddToCart={() => setIsOrderModalOpen(true)}
+          ) : (
+            <div className="space-y-1">
+              <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-table">
+                <div className="lg:col-span-3 sm:col-span-4">Product</div>
+                <div className="lg:col-span-2 sm:col-span-3">Category</div>
+                <div className="col-span-2">Form</div>
+                <div className="col-span-2 lg:block hidden">Prescription</div>
+                <div className="xl:block hidden col-span-1">Stock</div>
+                <div className="col-span-1">Price</div>
+
+                <div className="col-span-1 md:col-span-2 lg:col-span-1 text-center">
+                  Actions
+                </div>
+              </div>
+              {currentItems.map((product) => (
+                <BrowseProductListView
+                  onRowClick={() => {}}
+                  key={product.originalId}
+                  product={product}
+                  onInfoBtn={handleCardClick}
+                  onAddToCart={() => handleAddToCart(product)}
+                />
+              ))}
+            </div>
+          )}
+
+          <div className="flex justify-center flex-col gap-2 md:gap-6 ">
+            {currentItems.length < 1 && (
+              <EmptyState mtClasses="-mt-3 md:-mt-6" />
+            )}
+
+            {currentItems.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={pageCount || 1}
+                onPageChange={handlePageChange}
               />
-            ))}
-          </div>
-        )}
-
-        <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-          {currentItems.length < 1 && <EmptyState mtClasses="-mt-3 md:-mt-6" />}
-
-          <div className="w-full flex items-center justify-center">
-            <ReactPaginate
-              breakLabel="..."
-              nextLabel={
-                <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="hidden md:inline-block">Next</span>
-                  <span className="block mb-0.5 rotate-180">
-                    <ArrowLeftIcon />
-                  </span>
-                </span>
-              }
-              previousLabel={
-                <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="md:mb-0.5">
-                    <ArrowLeftIcon />
-                  </span>
-                  <span className="hidden md:inline-block">Previous</span>
-                </span>
-              }
-              onPageChange={handlePageChange}
-              pageRangeDisplayed={3}
-              marginPagesDisplayed={1}
-              pageCount={pageCount ? pageCount : 1}
-              forcePage={currentPage}
-              pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-              pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-              activeClassName="bg-gray-200 text-gray-900 font-medium"
-              previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-              nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-              breakClassName="px-3 py-1 font-semibold text-gray-400"
-            />
-
-            <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-              Page {currentPage + 1} of {pageCount}
-            </h2>
+            )}
           </div>
         </div>
-      </div>
-
+      )}
       <RequestModel
         isOpen={isOrderModalOpen}
-        onConfirm={(reason) => {
-          handleConfirmOrder();
-          console.log(reason);
+        onConfirm={async ({ reason }) => {
+          await handleConfirmOrder(reason);
         }}
         onClose={() => setIsOrderModalOpen(false)}
       />
@@ -298,7 +383,7 @@ function InventoryContent() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<InventorySkeleton />}>
       <InventoryContent />
     </Suspense>
   );

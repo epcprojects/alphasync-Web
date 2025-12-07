@@ -1,5 +1,11 @@
 "use client";
-import { NotificationToggle, ThemeButton, ThemeInput } from "@/app/components";
+import {
+  ChangePassword,
+  NotificationToggle,
+  ThemeButton,
+  ThemeInput,
+  ImageUpload,
+} from "@/app/components";
 import {
   AlertIcon,
   LockIcon,
@@ -10,15 +16,39 @@ import {
   SecurityLock,
   UserIcon,
 } from "@/icons";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import React, { useState } from "react";
+import {
+  Switch,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+} from "@headlessui/react";
+import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
-import AvatarUploader from "@/app/components/AvatarUploader";
+import { useMutation, useQuery } from "@apollo/client";
+import Cookies from "js-cookie";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { showSuccessToast } from "@/lib/toast";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
+import {
+  UPDATE_DOCTOR,
+  REMOVE_IMAGE,
+  EMAIL_NOTIFICATION_SETTINGS,
+  SMS_NOTIFICATION_SETTINGS,
+  ORDER_UPDATES_NOTIFICATION_SETTINGS,
+  LOW_STOCK_ALERTS_NOTIFICATION_SETTINGS,
+  DISABLE_2FA,
+} from "@/lib/graphql/mutations";
+import { FETCH_NOTIFICATION_SETTINGS } from "@/lib/graphql/queries";
+import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/slices/authSlice";
 
 const Page = () => {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [isTwoFaEnabled, setIsTwoFaEnabled] = useState(!!user?.twoFaEnabled);
   const [toggles, setToggles] = useState({
     email: true,
     sms: false,
@@ -27,6 +57,196 @@ const Page = () => {
   });
 
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    setIsTwoFaEnabled(!!user?.twoFaEnabled);
+  }, [user?.twoFaEnabled]);
+
+  // Fetch notification settings
+  const { loading: notificationLoading } = useQuery(
+    FETCH_NOTIFICATION_SETTINGS,
+    {
+      onCompleted: (data) => {
+        if (data?.notificationSettings) {
+          const settings = data.notificationSettings;
+          setToggles({
+            email: settings.emailNotification ?? true,
+            sms: settings.smsNotification ?? false,
+            orders: settings.orderUpdates ?? true,
+            stock: settings.lowStockAlerts ?? true,
+          });
+        }
+      },
+      onError: (error) => {
+        console.error("Error fetching notification settings:", error);
+      },
+    }
+  );
+
+  // Mutation hooks for each notification type
+  const [updateEmailNotification] = useMutation(EMAIL_NOTIFICATION_SETTINGS, {
+    onCompleted: () => {
+      showSuccessToast("Email notification settings updated");
+    },
+    onError: (error) => {
+      showErrorToast(error.message || "Failed to update email notification");
+    },
+  });
+
+  const [updateSmsNotification] = useMutation(SMS_NOTIFICATION_SETTINGS, {
+    onCompleted: () => {
+      showSuccessToast("SMS notification settings updated");
+    },
+    onError: (error) => {
+      showErrorToast(error.message || "Failed to update SMS notification");
+    },
+  });
+
+  const [updateOrderUpdates] = useMutation(
+    ORDER_UPDATES_NOTIFICATION_SETTINGS,
+    {
+      onCompleted: () => {
+        showSuccessToast("Order updates notification settings updated");
+      },
+      onError: (error) => {
+        showErrorToast(
+          error.message || "Failed to update order updates notification"
+        );
+      },
+    }
+  );
+
+  const [updateLowStockAlerts] = useMutation(
+    LOW_STOCK_ALERTS_NOTIFICATION_SETTINGS,
+    {
+      onCompleted: () => {
+        showSuccessToast("Low stock alerts notification settings updated");
+      },
+      onError: (error) => {
+        showErrorToast(
+          error.message || "Failed to update low stock alerts notification"
+        );
+      },
+    }
+  );
+
+  // Handler for toggle changes
+  const handleToggleChange = async (key: string, value: boolean) => {
+    setToggles((prev) => ({ ...prev, [key]: value }));
+
+    try {
+      switch (key) {
+        case "email":
+          await updateEmailNotification({
+            variables: { emailNotification: value },
+          });
+          break;
+        case "sms":
+          await updateSmsNotification({
+            variables: { smsNotification: value },
+          });
+          break;
+        case "orders":
+          await updateOrderUpdates({
+            variables: { orderUpdates: value },
+          });
+          break;
+        case "stock":
+          await updateLowStockAlerts({
+            variables: { lowStockAlerts: value },
+          });
+          break;
+      }
+    } catch (error) {
+      // Revert toggle on error
+      setToggles((prev) => ({ ...prev, [key]: !value }));
+      console.error("Error updating notification setting:", error);
+    }
+  };
+
+  const [updateDoctor, { loading: updateLoading }] = useMutation(
+    UPDATE_DOCTOR,
+    {
+      onCompleted: (data) => {
+        if (data?.updateUser?.user) {
+          dispatch(setUser(data.updateUser.user));
+          Cookies.set("user_data", JSON.stringify(data?.updateUser?.user), {
+            expires: 7,
+          });
+          showSuccessToast("Profile updated successfully!");
+        }
+      },
+      onError: (error) => {
+        showErrorToast(error.message || "Failed to update profile");
+      },
+    }
+  );
+
+  const [removeImage] = useMutation(REMOVE_IMAGE, {
+    onCompleted: (data) => {
+      if (data?.removeImage?.user) {
+        dispatch(setUser(data.removeImage.user));
+        Cookies.set("user_data", JSON.stringify(data.removeImage.user), {
+          expires: 7,
+        });
+        showSuccessToast("Image removed successfully!");
+      }
+    },
+    onError: (error) => {
+      showErrorToast(error.message || "Failed to remove image");
+    },
+  });
+
+  const INITIAL_AVATAR = "/images/arinaProfile.png";
+
+  const [toggleTwoFactor, { loading: twoFaUpdating }] =
+    useMutation(DISABLE_2FA);
+
+  const handleImageRemove = async () => {
+    try {
+      await removeImage({
+        variables: {
+          id: user?.id,
+          removeImage: true,
+        },
+      });
+    } catch (error) {
+      console.error("Error removing image:", error);
+    }
+  };
+
+  const handleTwoFaToggle = async (value: boolean) => {
+    const previousValue = isTwoFaEnabled;
+    setIsTwoFaEnabled(value);
+
+    try {
+      const { data } = await toggleTwoFactor({
+        variables: {
+          twoFaEnabled: value,
+        },
+      });
+
+      if (data?.updateUser?.user) {
+        dispatch(setUser(data.updateUser.user));
+        Cookies.set("user_data", JSON.stringify(data.updateUser.user), {
+          expires: 7,
+        });
+      }
+
+      showSuccessToast(
+        value
+          ? "Two-factor authentication enabled"
+          : "Two-factor authentication disabled"
+      );
+    } catch (error) {
+      setIsTwoFaEnabled(previousValue);
+      showErrorToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to update two-factor authentication"
+      );
+    }
+  };
 
   const notifications = [
     {
@@ -73,21 +293,14 @@ const Page = () => {
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
-    phone: Yup.string()
-      .matches(/^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, "Invalid phone number")
-      .required("Phone number is required"),
-    license: Yup.string().required("Medical license is required"),
+    phoneNo: Yup.string()
+      .required("Phone number is required")
+      .matches(
+        /^\(\d{3}\)\s\d{3}-\d{4}$/,
+        "Phone number must be in format (512) 312-3123"
+      ),
+    medicalLicense: Yup.string().required("Medical license is required"),
     specialty: Yup.string().required("Specialty is required"),
-  });
-
-  const passwordSchema = Yup.object().shape({
-    currentPassword: Yup.string().required("Current password is required"),
-    newPassword: Yup.string()
-      .min(6, "New password must be at least 6 characters")
-      .required("New password is required"),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("newPassword")], "Passwords must match")
-      .required("Confirm new password is required"),
   });
 
   return (
@@ -142,40 +355,44 @@ const Page = () => {
             </TabList>
             <TabPanels className={"pb-4 lg:p-6"}>
               <TabPanel className={"px-5 lg:px-8"}>
-                <div className="grid grid-cols-12 py-3 md:py-5 lg:gap-8 border-b border-b-gray-200">
-                  <div className="col-span-12 mb-3 sm:mb-0 md:col-span-4 lg:col-span-3">
-                    <label className="text-xs md:text-sm text-gray-700 font-semibold">
-                      Your photo
-                    </label>
-                    <span className="block text-gray-600 text-xs md:text-sm">
-                      This will be displayed on your profile.
-                    </span>
-                  </div>
-
-                  <AvatarUploader
-                    initialImage="/images/arinaProfile.png"
-                    onChange={(file) => {
-                      if (file) {
-                        console.log("New image selected:", file);
-                      } else {
-                        console.log("Image deleted");
-                      }
-                    }}
-                  />
-                </div>
+                <ImageUpload
+                  imageUrl={
+                    user?.imageUrl
+                      ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${user?.imageUrl}`
+                      : undefined
+                  }
+                  onChange={setSelectedImage}
+                  onImageRemove={handleImageRemove}
+                  placeholder={INITIAL_AVATAR}
+                  className="py-3 md:py-5 lg:gap-8"
+                  showTitle={false}
+                />
                 <Formik
                   initialValues={{
-                    fullName: "Dr. Arina Baker",
-                    email: "arina@alphasync.com",
-                    phone: "(316) 555-0116",
-                    license: "MD-12345-67890",
-                    specialty: "Internal Medicine",
+                    fullName: user?.fullName ?? "",
+                    email: user?.email ?? "",
+                    phoneNo: user?.phoneNo ?? "",
+                    medicalLicense: user?.medicalLicense ?? "",
+                    specialty: user?.specialty ?? "",
                   }}
                   validationSchema={profileSchema}
-                  onSubmit={(values) => {
-                    console.log("Profile Values:", values);
-                    showSuccessToast("Changes saved successfully");
+                  onSubmit={async (values) => {
+                    try {
+                      const variables = {
+                        fullName: values.fullName,
+                        email: values.email,
+                        phoneNo: values.phoneNo,
+                        medicalLicense: values.medicalLicense,
+                        specialty: values.specialty,
+                        ...(selectedImage && { image: selectedImage }),
+                      };
+
+                      await updateDoctor({ variables });
+                    } catch {
+                      // Error is handled by the mutation's onError callback
+                    }
                   }}
+                  enableReinitialize
                 >
                   {({ handleChange, values }) => (
                     <Form>
@@ -230,13 +447,13 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="number"
-                            name="phone"
-                            value={values.phone}
+                            type="tel"
+                            name="phoneNo"
+                            value={values.phoneNo}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="phone"
+                            name="phoneNo"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -254,13 +471,13 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="license"
-                            name="license"
-                            value={values.license}
+                            type="text"
+                            name="medicalLicense"
+                            value={values.medicalLicense}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="license"
+                            name="medicalLicense"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -278,7 +495,7 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="specialty"
+                            type="text"
                             name="specialty"
                             value={values.specialty}
                             onChange={handleChange}
@@ -292,11 +509,11 @@ const Page = () => {
                       </div>
                       <div className="flex pt-3 md:pt-6 justify-end">
                         <ThemeButton
-                          label="Save Changes"
+                          label={updateLoading ? "Saving..." : "Save Changes"}
                           heightClass="h-10"
                           type="submit"
                           className="w-full md:w-fit"
-                          disabled
+                          disabled={updateLoading}
                         />
                       </div>
                     </Form>
@@ -309,86 +526,7 @@ const Page = () => {
                   "grid grid-cols-1 md:grid-cols-2 p-5 lg:py-0 gap-4 md:gap-8"
                 }
               >
-                <Formik
-                  initialValues={{
-                    currentPassword: "",
-                    newPassword: "",
-                    confirmPassword: "",
-                  }}
-                  validationSchema={passwordSchema}
-                  onSubmit={(values) => {
-                    console.log("Password Values:", values);
-                  }}
-                >
-                  {({ handleChange, values }) => (
-                    <Form className="flex flex-col gap-2 md:gap-4">
-                      <h2 className="text-black font-medium text-xl ">
-                        Change Password
-                      </h2>
-                      <div className="flex flex-col gap-3 md:gap-5">
-                        <div>
-                          <ThemeInput
-                            type="password"
-                            name="currentPassword"
-                            label="Current Password"
-                            placeholder="Current Password"
-                            value={values.currentPassword}
-                            onChange={handleChange}
-                            required
-                          />
-                          <ErrorMessage
-                            name="currentPassword"
-                            component="div"
-                            className="text-red-500 text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <ThemeInput
-                            type="password"
-                            name="newPassword"
-                            label="New Password"
-                            required
-                            placeholder="New Password"
-                            value={values.newPassword}
-                            onChange={handleChange}
-                          />
-                          <ErrorMessage
-                            name="newPassword"
-                            component="div"
-                            className="text-red-500 text-xs"
-                          />
-                        </div>
-                        <div>
-                          <ThemeInput
-                            type="password"
-                            name="confirmPassword"
-                            label="Confirm New Password"
-                            required
-                            placeholder="Confirm New Password"
-                            value={values.confirmPassword}
-                            onChange={handleChange}
-                          />
-                          <ErrorMessage
-                            name="confirmPassword"
-                            component="div"
-                            className="text-red-500 text-xs"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end">
-                        <ThemeButton
-                          label="Update Password"
-                          heightClass="h-10 "
-                          type="submit"
-                          className="w-full md:w-fit"
-                          disabled
-                        />
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
+                <ChangePassword />
                 <div className="p-4 md:p-8 bg-gray-50 rounded-xl flex flex-col gap-2 md:gap-3 border-gray-100 border ">
                   <h2 className="text-black text-xl font-medium">
                     Two-Factor Authentication
@@ -405,30 +543,49 @@ const Page = () => {
                       </p>
                     </div>
 
-                    <div className="flex">
-                      <ThemeButton
-                        variant="outline"
-                        label="Configure"
-                        onClick={() => {}}
-                        className="w-full md:w-fit"
-                      />
+                    <div className="flex flex-col items-center gap-1">
+                      <Switch
+                        checked={isTwoFaEnabled}
+                        onChange={handleTwoFaToggle}
+                        disabled={twoFaUpdating}
+                        className={`group inline-flex h-7 w-14 items-center rounded-full bg-gray-200 transition data-checked:bg-gradient-to-r data-checked:from-[#3C85F5] data-checked:to-[#1A407A] ${
+                          twoFaUpdating
+                            ? "opacity-60 cursor-not-allowed"
+                            : "cursor-pointer"
+                        }`}
+                      >
+                        <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-8" />
+                      </Switch>
+                      <p className="text-xs text-gray-600">
+                        {twoFaUpdating
+                          ? "Updating..."
+                          : isTwoFaEnabled
+                          ? "Enabled"
+                          : "Disabled"}
+                      </p>
                     </div>
                   </div>
                 </div>
               </TabPanel>
               <TabPanel className={"flex flex-col p-5 lg:py-0 gap-4 md:gap-6"}>
-                {notifications.map((item) => (
-                  <NotificationToggle
-                    key={item.key}
-                    icon={item.icon}
-                    title={item.title}
-                    subtitle={item.subtitle}
-                    enabled={toggles[item.key as keyof typeof toggles]}
-                    onChange={(val) =>
-                      setToggles((prev) => ({ ...prev, [item.key]: val }))
-                    }
-                  />
-                ))}
+                {notificationLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-gray-500">
+                      Loading notification settings...
+                    </p>
+                  </div>
+                ) : (
+                  notifications.map((item) => (
+                    <NotificationToggle
+                      key={item.key}
+                      icon={item.icon}
+                      title={item.title}
+                      subtitle={item.subtitle}
+                      enabled={toggles[item.key as keyof typeof toggles]}
+                      onChange={(val) => handleToggleChange(item.key, val)}
+                    />
+                  ))
+                )}
               </TabPanel>
             </TabPanels>
           </TabGroup>

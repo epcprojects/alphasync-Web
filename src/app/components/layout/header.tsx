@@ -7,7 +7,11 @@ import { ProfileIcon, LogoutIcon, RequestIcon } from "@/icons";
 import HeaderMenuNavItems from "./HeaderMenuNavItems";
 import Notifications from "../ui/Notifications";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { notifications } from "../../../../public/data/notifications";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import Cookies from "js-cookie";
+import { clearUser } from "@/lib/store/slices/authSlice";
+import { useRouter } from "next/navigation";
+import { useApolloClient } from "@apollo/client";
 
 interface MenuItemType {
   label: string;
@@ -21,8 +25,12 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ menuItems }) => {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const apolloClient = useApolloClient();
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isSticky, setIsSticky] = useState<boolean>(false);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
 
   const toggleMenu = (): void => setIsMenuOpen((prev: boolean) => !prev);
   const closeMenu = (): void => setIsMenuOpen(false);
@@ -76,6 +84,39 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
   const isAdminHeader = menuItems.some((item) =>
     item.label.includes("Doctors")
   );
+  const user = useAppSelector((state) => state.auth.user);
+  const INITIAL_AVATAR = "/images/arinaProfile.png";
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+    try {
+      // Clear cookies
+      Cookies.remove("auth_token");
+      Cookies.remove("user_data");
+      // Clear Redux state
+      dispatch(clearUser());
+      // Clear Apollo Client cache
+      await apolloClient.clearStore();
+
+      // Close any open menus
+      closeMenu();
+
+      // Navigate to login page
+      router.push("/login");
+
+      // Force a page reload to ensure clean state
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 100);
+    } catch (error) {
+      console.error("Logout error:", error);
+      router.push("/login");
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <>
@@ -159,7 +200,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
               </Link>
             )}
 
-            {!isAdminHeader && <Notifications notifications={notifications} />}
+            {!isAdminHeader && <Notifications />}
 
             <div className="text-right w-8 h-8 md:h-11 md:w-11">
               <Menu>
@@ -167,7 +208,11 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                   <Image
                     width={40}
                     height={40}
-                    src={"/images/arinaProfile.png"}
+                    src={
+                      user?.imageUrl
+                        ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}/${user?.imageUrl}`
+                        : INITIAL_AVATAR
+                    }
                     className="w-8 h-8 md:h-11 md:w-11 rounded-full"
                     alt="arina profile"
                   />
@@ -182,10 +227,10 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                 >
                   <div className="bg-black/45 mb-1 py-2 px-3 rounded-lg">
                     <span className="text-white whitespace-nowrap text-sm block">
-                      Arina Baker
+                      {user?.fullName}
                     </span>
                     <span className="text-white/40 whitespace-nowrap ">
-                      arina@alphasync.com
+                      {user?.email}
                     </span>
                   </div>
                   <MenuItem>
@@ -197,12 +242,14 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                     </Link>
                   </MenuItem>
                   <MenuItem>
-                    <Link
-                      href={"/login"}
-                      className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10"
+                    <button
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <LogoutIcon /> Logout
-                    </Link>
+                      <LogoutIcon />
+                      {isLoggingOut ? "Logging out..." : "Logout"}
+                    </button>
                   </MenuItem>
                 </MenuItems>
               </Menu>
@@ -280,11 +327,14 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                       </Link>
                     );
                   })}
-                  <Link
-                    onClick={closeMenu}
+                  <button
+                    onClick={() => {
+                      closeMenu();
+                      handleLogout();
+                    }}
+                    disabled={isLoggingOut}
                     key={"logout"}
-                    href={"/profile"}
-                    className="flex items-center gap-1.5 p-1.5  text-base font-normal leading-7 text-gray-900 hover:bg-gray-100"
+                    className="flex items-center gap-1.5 p-1.5 w-full text-left text-base font-normal leading-7 text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center">
                       <LogoutIcon
@@ -293,8 +343,8 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                         width="16"
                       />
                     </span>
-                    Logout
-                  </Link>
+                    {isLoggingOut ? "Logging out..." : "Logout"}
+                  </button>
                 </div>
               </div>
             </div>

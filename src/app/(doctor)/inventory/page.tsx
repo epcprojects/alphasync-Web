@@ -1,9 +1,14 @@
 "use client";
 
 import OrderModal from "@/app/components/ui/modals/OrderModal";
-import { EmptyState, Loader, ProductCard, ProductListView } from "@/components";
 import {
-  ArrowLeftIcon,
+  EmptyState,
+  InventorySkeleton,
+  ProductCard,
+  ProductListView,
+  Pagination,
+} from "@/components";
+import {
   DeliveryBoxIcon,
   FavoriteIcon,
   GridViewIcon,
@@ -11,60 +16,168 @@ import {
   ListViewIcon,
   SearchIcon,
 } from "@/icons";
-import { showSuccessToast } from "@/lib/toast";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { Suspense, useEffect, useState } from "react";
-import ReactPaginate from "react-paginate";
-import { products } from "../../../../public/data/products";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { useRouter } from "next/navigation";
+import React, { Suspense, useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
+import { useQuery, useMutation } from "@apollo/client/react";
+import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
+import { CREATE_ORDER, TOGGLE_FAVOURITE } from "@/lib/graphql/mutations";
+import {
+  AllProductsResponse,
+  Product,
+  transformGraphQLProduct,
+} from "@/types/products";
 
 function InventoryContent() {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showFavourites, setShowFavourites] = useState(false);
   const [showGridView, setShowGridView] = useState(true);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isRefetchingFavorites, setIsRefetchingFavorites] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<{
+    id: string;
+    shopifyVariantId: string;
+    title: string;
+    price?: number;
+  } | null>(null);
+
   const router = useRouter();
-  const searchParams = useSearchParams();
   const isMobile = useIsMobile();
   const itemsPerPage = 9;
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const initialPage = parseInt(searchParams.get("page") || "0", 10);
-  const [currentPage, setCurrentPage] = useState(initialPage);
+  // Debounce search input to avoid too many API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      // Reset to first page when search changes
+      setCurrentPage(1);
+    }, 500);
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.title.toLowerCase().includes(search.toLowerCase()) ||
-      p.description.toLowerCase().includes(search.toLowerCase());
+    return () => clearTimeout(timer);
+  }, [search]);
 
-    const matchesFavourite = showFavourites ? p.isFavourite : true;
-
-    return matchesSearch && matchesFavourite;
+  const {
+    data: productsData,
+    loading: productsLoading,
+    error: productsError,
+    refetch,
+  } = useQuery<AllProductsResponse>(ALL_PRODUCTS_INVENTORY, {
+    variables: {
+      search: debouncedSearch,
+      page: currentPage, // Use currentPage directly (1-based pagination)
+      perPage: itemsPerPage,
+    },
+    fetchPolicy: "network-only",
+    notifyOnNetworkStatusChange: true,
   });
 
-  const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
-  const offset = currentPage * itemsPerPage;
-  const currentItems = filteredProducts.slice(offset, offset + itemsPerPage);
+  // GraphQL mutation to create order
+  const [createOrder, { loading: createOrderLoading }] =
+    useMutation(CREATE_ORDER);
 
-  useEffect(() => {
-    setCurrentPage(0);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", "0");
-    router.replace(`?${params.toString()}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, showFavourites]);
+  // GraphQL mutation to toggle favorite
+  const [toggleFavorite] = useMutation(TOGGLE_FAVOURITE);
 
-  const handlePageChange = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(selected));
-    router.replace(`?${params.toString()}`);
+  // Transform GraphQL product data to match the expected format
+  const products: Product[] =
+    productsData?.allProducts.allData?.map(transformGraphQLProduct) || [];
+
+  // Get pagination info from GraphQL response
+  const pageCount = productsData?.allProducts.totalPages || 1;
+
+  // Apply only favorites filtering on the frontend (search is handled by backend)
+  const displayProducts = showFavourites
+    ? products.filter((p) => p.isFavourite)
+    : products;
+
+  const handlePageChange = (selectedPage: number) => {
+    setCurrentPage(selectedPage);
   };
 
-  const handleConfirmOrder = () => {
-    setIsOrderModalOpen(false);
-    showSuccessToast("Order created successfully!");
+  console.log(currentPage);
+
+  const handleToggleFavorite = async (productId: string) => {
+    try {
+      setIsRefetchingFavorites(true);
+      await toggleFavorite({
+        variables: {
+          productId: productId,
+        },
+      });
+
+      await refetch();
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      showErrorToast("Failed to update favorite status. Please try again.");
+    } finally {
+      setIsRefetchingFavorites(false);
+    }
   };
+
+  const handleConfirmOrder = async (data: {
+    customer: string;
+    price: number;
+    productId?: string;
+    shopifyVariantId?: string;
+    customerId?: string;
+  }) => {
+    if (!selectedProduct || !data.productId || !data.shopifyVariantId) {
+      showErrorToast("Product information is missing");
+      return;
+    }
+
+    if (!data.customerId) {
+      showErrorToast("Please select a customer");
+      return;
+    }
+
+    try {
+      // Check if price has been changed from original
+      const originalPrice = selectedProduct?.price || 0;
+      const useCustomPricing = data.price !== originalPrice;
+
+      // Create order with single item
+      await createOrder({
+        variables: {
+          orderItems: [
+            {
+              productId: data.productId,
+              variantId: data.shopifyVariantId,
+              quantity: 1,
+              price: data.price,
+            },
+          ],
+          totalPrice: data.price,
+          patientId: data.customerId,
+          useCustomPricing: useCustomPricing,
+        },
+      });
+
+      // Only close modal after successful mutation
+      setIsOrderModalOpen(false);
+      setSelectedProduct(null);
+      showSuccessToast("Order created successfully!");
+    } catch (error) {
+      console.error("Error creating order:", error);
+      showErrorToast("Failed to create order. Please try again.");
+    }
+  };
+
+  // Show error state
+  if (productsError) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="text-center py-8">
+          <p className="text-red-500 text-lg">{productsError.message}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
@@ -153,110 +266,142 @@ function InventoryContent() {
           </Tooltip>
         </div>
       </div>
-
-      <div className="flex flex-col gap-2 md:gap-6">
-        {showGridView ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
-            {currentItems.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={() => setIsOrderModalOpen(true)}
-                onCardClick={() => router.push(`/inventory/${product.id}`)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-1">
-            <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-table">
-              <div className="col-span-5 md:col-span-4 lg:col-span-5">
-                Product
-              </div>
-              <div className="col-span-3">Category</div>
-              <div className="col-span-2">Stock</div>
-              <div className="col-span-1">Price</div>
-              <div className="col-span-1 md:col-span-2 lg:col-span-1 text-center">
-                Actions
-              </div>
+      {productsLoading && !isRefetchingFavorites ? (
+        <InventorySkeleton viewMode={showGridView ? "grid" : "list"} />
+      ) : (
+        <div className="flex flex-col gap-2 md:gap-6">
+          {showGridView ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
+              {displayProducts.map((product) => (
+                <ProductCard
+                  key={product.originalId}
+                  product={product}
+                  onAddToCart={(id) => {
+                    // Find the transformed product to get the originalId
+                    const transformedProduct = displayProducts.find(
+                      (p) => p.id === id
+                    );
+                    if (transformedProduct) {
+                      // Find the original GraphQL product data
+                      const originalProduct =
+                        productsData?.allProducts.allData?.find(
+                          (p) => p.id === transformedProduct.originalId
+                        );
+                      if (originalProduct) {
+                        setSelectedProduct({
+                          id: originalProduct.id,
+                          shopifyVariantId:
+                            originalProduct.variants?.[0]?.shopifyVariantId ||
+                            "",
+                          title: originalProduct.title,
+                          price: originalProduct.variants?.[0]?.price,
+                        });
+                        setIsOrderModalOpen(true);
+                      }
+                    }
+                  }}
+                  onToggleFavourite={(id) => {
+                    // Find the transformed product to get the originalId
+                    const transformedProduct = displayProducts.find(
+                      (p) => p.id === id
+                    );
+                    if (transformedProduct) {
+                      handleToggleFavorite(transformedProduct.originalId);
+                    }
+                  }}
+                  onCardClick={() =>
+                    router.push(`/inventory/${product.originalId}`)
+                  }
+                />
+              ))}
             </div>
-            {currentItems.map((product) => (
-              <ProductListView
-                onRowClick={() => router.push(`/inventory/${product.id}`)}
-                key={product.id}
-                product={product}
-                onToggleFavourite={(id) => console.log("Fav toggled", id)}
-                onAddToCart={() => setIsOrderModalOpen(true)}
-              />
-            ))}
-          </div>
-        )}
-
-        <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-          {currentItems.length < 1 && (
-            <EmptyState mtClasses=" -mt-3 md:-mt-6" />
+          ) : (
+            <div className="space-y-1">
+              <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-table">
+                <div className="col-span-5 md:col-span-4 lg:col-span-5">
+                  Product
+                </div>
+                <div className="col-span-3">Category</div>
+                <div className="col-span-2">Stock</div>
+                <div className="col-span-1">Price</div>
+                <div className="col-span-1 md:col-span-2 lg:col-span-1 text-center">
+                  Actions
+                </div>
+              </div>
+              {displayProducts.map((product) => (
+                <ProductListView
+                  onRowClick={() =>
+                    router.push(`/inventory/${product.originalId}`)
+                  }
+                  key={product.originalId}
+                  product={product}
+                  onToggleFavourite={(id) => {
+                    // Find the transformed product to get the originalId
+                    const transformedProduct = displayProducts.find(
+                      (p) => p.id === id
+                    );
+                    if (transformedProduct) {
+                      handleToggleFavorite(transformedProduct.originalId);
+                    }
+                  }}
+                  onAddToCart={(id) => {
+                    // Find the transformed product to get the originalId
+                    const transformedProduct = displayProducts.find(
+                      (p) => p.id === id
+                    );
+                    if (transformedProduct) {
+                      // Find the original GraphQL product data
+                      const originalProduct =
+                        productsData?.allProducts.allData?.find(
+                          (p) => p.id === transformedProduct.originalId
+                        );
+                      if (originalProduct) {
+                        setSelectedProduct({
+                          id: originalProduct.id,
+                          shopifyVariantId:
+                            originalProduct.variants?.[0]?.shopifyVariantId ||
+                            "",
+                          title: originalProduct.title,
+                          price: originalProduct.variants?.[0]?.price,
+                        });
+                        setIsOrderModalOpen(true);
+                      }
+                    }
+                  }}
+                />
+              ))}
+            </div>
           )}
 
-          <div className="w-full flex items-center justify-center">
-            <ReactPaginate
-              breakLabel="..."
-              nextLabel={
-                <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="hidden md:inline-block">Next</span>
-                  <span className="block mb-0.5 rotate-180">
-                    <ArrowLeftIcon />
-                  </span>
-                </span>
-              }
-              previousLabel={
-                <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="md:mb-0.5">
-                    <ArrowLeftIcon />
-                  </span>
-                  <span className="hidden md:inline-block">Previous</span>
-                </span>
-              }
-              onPageChange={handlePageChange}
-              pageRangeDisplayed={3}
-              marginPagesDisplayed={1}
-              pageCount={pageCount ? pageCount : 1}
-              forcePage={currentPage}
-              pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-              pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-              activeClassName="bg-gray-200 text-gray-900 font-medium"
-              previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-              nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-              breakClassName="px-3 py-1 font-semibold text-gray-400"
-            />
+          <div className="flex justify-center flex-col gap-2 md:gap-6 ">
+            {displayProducts.length < 1 && (
+              <EmptyState mtClasses=" -mt-3 md:-mt-6" />
+            )}
 
-            <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-              Page {currentPage + 1} of {pageCount}
-            </h2>
+            {displayProducts.length > 0 && (
+              <Pagination
+                currentPage={currentPage - 1} // Convert 1-based to 0-based for pagination component
+                totalPages={pageCount}
+                onPageChange={(selectedPage) =>
+                  handlePageChange(selectedPage + 1)
+                } // Convert 0-based back to 1-based
+              />
+            )}
           </div>
         </div>
-      </div>
+      )}
 
       <OrderModal
         isOpen={isOrderModalOpen}
-        onConfirm={() => handleConfirmOrder()}
-        customers={[
-          {
-            name: "John Smith",
-            displayName: "John Smith",
-            email: "john.smith@email.com john.smith@email.com",
-          },
-          {
-            name: "Sarah J",
-            displayName: "Sarah J",
-            email: "john.smith@email.com",
-          },
-          {
-            name: "Emily Chen",
-            displayName: "Emily Chen",
-            email: "john.smith@email.com",
-          },
-        ]}
-        onClose={() => setIsOrderModalOpen(false)}
+        onConfirm={handleConfirmOrder}
+        productId={selectedProduct?.id}
+        shopifyVariantId={selectedProduct?.shopifyVariantId}
+        defaultPrice={selectedProduct?.price}
+        isLoading={createOrderLoading}
+        onClose={() => {
+          setIsOrderModalOpen(false);
+          setSelectedProduct(null);
+        }}
       />
     </div>
   );
@@ -264,7 +409,7 @@ function InventoryContent() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<InventorySkeleton />}>
       <InventoryContent />
     </Suspense>
   );

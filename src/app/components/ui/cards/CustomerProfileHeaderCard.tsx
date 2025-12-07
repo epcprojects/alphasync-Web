@@ -8,7 +8,7 @@ interface CustomerProfileHeaderCardProps {
   email: string;
   phone: string;
   statusActive: boolean;
-  totalOrders: number | string;
+  totalOrders: number | string | undefined;
   lastOrder: string;
   dob: string;
   onCreateOrder: () => void;

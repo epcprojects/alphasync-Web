@@ -6,9 +6,11 @@ import Tooltip from "../tooltip";
 
 type Order = {
   id: number;
-  orderId: string;
+  orderId: string | number;
+  displayId: number;
   date: string;
   customer: string;
+
   status: string;
   items: number;
   total: number;
@@ -32,24 +34,42 @@ const colorPairs = [
   { bg: "bg-indigo-100", text: "text-indigo-600" },
 ];
 
-function getColorPair(seed: number) {
-  return colorPairs[seed % colorPairs.length];
+function getColorPair(seed: number | undefined) {
+  if (seed === undefined || isNaN(seed)) {
+    return colorPairs[0];
+  }
+  return colorPairs[Math.abs(seed) % colorPairs.length];
 }
 
 export function getStatusClasses(status: Order["status"]) {
   switch (status) {
     case "Delivered":
       return "bg-green-50 border border-green-200 text-green-700";
+    case "paid":
+      return "bg-green-50 border border-green-200 text-green-700";
     case "Processing":
       return "bg-amber-50 border border-amber-200 text-amber-700";
     case "Pending":
       return "bg-red-50 border border-red-200 text-red-700";
+    case "pending_payment":
+      return "bg-orange-50 border border-orange-200 text-orange-700";
     case "Shipped":
       return "bg-indigo-50 border border-indigo-200 text-indigo-700";
-    case "Cancelled":
+    case "cancelled":
       return "bg-gray-50 border border-gray-200 text-gray-700";
+    case "canceled":
+      return "bg-red-50 border border-red-200 text-red-700";
     default:
       return "bg-gray-100 border border-gray-200 text-gray-700";
+  }
+}
+
+export function formatStatusDisplay(status: string) {
+  switch (status) {
+    case "pending_payment":
+      return "Pending Payment";
+    default:
+      return status;
   }
 }
 
@@ -58,7 +78,7 @@ export default function OrderListView({
   onViewOrderDetail,
   onRowClick,
 }: OrderListViewProps) {
-  const { bg, text } = getColorPair(order.id);
+  const { bg, text } = getColorPair(order.id) || colorPairs[0];
 
   const ismobile = useIsMobile();
 
@@ -88,11 +108,11 @@ export default function OrderListView({
 
           <div className=" font-medium text-xs md:text-sm text-gray-800">
             <span
-              className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+              className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
                 order.status
               )}`}
             >
-              {order.status}
+              {formatStatusDisplay(order.status)}
             </span>
           </div>
         </div>
@@ -134,8 +154,9 @@ export default function OrderListView({
             <span className="text-black font-medium text-xs block">
               Profit:
             </span>
+
             <span className="text-green-600 text-xs font-normal block">
-              ${order.profit}
+              ${order.profit || 0}
             </span>
           </div>
 
@@ -143,7 +164,7 @@ export default function OrderListView({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onViewOrderDetail?.(order.id);
+                onViewOrderDetail?.(order.displayId);
               }}
               className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
             >
@@ -185,11 +206,11 @@ export default function OrderListView({
 
       <div className=" font-medium text-xs md:text-sm text-gray-800">
         <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+          className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
             order.status
           )}`}
         >
-          {order.status}
+          {formatStatusDisplay(order.status)}
         </span>
       </div>
 
@@ -216,7 +237,7 @@ export default function OrderListView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onViewOrderDetail?.(order.id);
+              onViewOrderDetail?.(order.displayId);
             }}
             className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >

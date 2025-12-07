@@ -1,74 +1,184 @@
 "use client";
 
-import {
-  ArrowDownIcon,
-  ArrowLeftIcon,
-  RequestFilledIcon,
-  SearchIcon,
-} from "@/icons";
+import { ArrowDownIcon, RequestFilledIcon, SearchIcon } from "@/icons";
 import React, { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { requests } from "../../../../public/data/requestsData";
 
-import ReactPaginate from "react-paginate";
 import RequestListView from "@/app/components/ui/cards/RequestListView";
+import Pagination from "@/app/components/ui/Pagination";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   EmptyState,
   Loader,
-  MessageSendModal,
   RequestRejectModal,
+  RequestApproveModal,
+  RequestListSkeleton,
 } from "@/app/components";
+import ChatModal from "@/app/components/ui/modals/ChatModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useQuery, useMutation } from "@apollo/client";
+import { ALL_ORDER_REQUESTS } from "@/lib/graphql/queries";
+import {
+  APPROVE_ORDER_REQUEST,
+  DENY_ORDER_REQUEST,
+} from "@/lib/graphql/mutations";
+import { OrderRequestAttributes } from "@/lib/graphql/attributes";
+
+interface OrderRequestsResponse {
+  allOrderRequests: {
+    allData: OrderRequestAttributes[];
+    dataCount: number;
+    nextPage: number | null;
+    prevPage: number | null;
+    totalPages: number;
+  };
+}
 
 function RequestContent() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const searchParams = useSearchParams();
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
+    null
+  );
+  const [selectedChatPatient, setSelectedChatPatient] = useState<{
+    id: string;
+    name: string;
+    requestId: string;
+  } | null>(null);
   const orderStatuses = [
-    { label: "Requested", color: "before:bg-amber-500" },
-    { label: "Approved", color: "before:bg-green-500" },
-    { label: "Denied", color: "before:bg-red-500" },
+    { label: "Pending", value: "pending", color: "before:bg-amber-500" },
+    { label: "Approved", value: "approved", color: "before:bg-green-500" },
+    { label: "Denied", value: "denied", color: "before:bg-red-500" },
   ];
 
   const itemsPerPage = 10;
   const [selectedStatus, setSelectedStatus] = useState<string>("All Status");
-  const initialPage = parseInt(searchParams.get("page") || "0", 10);
-  const [currentPage, setCurrentPage] = useState(initialPage);
-  const filteredProducts = requests.filter((p) => {
-    const matchesSearch = p.customer
-      .toLowerCase()
-      .includes(search.toLowerCase());
+  const [currentPage, setCurrentPage] = useState(0);
 
-    const matchesStatus =
-      selectedStatus === "All Status" ? true : p.status === selectedStatus;
+  // Helper function to convert display label to API value
+  const getStatusValue = (statusLabel: string): string | undefined => {
+    if (statusLabel === "All Status") return undefined;
+    const statusObj = orderStatuses.find((s) => s.label === statusLabel);
+    return statusObj?.value;
+  };
 
-    return matchesSearch && matchesStatus;
+  // GraphQL query to fetch order requests
+  const {
+    data: orderRequestsData,
+    loading: orderRequestsLoading,
+    error: orderRequestsError,
+    refetch: refetchOrderRequests,
+  } = useQuery<OrderRequestsResponse>(ALL_ORDER_REQUESTS, {
+    variables: {
+      search: search || undefined,
+      status: getStatusValue(selectedStatus),
+      page: currentPage + 1, // GraphQL uses 1-based pagination
+      perPage: itemsPerPage,
+    },
+    fetchPolicy: "network-only",
   });
 
-  const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
-  const offset = currentPage * itemsPerPage;
-  const currentItems = filteredProducts.slice(offset, offset + itemsPerPage);
+  // GraphQL mutation to approve order request
+  const [approveOrderRequest, { loading: isApproving }] = useMutation(
+    APPROVE_ORDER_REQUEST
+  );
+
+  // GraphQL mutation to deny order request
+  const [denyOrderRequest, { loading: isDenying }] =
+    useMutation(DENY_ORDER_REQUEST);
+
+  const transformedRequests =
+    orderRequestsData?.allOrderRequests.allData?.map((request, index) => {
+      // Normalize status to match class names
+      const normalizeStatus = (status: string | undefined) => {
+        if (!status) return "Pending";
+        const lowerStatus = status.toLowerCase();
+        if (lowerStatus === "approved") return "Approved";
+        if (lowerStatus === "denied" || lowerStatus === "rejected")
+          return "Denied";
+        if (lowerStatus === "pending" || lowerStatus === "requested")
+          return "Pending";
+        return "Pending";
+      };
+
+      return {
+        id: typeof request.id === "number" ? request.id : index + 1,
+        requestID: request.displayId || `REQ-${request.id || index}`,
+        customer: request.patient?.fullName || "Patient",
+        email: request.patient?.email || "N/A",
+        date: request.patient?.createdAt
+          ? new Date(request.patient.createdAt).toLocaleDateString()
+          : new Date().toLocaleDateString(),
+        items:
+          request.requestedItems?.map((item) => item.title || "Unknown item") ||
+          [],
+        amount:
+          request.requestedItems?.reduce((sum, item) => {
+            const price =
+              typeof item.price === "string"
+                ? parseFloat(item.price)
+                : (item.price as number) || 0;
+            return sum + price;
+          }, 0) || 0,
+        status: normalizeStatus(request.status),
+        originalId: request.id,
+        patientId: request.patient?.id,
+      };
+    }) || [];
+
+  const pageCount = orderRequestsData?.allOrderRequests.totalPages || 1;
+  const currentItems = transformedRequests;
 
   useEffect(() => {
     setCurrentPage(0);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", "1");
-    router.replace(`?${params.toString()}`);
+    // Refetch data when search changes
+    refetchOrderRequests({
+      search: search || undefined,
+      status: getStatusValue(selectedStatus),
+      page: 1,
+      perPage: itemsPerPage,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
-  const handlePageChange = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(selected + 1));
-    router.replace(`?${params.toString()}`);
+  // Refetch data when status changes
+  useEffect(() => {
+    refetchOrderRequests({
+      search: search || undefined,
+      status: getStatusValue(selectedStatus),
+      page: currentPage + 1,
+      perPage: itemsPerPage,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatus]);
+
+  const handlePageChange = (selectedPage: number) => {
+    setCurrentPage(selectedPage);
+    // Refetch data with new page number
+    refetchOrderRequests({
+      search: search || undefined,
+      status: getStatusValue(selectedStatus),
+      page: selectedPage + 1,
+      perPage: itemsPerPage,
+    });
   };
 
   const isMobile = useIsMobile();
+
+  // Show error message if query fails
+  if (orderRequestsError) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="text-red-600 text-center">
+          {orderRequestsError.message}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -116,6 +226,12 @@ function RequestContent() {
                   onClick={() => {
                     setSelectedStatus("All Status");
                     setCurrentPage(0);
+                    refetchOrderRequests({
+                      search: search || undefined,
+                      status: undefined,
+                      page: 1,
+                      perPage: itemsPerPage,
+                    });
                   }}
                   className="text-gray-500 hover:bg-gray-100 w-full py-2 px-2.5 rounded-md text-xs md:text-sm text-start"
                 >
@@ -128,6 +244,12 @@ function RequestContent() {
                     onClick={() => {
                       setSelectedStatus(status.label);
                       setCurrentPage(0);
+                      refetchOrderRequests({
+                        search: search || undefined,
+                        status: status.value,
+                        page: 1,
+                        perPage: itemsPerPage,
+                      });
                     }}
                     className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${status.color}`}
                   >
@@ -142,112 +264,160 @@ function RequestContent() {
 
       <div className=" flex flex-col md:gap-6">
         <div className="flex flex-col gap-1">
-          <div className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
-            <div>
-              <h2 className="whitespace-nowrap">Request ID</h2>
+          {!orderRequestsLoading && (
+            <div className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+              <div>
+                <h2 className="whitespace-nowrap">Request ID</h2>
+              </div>
+              <div>
+                <h2>Patient</h2>
+              </div>
+              <div className="lg:block hidden">
+                <h2>Date</h2>
+              </div>
+              <div className="lg:block hidden">
+                <h2>Items</h2>
+              </div>
+              <div>
+                <h2>Total</h2>
+              </div>
+              <div>
+                <h2>Status</h2>
+              </div>
+              <div>
+                <h2>Actions</h2>
+              </div>
             </div>
-            <div>
-              <h2>Patient</h2>
-            </div>
-            <div className="lg:block hidden">
-              <h2>Date</h2>
-            </div>
-            <div className="lg:block hidden">
-              <h2>Items</h2>
-            </div>
-            <div>
-              <h2>Total</h2>
-            </div>
-            <div>
-              <h2>Status</h2>
-            </div>
-            <div>
-              <h2>Actions</h2>
-            </div>
-          </div>
+          )}
 
-          {currentItems.map((order) => (
-            <RequestListView
-              onRowClick={() => router.push(`/orders/${order.requestID}`)}
-              key={order.requestID}
-              request={order}
-              onProfileBtn={() => router.push(`/customers/${order.requestID}`)}
-              onAcceptBtn={() => {
-                showSuccessToast("'Patient request approved successfully.");
-              }}
-              onRejectBtn={() => {
-                setIsRejectModalOpen(true);
-              }}
-              onChatBtn={() => {
-                setIsChatModalOpen(true);
-              }}
-            />
-          ))}
+          {orderRequestsLoading ? (
+            <RequestListSkeleton />
+          ) : (
+            currentItems.map((order) => (
+              <RequestListView
+                key={order.requestID}
+                request={order}
+                onProfileBtn={() =>
+                  router.push(`/customers/${order.patientId}`)
+                }
+                onAcceptBtn={() => {
+                  setSelectedRequestId(String(order.originalId));
+                  setIsApproveModalOpen(true);
+                }}
+                onRejectBtn={() => {
+                  setSelectedRequestId(String(order.originalId));
+                  setIsRejectModalOpen(true);
+                }}
+                onChatBtn={() => {
+                  setSelectedChatPatient({
+                    id: String(order.patientId || ""),
+                    name: order.customer,
+                    requestId: order.requestID,
+                  });
+                  setIsChatModalOpen(true);
+                }}
+              />
+            ))
+          )}
         </div>
         <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-          {currentItems.length < 1 && (
+          {!orderRequestsLoading && currentItems.length < 1 && (
             <EmptyState mtClasses="-mt-0 md:-mt-4 " />
           )}
 
-          <div className="w-full flex items-center justify-center">
-            <ReactPaginate
-              breakLabel="..."
-              nextLabel={
-                <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="hidden md:inline-block">Next</span>
-                  <span className="block mb-0.5 rotate-180">
-                    <ArrowLeftIcon />
-                  </span>
-                </span>
-              }
-              previousLabel={
-                <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="md:mb-0.5">
-                    <ArrowLeftIcon />
-                  </span>
-                  <span className="hidden md:inline-block">Previous</span>
-                </span>
-              }
+          {!orderRequestsLoading && currentItems.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pageCount}
               onPageChange={handlePageChange}
-              pageRangeDisplayed={3}
-              marginPagesDisplayed={1}
-              pageCount={pageCount ? pageCount : 1}
-              forcePage={currentPage}
-              pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-              pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-              activeClassName="bg-gray-200 text-gray-900 font-medium"
-              previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-              nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-              breakClassName="px-3 py-1 font-semibold text-gray-400"
             />
-
-            <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-              Page {currentPage + 1} of {pageCount}
-            </h2>
-          </div>
+          )}
         </div>
       </div>
       <RequestRejectModal
         isOpen={isRejectModalOpen}
-        onClose={() => setIsRejectModalOpen(false)}
-        onConfirm={(reason) => {
-          showErrorToast("Patient request denied.");
-          console.log(reason);
+        onClose={() => {
+          if (!isDenying) {
+            setIsRejectModalOpen(false);
+            setSelectedRequestId(null);
+          }
         }}
-        itemTitle="REQ-004"
+        onConfirm={async (data) => {
+          try {
+            await denyOrderRequest({
+              variables: {
+                requestId: selectedRequestId,
+                doctorMessage: data.reason,
+              },
+            });
+            showErrorToast("Patient request denied.");
+            // Refetch the data to update the UI
+            refetchOrderRequests();
+            // Close modal after successful mutation
+            setIsRejectModalOpen(false);
+            setSelectedRequestId(null);
+          } catch (error) {
+            showErrorToast("Failed to deny request. Please try again.");
+            console.error("Error denying request:", error);
+            // Keep modal open on error so user can try again
+          }
+        }}
+        isSubmitting={isDenying}
+        itemTitle={
+          currentItems.find(
+            (item) => String(item.originalId) === selectedRequestId
+          )?.requestID || ""
+        }
       />
 
-      <MessageSendModal
-        isOpen={isChatModalOpen}
-        onClose={() => setIsChatModalOpen(false)}
-        onConfirm={(reason) => {
-          showSuccessToast(`Message send successfully to ${"Emily Chan"}`);
-          console.log(reason);
+      <RequestApproveModal
+        isOpen={isApproveModalOpen}
+        onClose={() => {
+          if (!isApproving) {
+            setIsApproveModalOpen(false);
+            setSelectedRequestId(null);
+          }
         }}
-        orderId="REQ-OO5"
-        userName="Emily Chan"
+        onConfirm={async (data) => {
+          try {
+            await approveOrderRequest({
+              variables: {
+                requestId: selectedRequestId,
+                doctorMessage: data.doctorMessage || null,
+              },
+            });
+            showSuccessToast("Patient request approved successfully.");
+            // Refetch the data to update the UI
+            refetchOrderRequests();
+            // Close modal after successful mutation
+            setIsApproveModalOpen(false);
+            setSelectedRequestId(null);
+          } catch (error) {
+            showErrorToast("Failed to approve request. Please try again.");
+            console.error("Error approving request:", error);
+            // Keep modal open on error so user can try again
+          }
+        }}
+        isSubmitting={isApproving}
+        itemTitle={
+          currentItems.find(
+            (item) => String(item.originalId) === selectedRequestId
+          )?.requestID || ""
+        }
       />
+
+      {selectedChatPatient && (
+        <ChatModal
+          isOpen={isChatModalOpen}
+          onClose={() => {
+            setIsChatModalOpen(false);
+            setSelectedChatPatient(null);
+          }}
+          participantId={selectedChatPatient.id}
+          participantName={selectedChatPatient.name}
+          itemTitle={selectedChatPatient.requestId}
+        />
+      )}
     </div>
   );
 }

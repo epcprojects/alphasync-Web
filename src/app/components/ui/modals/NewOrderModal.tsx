@@ -2,34 +2,43 @@
 import React, { useState } from "react";
 import AppModal from "./AppModal";
 import { PlusIcon, ShopingCartIcon, TrashBinIcon } from "@/icons";
-import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
+import { SelectGroupDropdown, ProductSelect } from "@/app/components";
 import ThemeInput from "../inputs/ThemeInput";
 import ThemeButton from "../buttons/ThemeButton";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import Image from "next/image";
-import { showSuccessToast } from "@/lib/toast";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { formatNumber } from "@/lib/helpers";
+import { useMutation } from "@apollo/client/react";
+import { CREATE_ORDER } from "@/lib/graphql/mutations";
+import { useParams } from "next/navigation";
 
 type DropdownItem = {
   name: string;
   displayName: string;
   email?: string;
+  id?: string;
+  productId?: string;
+  variantId?: string;
+  price?: number;
 };
 
 interface OrderItem {
   product: string;
+  productId: string;
+  variantId: string;
   quantity: number;
   price: number;
+  originalPrice: number;
 }
 
 interface NewOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentCustomer?: DropdownItem;
-  customers: DropdownItem[];
-  products: DropdownItem[];
-  onCreateOrder: (data: {
+  customers?: DropdownItem[];
+  onCreateOrder?: (data: {
     customer: string;
     items: OrderItem[];
     totalAmount: number;
@@ -40,10 +49,18 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   isOpen,
   onClose,
   currentCustomer,
-  customers,
-  products,
+  customers = [],
   onCreateOrder,
 }) => {
+  // Get patient ID from URL params
+  const params = useParams();
+  const patientId = params.id as string;
+
+  // GraphQL mutation to create order
+  const [
+    createOrder,
+    { loading: createOrderLoading, error: createOrderError },
+  ] = useMutation(CREATE_ORDER);
   const OrderSchema = Yup.object().shape({
     customer: currentCustomer
       ? Yup.string().optional() // if parent already provides customer
@@ -59,6 +76,8 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(
     currentCustomer?.displayName || null
   );
+  const [selectedProductData, setSelectedProductData] =
+    useState<DropdownItem | null>(null);
 
   const handleAddItem = (values: {
     customer: string;
@@ -69,14 +88,19 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     // lock on first item
     if (!lockedCustomer) setLockedCustomer(values.customer);
 
+    const originalPrice = selectedProductData?.price || values.price;
+
     const newItem: OrderItem = {
       product: values.product,
+      productId: selectedProductData?.productId || "",
+      variantId: selectedProductData?.variantId || "",
       quantity: values.quantity,
       price: values.price,
+      originalPrice: originalPrice,
     };
 
     setOrderItems((prev) => [...prev, newItem]);
-    showSuccessToast("Order created successfully");
+    showSuccessToast("Item added to order successfully");
   };
 
   const handleUpdateItem = (
@@ -98,24 +122,59 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     0
   );
 
-  const handleCreateOrder = () => {
-    if (orderItems.length === 0) return; // or show a toast
-
-    const customerForThisOrder = lockedCustomer ?? customerDraft;
-
-    onCreateOrder({
-      customer: customerForThisOrder,
-      items: orderItems,
-      totalAmount,
-    });
-
-    // reset state for the next order
-    setOrderItems([]);
-    setCustomerDraft("");
-    if (!currentCustomer) {
-      setLockedCustomer(null);
+  const handleCreateOrder = async () => {
+    if (orderItems.length === 0) {
+      showErrorToast("Please add at least one item to the order");
+      return;
     }
-    onClose();
+
+    try {
+      // Validate that patientId exists
+
+      // Transform order items to match the expected GraphQL input format
+      const orderItemsInput = orderItems.map((item) => ({
+        productId: item.productId,
+        variantId: item.variantId,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      // Check if any product price has been changed from original
+      const useCustomPricing = orderItems.some(
+        (item) => item.price !== item.originalPrice
+      );
+
+      await createOrder({
+        variables: {
+          orderItems: orderItemsInput,
+          totalPrice: totalAmount,
+          patientId: patientId,
+          useCustomPricing: useCustomPricing,
+        },
+      });
+
+      // Call the parent callback if provided
+      if (onCreateOrder) {
+        onCreateOrder({
+          customer: lockedCustomer || customerDraft,
+          items: orderItems,
+          totalAmount,
+        });
+      }
+
+      // Reset state for the next order
+      setOrderItems([]);
+      setCustomerDraft("");
+      if (!currentCustomer) {
+        setLockedCustomer(null);
+      }
+
+      showSuccessToast("Order created successfully");
+      onClose();
+    } catch (error) {
+      console.error("Error creating order:", error);
+      showErrorToast("Failed to create order. Please try again.");
+    }
   };
 
   return (
@@ -188,31 +247,21 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     )}
                   </div>
                 )}
-                <div>
-                  <SelectGroupDropdown
-                    selectedGroup={values.product}
-                    setSelectedGroup={(val: string | string[]) => {
-                      const v = Array.isArray(val) ? val[0] : val;
-                      setFieldValue("product", v);
-                    }}
-                    groups={products}
-                    errors={errors.product || ""}
-                    name="Product:"
-                    multiple={false}
-                    placeholder="Select a product"
-                    searchTerm={""}
-                    setSearchTerm={() => {}}
-                    isShowDrop={true}
-                    required={true}
-                    paddingClasses="py-2.5 h-11 px-2"
-                    optionPaddingClasses="p-1"
-                    showLabel={true}
-                    showIcon={false}
-                  />
-                  {errors.product && touched.product && (
-                    <p className="text-red-500 text-xs">{errors.product}</p>
-                  )}
-                </div>
+                <ProductSelect
+                  selectedProduct={values.product}
+                  setSelectedProduct={(product) =>
+                    setFieldValue("product", product)
+                  }
+                  errors={errors.product || ""}
+                  touched={touched.product}
+                  onProductChange={(selectedProduct) => {
+                    setSelectedProductData(selectedProduct);
+                    // Auto-populate price when product is selected
+                    if (selectedProduct && selectedProduct.price) {
+                      setFieldValue("price", selectedProduct.price);
+                    }
+                  }}
+                />
 
                 <div
                   className={`flex gap-4 ${
@@ -354,13 +403,22 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     </span>
                   </div>
                   <div className="flex justify-end">
+                    {createOrderError && (
+                      <p className="text-red-500 text-xs mb-2">
+                        Error creating order: {createOrderError.message}
+                      </p>
+                    )}
                     <ThemeButton
-                      label="Create Order"
+                      label={
+                        createOrderLoading
+                          ? "Creating Order..."
+                          : "Create Order"
+                      }
                       icon={<PlusIcon height="18" width="18" />}
                       onClick={handleCreateOrder}
                       size="medium"
                       heightClass="h-10"
-                      // disabled={true}
+                      disabled={createOrderLoading || orderItems.length === 0}
                     />
                   </div>
                 </div>

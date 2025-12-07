@@ -34,13 +34,14 @@ interface AppModalProps {
   scrollNeeded?: boolean;
   hideConfirmButton?: boolean;
   cancelBtnIcon?: React.ReactNode;
+  disableCloseButton?: boolean;
 }
 
 const sizeClasses = {
   small: "sm:max-w-lg", // ~512px
-  medium: "sm:max-w-[600px]", // ~600x
+  medium: "sm:max-w-[600px]", // ~600px
   large: "sm:max-w-3xl", // ~768px
-  extraLarge: "sm:max-w-5xl", // ~1024
+  extraLarge: "sm:max-w-5xl", // ~1024px
 };
 
 const AppModal: React.FC<AppModalProps> = ({
@@ -67,6 +68,7 @@ const AppModal: React.FC<AppModalProps> = ({
   btnIcon,
   scrollNeeded = true,
   cancelBtnIcon,
+  disableCloseButton = false,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -115,17 +117,22 @@ const AppModal: React.FC<AppModalProps> = ({
             </div>
 
             <button
-              onClick={onClose}
-              className="md:p-1 p-1 hover:bg-gray-200 rounded-md cursor-pointer"
+              onClick={disableCloseButton ? undefined : onClose}
+              disabled={disableCloseButton}
+              className={`md:p-1 p-1 hover:bg-gray-200 rounded-md ${
+                disableCloseButton
+                  ? "cursor-not-allowed opacity-50"
+                  : "cursor-pointer"
+              }`}
             >
               <CrossIcon />
             </button>
           </div>
 
           <div
-            className={`flex-1 bg-white ${scrollNeeded && "overflow-y-auto"}  ${
-              !showFooter && "rounded-b-2xl"
-            } ${bodyPaddingClasses}`}
+            className={`flex-1 bg-white ${
+              scrollNeeded && "overflow-y-auto max-h-[calc(100vh-200px)]"
+            }  ${!showFooter && "rounded-b-2xl"} ${bodyPaddingClasses}`}
           >
             {children}
           </div>

@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import CustomToastContainer from "./components/ToastContainer";
+import { GraphQLProvider } from "../lib/graphql/GraphQLProvider";
+import { ReduxProvider } from "@/lib/store/ReduxProvider";
+import Script from "next/script";
 
 const poppins_init = Poppins({
   style: ["normal"],
@@ -47,8 +50,16 @@ export default function RootLayout({
       <body
         className={`${poppins_init.variable} !bg-[url(/images/background.png)] !bg-center w-full min-h-dvh !bg-cover !bg-no-repeat antialiased`}
       >
-        {children}
-        <CustomToastContainer />
+        <GraphQLProvider>
+          <ReduxProvider>
+            {children}
+            <CustomToastContainer />
+          </ReduxProvider>
+        </GraphQLProvider>
+        <Script
+          src="https://jstest.authorize.net/v1/Accept.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

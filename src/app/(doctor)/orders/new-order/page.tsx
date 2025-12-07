@@ -1,19 +1,24 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowDownIcon, PlusIcon, TrashBinIcon } from "@/icons";
-import { SelectGroupDropdown } from "@/app/components";
+import { ProductSelect, CustomerSelect } from "@/app/components";
 import { ThemeInput, ThemeButton } from "@/app/components";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { showSuccessToast } from "@/lib/toast";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { formatNumber } from "@/lib/helpers";
+import { useMutation } from "@apollo/client/react";
+import { CREATE_ORDER } from "@/lib/graphql/mutations";
 
 interface OrderItem {
   product: string;
+  productId: string;
+  variantId: string;
   quantity: number;
   price: number;
+  originalPrice: number;
 }
 
 const Page = () => {
@@ -29,6 +34,27 @@ const Page = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [customerDraft, setCustomerDraft] = useState("");
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
+  const [selectedProductData, setSelectedProductData] = useState<{
+    name: string;
+    displayName: string;
+    productId?: string;
+    variantId?: string;
+    price?: number;
+    customPrice?: number;
+    originalPrice?: number;
+  } | null>(null);
+  const [selectedCustomerData, setSelectedCustomerData] = useState<{
+    name: string;
+    displayName: string;
+    email: string;
+    id: string;
+  } | null>(null);
+
+  // GraphQL mutation to create order
+  const [
+    createOrder,
+    { loading: createOrderLoading, error: createOrderError },
+  ] = useMutation(CREATE_ORDER);
 
   const handleAddItem = (values: {
     customer: string;
@@ -39,10 +65,20 @@ const Page = () => {
     // lock on first item
     if (!lockedCustomer) setLockedCustomer(values.customer);
 
+    // Use customPrice if present, otherwise use originalPrice, fallback to entered price
+    const originalPrice =
+      selectedProductData?.customPrice ??
+      selectedProductData?.originalPrice ??
+      selectedProductData?.price ??
+      values.price;
+
     const newItem: OrderItem = {
       product: values.product,
+      productId: selectedProductData?.productId || "",
+      variantId: selectedProductData?.variantId || "",
       quantity: values.quantity,
       price: values.price,
+      originalPrice: originalPrice,
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -67,45 +103,48 @@ const Page = () => {
     0
   );
 
-  const handleCreateOrder = () => {
+  const handleCreateOrder = async () => {
     if (orderItems.length === 0) return;
-    setLockedCustomer(null);
-    setOrderItems([]);
-    setCustomerDraft("");
-    showSuccessToast("Order created successfully");
+
+    try {
+      // Use the selected customer data
+      if (!selectedCustomerData) {
+        showErrorToast("Customer not found");
+        return;
+      }
+
+      // Transform order items to match the expected GraphQL input format
+      const orderItemsInput = orderItems.map((item) => ({
+        productId: item.productId,
+        variantId: item.variantId,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      // Check if any product price has been changed from original
+      const useCustomPricing = orderItems.some(
+        (item) => item.price !== item.originalPrice
+      );
+
+      await createOrder({
+        variables: {
+          orderItems: orderItemsInput,
+          totalPrice: totalAmount,
+          patientId: selectedCustomerData.id,
+          useCustomPricing: useCustomPricing,
+        },
+      });
+
+      // Reset form state
+      setLockedCustomer(null);
+      setOrderItems([]);
+      setCustomerDraft("");
+      showSuccessToast("Order created successfully");
+    } catch (error) {
+      console.error("Error creating order:", error);
+      showErrorToast("Failed to create order. Please try again.");
+    }
   };
-
-  const products = [
-    {
-      name: "BPC-157",
-      displayName: "BPC-157",
-    },
-    {
-      name: "TB-500",
-      displayName: "TB-500",
-    },
-    {
-      name: "CJC-1295",
-      displayName: "CJC-1295",
-    },
-  ];
-
-  const customers = [
-    {
-      name: "John Smith",
-      displayName: "John Smith",
-    },
-    {
-      name: "Sarah J",
-      displayName: "Sarah J",
-      email: "Sarah.smith@email.com",
-    },
-    {
-      name: "Emily Chen",
-      displayName: "Emily Chen",
-      email: "Emily.smith@email.com",
-    },
-  ];
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -148,59 +187,50 @@ const Page = () => {
             {({ values, setFieldValue, errors, touched }) => (
               <Form className="flex flex-col gap-4 md:gap-5">
                 <div>
-                  <SelectGroupDropdown
-                    selectedGroup={values.customer}
-                    setSelectedGroup={(val: string | string[]) => {
+                  <CustomerSelect
+                    selectedCustomer={values.customer}
+                    setSelectedCustomer={(val: string) => {
                       if (lockedCustomer) return; // prevent changing after first item
-                      const v = Array.isArray(val) ? val[0] : val;
-                      setFieldValue("customer", v);
-                      setCustomerDraft(v);
+                      setFieldValue("customer", val);
+                      setCustomerDraft(val);
                     }}
-                    groups={customers}
                     errors={errors.customer || ""}
-                    name="Customer"
-                    multiple={false}
+                    touched={touched.customer}
+                    disabled={!!lockedCustomer}
                     placeholder={
                       lockedCustomer ? "Customer locked" : "Select a customer"
                     }
-                    isShowDrop={!lockedCustomer}
-                    searchTerm={""}
-                    setSearchTerm={() => {}}
                     required={true}
+                    showLabel={true}
                     paddingClasses="py-2.5 h-11 px-2"
                     optionPaddingClasses="p-1"
-                    showLabel={true}
-                    showIcon={false}
-                    disabled={lockedCustomer ? true : false}
+                    onCustomerChange={(customer) => {
+                      setSelectedCustomerData(customer);
+                    }}
                   />
-                  {errors.customer && touched.customer && (
-                    <p className="text-red-500 text-xs">{errors.customer}</p>
-                  )}
                 </div>
                 <div>
-                  <SelectGroupDropdown
-                    selectedGroup={values.product}
-                    setSelectedGroup={(val: string | string[]) => {
-                      const v = Array.isArray(val) ? val[0] : val;
-                      setFieldValue("product", v);
-                    }}
-                    groups={products}
+                  <ProductSelect
+                    selectedProduct={values.product}
+                    setSelectedProduct={(product) =>
+                      setFieldValue("product", product)
+                    }
                     errors={errors.product || ""}
-                    name="Product:"
-                    multiple={false}
-                    placeholder="Select a product"
-                    searchTerm={""}
-                    setSearchTerm={() => {}}
-                    isShowDrop={true}
-                    required={true}
-                    paddingClasses="py-2.5 h-11 px-2"
-                    optionPaddingClasses="p-1"
-                    showLabel={true}
-                    showIcon={false}
+                    touched={touched.product}
+                    onProductChange={(selectedProduct) => {
+                      setSelectedProductData(selectedProduct);
+                      // Auto-populate price when product is selected
+                      // Use customPrice if present, otherwise use originalPrice
+                      if (selectedProduct) {
+                        const priceToUse =
+                          selectedProduct.customPrice ??
+                          selectedProduct.originalPrice ??
+                          selectedProduct.price ??
+                          0;
+                        setFieldValue("price", priceToUse);
+                      }
+                    }}
                   />
-                  {errors.product && touched.product && (
-                    <p className="text-red-500 text-xs">{errors.product}</p>
-                  )}
                 </div>
 
                 <div className={`flex gap-4 flex-row`}>
@@ -227,6 +257,7 @@ const Page = () => {
                       type="number"
                       id="price"
                       required={true}
+                      disabled={true}
                     />
                     {errors.price && touched.price && (
                       <p className="text-red-500 text-xs">{errors.price}</p>
@@ -302,6 +333,7 @@ const Page = () => {
                     <div>
                       <input
                         type="number"
+                        disabled={true}
                         value={item.price}
                         onChange={(e) =>
                           handleUpdateItem(
@@ -339,14 +371,23 @@ const Page = () => {
                     </span>
                   </div>
                   <div className="flex justify-end">
+                    {createOrderError && (
+                      <p className="text-red-500 text-xs mb-2">
+                        Error creating order: {createOrderError.message}
+                      </p>
+                    )}
                     <ThemeButton
-                      label="Create Order"
+                      label={
+                        createOrderLoading
+                          ? "Creating Order..."
+                          : "Create Order"
+                      }
                       onClick={handleCreateOrder}
                       size="medium"
                       icon={<PlusIcon height="18" width="18" />}
                       heightClass="h-10"
                       className="w-full sm:w-fit"
-                      // disabled={true}
+                      disabled={createOrderLoading || orderItems.length === 0}
                     />
                   </div>
                 </div>

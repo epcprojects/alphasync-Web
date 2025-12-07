@@ -1,6 +1,7 @@
 import React from "react";
 import ThemeButton from "../buttons/ThemeButton";
 import { MedicineIcon, Reload } from "@/icons";
+import ProductImage from "@/app/components/ui/ProductImage";
 
 export type pageVarient = "order" | "Pending-page";
 
@@ -10,17 +11,27 @@ interface OrderItem {
   quantity: number;
   price: number;
   amount: string;
+  description?: string;
+  imageUrl?: string;
+
+  product?: {
+    primaryImage?: string;
+  };
 }
 
 export interface PrescriptionOrder {
   id: string;
-  orderNumber: string;
+  displayId: string;
   doctorName: string;
   orderItems: OrderItem[];
   orderedOn: string;
   totalPrice: number;
   isDueToday?: string;
   status?: string;
+  shippingAddress?: string;
+  patient?: {
+    address?: string | null;
+  };
 }
 
 interface PrescriptionOrderCardProps {
@@ -31,6 +42,7 @@ interface PrescriptionOrderCardProps {
   btnTitle: string;
   icon: React.ReactNode;
   type: pageVarient;
+  btnDisabled?: boolean;
 }
 
 const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
@@ -41,12 +53,13 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   btnTitle,
   icon,
   type = "order",
+  btnDisabled,
 }) => {
   const getOrderTags = (status?: string) => {
     switch (status) {
       case "Due Today":
         return "bg-red-50 border border-red-200 text-red-700";
-      case "Processing":
+      case "pending_payment":
         return "bg-amber-50 border border-amber-200 text-amber-700";
       case "Ready for Pickup":
         return "bg-blue-50 border border-blue-200 text-blue-700";
@@ -66,14 +79,16 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-950">
-              Order #{order.orderNumber}
+              {order.displayId}
             </h2>
             <span
-              className={`${getOrderTags(
-                type === "order" ? order.status : order.isDueToday
+              className={` capitalize ${getOrderTags(
+                order.status
               )} px-3 py-0.5 rounded-full text-sm font-medium whitespace-nowrap`}
             >
-              {type === "order" ? order.status : order.isDueToday}
+              {order.status === "pending_payment"
+                ? "Pending Payment"
+                : order.status}
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-8 mt-4 md:mt-0 mb-2">
@@ -108,7 +123,13 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
-                    <MedicineIcon />
+                    {/* <MedicineIcon /> */}
+                    <ProductImage
+                      alt="prduct"
+                      src={item?.product?.primaryImage}
+                      width={1024}
+                      height={1024}
+                    />
                   </div>
                   <span
                     className="
@@ -144,7 +165,9 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                   }
                 }}
                 className={`w-11 h-11 ${
-                  type === "Pending-page" ? "hover:bg-red-50" : "hover:bg-gray-50"
+                  type === "Pending-page"
+                    ? "hover:bg-red-50"
+                    : "hover:bg-gray-50"
                 } cursor-pointer rounded-full flex items-center justify-center border ${
                   type === "Pending-page"
                     ? "border-red-200"
@@ -156,6 +179,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               <ThemeButton
                 variant="outline"
                 label={btnTitle}
+                disabled={btnDisabled}
                 onClick={(e) => {
                   e.stopPropagation();
                   onPay?.(order);

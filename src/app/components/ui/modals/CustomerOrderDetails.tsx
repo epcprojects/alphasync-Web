@@ -10,10 +10,11 @@ type OrderItem = {
   amount: string;
   quantity: number;
   price: number;
+  description?: string;
 };
 
 type order = {
-  orderNumber: string;
+  displayId: string;
   doctorName: string;
   orderedOn: string;
   shippingAddress?: string;
@@ -21,6 +22,9 @@ type order = {
   totalPrice: string | number;
   orderItems: OrderItem[];
   status?: string;
+  patient?: {
+    address?: string | null;
+  };
 };
 
 interface CustomerOrderDetailsProps {
@@ -37,12 +41,21 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
   type = "order",
 }) => {
   useBodyScrollLock(isOpen);
+  const normalizeAddress = (value?: string | null) => {
+    if (typeof value !== "string") return undefined;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  };
   if (!order) return null;
+  const shippingAddress =
+    normalizeAddress(order.patient?.address ?? undefined) ??
+    normalizeAddress(order.shippingAddress) ??
+    "Address not available";
   const getOrderTags = (status?: string) => {
     switch (status) {
       case "Due Today":
         return "bg-red-50 border border-red-200 text-red-700";
-      case "Processing":
+      case "pending_payment":
         return "bg-amber-50 border border-amber-200 text-amber-700";
       case "Ready for Pickup":
         return "bg-blue-50 border border-blue-200 text-blue-700";
@@ -57,7 +70,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
       icon={<OrderDetail />}
       title="Order Details"
       outSideClickClose={false}
-      subtitle={order ? `Order #${order.orderNumber}` : ""}
+      subtitle={order.displayId}
       position={ModalPosition.RIGHT}
       showFooter={false}
     >
@@ -66,18 +79,19 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
           {order.orderItems.map((item) => (
             <OrderItemCard key={item.id} item={item} />
           ))}
+
           <div className="flex flex-col gap-4 px-2.5 md:px-0 border-b border-gray-200 pb-4 ">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-normal text-gray-800">
-                Due days
-              </span>
+              <span className="text-sm font-normal text-gray-800">Status</span>
               <div className="flex items-center justify-between">
                 <span
                   className={`${getOrderTags(
-                    type === "order" ? order.status : order.isDueToday
+                    order.status
                   )} px-3 py-0.5 rounded-full text-sm font-medium`}
                 >
-                  {type === "order" ? order.status : order.isDueToday}
+                  {order.status === "pending_payment"
+                    ? "Pending Payment"
+                    : order.status}
                 </span>
               </div>
             </div>
@@ -100,7 +114,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                 Shipping Address
               </span>
               <span className="text-sm font-medium text-gray-800">
-                123 Main St, New York, NY 10001
+                {shippingAddress}
               </span>
             </div>
           </div>

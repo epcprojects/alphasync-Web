@@ -1,84 +1,168 @@
 "use client";
 
+import { ArrowDownIcon, DoctorFilledIcon, PlusIcon, SearchIcon } from "@/icons";
+import React, { Suspense, useState } from "react";
 import {
-  ArrowDownIcon,
-  ArrowLeftIcon,
-  DoctorFilledIcon,
-  PlusIcon,
-  SearchIcon,
-} from "@/icons";
-import React, { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { EmptyState, Loader, ThemeButton } from "@/app/components";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+  EmptyState,
+  Loader,
+  Skeleton,
+  ThemeButton,
+  Pagination,
+} from "@/app/components";
+import { Menu, MenuButton, MenuItem, MenuItems, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { useQuery, useMutation } from "@apollo/client/react";
 
-import ReactPaginate from "react-paginate";
-import DoctorListView, {
-  Doctor,
-} from "@/app/components/ui/cards/DoctorListView";
-import { doctors } from "../../../../public/data/Doctors";
+import DoctorListView from "@/app/components/ui/cards/DoctorListView";
 import AddEditDoctorModal from "@/app/components/ui/modals/AddEditDoctorModal";
+import CsvImportDoctorModal from "@/app/components/ui/modals/CsvImportDoctorModal";
 import DoctorDeleteModal from "@/app/components/ui/modals/DoctorDeleteModal";
+import ResendInvitationModal from "@/app/components/ui/modals/ResendInvitationModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { ALL_DOCTORS } from "@/lib/graphql/queries";
+import { MODIFY_ACCESSS_USER } from "@/lib/graphql/mutations";
+import { UserAttributes } from "@/lib/graphql/attributes";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
+
+// Interface for GraphQL response
+interface AllDoctorsResponse {
+  allDoctors: {
+    allData: UserAttributes[];
+    count: number;
+    nextPage: number | null;
+    prevPage: number | null;
+    totalPages: number;
+  };
+}
+
+interface DoctorFormData {
+  id?: string | number;
+  fullName?: string;
+  phoneNo?: string;
+  email?: string;
+  medicalLicense?: string;
+  specialty?: string;
+  status?: string;
+}
 
 function DoctorContent() {
-  const router = useRouter();
   const [search, setSearch] = useState("");
-  const searchParams = useSearchParams();
   const [isModalOpne, setIsModalOpen] = useState(false);
+  const [isCsvImportModalOpen, setIsCsvImportModalOpen] = useState(false);
   const [isDeleteModalOpne, setIsDeleteModalOpen] = useState(false);
-  const [editDoctor, setEditDoctor] = useState<Doctor>();
+  const [isResendModalOpen, setIsResendModalOpen] = useState(false);
+  const [editDoctor, setEditDoctor] = useState<DoctorFormData>();
+  const [doctorToDelete, setDoctorToDelete] = useState<DoctorFormData>();
+  const [doctorToResend, setDoctorToResend] = useState<DoctorFormData>();
+  
+  // Tab state for Active/Pending doctors
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+  
   const orderStatuses = [
-    { label: "All Status" },
-    { label: "Active" },
-    { label: "Inactive" },
+    { label: "All Status", value: null },
+    { label: "Active", value: "ACTIVE" },
+    { label: "Inactive", value: "INACTIVE" },
   ];
 
   const itemsPerPage = 10;
   const [selectedStatus, setSelectedStatus] = useState<string>("All Status");
-  const initialPage = parseInt(searchParams.get("page") || "0", 10);
-  const [currentPage, setCurrentPage] = useState(initialPage);
-  const filteredProducts = doctors.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.specialty.toLowerCase().includes(search.toLowerCase());
 
-    const matchesStatus =
-      selectedStatus === "All Status" ? true : p.status === selectedStatus;
+  const [currentPage, setCurrentPage] = useState(0);
 
-    return matchesSearch && matchesStatus;
-  });
+  // GraphQL query with variables
+  const { data, loading, error, refetch } = useQuery<AllDoctorsResponse>(
+    ALL_DOCTORS,
+    {
+      variables: {
+        search: search,
+        status:
+          selectedStatus === "All Status"
+            ? undefined
+            : selectedStatus.toUpperCase(),
+        pendingInvites: selectedTabIndex === 1, // true for pending doctors (index 1), false for active doctors (index 0)
+        page: currentPage + 1,
+        perPage: itemsPerPage,
+      },
+      fetchPolicy: "network-only",
+    }
+  );
 
-  const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
-  const offset = currentPage * itemsPerPage;
-  const currentItems = filteredProducts.slice(offset, offset + itemsPerPage);
+  // GraphQL mutation for modifying user access
+  const [modifyAccessUser, { loading: modifyLoading }] =
+    useMutation(MODIFY_ACCESSS_USER);
 
-  useEffect(() => {
-    setCurrentPage(0);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", "1");
-    router.replace(`?${params.toString()}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  // Transform GraphQL data to match Doctor interface
+  const doctors = data?.allDoctors.allData;
+  
+  // Debug log to check doctors data
+  console.log("All doctors:", doctors?.map(d => ({ id: d.id, name: d.fullName, invitationStatus: d.invitationStatus })));
 
-  const handlePageChange = ({ selected }: { selected: number }) => {
-    setCurrentPage(selected);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(selected + 1));
-    router.replace(`?${params.toString()}`);
+  const pageCount = data?.allDoctors.totalPages;
+
+  const handlePageChange = (selectedPage: number) => {
+    setCurrentPage(selectedPage);
   };
 
-  const handleEdit = (doctor: Doctor) => {
+  const handleEdit = (doctor: DoctorFormData) => {
     setEditDoctor(doctor);
     setIsModalOpen(true);
   };
 
-  const handleDelete = (doctor: Doctor) => {
+  const handleDelete = (doctor: DoctorFormData) => {
+    setDoctorToDelete(doctor);
     setIsDeleteModalOpen(true);
-    console.log(doctor);
+  };
+
+  const handleStatusChange = (status: string) => {
+    setSelectedStatus(status);
+    setCurrentPage(0);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!doctorToDelete?.id) return;
+
+    try {
+      await modifyAccessUser({
+        variables: {
+          userId: doctorToDelete.id,
+          revokeAccess: true,
+        },
+      });
+
+      // Show success message
+      showSuccessToast("Doctor deleted successfully");
+
+      // Close modal and refetch data
+      setIsDeleteModalOpen(false);
+      setDoctorToDelete(undefined);
+      refetch();
+    } catch (error) {
+      console.error("Error revoking doctor access:", error);
+      showErrorToast("Failed to delete doctor. Please try again.");
+    }
+  };
+
+  const handleResendInvitation = (doctorId: string | number) => {
+    console.log("handleResendInvitation called with doctorId:", doctorId);
+    const doctor = doctors?.find(d => d.id === doctorId || d.id === String(doctorId));
+    console.log("Found doctor:", doctor);
+    if (doctor) {
+      setDoctorToResend({
+        id: doctor.id,
+        fullName: doctor.fullName,
+        email: doctor.email,
+        phoneNo: doctor.phoneNo,
+        medicalLicense: doctor.medicalLicense,
+        specialty: doctor.specialty,
+        status: doctor.status,
+      });
+      setIsResendModalOpen(true);
+      console.log("Modal should be opening now");
+    }
   };
 
   const isMobile = useIsMobile();
+
+  // Show error state
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -121,10 +205,7 @@ function DoctorContent() {
               {orderStatuses.map((status) => (
                 <MenuItem key={status.label}>
                   <button
-                    onClick={() => {
-                      setSelectedStatus(status.label);
-                      setCurrentPage(0);
-                    }}
+                    onClick={() => handleStatusChange(status.label)}
                     className="flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full"
                   >
                     {status.label}
@@ -133,6 +214,7 @@ function DoctorContent() {
               ))}
             </MenuItems>
           </Menu>
+          <ThemeButton label="Import" onClick={() => setIsCsvImportModalOpen(true)} />
 
           <ThemeButton
             label="Add New"
@@ -142,7 +224,23 @@ function DoctorContent() {
         </div>
       </div>
 
-      <div className="space-y-1">
+      {/* Tabs for Active/Pending Doctors */}
+      <div className="bg-white rounded-xl shadow-table">
+        <TabGroup selectedIndex={selectedTabIndex} onChange={setSelectedTabIndex}>
+          <TabList className="flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-6">
+            {["All Doctors", "Pending Doctors"].map((tab, index) => (
+              <Tab
+                key={index}
+                as="button"
+                className="flex items-center gap-1 md:gap-2 w-full justify-center text-[11px] hover:bg-gray-50 whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-2 py-3 md:py-4 md:px-6"
+              >
+                {tab}
+              </Tab>
+            ))}
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <div className="space-y-1 p-4 md:p-6 pt-0">
         <div className="grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
           <div className="col-span-3">
             <h2>Name</h2>
@@ -156,64 +254,112 @@ function DoctorContent() {
           <div className="col-span-2">
             <h2>Medical License</h2>
           </div>
-          <div className="col-span-2">
+          <div className="col-span-1">
             <h2>Status</h2>
           </div>
           <div className="col-span-1">
             <h2>Actions</h2>
           </div>
         </div>
-
-        {currentItems.map((doctor) => (
-          <DoctorListView
-            onRowClick={() => router.push(`/orders/${doctor.id}`)}
-            key={doctor.id}
-            doctor={doctor}
-            onEditDoctor={() => handleEdit(doctor)}
-            onDeleteDoctor={() => handleDelete(doctor)}
-          />
-        ))}
-        <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-          {currentItems.length < 1 && <EmptyState />}
-
-          <div className="w-full flex items-center justify-center">
-            <ReactPaginate
-              breakLabel="..."
-              nextLabel={
-                <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="hidden md:inline-block">Next</span>
-                  <span className="block mb-0.5 rotate-180">
-                    <ArrowLeftIcon />
-                  </span>
-                </span>
-              }
-              previousLabel={
-                <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="md:mb-0.5">
-                    <ArrowLeftIcon />
-                  </span>
-                  <span className="hidden md:inline-block">Previous</span>
-                </span>
-              }
-              onPageChange={handlePageChange}
-              pageRangeDisplayed={3}
-              marginPagesDisplayed={1}
-              pageCount={pageCount ? pageCount : 1}
-              forcePage={currentPage}
-              pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-              pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-              activeClassName="bg-gray-200 text-gray-900 font-medium"
-              previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-              nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-              breakClassName="px-3 py-1 font-semibold text-gray-400"
-            />
-
-            <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-              Page {currentPage + 1} of {pageCount}
-            </h2>
+        {error && (
+          <div className="text-center">
+            <p className="text-red-500 mb-4">{error.message}</p>
           </div>
-        </div>
+        )}
+
+        {loading ? (
+          <div className="my-3 space-y-1">
+            <Skeleton className="w-full h-12 rounded-full" />
+            <Skeleton className="w-full h-12 rounded-full" />
+            <Skeleton className="w-full h-12 rounded-full" />
+            <Skeleton className="w-full h-12 rounded-full" />
+          </div>
+        ) : (
+          <>
+            {doctors?.map((doctor: UserAttributes) => (
+              <DoctorListView
+                // onRowClick={() => router.push(`/orders/${doctor.id}`)}
+                key={doctor.id}
+                doctor={doctor}
+                onEditDoctor={() => handleEdit(doctor)}
+                onDeleteDoctor={() => handleDelete(doctor)}
+                onResendInvitation={() => doctor.id && handleResendInvitation(doctor.id)}
+              />
+            ))}
+          </>
+        )}
+        {(!doctors || doctors.length === 0) && !loading && <EmptyState />}
+
+        {pageCount && pageCount > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={pageCount}
+            onPageChange={handlePageChange}
+          />
+        )}
+      </div>
+            </TabPanel>
+            <TabPanel>
+              <div className="space-y-1 p-4 md:p-6 pt-0">
+                <div className="grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                  <div className="col-span-3">
+                    <h2>Name</h2>
+                  </div>
+                  <div className="col-span-2">
+                    <h2>Specialty</h2>
+                  </div>
+                  <div className="col-span-2">
+                    <h2>Phone</h2>
+                  </div>
+                  <div className="col-span-2">
+                    <h2>Medical License</h2>
+                  </div>
+                  <div className="col-span-1">
+                    <h2>Status</h2>
+                  </div>
+                  <div className="col-span-1">
+                    <h2>Actions</h2>
+                  </div>
+                </div>
+                {error && (
+                  <div className="text-center">
+                    <p className="text-red-500 mb-4">{error.message}</p>
+                  </div>
+                )}
+
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                  </div>
+                ) : (
+                  <>
+                    {doctors?.map((doctor: UserAttributes) => (
+                      <DoctorListView
+                        key={doctor.id}
+                        doctor={doctor}
+                        onEditDoctor={() => handleEdit(doctor)}
+                        onDeleteDoctor={() => handleDelete(doctor)}
+                        onResendInvitation={() => doctor.id && handleResendInvitation(doctor.id)}
+                      />
+                    ))}
+                  </>
+                )}
+                {(!doctors || doctors.length === 0) && !loading && <EmptyState />}
+
+                {pageCount && pageCount > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pageCount}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </div>
+            </TabPanel>
+          </TabPanels>
+        </TabGroup>
       </div>
       <AddEditDoctorModal
         isOpen={isModalOpne}
@@ -224,21 +370,45 @@ function DoctorContent() {
         onConfirm={() => {
           setIsModalOpen(false);
           setEditDoctor(undefined);
+          refetch(); // Refetch data after adding/editing
         }}
         initialData={editDoctor}
       />
 
+      <CsvImportDoctorModal
+        isOpen={isCsvImportModalOpen}
+        onClose={() => {
+          setIsCsvImportModalOpen(false);
+        }}
+        onConfirm={() => {
+          setIsCsvImportModalOpen(false);
+          refetch(); // Refetch data after importing
+        }}
+      />
+
       <DoctorDeleteModal
         isOpen={isDeleteModalOpne}
-        onDelete={() => {
-          console.log("Doctor deleted");
-          setIsDeleteModalOpen(false);
-        }}
+        onDelete={handleConfirmDelete}
         onClose={() => {
           setIsDeleteModalOpen(false);
+          setDoctorToDelete(undefined);
         }}
         subtitle="Are you sure you want to delete this doctor? This action cannot be undone."
         title="Delete Doctor?"
+        isLoading={modifyLoading}
+      />
+
+      <ResendInvitationModal
+        isOpen={isResendModalOpen}
+        onClose={() => {
+          setIsResendModalOpen(false);
+          setDoctorToResend(undefined);
+        }}
+        doctorName={doctorToResend?.fullName}
+        doctorId={doctorToResend?.id}
+        onSuccess={() => {
+          refetch(); // Refetch data after resending invitation
+        }}
       />
     </div>
   );
