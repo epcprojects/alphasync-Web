@@ -322,9 +322,12 @@ export default function Notifications({ userType }: NotificationsProps) {
         <>
           <button
             onClick={() => setOpen(!open)}
-            className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
+            className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center relative"
           >
             <ReminderIcon fill="white" />
+            {user?.unreadNotifications && (
+              <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white"></span>
+            )}
           </button>
 
           <Dialog
@@ -366,9 +369,12 @@ export default function Notifications({ userType }: NotificationsProps) {
               // Refetch notifications when popover button is clicked
               refetch();
             }}
-            className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 bg-black/40 backdrop-blur-sm flex items-center justify-center"
+            className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 bg-black/40 backdrop-blur-sm flex items-center justify-center relative"
           >
             <ReminderIcon fill="white" />
+            {user?.unreadNotifications && (
+              <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white"></span>
+            )}
           </PopoverButton>
 
           <Transition
