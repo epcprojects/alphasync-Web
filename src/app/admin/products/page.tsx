@@ -5,6 +5,7 @@ import {
   SearchIcon,
   ReloadIcon,
   PackageOutlineIcon,
+  ArrowDownIcon,
 } from "@/icons";
 import React, { Suspense, useState } from "react";
 import {
@@ -42,6 +43,7 @@ function ProductsContent() {
   const [currentPage, setCurrentPage] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
   const [showOutOfStock, setShowOutOfStock] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   const isMobile = useIsMobile();
   const itemsPerPage = 10;
@@ -61,6 +63,11 @@ function ProductsContent() {
     setCurrentPage(0);
   }, [showOutOfStock]);
 
+  // Reset to first page when category filter changes
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [selectedCategory]);
+
   // GraphQL query to fetch products
   const { data, loading, error, refetch } = useQuery<AllProductsResponse>(
     ALL_PRODUCTS_INVENTORY,
@@ -70,6 +77,7 @@ function ProductsContent() {
         page: currentPage + 1, // GraphQL uses 1-based pagination
         perPage: itemsPerPage,
         inStockOnly: showOutOfStock ? false : undefined,
+        category: selectedCategory || undefined,
       },
       fetchPolicy: "network-only",
     }
@@ -139,6 +147,25 @@ function ProductsContent() {
               placeholder="Search products"
               className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 min-w-80 focus:bg-white outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
+          </div>
+
+          <div className="relative">
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+              }}
+              className="px-3 md:px-4 py-2 bg-gray-100 focus:bg-white outline-none focus:ring focus:ring-gray-200 rounded-full text-sm cursor-pointer appearance-none pr-8 min-w-[140px]"
+            >
+              <option value="">All Categories</option>
+              <option value="Blood">Blood</option>
+              <option value="Immunity">Immunity</option>
+              <option value="Recovery">Recovery</option>
+              <option value="Vial">Vial</option>
+            </select>
+            <div className="absolute -translate-y-1/2 right-2 top-1/2 pointer-events-none">
+              <ArrowDownIcon fill="#717680" />
+            </div>
           </div>
 
           <Tooltip content="Out of Stock">

@@ -58,12 +58,14 @@ export const ALL_PRODUCTS_INVENTORY = gql`
     $page: Int
     $perPage: Int
     $inStockOnly: Boolean
+    $category: String
   ) {
     allProducts(
       search: $search
       page: $page
       perPage: $perPage
       inStockOnly: $inStockOnly
+      category: $category
     ) {
       allData {
         customPrice
