@@ -80,8 +80,34 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   const loading = createLoading || updateLoading;
   console.log(formData);
 
+  // Format phone number to (XXX) XXX-XXXX format
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-digit characters
+    const numbers = value.replace(/\D/g, "");
+
+    // Limit to 10 digits
+    const limitedNumbers = numbers.slice(0, 10);
+
+    // Format based on length
+    if (limitedNumbers.length === 0) return "";
+    if (limitedNumbers.length <= 3) return `(${limitedNumbers}`;
+    if (limitedNumbers.length <= 6) {
+      return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(3)}`;
+    }
+    return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(
+      3,
+      6
+    )}-${limitedNumbers.slice(6)}`;
+  };
+
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Auto-format phone numbers
+    if (field === "phoneNo" && typeof value === "string") {
+      const formatted = formatPhoneNumber(value);
+      setFormData((prev) => ({ ...prev, [field]: formatted }));
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleGroupSelect = (user: string | string[]) => {
@@ -243,14 +269,15 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
             <ThemeInput
               required
               label="Phone Number"
-              placeholder="Enter phone number"
+              placeholder="(316) 555-0116"
               name="phoneNo"
               error={!!errors.phoneNo}
               errorMessage={errors.phoneNo}
               id="phoneNo"
               onChange={(e) => handleChange("phoneNo", e.target.value)}
-              type="text"
+              type="tel"
               value={formData.phoneNo}
+              className="w-full [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
         </div>
