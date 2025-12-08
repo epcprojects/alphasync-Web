@@ -188,9 +188,18 @@ function InventoryContent() {
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
-            Peptide Inventory
-          </h2>
+          <div className="flex items-center gap-2 md:gap-3">
+            <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
+              Peptide Inventory
+            </h2>
+            {!productsLoading && (
+              <span className="flex items-center justify-center px-2 md:px-3 py-1 md:py-1.5 bg-gray-100 text-gray-700 text-xs md:text-sm font-medium rounded-full">
+                {showFavourites
+                  ? displayProducts.length
+                  : productsData?.allProducts.count || 0}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:px-2.5 md:py-2 shadow-table lg:w-fit">
