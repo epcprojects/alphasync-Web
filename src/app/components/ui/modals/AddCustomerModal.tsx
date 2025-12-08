@@ -7,8 +7,6 @@ import ThemeInput from "../inputs/ThemeInput";
 import Stepper from "../../Stepper";
 import TextAreaField from "../inputs/TextAreaField";
 import * as Yup from "yup";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import { useMutation } from "@apollo/client";
 import { CREATE_CUSTOMER } from "@/lib/graphql/mutations";
 import { showErrorToast } from "@/lib/toast";
@@ -24,12 +22,11 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   onConfirm,
 }) => {
   const [step, setStep] = useState(1);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phoneNo: "",
-    dateOfBirth: null as Date | null,
+    dateOfBirth: "",
     address: "",
     street1: "",
     street2: "",
@@ -69,7 +66,28 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
           /^\(\d{3}\)\s\d{3}-\d{4}$/,
           "Please enter a valid phone number in format (316) 555-0116"
         ),
-      dateOfBirth: Yup.date().required("Date of Birth is required"),
+      dateOfBirth: Yup.string()
+        .required("Date of Birth is required")
+        .matches(
+          /^\d{4}-\d{2}-\d{2}$/,
+          "Date must be in format YYYY-MM-DD (e.g., 1990-01-15)"
+        )
+        .test("valid-date", "Please enter a valid date", (value) => {
+          if (!value) return false;
+          const date = new Date(value);
+          return date instanceof Date && !isNaN(date.getTime());
+        })
+        .test(
+          "not-future",
+          "Date of Birth cannot be in the future",
+          (value) => {
+            if (!value) return false;
+            const date = new Date(value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return date <= today;
+          }
+        ),
       address: Yup.string().optional(),
       street1: Yup.string().required("Street address is required"),
       street2: Yup.string().optional(),
@@ -107,6 +125,26 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     )}-${limitedNumbers.slice(6)}`;
   };
 
+  // Format date to YYYY-MM-DD format
+  const formatDate = (value: string): string => {
+    // Remove all non-digit characters
+    const numbers = value.replace(/\D/g, "");
+
+    // Limit to 8 digits (YYYYMMDD)
+    const limitedNumbers = numbers.slice(0, 8);
+
+    // Format based on length
+    if (limitedNumbers.length === 0) return "";
+    if (limitedNumbers.length <= 4) return limitedNumbers;
+    if (limitedNumbers.length <= 6) {
+      return `${limitedNumbers.slice(0, 4)}-${limitedNumbers.slice(4)}`;
+    }
+    return `${limitedNumbers.slice(0, 4)}-${limitedNumbers.slice(
+      4,
+      6
+    )}-${limitedNumbers.slice(6)}`;
+  };
+
   const handleChange = (field: string, value: string | Date | null) => {
     // Auto-format phone numbers
     if (
@@ -114,6 +152,10 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       typeof value === "string"
     ) {
       const formatted = formatPhoneNumber(value);
+      setFormData((prev) => ({ ...prev, [field]: formatted }));
+    } else if (field === "dateOfBirth" && typeof value === "string") {
+      // Auto-format date to YYYY-MM-DD
+      const formatted = formatDate(value);
       setFormData((prev) => ({ ...prev, [field]: formatted }));
     } else {
       setFormData((prev) => ({ ...prev, [field]: value }));
@@ -173,7 +215,9 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               fullName: formData.fullName,
               email: formData.email,
               phoneNo: formData.phoneNo,
-              dateOfBirth: formData.dateOfBirth?.toISOString(),
+              dateOfBirth: formData.dateOfBirth
+                ? new Date(formData.dateOfBirth).toISOString()
+                : null,
               address: formData.address || null,
               street1: formData.street1 || null,
               street2: formData.street2 || null,
@@ -208,7 +252,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       fullName: "",
       email: "",
       phoneNo: "",
-      dateOfBirth: null,
+      dateOfBirth: "",
       address: "",
       street1: "",
       street2: "",
@@ -222,7 +266,6 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       medications: "",
       notes: "",
     });
-    setSelectedDate(null);
   };
 
   useEffect(() => {
@@ -375,75 +418,19 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                 />
               </div>
             </div>
-            <div className="w-full">
-              <label className="block mb-1 text-sm text-gray-700 font-medium text-start">
-                Date of Birth <span className="text-red-500">*</span>
-              </label>
-              <DatePicker
-                showMonthDropdown
-                showYearDropdown
-                dropdownMode="select"
-                wrapperClassName="w-full"
-                placeholderText="mm/dd/yyyy"
-                toggleCalendarOnIconClick
-                selected={selectedDate}
-                onChange={(date) => {
-                  setSelectedDate(date);
-                  handleChange("dateOfBirth", date);
-                }}
-                onFocus={() => {
-                  // Mark field as touched when user focuses on the DatePicker
-                  setTouchedFields((prev) => new Set(prev).add("dateOfBirth"));
-                }}
-                onCalendarOpen={() => {
-                  // Mark field as touched when user opens the calendar
-                  setTouchedFields((prev) => new Set(prev).add("dateOfBirth"));
-                }}
-                className={`border ${
-                  errors.dateOfBirth
-                    ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200 bg-red-50"
-                    : "border-lightGray focus:ring focus:ring-gray-100"
-                } rounded-lg flex px-2 md:px-3 outline-none 
-       placeholder:text-gray-600 text-gray-800 items-center !py-3 h-11 !w-full`}
-                maxDate={new Date()}
-                minDate={new Date(1900, 0, 1)}
-                showIcon
-                icon={
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M1.3335 7.99984C1.3335 5.48568 1.3335 4.2286 2.11454 3.44755C2.89559 2.6665 4.15267 2.6665 6.66683 2.6665H9.3335C11.8477 2.6665 13.1047 2.6665 13.8858 3.44755C14.6668 4.2286 14.6668 5.48568 14.6668 7.99984V9.33317C14.6668 11.8473 14.6668 13.1044 13.8858 13.8855C13.1047 14.6665 11.8477 14.6665 9.3335 14.6665H6.66683C4.15267 14.6665 2.89559 14.6665 2.11454 13.8855C1.3335 13.1044 1.3335 11.8473 1.3335 9.33317V7.99984Z"
-                      stroke="#6B7280"
-                    />
-                    <path
-                      d="M4.6665 2.6665V1.6665"
-                      stroke="#6B7280"
-                      stroke-linecap="round"
-                    />
-                    <path
-                      d="M11.3335 2.6665V1.6665"
-                      stroke="#6B7280"
-                      stroke-linecap="round"
-                    />
-                    <path
-                      d="M1.6665 6H14.3332"
-                      stroke="#6B7280"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                }
-              />
-              {errors.dateOfBirth && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.dateOfBirth}
-                </p>
-              )}
-            </div>
+            <ThemeInput
+              required
+              label="Date of Birth"
+              placeholder="YYYY-MM-DD (e.g., 1990-01-15)"
+              name="dateOfBirth"
+              error={!!errors.dateOfBirth}
+              errorMessage={errors.dateOfBirth}
+              id="dateOfBirth"
+              onChange={(e) => handleChange("dateOfBirth", e.target.value)}
+              type="text"
+              value={formData.dateOfBirth}
+              maxLength={10}
+            />
 
             <ThemeInput
               required
