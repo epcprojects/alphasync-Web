@@ -42,6 +42,7 @@ function InventoryContent() {
     shopifyVariantId: string;
     title: string;
     price?: number;
+    customPrice?: number;
   } | null>(null);
 
   const router = useRouter();
@@ -97,8 +98,6 @@ function InventoryContent() {
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
   };
-
-  console.log(currentPage);
 
   const handleToggleFavorite = async (productId: string) => {
     try {
@@ -281,21 +280,17 @@ function InventoryContent() {
         <div className="flex flex-col gap-2 md:gap-6">
           {showGridView ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
-              {displayProducts.map((product) => (
-                <ProductCard
-                  key={product.originalId}
-                  product={product}
-                  onAddToCart={(id) => {
-                    // Find the transformed product to get the originalId
-                    const transformedProduct = displayProducts.find(
-                      (p) => p.id === id
-                    );
-                    if (transformedProduct) {
-                      // Find the original GraphQL product data
-                      const originalProduct =
-                        productsData?.allProducts.allData?.find(
-                          (p) => p.id === transformedProduct.originalId
-                        );
+              {displayProducts.map((product) => {
+                // Find the original GraphQL product data using the originalId
+                const originalProduct = productsData?.allProducts.allData?.find(
+                  (p) => p.id === product.originalId
+                );
+
+                return (
+                  <ProductCard
+                    key={product.originalId}
+                    product={product}
+                    onAddToCart={() => {
                       if (originalProduct) {
                         setSelectedProduct({
                           id: originalProduct.id,
@@ -304,25 +299,20 @@ function InventoryContent() {
                             "",
                           title: originalProduct.title,
                           price: originalProduct.variants?.[0]?.price,
+                          customPrice: originalProduct.customPrice,
                         });
                         setIsOrderModalOpen(true);
                       }
+                    }}
+                    onToggleFavourite={() => {
+                      handleToggleFavorite(product.originalId);
+                    }}
+                    onCardClick={() =>
+                      router.push(`/inventory/${product.originalId}`)
                     }
-                  }}
-                  onToggleFavourite={(id) => {
-                    // Find the transformed product to get the originalId
-                    const transformedProduct = displayProducts.find(
-                      (p) => p.id === id
-                    );
-                    if (transformedProduct) {
-                      handleToggleFavorite(transformedProduct.originalId);
-                    }
-                  }}
-                  onCardClick={() =>
-                    router.push(`/inventory/${product.originalId}`)
-                  }
-                />
-              ))}
+                  />
+                );
+              })}
             </div>
           ) : (
             <div className="space-y-1">
@@ -337,33 +327,23 @@ function InventoryContent() {
                   Actions
                 </div>
               </div>
-              {displayProducts.map((product) => (
-                <ProductListView
-                  onRowClick={() =>
-                    router.push(`/inventory/${product.originalId}`)
-                  }
-                  key={product.originalId}
-                  product={product}
-                  onToggleFavourite={(id) => {
-                    // Find the transformed product to get the originalId
-                    const transformedProduct = displayProducts.find(
-                      (p) => p.id === id
-                    );
-                    if (transformedProduct) {
-                      handleToggleFavorite(transformedProduct.originalId);
+              {displayProducts.map((product) => {
+                // Find the original GraphQL product data using the originalId
+                const originalProduct = productsData?.allProducts.allData?.find(
+                  (p) => p.id === product.originalId
+                );
+
+                return (
+                  <ProductListView
+                    key={product.originalId}
+                    onRowClick={() =>
+                      router.push(`/inventory/${product.originalId}`)
                     }
-                  }}
-                  onAddToCart={(id) => {
-                    // Find the transformed product to get the originalId
-                    const transformedProduct = displayProducts.find(
-                      (p) => p.id === id
-                    );
-                    if (transformedProduct) {
-                      // Find the original GraphQL product data
-                      const originalProduct =
-                        productsData?.allProducts.allData?.find(
-                          (p) => p.id === transformedProduct.originalId
-                        );
+                    product={product}
+                    onToggleFavourite={() => {
+                      handleToggleFavorite(product.originalId);
+                    }}
+                    onAddToCart={() => {
                       if (originalProduct) {
                         setSelectedProduct({
                           id: originalProduct.id,
@@ -372,13 +352,14 @@ function InventoryContent() {
                             "",
                           title: originalProduct.title,
                           price: originalProduct.variants?.[0]?.price,
+                          customPrice: originalProduct.customPrice,
                         });
                         setIsOrderModalOpen(true);
                       }
-                    }
-                  }}
-                />
-              ))}
+                    }}
+                  />
+                );
+              })}
             </div>
           )}
 
@@ -401,11 +382,13 @@ function InventoryContent() {
       )}
 
       <OrderModal
+        key={selectedProduct?.id || "order-modal"}
         isOpen={isOrderModalOpen}
         onConfirm={handleConfirmOrder}
         productId={selectedProduct?.id}
         shopifyVariantId={selectedProduct?.shopifyVariantId}
-        defaultPrice={selectedProduct?.price}
+        customPrice={selectedProduct?.customPrice}
+        price={selectedProduct?.price}
         isLoading={createOrderLoading}
         onClose={() => {
           setIsOrderModalOpen(false);
