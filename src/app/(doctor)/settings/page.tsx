@@ -296,7 +296,8 @@ const Page = () => {
   ];
 
   const profileSchema = Yup.object().shape({
-    fullName: Yup.string().required("Full name is required"),
+    firstName: Yup.string().required("First name is required"),
+    lastName: Yup.string().required("Last name is required"),
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
@@ -480,7 +481,16 @@ const Page = () => {
                 />
                 <Formik
                   initialValues={{
-                    fullName: user?.fullName ?? "",
+                    firstName:
+                      user?.firstName ||
+                      (user?.fullName ? user.fullName.split(" ")[0] : "") ||
+                      "",
+                    lastName:
+                      user?.lastName ||
+                      (user?.fullName
+                        ? user.fullName.split(" ").slice(1).join(" ")
+                        : "") ||
+                      "",
                     email: user?.email ?? "",
                     phoneNo: user?.phoneNo ?? "",
                     medicalLicense: user?.medicalLicense ?? "",
@@ -490,7 +500,10 @@ const Page = () => {
                   onSubmit={async (values) => {
                     try {
                       const variables = {
-                        fullName: values.fullName,
+                        fullName:
+                          `${values.firstName} ${values.lastName}`.trim(),
+                        firstName: values.firstName,
+                        lastName: values.lastName,
                         email: values.email,
                         phoneNo: values.phoneNo,
                         medicalLicense: values.medicalLicense,
@@ -510,17 +523,37 @@ const Page = () => {
                       <div className="grid grid-cols-12 gap-1.5 lg:gap-8 py-3 md:py-5 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label className="text-xs md:text-sm text-gray-700 font-semibold">
-                            Full Name
+                            First Name
                           </label>
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            name="fullName"
-                            value={values.fullName}
+                            name="firstName"
+                            value={values.firstName}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="fullName"
+                            name="firstName"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 py-3 md:py-5 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                            Last Name
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            name="lastName"
+                            value={values.lastName}
+                            onChange={handleChange}
+                          />
+                          <ErrorMessage
+                            name="lastName"
                             component="div"
                             className="text-red-500 text-xs"
                           />

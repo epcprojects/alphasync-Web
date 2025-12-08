@@ -26,7 +26,8 @@ const PHONE_MESSAGE = "Phone number must be in format (512) 312-3123";
 const phoneNumberRegex = /^\(\d{3}\)\s\d{3}-\d{4}$/;
 
 type VerifyInfoFormValues = {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNo: string;
   address: string;
@@ -40,7 +41,8 @@ type VerifyInfoFormValues = {
 };
 
 const validationSchema = Yup.object().shape({
-  fullName: Yup.string().required("Full name is required"),
+  firstName: Yup.string().required("First name is required"),
+  lastName: Yup.string().required("Last name is required"),
   email: Yup.string()
     .email("Invalid email address")
     .required("Email is required"),
@@ -113,9 +115,16 @@ function VerifyInfoContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
-  const initialValues = useMemo<VerifyInfoFormValues>(
-    () => ({
-      fullName: currentUser?.fullName || "",
+  const initialValues = useMemo<VerifyInfoFormValues>(() => {
+    // Split fullName into firstName and lastName if firstName/lastName not available
+    const nameParts = (currentUser?.fullName || "").split(" ");
+    const firstName = currentUser?.firstName || nameParts[0] || "";
+    const lastName =
+      currentUser?.lastName || nameParts.slice(1).join(" ") || "";
+
+    return {
+      firstName: firstName,
+      lastName: lastName,
       email: currentUser?.email || "",
       phoneNo: formatPhoneNumber(currentUser?.phoneNo || ""),
       address: currentUser?.address || "",
@@ -128,9 +137,8 @@ function VerifyInfoContent() {
       dateOfBirth: currentUser?.dateOfBirth
         ? new Date(currentUser.dateOfBirth).toISOString().split("T")[0]
         : "",
-    }),
-    [currentUser]
-  );
+    };
+  }, [currentUser]);
 
   const [updateCustomerProfile, { loading: updateLoading }] = useMutation(
     UPDATE_CUSTOMER_PROFILE,
@@ -190,7 +198,9 @@ function VerifyInfoContent() {
     actions: FormikHelpers<VerifyInfoFormValues>
   ) => {
     const variables: Record<string, unknown> = {
-      fullName: values.fullName || undefined,
+      fullName: `${values.firstName} ${values.lastName}`.trim(),
+      firstName: values.firstName || undefined,
+      lastName: values.lastName || undefined,
       email: values.email || undefined,
       phoneNo: values.phoneNo || undefined,
       address: values.address || undefined,
@@ -230,7 +240,16 @@ function VerifyInfoContent() {
 
             <InfoList
               items={[
-                { label: "Full Name", value: currentUser?.fullName },
+                {
+                  label: "Full Name",
+                  value:
+                    currentUser?.fullName ||
+                    (currentUser?.firstName || currentUser?.lastName
+                      ? `${currentUser?.firstName || ""} ${
+                          currentUser?.lastName || ""
+                        }`.trim()
+                      : undefined),
+                },
                 { label: "Contact", value: currentUser?.phoneNo },
                 { label: "Email", value: currentUser?.email },
                 {
@@ -330,21 +349,44 @@ function VerifyInfoContent() {
                 onCancel={handleClose}
               >
                 <Form className="flex flex-col gap-4">
-                  <ThemeInput
-                    label="Full Name"
-                    name="fullName"
-                    value={formik.values.fullName}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={Boolean(
-                      formik.touched.fullName && formik.errors.fullName
-                    )}
-                    errorMessage={
-                      formik.touched.fullName
-                        ? formik.errors.fullName
-                        : undefined
-                    }
-                  />
+                  <div className="flex items-center gap-3 md:gap-5 w-full">
+                    <div className="w-full">
+                      <ThemeInput
+                        label="First Name"
+                        name="firstName"
+                        value={formik.values.firstName}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={Boolean(
+                          formik.touched.firstName && formik.errors.firstName
+                        )}
+                        errorMessage={
+                          formik.touched.firstName
+                            ? formik.errors.firstName
+                            : undefined
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="w-full">
+                      <ThemeInput
+                        label="Last Name"
+                        name="lastName"
+                        value={formik.values.lastName}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={Boolean(
+                          formik.touched.lastName && formik.errors.lastName
+                        )}
+                        errorMessage={
+                          formik.touched.lastName
+                            ? formik.errors.lastName
+                            : undefined
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
 
                   <ThemeInput
                     label="Email"

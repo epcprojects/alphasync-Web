@@ -28,7 +28,8 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   const [selectedUser, setSelectedUser] = useState("");
   const [specialtySearchTerm, setSpecialtySearchTerm] = useState("");
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     phoneNo: "",
     email: "",
     medicalLicense: "",
@@ -40,7 +41,8 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isFormValid, setIsFormValid] = useState(false);
   const schema = Yup.object().shape({
-    fullName: Yup.string().required("Doctor fullName is required"),
+    firstName: Yup.string().required("First name is required"),
+    lastName: Yup.string().required("Last name is required"),
     phoneNo: Yup.string()
       .required("Phone number is required")
       .matches(
@@ -143,6 +145,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       try {
         const variables = {
           ...formData,
+          fullName: `${formData.firstName} ${formData.lastName}`.trim(),
           status: formData.status.toUpperCase(),
           image: selectedImage,
         };
@@ -179,8 +182,13 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     if (isOpen) {
       if (initialData) {
         // Edit mode
+        // Split fullName into firstName and lastName if available
+        const nameParts = (initialData.fullName || "").split(" ");
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ") || "";
         setFormData({
-          fullName: initialData.fullName || "",
+          firstName: initialData.firstName || firstName,
+          lastName: initialData.lastName || lastName,
           phoneNo: initialData.phoneNo || "",
           email: initialData.email || "",
           medicalLicense: initialData.medicalLicense || "",
@@ -196,7 +204,8 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       } else {
         // Add mode
         setFormData({
-          fullName: "",
+          firstName: "",
+          lastName: "",
           phoneNo: "",
           email: "",
           medicalLicense: "",
@@ -212,9 +221,24 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   }, [isOpen, initialData]);
 
   useEffect(() => {
-    const { fullName, phoneNo, email, medicalLicense, specialty, status } =
-      formData;
-    if (fullName && phoneNo && email && medicalLicense && specialty && status) {
+    const {
+      firstName,
+      lastName,
+      phoneNo,
+      email,
+      medicalLicense,
+      specialty,
+      status,
+    } = formData;
+    if (
+      firstName &&
+      lastName &&
+      phoneNo &&
+      email &&
+      medicalLicense &&
+      specialty &&
+      status
+    ) {
       setIsFormValid(true);
     } else {
       setIsFormValid(false);
@@ -339,18 +363,34 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           <div className="w-full">
             <ThemeInput
               required
-              label="Name"
-              placeholder="Enter doctor name"
-              name="fullName"
-              error={!!errors.fullName}
-              errorMessage={errors.fullName}
-              id="fullName"
-              onChange={(e) => handleChange("fullName", e.target.value)}
+              label="First Name"
+              placeholder="Enter first name"
+              name="firstName"
+              error={!!errors.firstName}
+              errorMessage={errors.firstName}
+              id="firstName"
+              onChange={(e) => handleChange("firstName", e.target.value)}
               type="text"
-              value={formData.fullName}
+              value={formData.firstName}
             />
           </div>
 
+          <div className="w-full">
+            <ThemeInput
+              required
+              label="Last Name"
+              placeholder="Enter last name"
+              name="lastName"
+              error={!!errors.lastName}
+              errorMessage={errors.lastName}
+              id="lastName"
+              onChange={(e) => handleChange("lastName", e.target.value)}
+              type="text"
+              value={formData.lastName}
+            />
+          </div>
+        </div>
+        <div className="flex items-start gap-2 md:gap-5">
           <div className="w-full">
             <ThemeInput
               required

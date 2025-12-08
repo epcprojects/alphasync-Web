@@ -204,7 +204,7 @@ function ProductsContent() {
           <>
             {products.map((product) => (
               <div
-                key={product.id}
+                key={product.originalId}
                 className="grid grid-cols-12 gap-4 px-2 py-3 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow"
               >
                 <div className="col-span-3 flex items-center gap-3">

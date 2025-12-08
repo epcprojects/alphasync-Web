@@ -19,7 +19,8 @@ import { setUser } from "@/lib/store/slices/authSlice";
 import Cookies from "js-cookie";
 
 interface ProfileFormValues {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNo: string;
   dateOfBirth: string;
@@ -45,7 +46,8 @@ const Page = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const profileSchema = Yup.object().shape({
-    fullName: Yup.string().required("Full name is required"),
+    firstName: Yup.string().required("First name is required"),
+    lastName: Yup.string().required("Last name is required"),
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
@@ -208,7 +210,9 @@ const Page = () => {
   const handleProfileSubmit = async (values: ProfileFormValues) => {
     try {
       const variables = {
-        fullName: values.fullName,
+        fullName: `${values.firstName} ${values.lastName}`.trim(),
+        firstName: values.firstName,
+        lastName: values.lastName,
         phoneNo: values.phoneNo,
         email: values.email,
         dateOfBirth: values.dateOfBirth
@@ -254,7 +258,8 @@ const Page = () => {
   const getInitialValues = () => {
     if (!user) {
       return {
-        fullName: "",
+        firstName: "",
+        lastName: "",
         email: "",
         phoneNo: "",
         dateOfBirth: "",
@@ -274,8 +279,14 @@ const Page = () => {
       };
     }
 
+    // Split fullName into firstName and lastName if firstName/lastName not available
+    const nameParts = (user.fullName || "").split(" ");
+    const firstName = user.firstName || nameParts[0] || "";
+    const lastName = user.lastName || nameParts.slice(1).join(" ") || "";
+
     return {
-      fullName: user.fullName || "",
+      firstName: firstName,
+      lastName: lastName,
       email: user.email || "",
       phoneNo: user.phoneNo || "",
       dateOfBirth: user.dateOfBirth
@@ -383,17 +394,37 @@ const Page = () => {
                       <div className="grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label className="text-xs md:text-sm text-gray-700 font-semibold">
-                            Full Name
+                            First Name
                           </label>
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            name="fullName"
-                            value={values.fullName}
+                            name="firstName"
+                            value={values.firstName}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="fullName"
+                            name="firstName"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                            Last Name
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            name="lastName"
+                            value={values.lastName}
+                            onChange={handleChange}
+                          />
+                          <ErrorMessage
+                            name="lastName"
                             component="div"
                             className="text-red-500 text-xs"
                           />

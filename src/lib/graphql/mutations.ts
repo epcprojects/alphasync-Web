@@ -43,7 +43,8 @@ export const LOGIN_WITH_OTP = gql`
 export const CREATE_INVITATION = gql`
   mutation CreateInvitation(
     $email: String
-    $fullName: String
+    $firstName: String
+    $lastName: String
     $userType: UserTypeEnum
     $phoneNo: String
     $medicalLicense: String
@@ -56,7 +57,8 @@ export const CREATE_INVITATION = gql`
         invitationAttributes: {
           email: $email
           specialty: $specialty
-          fullName: $fullName
+          firstName: $firstName
+          lastName: $lastName
           image: $image
           userType: $userType
           phoneNo: $phoneNo
@@ -90,6 +92,8 @@ export const UPDATE_USER = gql`
     $id: ID
     $email: String
     $fullName: String
+    $firstName: String
+    $lastName: String
     $userType: UserTypeEnum
     $phoneNo: String
     $medicalLicense: String
@@ -105,6 +109,8 @@ export const UPDATE_USER = gql`
           email: $email
           specialty: $specialty
           fullName: $fullName
+          firstName: $firstName
+          lastName: $lastName
           image: $image
           userType: $userType
           phoneNo: $phoneNo
@@ -188,6 +194,8 @@ export const UPDATE_DOCTOR = gql`
   mutation UpdateUser(
     $email: String
     $fullName: String
+    $firstName: String
+    $lastName: String
     $phoneNo: String
     $image: Upload
     $medicalLicense: String
@@ -198,6 +206,8 @@ export const UPDATE_DOCTOR = gql`
         userAttributes: {
           email: $email
           fullName: $fullName
+          firstName: $firstName
+          lastName: $lastName
           phoneNo: $phoneNo
           image: $image
           medicalLicense: $medicalLicense
@@ -232,6 +242,8 @@ export const UPDATE_PASSWORD = gql`
 export const CREATE_CUSTOMER = gql`
   mutation CreateInvitation(
     $fullName: String
+    $firstName: String
+    $lastName: String
     $email: String
     $phoneNo: String
     $dateOfBirth: ISO8601Date
@@ -254,6 +266,8 @@ export const CREATE_CUSTOMER = gql`
       input: {
         invitationAttributes: {
           fullName: $fullName
+          firstName: $firstName
+          lastName: $lastName
           email: $email
           phoneNo: $phoneNo
           dateOfBirth: $dateOfBirth
@@ -332,6 +346,8 @@ export const CREATE_ORDER = gql`
 export const UPDATE_CUSTOMER_PROFILE = gql`
   mutation UpdateCustomerProfile(
     $fullName: String
+    $firstName: String
+    $lastName: String
     $phoneNo: String
     $email: String
     $dateOfBirth: ISO8601Date
@@ -354,6 +370,8 @@ export const UPDATE_CUSTOMER_PROFILE = gql`
       input: {
         userAttributes: {
           fullName: $fullName
+          firstName: $firstName
+          lastName: $lastName
           phoneNo: $phoneNo
           email: $email
           dateOfBirth: $dateOfBirth

@@ -23,7 +23,8 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
 }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phoneNo: "",
     dateOfBirth: "",
@@ -58,7 +59,8 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
 
   const schemas = [
     Yup.object({
-      fullName: Yup.string().required("Full name is required"),
+      firstName: Yup.string().required("First name is required"),
+      lastName: Yup.string().required("Last name is required"),
       email: Yup.string().email("Invalid email").required("Email is required"),
       phoneNo: Yup.string()
         .required("Phone number is required")
@@ -212,7 +214,9 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
         try {
           await createInvitation({
             variables: {
-              fullName: formData.fullName,
+              fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+              firstName: formData.firstName,
+              lastName: formData.lastName,
               email: formData.email,
               phoneNo: formData.phoneNo,
               dateOfBirth: formData.dateOfBirth
@@ -249,7 +253,8 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
 
   const resetForm = () => {
     setFormData({
-      fullName: "",
+      firstName: "",
+      lastName: "",
       email: "",
       phoneNo: "",
       dateOfBirth: "",
@@ -374,18 +379,38 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
 
         {step === 1 && (
           <div className="flex flex-col gap-2 md:gap-5">
-            <ThemeInput
-              required
-              label="Full Name"
-              placeholder="Enter full name"
-              name="fullName"
-              error={!!errors.fullName}
-              errorMessage={errors.fullName}
-              id="fullName"
-              onChange={(e) => handleChange("fullName", e.target.value)}
-              type="text"
-              value={formData.fullName}
-            />
+            <div className="flex items-center gap-3 md:gap-5 w-full">
+              <div className="w-full">
+                <ThemeInput
+                  required
+                  label="First Name"
+                  placeholder="Enter first name"
+                  name="firstName"
+                  error={!!errors.firstName}
+                  errorMessage={errors.firstName}
+                  id="firstName"
+                  onChange={(e) => handleChange("firstName", e.target.value)}
+                  type="text"
+                  value={formData.firstName}
+                  className="w-full"
+                />
+              </div>
+              <div className="w-full">
+                <ThemeInput
+                  required
+                  label="Last Name"
+                  placeholder="Enter last name"
+                  name="lastName"
+                  error={!!errors.lastName}
+                  errorMessage={errors.lastName}
+                  id="lastName"
+                  onChange={(e) => handleChange("lastName", e.target.value)}
+                  type="text"
+                  value={formData.lastName}
+                  className="w-full"
+                />
+              </div>
+            </div>
             <div className="flex items-center gap-3 md:gap-5 w-full">
               <div className="w-full">
                 <ThemeInput
