@@ -15,6 +15,7 @@ import {
   HeartFilledIcon,
   ListViewIcon,
   SearchIcon,
+  PackageOutlineIcon,
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
@@ -35,6 +36,7 @@ function InventoryContent() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showFavourites, setShowFavourites] = useState(false);
   const [showGridView, setShowGridView] = useState(true);
+  const [showOutOfStock, setShowOutOfStock] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [isRefetchingFavorites, setIsRefetchingFavorites] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<{
@@ -61,6 +63,11 @@ function InventoryContent() {
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Reset to first page when out of stock filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [showOutOfStock]);
+
   const {
     data: productsData,
     loading: productsLoading,
@@ -71,6 +78,7 @@ function InventoryContent() {
       search: debouncedSearch,
       page: currentPage, // Use currentPage directly (1-based pagination)
       perPage: itemsPerPage,
+      inStockOnly: showOutOfStock ? false : undefined,
     },
     fetchPolicy: "network-only",
     notifyOnNetworkStatusChange: true,
@@ -236,6 +244,20 @@ function InventoryContent() {
                   width={isMobile ? "16" : "20"}
                 />
               )}
+            </button>
+          </Tooltip>
+          <Tooltip content="Out of Stock">
+            <button
+              onClick={() => setShowOutOfStock((prev) => !prev)}
+              className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
+                showOutOfStock &&
+                "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+              }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+            >
+              <PackageOutlineIcon
+                height={isMobile ? "15" : "20"}
+                width={isMobile ? "15" : "20"}
+              />
             </button>
           </Tooltip>
 

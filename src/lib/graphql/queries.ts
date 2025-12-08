@@ -53,8 +53,18 @@ export const ALL_PRODUCTS = gql`
   }
 `;
 export const ALL_PRODUCTS_INVENTORY = gql`
-  query AllProducts($search: String, $page: Int, $perPage: Int) {
-    allProducts(search: $search, page: $page, perPage: $perPage) {
+  query AllProducts(
+    $search: String
+    $page: Int
+    $perPage: Int
+    $inStockOnly: Boolean
+  ) {
+    allProducts(
+      search: $search
+      page: $page
+      perPage: $perPage
+      inStockOnly: $inStockOnly
+    ) {
       allData {
         customPrice
         description
