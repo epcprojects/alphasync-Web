@@ -26,6 +26,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   initialData,
 }) => {
   const [selectedUser, setSelectedUser] = useState("");
+  const [specialtySearchTerm, setSpecialtySearchTerm] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     phoneNo: "",
@@ -206,6 +207,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       }
       setSelectedImage(null);
       setErrors({});
+      setSpecialtySearchTerm("");
     }
   }, [isOpen, initialData]);
 
@@ -218,6 +220,90 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       setIsFormValid(false);
     }
   }, [formData]);
+
+  const specialities = [
+    { name: "cardiology", displayName: "Cardiology" },
+    { name: "dermatology", displayName: "Dermatology" },
+    { name: "neurology", displayName: "Neurology" },
+    { name: "orthopedics", displayName: "Orthopedics" },
+    { name: "pediatrics", displayName: "Pediatrics" },
+    { name: "psychiatry", displayName: "Psychiatry" },
+    { name: "gynecology", displayName: "Gynecology" },
+    { name: "obstetrics", displayName: "Obstetrics" },
+    { name: "oncology", displayName: "Oncology" },
+    { name: "radiology", displayName: "Radiology" },
+    { name: "urology", displayName: "Urology" },
+    { name: "gastroenterology", displayName: "Gastroenterology" },
+    { name: "endocrinology", displayName: "Endocrinology" },
+    { name: "nephrology", displayName: "Nephrology" },
+    { name: "pulmonology", displayName: "Pulmonology" },
+    { name: "general_surgery", displayName: "General Surgery" },
+    { name: "dentistry", displayName: "Dentistry" },
+    { name: "ophthalmology", displayName: "Ophthalmology" },
+    { name: "ent", displayName: "ENT (Ear, Nose, Throat)" },
+    { name: "rheumatology", displayName: "Rheumatology" },
+    { name: "family_medicine", displayName: "Family Medicine" },
+    { name: "internal_medicine", displayName: "Internal Medicine" },
+    { name: "anesthesiology", displayName: "Anesthesiology" },
+    { name: "pathology", displayName: "Pathology" },
+    { name: "hematology", displayName: "Hematology" },
+    { name: "allergy_immunology", displayName: "Allergy & Immunology" },
+    { name: "infectious_disease", displayName: "Infectious Disease" },
+    { name: "plastic_surgery", displayName: "Plastic Surgery" },
+    { name: "vascular_surgery", displayName: "Vascular Surgery" },
+    { name: "thoracic_surgery", displayName: "Thoracic Surgery" },
+    { name: "colorectal_surgery", displayName: "Colorectal Surgery" },
+    { name: "neurosurgery", displayName: "Neurosurgery" },
+    { name: "emergency_medicine", displayName: "Emergency Medicine" },
+    { name: "sports_medicine", displayName: "Sports Medicine" },
+    { name: "geriatrics", displayName: "Geriatrics" },
+    { name: "palliative_medicine", displayName: "Palliative Medicine" },
+    { name: "pain_management", displayName: "Pain Management" },
+    { name: "sleep_medicine", displayName: "Sleep Medicine" },
+    { name: "nuclear_medicine", displayName: "Nuclear Medicine" },
+    {
+      name: "reproductive_endocrinology",
+      displayName: "Reproductive Endocrinology",
+    },
+    { name: "neonatology", displayName: "Neonatology" },
+    { name: "medical_genetics", displayName: "Medical Genetics" },
+    { name: "addiction_medicine", displayName: "Addiction Medicine" },
+    { name: "occupational_medicine", displayName: "Occupational Medicine" },
+    { name: "preventive_medicine", displayName: "Preventive Medicine" },
+    { name: "critical_care", displayName: "Critical Care Medicine" },
+    { name: "trauma_surgery", displayName: "Trauma Surgery" },
+    { name: "bariatric_surgery", displayName: "Bariatric Surgery" },
+    { name: "hand_surgery", displayName: "Hand Surgery" },
+    { name: "foot_ankle_surgery", displayName: "Foot & Ankle Surgery" },
+    { name: "maxillofacial_surgery", displayName: "Maxillofacial Surgery" },
+    { name: "otolaryngology", displayName: "Otolaryngology" },
+    { name: "phlebology", displayName: "Phlebology" },
+    { name: "cosmetic_surgery", displayName: "Cosmetic Surgery" },
+    { name: "dermatopathology", displayName: "Dermatopathology" },
+    {
+      name: "interventional_radiology",
+      displayName: "Interventional Radiology",
+    },
+    { name: "maternal_fetal_medicine", displayName: "Maternal–Fetal Medicine" },
+    { name: "pediatric_surgery", displayName: "Pediatric Surgery" },
+    { name: "pediatric_cardiology", displayName: "Pediatric Cardiology" },
+    { name: "pediatric_neurology", displayName: "Pediatric Neurology" },
+    { name: "pediatric_endocrinology", displayName: "Pediatric Endocrinology" },
+    { name: "pediatric_nephrology", displayName: "Pediatric Nephrology" },
+    { name: "pediatric_oncology", displayName: "Pediatric Oncology" },
+    {
+      name: "pediatric_gastroenterology",
+      displayName: "Pediatric Gastroenterology",
+    },
+    { name: "pulmonary_critical_care", displayName: "Pulmonary Critical Care" },
+    { name: "cardiothoracic_surgery", displayName: "Cardiothoracic Surgery" },
+    { name: "chiropractic_medicine", displayName: "Chiropractic Medicine" },
+    {
+      name: "speech_language_therapy",
+      displayName: "Speech & Language Therapy",
+    },
+    { name: "physiotherapy", displayName: "Physiotherapy" },
+  ];
 
   return (
     <AppModal
@@ -314,16 +400,12 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
             <SelectGroupDropdown
               selectedGroup={selectedUser}
               setSelectedGroup={handleGroupSelect}
-              groups={[
-                { name: "Cardiology", displayName: "Cardiology" },
-                { name: "Orthopedics", displayName: "Orthopedics" },
-                { name: "Dermatology", displayName: "Dermatology" },
-              ]}
+              groups={specialities}
               name="Specialty"
               multiple={false}
               placeholder="Select specialty"
-              searchTerm={""}
-              setSearchTerm={() => {}}
+              searchTerm={specialtySearchTerm}
+              setSearchTerm={setSpecialtySearchTerm}
               isShowDrop={true}
               required
               paddingClasses="py-2.5 px-3"

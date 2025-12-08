@@ -9,7 +9,7 @@ import {
   shift,
   autoUpdate,
 } from "@floating-ui/react-dom";
-import { ArrowDownIcon, UserIcon } from "@/icons";
+import { ArrowDownIcon, UserIcon, SearchIcon } from "@/icons";
 
 type GroupOption =
   | string
@@ -50,6 +50,7 @@ const SelectGroupDropdown = ({
   errors,
   name,
   searchTerm,
+  setSearchTerm,
   placeholder,
   isShowDrop = true,
   required = true,
@@ -92,6 +93,13 @@ const SelectGroupDropdown = ({
       return autoUpdate(refs.reference.current, refs.floating.current, update);
     }
   }, [isDropdownOpen, refs.reference, refs.floating, update]);
+
+  // Clear search term when dropdown closes
+  useEffect(() => {
+    if (!isDropdownOpen) {
+      setSearchTerm("");
+    }
+  }, [isDropdownOpen, setSearchTerm]);
 
   const safeGroups = groups ?? [];
 
@@ -213,40 +221,65 @@ const SelectGroupDropdown = ({
             }}
             className="mt-1 bg-white border border-gray-200 rounded-md shadow-lg"
           >
+            {safeGroups.length > 5 && (
+              <div className="p-2 border-b border-gray-200">
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2">
+                    <SearchIcon height="16" width="16" />
+                  </span>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search..."
+                    className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              </div>
+            )}
             <div
               className={cn(
                 " space-y-1 max-h-32 md:max-h-36 overflow-y-auto",
                 optionPaddingClasses
               )}
             >
-              {filteredGroups.map((group) => {
-                const key = getGroupKey(group);
-                const label = getGroupLabel(group);
-                const email = getGroupEmail(group);
-                return (
-                  <div
-                    key={key}
-                    className={cn(
-                      "flex items-center justify-between cursor-pointer rounded-md px-2.5 py-2 hover:bg-gray-100",
-                      isSelected(key) && "bg-primary/10",
-                      optionPaddingClasses
-                    )}
-                    onClick={() => handleSelect(group)}
-                  >
-                    <span className="text-sm flex font-medium items-center gap-2 text-gray-900">
-                      {label}
-                      {email && (
-                        <span className="text-gray-600 font-normal">
-                          {email}
+              {filteredGroups.length === 0 ? (
+                <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                  No results found
+                </div>
+              ) : (
+                filteredGroups.map((group) => {
+                  const key = getGroupKey(group);
+                  const label = getGroupLabel(group);
+                  const email = getGroupEmail(group);
+                  return (
+                    <div
+                      key={key}
+                      className={cn(
+                        "flex items-center justify-between cursor-pointer rounded-md px-2.5 py-2 hover:bg-gray-100",
+                        isSelected(key) && "bg-primary/10",
+                        optionPaddingClasses
+                      )}
+                      onClick={() => handleSelect(group)}
+                    >
+                      <span className="text-sm flex font-medium items-center gap-2 text-gray-900">
+                        {label}
+                        {email && (
+                          <span className="text-gray-600 font-normal">
+                            {email}
+                          </span>
+                        )}
+                      </span>
+                      {isSelected(key) && (
+                        <span className="text-green-500 font-bold">
+                          &#10003;
                         </span>
                       )}
-                    </span>
-                    {isSelected(key) && (
-                      <span className="text-green-500 font-bold">&#10003;</span>
-                    )}
-                  </div>
-                );
-              })}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </Transition>
