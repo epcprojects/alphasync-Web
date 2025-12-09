@@ -16,7 +16,6 @@ import {
   UPDATE_USER_ADDRESS_VERIFIED,
 } from "@/lib/graphql/mutations";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
 import React, { Suspense, useMemo, useState } from "react";
 import { useMutation } from "@apollo/client";
 import { Formik, Form, FormikHelpers } from "formik";
@@ -113,7 +112,6 @@ function VerifyInfoContent() {
   const dispatch = useAppDispatch();
   const { user: currentUser } = useAppSelector((state) => state.auth);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
 
   const initialValues = useMemo<VerifyInfoFormValues>(() => {
     // Split fullName into firstName and lastName if firstName/lastName not available
@@ -173,7 +171,9 @@ function VerifyInfoContent() {
             expires: 7,
           });
         }
-        router.replace("/pending-payments");
+        // Use window.location.href to force a full page reload
+        // This ensures the middleware sees the updated cookie
+        window.location.href = "/pending-payments";
       },
       onError: (error) => {
         showErrorToast(
@@ -241,14 +241,12 @@ function VerifyInfoContent() {
             <InfoList
               items={[
                 {
-                  label: "Full Name",
-                  value:
-                    currentUser?.fullName ||
-                    (currentUser?.firstName || currentUser?.lastName
-                      ? `${currentUser?.firstName || ""} ${
-                          currentUser?.lastName || ""
-                        }`.trim()
-                      : undefined),
+                  label: "First Name",
+                  value: currentUser?.firstName || undefined,
+                },
+                {
+                  label: "Last Name",
+                  value: currentUser?.lastName || undefined,
                 },
                 { label: "Contact", value: currentUser?.phoneNo },
                 { label: "Email", value: currentUser?.email },
@@ -352,8 +350,10 @@ function VerifyInfoContent() {
                   <div className="flex items-center gap-3 md:gap-5 w-full">
                     <div className="w-full">
                       <ThemeInput
+                        required
                         label="First Name"
                         name="firstName"
+                        placeholder="Enter first name"
                         value={formik.values.firstName}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
@@ -370,8 +370,10 @@ function VerifyInfoContent() {
                     </div>
                     <div className="w-full">
                       <ThemeInput
+                        required
                         label="Last Name"
                         name="lastName"
+                        placeholder="Enter last name"
                         value={formik.values.lastName}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
