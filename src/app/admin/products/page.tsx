@@ -1,6 +1,12 @@
 "use client";
 
-import { PackageIcon, SearchIcon, ReloadIcon } from "@/icons";
+import {
+  PackageIcon,
+  SearchIcon,
+  ReloadIcon,
+  PackageOutlineIcon,
+  ArrowDownIcon,
+} from "@/icons";
 import React, { Suspense, useState } from "react";
 import {
   EmptyState,
@@ -12,6 +18,7 @@ import {
 import { useQuery, useMutation } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
+import Tooltip from "@/app/components/ui/tooltip";
 import { SYNC_PRODUCTS } from "@/lib/graphql/mutations";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import {
@@ -35,6 +42,8 @@ function ProductsContent() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showOutOfStock, setShowOutOfStock] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   const isMobile = useIsMobile();
   const itemsPerPage = 10;
@@ -49,6 +58,16 @@ function ProductsContent() {
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Reset to first page when out of stock filter changes
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [showOutOfStock]);
+
+  // Reset to first page when category filter changes
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [selectedCategory]);
+
   // GraphQL query to fetch products
   const { data, loading, error, refetch } = useQuery<AllProductsResponse>(
     ALL_PRODUCTS_INVENTORY,
@@ -57,6 +76,8 @@ function ProductsContent() {
         search: debouncedSearch || undefined,
         page: currentPage + 1, // GraphQL uses 1-based pagination
         perPage: itemsPerPage,
+        inStockOnly: showOutOfStock ? false : undefined,
+        category: selectedCategory || undefined,
       },
       fetchPolicy: "network-only",
     }
@@ -128,6 +149,40 @@ function ProductsContent() {
             />
           </div>
 
+          <div className="relative">
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+              }}
+              className="px-3 md:px-4 py-2 bg-gray-100 focus:bg-white outline-none focus:ring focus:ring-gray-200 rounded-full text-sm cursor-pointer appearance-none pr-8 min-w-[140px]"
+            >
+              <option value="">All Categories</option>
+              <option value="Blood">Blood</option>
+              <option value="Immunity">Immunity</option>
+              <option value="Recovery">Recovery</option>
+              <option value="Vial">Vial</option>
+            </select>
+            <div className="absolute -translate-y-1/2 right-2 top-1/2 pointer-events-none">
+              <ArrowDownIcon fill="#717680" />
+            </div>
+          </div>
+
+          <Tooltip content="Out of Stock">
+            <button
+              onClick={() => setShowOutOfStock((prev) => !prev)}
+              className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
+                showOutOfStock &&
+                "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+              }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+            >
+              <PackageOutlineIcon
+                height={isMobile ? "15" : "20"}
+                width={isMobile ? "15" : "20"}
+              />
+            </button>
+          </Tooltip>
+
           <ThemeButton
             label={isSyncing ? "Syncing..." : "Sync Products"}
             icon={<ReloadIcon />}
@@ -176,7 +231,7 @@ function ProductsContent() {
           <>
             {products.map((product) => (
               <div
-                key={product.id}
+                key={product.originalId}
                 className="grid grid-cols-12 gap-4 px-2 py-3 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow"
               >
                 <div className="col-span-3 flex items-center gap-3">

@@ -14,7 +14,8 @@ interface OrderModalProps {
   }) => void;
   productId?: string;
   shopifyVariantId?: string;
-  defaultPrice?: number;
+  customPrice?: number;
+  price?: number;
   isLoading?: boolean;
 }
 
@@ -24,7 +25,8 @@ const OrderModal: React.FC<OrderModalProps> = ({
   onConfirm,
   productId,
   shopifyVariantId,
-  defaultPrice,
+  customPrice,
+  price: originalPrice,
   isLoading = false,
 }) => {
   const [selectedUser, setSelectedUser] = useState("");
@@ -37,12 +39,27 @@ const OrderModal: React.FC<OrderModalProps> = ({
     id: string;
   } | null>(null);
 
-  // Auto-populate price when defaultPrice changes
+  // Calculate the correct price to display: customPrice if set (not null/undefined), otherwise originalPrice
+  const calculatedPrice = React.useMemo(() => {
+    return customPrice != null
+      ? customPrice
+      : originalPrice != null
+      ? originalPrice
+      : 0;
+  }, [customPrice, originalPrice]);
+
+  // Reset and populate price when modal opens or product changes
   React.useEffect(() => {
-    if (defaultPrice && defaultPrice > 0) {
-      setPrice(defaultPrice.toString());
+    if (isOpen) {
+      // Always reset price when modal opens with the calculated price
+      const priceToSet = calculatedPrice > 0 ? calculatedPrice.toString() : "";
+      setPrice(priceToSet);
+      // Reset other form fields when modal opens
+      setSelectedUser("");
+      setErrors({});
+      setSelectedCustomerData(null);
     }
-  }, [defaultPrice]);
+  }, [isOpen, calculatedPrice, productId]);
 
   const handleClose = () => {
     setSelectedUser("");
@@ -51,6 +68,16 @@ const OrderModal: React.FC<OrderModalProps> = ({
     setSelectedCustomerData(null);
     onClose();
   };
+
+  // Reset price when modal closes
+  React.useEffect(() => {
+    if (!isOpen) {
+      setPrice("");
+      setSelectedUser("");
+      setErrors({});
+      setSelectedCustomerData(null);
+    }
+  }, [isOpen]);
 
   const handleConfirm = () => {
     const newErrors: { user?: string; price?: string } = {};

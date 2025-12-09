@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
 import { useQuery } from "@apollo/client/react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
@@ -36,6 +36,8 @@ const ProductSelect: React.FC<ProductSelectProps> = ({
   paddingClasses = "py-2.5 h-11 px-2",
   optionPaddingClasses = "p-1",
 }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
   // GraphQL query to fetch products
   const {
     data: productsData,
@@ -84,8 +86,8 @@ const ProductSelect: React.FC<ProductSelectProps> = ({
         name="Product:"
         multiple={false}
         placeholder={placeholder || defaultPlaceholder}
-        searchTerm=""
-        setSearchTerm={() => {}}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
         isShowDrop={!productsLoading && !disabled}
         required={required}
         paddingClasses={paddingClasses}

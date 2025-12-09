@@ -15,6 +15,7 @@ import {
   HeartFilledIcon,
   ListViewIcon,
   SearchIcon,
+  PackageOutlineIcon,
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
@@ -35,6 +36,7 @@ function InventoryContent() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showFavourites, setShowFavourites] = useState(false);
   const [showGridView, setShowGridView] = useState(true);
+  const [showOutOfStock, setShowOutOfStock] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [isRefetchingFavorites, setIsRefetchingFavorites] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<{
@@ -42,6 +44,7 @@ function InventoryContent() {
     shopifyVariantId: string;
     title: string;
     price?: number;
+    customPrice?: number;
   } | null>(null);
 
   const router = useRouter();
@@ -60,6 +63,11 @@ function InventoryContent() {
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Reset to first page when out of stock filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [showOutOfStock]);
+
   const {
     data: productsData,
     loading: productsLoading,
@@ -70,6 +78,7 @@ function InventoryContent() {
       search: debouncedSearch,
       page: currentPage, // Use currentPage directly (1-based pagination)
       perPage: itemsPerPage,
+      inStockOnly: showOutOfStock ? false : undefined,
     },
     fetchPolicy: "network-only",
     notifyOnNetworkStatusChange: true,
@@ -97,8 +106,6 @@ function InventoryContent() {
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
   };
-
-  console.log(currentPage);
 
   const handleToggleFavorite = async (productId: string) => {
     try {
@@ -188,9 +195,18 @@ function InventoryContent() {
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
-            Peptide Inventory
-          </h2>
+          <div className="flex items-center gap-2 md:gap-3">
+            <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
+              Peptide Inventory
+            </h2>
+            {!productsLoading && (
+              <span className="flex items-center justify-center px-2 md:px-3 py-1 md:py-1.5 bg-gray-100 text-gray-700 text-xs md:text-sm font-medium rounded-full">
+                {showFavourites
+                  ? displayProducts.length
+                  : productsData?.allProducts.count || 0}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:px-2.5 md:py-2 shadow-table lg:w-fit">
@@ -228,6 +244,20 @@ function InventoryContent() {
                   width={isMobile ? "16" : "20"}
                 />
               )}
+            </button>
+          </Tooltip>
+          <Tooltip content="Out of Stock">
+            <button
+              onClick={() => setShowOutOfStock((prev) => !prev)}
+              className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
+                showOutOfStock &&
+                "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+              }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+            >
+              <PackageOutlineIcon
+                height={isMobile ? "15" : "20"}
+                width={isMobile ? "15" : "20"}
+              />
             </button>
           </Tooltip>
 
@@ -272,21 +302,17 @@ function InventoryContent() {
         <div className="flex flex-col gap-2 md:gap-6">
           {showGridView ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
-              {displayProducts.map((product) => (
-                <ProductCard
-                  key={product.originalId}
-                  product={product}
-                  onAddToCart={(id) => {
-                    // Find the transformed product to get the originalId
-                    const transformedProduct = displayProducts.find(
-                      (p) => p.id === id
-                    );
-                    if (transformedProduct) {
-                      // Find the original GraphQL product data
-                      const originalProduct =
-                        productsData?.allProducts.allData?.find(
-                          (p) => p.id === transformedProduct.originalId
-                        );
+              {displayProducts.map((product) => {
+                // Find the original GraphQL product data using the originalId
+                const originalProduct = productsData?.allProducts.allData?.find(
+                  (p) => p.id === product.originalId
+                );
+
+                return (
+                  <ProductCard
+                    key={product.originalId}
+                    product={product}
+                    onAddToCart={() => {
                       if (originalProduct) {
                         setSelectedProduct({
                           id: originalProduct.id,
@@ -295,25 +321,20 @@ function InventoryContent() {
                             "",
                           title: originalProduct.title,
                           price: originalProduct.variants?.[0]?.price,
+                          customPrice: originalProduct.customPrice,
                         });
                         setIsOrderModalOpen(true);
                       }
+                    }}
+                    onToggleFavourite={() => {
+                      handleToggleFavorite(product.originalId);
+                    }}
+                    onCardClick={() =>
+                      router.push(`/inventory/${product.originalId}`)
                     }
-                  }}
-                  onToggleFavourite={(id) => {
-                    // Find the transformed product to get the originalId
-                    const transformedProduct = displayProducts.find(
-                      (p) => p.id === id
-                    );
-                    if (transformedProduct) {
-                      handleToggleFavorite(transformedProduct.originalId);
-                    }
-                  }}
-                  onCardClick={() =>
-                    router.push(`/inventory/${product.originalId}`)
-                  }
-                />
-              ))}
+                  />
+                );
+              })}
             </div>
           ) : (
             <div className="space-y-1">
@@ -328,33 +349,23 @@ function InventoryContent() {
                   Actions
                 </div>
               </div>
-              {displayProducts.map((product) => (
-                <ProductListView
-                  onRowClick={() =>
-                    router.push(`/inventory/${product.originalId}`)
-                  }
-                  key={product.originalId}
-                  product={product}
-                  onToggleFavourite={(id) => {
-                    // Find the transformed product to get the originalId
-                    const transformedProduct = displayProducts.find(
-                      (p) => p.id === id
-                    );
-                    if (transformedProduct) {
-                      handleToggleFavorite(transformedProduct.originalId);
+              {displayProducts.map((product) => {
+                // Find the original GraphQL product data using the originalId
+                const originalProduct = productsData?.allProducts.allData?.find(
+                  (p) => p.id === product.originalId
+                );
+
+                return (
+                  <ProductListView
+                    key={product.originalId}
+                    onRowClick={() =>
+                      router.push(`/inventory/${product.originalId}`)
                     }
-                  }}
-                  onAddToCart={(id) => {
-                    // Find the transformed product to get the originalId
-                    const transformedProduct = displayProducts.find(
-                      (p) => p.id === id
-                    );
-                    if (transformedProduct) {
-                      // Find the original GraphQL product data
-                      const originalProduct =
-                        productsData?.allProducts.allData?.find(
-                          (p) => p.id === transformedProduct.originalId
-                        );
+                    product={product}
+                    onToggleFavourite={() => {
+                      handleToggleFavorite(product.originalId);
+                    }}
+                    onAddToCart={() => {
                       if (originalProduct) {
                         setSelectedProduct({
                           id: originalProduct.id,
@@ -363,13 +374,14 @@ function InventoryContent() {
                             "",
                           title: originalProduct.title,
                           price: originalProduct.variants?.[0]?.price,
+                          customPrice: originalProduct.customPrice,
                         });
                         setIsOrderModalOpen(true);
                       }
-                    }
-                  }}
-                />
-              ))}
+                    }}
+                  />
+                );
+              })}
             </div>
           )}
 
@@ -392,11 +404,13 @@ function InventoryContent() {
       )}
 
       <OrderModal
+        key={selectedProduct?.id || "order-modal"}
         isOpen={isOrderModalOpen}
         onConfirm={handleConfirmOrder}
         productId={selectedProduct?.id}
         shopifyVariantId={selectedProduct?.shopifyVariantId}
-        defaultPrice={selectedProduct?.price}
+        customPrice={selectedProduct?.customPrice}
+        price={selectedProduct?.price}
         isLoading={createOrderLoading}
         onClose={() => {
           setIsOrderModalOpen(false);

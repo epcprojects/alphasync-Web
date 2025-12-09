@@ -3,6 +3,8 @@ export const userpayload = `
         deleted
         email
         fullName
+        firstName
+        lastName
         specialty
         id
         imageUrl
@@ -25,6 +27,7 @@ export const userpayload = `
         invitationStatus
         addressVerified
         twoFaEnabled
+        unreadNotifications
         city
           country
             state
@@ -41,6 +44,8 @@ export interface UserAttributes {
   fullName?: string;
   id?: number | string;
   imageUrl?: string;
+  firstName?: string;
+  lastName?: string;
   specialty?: string;
   lastSignInAt?: string;
   medicalLicense?: string;
@@ -67,6 +72,7 @@ export interface UserAttributes {
   street1?: string;
   street2?: string;
   postalCode?: string;
+  unreadNotifications?: boolean;
 }
 
 export interface ProductInfo {
