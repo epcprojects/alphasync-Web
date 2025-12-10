@@ -178,7 +178,7 @@ function ProductsContent() {
             {products.map((product) => (
               <div
                 key={product.id}
-                className="flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 px-3 py-4 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow"
+                className="flex flex-col md:grid md:grid-cols-12 gap-2 mb-4 sm:mb-auto md:gap-4 px-3 py-4 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow"
               >
                 {/* Product */}
                 <div className="md:col-span-3 flex items-center gap-3">
@@ -187,7 +187,7 @@ function ProductsContent() {
                     height={60}
                     src={product.image}
                     alt={product.title}
-                    className="h-[60px] w-[60px] object-contain"
+                    className="h-[60px] w-[60px] object-contain border rounded-lg border-gray-200"
                   />
                   <div className="min-w-0 flex-1">
                     <h3 className="font-medium text-sm md:text-base text-black ">

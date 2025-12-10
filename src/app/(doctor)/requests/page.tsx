@@ -195,7 +195,7 @@ function RequestContent() {
           </h2>
         </div>
 
-        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2  md:px-2.5 md:py-2 p-1.5 shadow-table w-fit">
+        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2  md:px-2.5 md:py-2 p-1.5 shadow-table sm:w-fit">
           <div className="flex items-center relative w-full">
             <span className="absolute left-3">
               <SearchIcon
@@ -320,7 +320,7 @@ function RequestContent() {
             ))
           )}
         </div>
-        <div className="flex justify-center flex-col gap-2 md:gap-6 ">
+        <div className="flex justify-center flex-col gap-2 mt-2 md:gap-6 ">
           {!orderRequestsLoading && currentItems.length < 1 && (
             <EmptyState mtClasses="-mt-0 md:-mt-4 " />
           )}

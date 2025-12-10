@@ -2,7 +2,14 @@
 import React, { ReactNode } from "react";
 import { useQuery } from "@apollo/client";
 import { DashboardStats, Header, AdminRoute } from "../components";
-import { OrdersIcon, DashDoctor, PackageIcon } from "@/icons";
+import {
+  OrdersIcon,
+  DashDoctor,
+  Doctor,
+  ShoppingCartIcon,
+  DashboardIcon,
+  SettingsIcon,
+} from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -34,19 +41,19 @@ const menuItems = [
   {
     label: "Dashboard",
     href: "/admin/dashboard",
-    icon: OrdersIcon,
+    icon: DashboardIcon,
   },
   {
     label: "Doctors",
     href: "/admin/doctors",
-    icon: OrdersIcon,
+    icon: Doctor,
   },
   {
     label: "Products",
     href: "/admin/products",
-    icon: PackageIcon,
+    icon: ShoppingCartIcon,
   },
-  { label: "Settings", href: "/admin/settings", icon: OrdersIcon },
+  { label: "Settings", href: "/admin/settings", icon: SettingsIcon },
 ];
 
 const headings: Record<string, string> = {
@@ -73,6 +80,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       : "";
   const hideStats = noStatsRoutes.some((route) => pathname.startsWith(route));
   const isMobile = useIsMobile();
+
+  const showWelcome = pathname === "/admin/dashboard";
 
   const {
     data: dashboardData,
@@ -154,15 +163,18 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
               username={user?.fullName || "----"}
               heading={heading}
               stats={stats}
+              showWelcome={showWelcome}
             />
           )}
           {hideStats && (
             <div className="flex items-center flex-col">
               {hideStats && (
                 <>
-                  <h2 className="text-white font-normal text-base md:text-2xl">
-                    👋 Welcome {user?.fullName || "----"},
-                  </h2>
+                  {showWelcome && (
+                    <h2 className="text-white font-normal mb-4 text-base md:text-2xl">
+                      👋 Welcome {user?.fullName || "----"},
+                    </h2>
+                  )}
                   <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
                     {heading}
                   </h2>

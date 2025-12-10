@@ -223,14 +223,18 @@ const CsvImportDoctorModal: React.FC<CsvImportDoctorModalProps> = ({
         )}
 
         {/* Sample CSV Download */}
-        <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <div className="flex items-center gap-3">
-            <FileIcon />
-            <div>
-              <p className="font-medium text-gray-900">Sample CSV File</p>
-              <p className="text-sm text-gray-600">
-                Download the template to see the correct format
-              </p>
+        <div className="flex items-center flex-col gap-4 sm:flex-row justify-between bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <div className="flex items-start  gap-3">
+            <div className="flex items-start gap-2">
+              <span className="rounded-lg w-10 h-10 mt-2 flex items-center justify-center border border-primary bg-white shrink-0">
+                <FileIcon fill="#2862A9" />
+              </span>
+              <div>
+                <p className="font-medium text-gray-900">Sample CSV File</p>
+                <p className="text-sm text-gray-600">
+                  Download the template to see the correct format
+                </p>
+              </div>
             </div>
           </div>
           <button
@@ -251,7 +255,7 @@ const CsvImportDoctorModal: React.FC<CsvImportDoctorModalProps> = ({
               type="file"
               accept=".csv"
               onChange={handleCsvFileChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-0 focus:ring-primary focus:border-primary outline-none"
             />
           </div>
           {errors.csvFile && (

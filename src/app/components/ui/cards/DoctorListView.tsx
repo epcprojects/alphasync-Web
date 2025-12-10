@@ -104,17 +104,6 @@ export default function DoctorListView({
             </span>
           </div>
           <div className="flex items-center justify-start gap-1">
-            <Tooltip content="Edit">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (doctor.id) onEditDoctor?.(Number(doctor.id));
-                }}
-                className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
-              >
-                <PencilEditIcon width="15" height="15" fill={"currentColor"} />
-              </button>
-            </Tooltip>
             {doctor.invitationStatus === "pending" && (
               <Tooltip content="Resend Invitation">
                 <button
@@ -134,6 +123,18 @@ export default function DoctorListView({
                 </button>
               </Tooltip>
             )}
+            <Tooltip content="Edit">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (doctor.id) onEditDoctor?.(Number(doctor.id));
+                }}
+                className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+              >
+                <PencilEditIcon width="15" height="15" fill={"currentColor"} />
+              </button>
+            </Tooltip>
+
             <Tooltip content="Delete">
               <button
                 onClick={(e) => {
@@ -176,7 +177,7 @@ export default function DoctorListView({
       <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
         {doctor.phoneNo ?? "—"}
       </div>
-      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
+      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-3">
         {doctor.medicalLicense ?? "—"}
       </div>
 
@@ -190,18 +191,7 @@ export default function DoctorListView({
         </span>
       </div>
 
-      <div className="flex items-center justify-start gap-1">
-        <Tooltip content="Edit">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (doctor.id) onEditDoctor?.(Number(doctor.id));
-            }}
-            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
-          >
-            <PencilEditIcon width="15" height="15" fill={"currentColor"} />
-          </button>
-        </Tooltip>
+      <div className="flex items-center justify-end gap-1">
         {doctor.invitationStatus === "pending" && (
           <Tooltip content="Resend Invitation">
             <button
@@ -221,6 +211,18 @@ export default function DoctorListView({
             </button>
           </Tooltip>
         )}
+        <Tooltip content="Edit">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (doctor.id) onEditDoctor?.(Number(doctor.id));
+            }}
+            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+          >
+            <PencilEditIcon width="15" height="15" fill={"currentColor"} />
+          </button>
+        </Tooltip>
+
         <Tooltip content="Delete">
           <button
             onClick={(e) => {

@@ -269,7 +269,7 @@ function InventoryContent() {
       {productsLoading && !isRefetchingFavorites ? (
         <InventorySkeleton viewMode={showGridView ? "grid" : "list"} />
       ) : (
-        <div className="flex flex-col gap-2 md:gap-6">
+        <div className="flex flex-col gap-4 md:gap-6">
           {showGridView ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
               {displayProducts.map((product) => (
@@ -375,7 +375,7 @@ function InventoryContent() {
 
           <div className="flex justify-center flex-col gap-2 md:gap-6 ">
             {displayProducts.length < 1 && (
-              <EmptyState mtClasses=" -mt-3 md:-mt-6" />
+              <EmptyState mtClasses=" mt-0 md:mt-0" />
             )}
 
             {displayProducts.length > 0 && (

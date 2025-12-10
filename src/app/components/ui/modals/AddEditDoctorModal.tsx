@@ -208,7 +208,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       onCancel={handleCancel}
       cancelLabel={"Cancel"}
     >
-      <div className="flex flex-col gap-2 md:gap-5">
+      <div className="flex flex-col gap-3 md:gap-5">
         <ImageUpload
           imageUrl={
             initialData?.imageUrl
@@ -224,7 +224,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           className="border-b-0"
         />
 
-        <div className="flex flex-col sm:flex-row items-start gap-2 md:gap-5">
+        <div className="flex flex-col sm:flex-row items-start gap-3 md:gap-5">
           <div className="w-full">
             <ThemeInput
               required
@@ -250,7 +250,8 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
               errorMessage={errors.phoneNo}
               id="phoneNo"
               onChange={(e) => handleChange("phoneNo", e.target.value)}
-              type="text"
+              type="number"
+              className="[&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
               value={formData.phoneNo}
             />
           </div>
@@ -268,7 +269,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           value={formData.email}
         />
 
-        <div className="flex items-start flex-col sm:flex-row gap-2 md:gap-5">
+        <div className="flex items-start flex-col sm:flex-row gap-3 md:gap-5">
           <div className="w-full">
             <ThemeInput
               required

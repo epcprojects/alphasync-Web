@@ -422,6 +422,7 @@ export default function CustomerDetail() {
           getInitials={(name) =>
             name
               .split(" ")
+              .slice(0, 2)
               .map((n) => n[0])
               .join("")
           }
@@ -602,7 +603,7 @@ export default function CustomerDetail() {
                 )}
               </TabPanel>
 
-              <TabPanel className={"flex flex-col gap-2 md:gap-4"}>
+              <TabPanel className={"flex flex-col gap-4"}>
                 {requestsLoading ? (
                   <div className="space-y-4">
                     <Skeleton className="w-full h-32 rounded-lg" />

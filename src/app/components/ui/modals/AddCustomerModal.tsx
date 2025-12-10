@@ -12,6 +12,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useMutation } from "@apollo/client";
 import { CREATE_CUSTOMER } from "@/lib/graphql/mutations";
 import { showErrorToast } from "@/lib/toast";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 interface AddCustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -297,7 +298,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData, step, isOpen, touchedFields]);
-
+  useBodyScrollLock(isOpen);
   return (
     <AppModal
       isOpen={isOpen}
@@ -317,6 +318,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       onCancel={handleCancel}
       cancelLabel={step === 1 ? "Cancel" : "Back"}
       confimBtnDisable={loading}
+      scrollNeeded={true}
     >
       <div className="flex flex-col gap-4 sm:gap-8">
         <Stepper activeStep={step} steps={steps} />
@@ -330,7 +332,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
         )}
 
         {step === 1 && (
-          <div className="flex flex-col gap-2 md:gap-5">
+          <div className="flex flex-col gap-4 md:gap-5">
             <ThemeInput
               required
               label="Full Name"
@@ -521,7 +523,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
         )}
 
         {step === 2 && (
-          <div className="flex flex-col gap-2 md:gap-5">
+          <div className="flex flex-col gap-4 md:gap-5">
             <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
               <div className="w-full">
                 <ThemeInput
@@ -590,7 +592,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
         )}
 
         {step === 3 && (
-          <div className="flex flex-col gap-2 md:gap-4">
+          <div className="flex flex-col gap-4 md:gap-4">
             <TextAreaField
               label="Additional Notes"
               value={formData.notes}

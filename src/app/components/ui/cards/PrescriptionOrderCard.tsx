@@ -129,6 +129,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                       src={item?.product?.primaryImage}
                       width={1024}
                       height={1024}
+                      className="w-full h-full border rounded-lg border-gray-200"
                     />
                   </div>
                   <span

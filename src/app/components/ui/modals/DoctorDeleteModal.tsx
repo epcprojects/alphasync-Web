@@ -1,6 +1,7 @@
 import React from "react";
 import { Portal, ThemeButton } from "@/components";
 import { UserRemoveIcon } from "@/icons";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 interface DoctorDeleteModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ const DoctorDeleteModal: React.FC<DoctorDeleteModalProps> = ({
   isLoading = false,
   isMobile,
 }) => {
+  useBodyScrollLock(isOpen);
   if (!isOpen) return null;
   return (
     <Portal>

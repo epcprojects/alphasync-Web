@@ -41,6 +41,7 @@ export default function ProductListView({
             height={36}
             src={product.image}
             alt={product.title}
+            className="w-full h-full border rounded-lg border-gray-200"
           />
         </div>
         <div>

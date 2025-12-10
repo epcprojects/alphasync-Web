@@ -88,7 +88,7 @@ export default function ProductCard({
                   onAddToCart?.(product.id);
                 }}
                 variant="outline"
-                className="w-full"
+                className="flex-1"
                 heightClass="h-10 md:h-11"
               />
 

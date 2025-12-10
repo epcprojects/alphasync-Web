@@ -71,22 +71,23 @@ const Page = () => {
         onSubmit={formik.handleSubmit}
         className="md:w-96 flex flex-col gap-5 md:gap-6 w-80"
       >
-        <ThemeInput
-          id="Email"
-          label="Email"
-          name="email"
-          type="email"
-          placeholder="abc@example.com"
-          value={formik.values.email}
-          onChange={formik.handleChange}
-          error={formik.touched.email && Boolean(formik.errors.email)}
-          errorMessage={formik.touched.email ? formik.errors.email : ""}
-        />
+        <div className="flex flex-col">
+          <ThemeInput
+            id="Email"
+            label="Email"
+            name="email"
+            type="email"
+            placeholder="abc@example.com"
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            error={formik.touched.email && Boolean(formik.errors.email)}
+            errorMessage={formik.touched.email ? formik.errors.email : ""}
+          />
 
-        {errorMessage && (
-          <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
-        )}
-
+          {errorMessage && (
+            <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
+          )}
+        </div>
         <ThemeButton
           type="submit"
           disabled={loading || !formik.values.email}

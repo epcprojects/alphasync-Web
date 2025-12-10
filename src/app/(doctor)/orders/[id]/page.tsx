@@ -411,6 +411,7 @@ const Page = () => {
             getInitials={(name) =>
               name
                 .split(" ")
+                .slice(0, 2)
                 .map((n) => n[0])
                 .join("")
             }
@@ -436,7 +437,7 @@ const Page = () => {
             </div>
 
             <div className="flex flex-col gap-1">
-              <div className="hidden sm:grid grid-cols-4 text-xs font-medium text-black rounded-xl bg-gray-50 p-1.5 md:p-3">
+              <div className="hidden sm:grid grid-cols-4 gap-2 text-xs font-medium text-black rounded-xl bg-gray-50 p-1.5 md:p-3">
                 <div>Product</div>
                 <div>Quantity</div>
                 <div>Unit Price</div>

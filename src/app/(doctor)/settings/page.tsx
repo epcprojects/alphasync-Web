@@ -353,7 +353,7 @@ const Page = () => {
                 Notifications
               </Tab>
             </TabList>
-            <TabPanels className={"pb-4 lg:p-6"}>
+            <TabPanels className={"pb-0 lg:p-6"}>
               <TabPanel className={"px-5 lg:px-8"}>
                 <ImageUpload
                   imageUrl={

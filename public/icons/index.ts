@@ -94,7 +94,9 @@ import UserRemoveIcon from "./UserRemoveIcon";
 import Lock from "./Lock";
 import TickDouble from "./TickDouble";
 import FolderIcon from "./FolderIcon";
+import DashboardIcon from "./DashboardIcon";
 export {
+    DashboardIcon,
     FolderIcon,
     TickDouble,
     UserRemoveIcon,

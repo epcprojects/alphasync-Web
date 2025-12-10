@@ -182,7 +182,7 @@ const SelectGroupDropdown = ({
                 <UserIcon />
               </span>
             )}
-            <span className="line-clamp-1 text-gray-900 text-sm md:text- pe-3 leading-7">
+            <span className="line-clamp-1 text-gray-900 text-sm md:text- pe-3 sm:leading-7">
               {selectedDisplay()}
             </span>
           </span>

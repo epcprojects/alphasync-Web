@@ -61,7 +61,7 @@ const Stepper: React.FC<StepperProps> = ({ activeStep, steps }) => {
           );
         })}
       </ol>
-      <h2 className={"text-sm text-black font-semibold"}>
+      <h2 className={"text-sm sm:hidden block text-black font-semibold"}>
         {steps[activeStep - 1].label}
       </h2>
     </>

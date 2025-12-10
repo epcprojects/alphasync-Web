@@ -219,8 +219,8 @@ function DoctorContent() {
 
               <MenuItems
                 transition
-                anchor="bottom end"
-                className={`min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+                anchor={isMobile ? "bottom end" : "bottom end"}
+                className={`min-w-40 sm:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
               >
                 {orderStatuses.map((status) => (
                   <MenuItem key={status.label}>
@@ -278,7 +278,7 @@ function DoctorContent() {
                   <div className="col-span-2">
                     <h2>Phone</h2>
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-3">
                     <h2>Medical License</h2>
                   </div>
                   <div className="col-span-1">
@@ -342,7 +342,7 @@ function DoctorContent() {
                   <div className="col-span-2">
                     <h2>Phone</h2>
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-3">
                     <h2>Medical License</h2>
                   </div>
                   <div className="col-span-1">

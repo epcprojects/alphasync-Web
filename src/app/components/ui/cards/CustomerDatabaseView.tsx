@@ -94,7 +94,7 @@ export default function CustomerDatabaseView({
         className="bg-white flex flex-col gap-2 p-2  cursor-pointer  rounded-xl shadow-table"
       >
         <div className="flex items-start justify-between mb-2">
-          <div className="flex items-center gap-2 ">
+          <div className="flex items-start gap-2 ">
             <span
               className={`w-10 h-10 ${bg} ${text} flex shrink-0 items-center font-medium justify-center rounded-full`}
             >
@@ -224,7 +224,7 @@ export default function CustomerDatabaseView({
 
       <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
         <span
-          className={`block rounded-full px-2.5 wrap-break-word py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
+          className={`block rounded-full px-2.5  md:whitespace-nowrap wrap-break-word py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             invitationStatus
           )}`}
         >

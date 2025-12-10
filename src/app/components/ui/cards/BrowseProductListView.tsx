@@ -45,7 +45,7 @@ export default function BrowseProductListView({
                 height={60}
                 src={product.image}
                 alt={product.title}
-                className="h-full object-contain"
+                className="h-full object-contain w-full border rounded-lg border-gray-200"
               />
             </div>
             <div>
@@ -130,7 +130,7 @@ export default function BrowseProductListView({
             height={60}
             src={product.image}
             alt={product.title}
-            className="h-full object-contain"
+            className="h-full object-contain w-full border rounded-lg border-gray-200"
           />
         </div>
         <div>

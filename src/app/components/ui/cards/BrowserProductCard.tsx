@@ -50,7 +50,7 @@ export default function BrowserProductCard({
           height={280}
           src={product.image}
           alt={product.title}
-          className="h-full object-contain"
+          className="h-full object-contain "
         />
       </div>
 
@@ -58,7 +58,7 @@ export default function BrowserProductCard({
         <div className="flex flex-col gap-2 h-full justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex justify-between items-start">
-              <h2 className="text-gray-800 font-semibold line-clamp-1 overflow-hidden text-base md:text-lg">
+              <h2 className="text-gray-800 font-semibold  overflow-hidden line-clamp-1 text-base md:text-lg">
                 {product.title}
               </h2>
               {product.tags?.[0] && (
