@@ -2,7 +2,7 @@
 import React, { ReactNode } from "react";
 import { useQuery } from "@apollo/client";
 import { DashboardStats, Header, AdminRoute } from "../components";
-import { OrdersIcon, DashDoctor, PackageIcon } from "@/icons";
+import { OrdersIcon, DashDoctor, PackageIcon, UserGroupIcon } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -42,6 +42,11 @@ const menuItems = [
     icon: OrdersIcon,
   },
   {
+    label: "Admins",
+    href: "/admin/admins",
+    icon: UserGroupIcon,
+  },
+  {
     label: "Products",
     href: "/admin/products",
     icon: PackageIcon,
@@ -52,11 +57,12 @@ const menuItems = [
 const headings: Record<string, string> = {
   "/admin/dashboard": "Admin Dashboard",
   "/admin/doctors": "Trusted Peptide Solutions",
+  "/admin/admins": "Admin Management",
   "/admin/products": "Product Management",
   "/admin/settings": "Settings",
 };
 
-const noStatsRoutes = ["/admin/settings", "/admin/dashboard"];
+const noStatsRoutes = ["/admin/settings", "/admin/dashboard", "/admin/admins"];
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 

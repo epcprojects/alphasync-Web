@@ -4,10 +4,9 @@ import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
 
-type DoctorListingProps = {
-  doctor: UserAttributes;
-  onEditDoctor?: (id: number) => void;
-  onDeleteDoctor?: (id: number) => void;
+type AdminListingProps = {
+  admin: UserAttributes;
+  onDeleteAdmin?: (id: number) => void;
   onResendInvitation?: (id: string | number) => void;
 };
 
@@ -56,50 +55,39 @@ function getDisplayStatus(invitationStatus?: string, status?: string): string {
   return status || "Inactive";
 }
 
-export default function DoctorListView({
-  doctor,
-  onDeleteDoctor,
-  onEditDoctor,
+export default function AdminListView({
+  admin,
+  onDeleteAdmin,
   onResendInvitation,
-}: DoctorListingProps) {
-  const { bg, text } = getColorPair(doctor.id);
+}: AdminListingProps) {
+  const { bg, text } = getColorPair(admin.id);
 
-  const displayStatus = getDisplayStatus(
-    doctor.invitationStatus,
-    doctor.status
-  );
+  const displayStatus = getDisplayStatus(admin.invitationStatus, admin.status);
 
   return (
     <div
-      // onClick={onRowClick}
-      key={doctor.id}
-      className="grid  grid-cols-12 gap-2 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
+      key={admin.id}
+      className="grid grid-cols-12 gap-2 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
-      <div className="flex items-center gap-2 col-span-3">
+      <div className="flex items-center gap-2 col-span-4">
         <span
           className={`md:w-10 md:h-10 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
         >
-          {getInitials(doctor.fullName ?? doctor.email ?? "----")}
+          {getInitials(admin.fullName ?? admin.email ?? "----")}
         </span>
         <div>
           <h2 className="text-gray-800 text-xs md:text-sm font-medium">
-            {doctor.fullName ?? "----"}
+            {admin.fullName ?? "----"}
           </h2>
-          <h2 className="text-gray-800 text-xs font-normal">{doctor.email}</h2>
+          <h2 className="text-gray-800 text-xs font-normal">{admin.email}</h2>
         </div>
       </div>
 
-      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
-        {doctor.specialty ?? "—"}
-      </div>
-      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
-        {doctor.phoneNo ?? "—"}
-      </div>
-      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
-        {doctor.medicalLicense ?? "—"}
+      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-3">
+        {admin.phoneNo ?? "—"}
       </div>
 
-      <div className="font-medium text-xs md:text-sm text-gray-800 col-span-1">
+      <div className="font-medium text-xs md:text-sm text-gray-800 col-span-2">
         <span
           className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
             displayStatus
@@ -109,30 +97,13 @@ export default function DoctorListView({
         </span>
       </div>
 
-      <div className="flex items-center justify-start gap-1">
-        <Tooltip content="Edit">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (doctor.id) onEditDoctor?.(Number(doctor.id));
-            }}
-            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
-          >
-            <PencilEditIcon width="15" height="15" fill={"currentColor"} />
-          </button>
-        </Tooltip>
-        {doctor.invitationStatus === "pending" && (
+      <div className="col-span-3 flex items-center justify-start gap-1">
+        {admin.invitationStatus === "pending" && (
           <Tooltip content="Resend Invitation">
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                console.log(
-                  "Resend button clicked for doctor:",
-                  doctor.id,
-                  "invitationStatus:",
-                  doctor.invitationStatus
-                );
-                if (doctor.id) onResendInvitation?.(doctor.id);
+                if (admin.id) onResendInvitation?.(admin.id);
               }}
               className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
             >
@@ -144,7 +115,7 @@ export default function DoctorListView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (doctor.id) onDeleteDoctor?.(Number(doctor.id));
+              if (admin.id) onDeleteAdmin?.(Number(admin.id));
             }}
             className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
           >

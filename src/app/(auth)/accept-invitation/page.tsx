@@ -20,6 +20,7 @@ function Content() {
   const router = useRouter();
   const token = searchParams.get("token");
   const doctorParam = searchParams.get("doctor");
+  const adminParam = searchParams.get("admin");
 
   // Debug logging
 
@@ -27,12 +28,19 @@ function Content() {
   // Also check if URL contains doctor=true anywhere
   const urlString = typeof window !== "undefined" ? window.location.href : "";
   const hasDoctorTrue = urlString.includes("doctor=true");
+  const hasAdminTrue = urlString.includes("admin=true");
 
   const isDoctor =
     doctorParam === "true" ||
     doctorParam === "true?doctor=true" ||
     doctorParam?.includes("true") ||
     hasDoctorTrue;
+
+  const isAdmin =
+    adminParam === "true" ||
+    adminParam === "true?admin=true" ||
+    adminParam?.includes("true") ||
+    hasAdminTrue;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasAutoExecuted, setHasAutoExecuted] = useState(false);
@@ -53,9 +61,23 @@ function Content() {
     }
   );
 
-  // Auto-run mutation when doctor=false or doctor param is not "true" - only once
+  // Determine redirect path based on user type
+  const getLoginRedirect = () => {
+    if (isAdmin) {
+      return "/login?admin=admin";
+    }
+    return "/login";
+  };
+
+  // Auto-run mutation when doctor=false and admin=false - only once
   useEffect(() => {
-    if (isDoctor !== true && token && !acceptLoading && !hasAutoExecuted) {
+    if (
+      isDoctor !== true &&
+      isAdmin !== true &&
+      token &&
+      !acceptLoading &&
+      !hasAutoExecuted
+    ) {
       setHasAutoExecuted(true);
       acceptInvitation({
         variables: {
@@ -63,7 +85,14 @@ function Content() {
         },
       });
     }
-  }, [isDoctor, token, acceptLoading, hasAutoExecuted, acceptInvitation]);
+  }, [
+    isDoctor,
+    isAdmin,
+    token,
+    acceptLoading,
+    hasAutoExecuted,
+    acceptInvitation,
+  ]);
 
   const validationSchema = Yup.object({
     password: Yup.string()
@@ -72,7 +101,10 @@ function Content() {
       .matches(/[A-Z]/, "Must contain at least one uppercase letter")
       .matches(/[a-z]/, "Must contain at least one lowercase letter")
       .matches(/[0-9]/, "Must contain at least one number")
-      .matches(/[@$!%*?&]/, "Must contain at least one special character"),
+      .matches(
+        /[!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/~`\\]/,
+        "Must contain at least one special character"
+      ),
     confirmPassword: Yup.string()
       .required("Confirm password is required")
       .oneOf([Yup.ref("password")], "Passwords must match"),
@@ -108,7 +140,7 @@ function Content() {
         subtitle="Please confirm your invitation to access your account"
       />
 
-      {isDoctor === true ? (
+      {isDoctor === true || isAdmin === true ? (
         <form
           onSubmit={formik.handleSubmit}
           className="md:w-96 flex flex-col gap-5 md:gap-6 w-80"
@@ -184,7 +216,7 @@ function Content() {
               </div>
               <ThemeButton
                 label="Go to Login"
-                onClick={() => router.push("/login")}
+                onClick={() => router.push(getLoginRedirect())}
                 heightClass="h-11"
                 className="w-full"
               />
@@ -207,7 +239,7 @@ function Content() {
         onClose={() => setIsModalOpen(false)}
         onClick={() => {
           setIsModalOpen(false);
-          router.push("/login");
+          router.push(getLoginRedirect());
         }}
         buttonLabel="Login Now"
         email={""}
