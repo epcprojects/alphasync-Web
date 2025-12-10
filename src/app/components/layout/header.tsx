@@ -61,16 +61,8 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
 
   useEffect(() => {
     const handleScroll = (): void => {
-      const isStickyNow = window.scrollY > 350;
+      const isStickyNow = window.scrollY > 50;
       setIsSticky(isStickyNow);
-      const mainEl = document.querySelector("main");
-      if (mainEl) {
-        if (isStickyNow) {
-          mainEl.classList.add("pt-20");
-        } else {
-          mainEl.classList.remove("pt-20");
-        }
-      }
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -118,20 +110,12 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
     }
   };
 
-  return (
-    <>
-      <header
-        dir="ltr"
-        className={`
-    transition-all duration-500 ease-in-out 
-    ${
-      isSticky
-        ? "fixed w-full md:w-[98%] pt-2.5 md:pt-4 px-2 md:px-4 md:rounded-2xl top-0 md:top-4 !bg-[url(/images/bannerImage.png)] !bg-top !bg-cover !bg-no-repeat"
-        : "relative w-full border-b border-white/20 top-0"
-    } 
-    pb-2.5 md:pb-5 z-[99]`}
-      >
-        <nav className=" xl:px-4 flex items-center justify-between  mx-auto ">
+  const HeaderContnt: React.FC<{
+    isStickyVariant?: boolean;
+  }> = ({ isStickyVariant }) => {
+    return (
+      <>
+        <nav className=" xl:px-4 flex items-center justify-between w-full">
           <div className="flex items-center gap-2 justify-start w-fit">
             <div className="flex xl:hidden">
               <button
@@ -256,101 +240,144 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
             </div>
           </div>
         </nav>
-
-        {/* Mobile Menu Overlay */}
-        <div
-          className={`xl:hidden ${isMenuOpen ? "block" : "hidden"}`}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Mobile navigation menu"
-        >
+        {!isStickyVariant && (
           <div
-            className={`fixed inset-0 z-10 bg-black opacity-50 ${
-              isMenuOpen ? "block" : "hidden"
-            }`}
-            onClick={handleBackdropClick}
-          ></div>
+            className={`xl:hidden ${isMenuOpen ? "block" : "hidden"}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile navigation menu"
+          >
+            <div
+              className={`fixed inset-0 z-10 bg-black opacity-50 ${
+                isMenuOpen ? "block" : "hidden"
+              }`}
+              onClick={handleBackdropClick}
+            ></div>
 
-          <div className="fixed inset-y-0 gap-4 flex flex-col left-0 z-20 min-w-xs p-4 px-4 overflow-y-auto bg-white md:px-6 md:py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
-            <div className="flex items-center justify-between pt-1.5">
-              <Link href="/" onClick={closeMenu}>
-                <span className="sr-only">Your Company</span>
-                <Image
-                  alt="Company Logo"
-                  className="h-12 w-fit"
-                  src={Images.auth.logo}
-                  width={208}
-                  height={32}
-                />
-              </Link>
-
-              <button
-                type="button"
-                className="-m-2.5 rounded-md p-2.5 text-gray-700"
-                onClick={handleCloseButtonClick}
-                aria-label="Close menu"
-              >
-                <span className="sr-only">Close menu</span>
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="#A4A7AE"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
+            <div className="fixed inset-y-0 gap-4 flex flex-col left-0 z-20 min-w-xs p-4 px-4 overflow-y-auto bg-white md:px-6 md:py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+              <div className="flex items-center justify-between pt-1.5">
+                <Link href="/" onClick={closeMenu}>
+                  <span className="sr-only">Your Company</span>
+                  <Image
+                    alt="Company Logo"
+                    className="h-12 w-fit"
+                    src={Images.auth.logo}
+                    width={208}
+                    height={32}
                   />
-                </svg>
-              </button>
-            </div>
+                </Link>
 
-            <div className="flow-root">
-              <div className=" divide-y divide-gray-500/10">
-                <div className=" border-b-0 flex flex-col gap-2.5">
-                  {menuItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        onClick={closeMenu}
-                        key={item.href}
-                        href={item.href}
-                        className="flex items-center gap-1.5 p-1.5  text-base font-normal leading-7 text-gray-900 hover:bg-gray-100"
-                      >
-                        <span className="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center">
-                          <Icon fill={"currentColor"} height="16" width="16" />
-                        </span>
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                  <button
-                    onClick={() => {
-                      closeMenu();
-                      handleLogout();
-                    }}
-                    disabled={isLoggingOut}
-                    key={"logout"}
-                    className="flex items-center gap-1.5 p-1.5 w-full text-left text-base font-normal leading-7 text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                <button
+                  type="button"
+                  className="-m-2.5 rounded-md p-2.5 text-gray-700"
+                  onClick={handleCloseButtonClick}
+                  aria-label="Close menu"
+                >
+                  <span className="sr-only">Close menu</span>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="#A4A7AE"
+                    aria-hidden="true"
                   >
-                    <span className="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center">
-                      <LogoutIcon
-                        fill={"currentColor"}
-                        height="16"
-                        width="16"
-                      />
-                    </span>
-                    {isLoggingOut ? "Logging out..." : "Logout"}
-                  </button>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="flow-root">
+                <div className=" divide-y divide-gray-500/10">
+                  <div className=" border-b-0 flex flex-col gap-2.5">
+                    {menuItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          onClick={closeMenu}
+                          key={item.href}
+                          href={item.href}
+                          className="flex items-center gap-1.5 p-1.5  text-base font-normal leading-7 text-gray-900 hover:bg-gray-100"
+                        >
+                          <span className="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center">
+                            <Icon
+                              fill={"currentColor"}
+                              height="16"
+                              width="16"
+                            />
+                          </span>
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                    <button
+                      onClick={() => {
+                        closeMenu();
+                        handleLogout();
+                      }}
+                      disabled={isLoggingOut}
+                      key={"logout"}
+                      className="flex items-center gap-1.5 p-1.5 w-full text-left text-base font-normal leading-7 text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center">
+                        <LogoutIcon
+                          fill={"currentColor"}
+                          height="16"
+                          width="16"
+                        />
+                      </span>
+                      {isLoggingOut ? "Logging out..." : "Logout"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <>
+      <header
+        dir="ltr"
+        className={`
+    transition-all duration-500 ease-in-out 
+    ${
+      isSticky
+        ? "relative w-full md:w-[98%] pt-2.5 md:pt-4 px-2 md:px-4 md:rounded-2xl top-0 md:top-4 !bg-[url(/images/bannerImage.png)] !bg-top !bg-cover !bg-no-repeat"
+        : "relative w-full border-b border-white/20 top-0"
+    } 
+    pb-2.5 md:pb-5 z-[99]`}
+      >
+        <HeaderContnt />
       </header>
+
+      <div
+        dir="ltr"
+        className={`
+    fixed hidden lg:flex justify-between top-0 md:top-4 z-[99]
+    md:w-[97.5%] w-full md:rounded-2xl px-2 md:px-4
+    bg-red-500 border-b border-white/20
+    bg-[url(/images/bannerImage.png)] !bg-top !bg-cover !bg-no-repeat
+    py-2.5 md:py-5
+
+    transition-all duration-500 ease-in-out
+
+    ${
+      isSticky
+        ? "opacity-100 translate-y-0 pointer-events-auto"
+        : "opacity-0 -translate-y-0 pointer-events-none"
+    }
+  `}
+      >
+        <HeaderContnt isStickyVariant={true} />
+      </div>
     </>
   );
 };

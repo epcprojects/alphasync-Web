@@ -9,6 +9,7 @@ interface DoctorDeleteModalProps {
   title?: string;
   subtitle?: string;
   isLoading?: boolean;
+  isMobile?: boolean;
 }
 
 const DoctorDeleteModal: React.FC<DoctorDeleteModalProps> = ({
@@ -18,6 +19,7 @@ const DoctorDeleteModal: React.FC<DoctorDeleteModalProps> = ({
   title,
   subtitle,
   isLoading = false,
+  isMobile,
 }) => {
   if (!isOpen) return null;
   return (
@@ -28,9 +30,12 @@ const DoctorDeleteModal: React.FC<DoctorDeleteModalProps> = ({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center flex-col gap-3 md:gap-5 justify-center">
-            <UserRemoveIcon />
+            <UserRemoveIcon
+              width={isMobile ? 44 : 66}
+              height={isMobile ? 44 : 66}
+            />
             <div className="space-y-2">
-              <h2 className="text-gray-950 font-medium text-center text-2xl md:text-3xl">
+              <h2 className="text-gray-950 font-medium text-center text-xl md:text-2xl">
                 {title}
               </h2>
 
@@ -44,7 +49,7 @@ const DoctorDeleteModal: React.FC<DoctorDeleteModalProps> = ({
               label="Cancel"
               className="w-full"
               onClick={onClose}
-              heightClass="h-10"
+              heightClass="h-8 sm:h-10"
               variant="outline"
               disabled={isLoading}
             />
@@ -53,7 +58,7 @@ const DoctorDeleteModal: React.FC<DoctorDeleteModalProps> = ({
               label={isLoading ? "Deleting..." : "Delete"}
               className="w-full"
               onClick={onDelete}
-              heightClass="h-10"
+              heightClass="h-8 sm:h-10"
               variant="danger"
               disabled={isLoading}
             />

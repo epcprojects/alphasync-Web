@@ -318,7 +318,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       cancelLabel={step === 1 ? "Cancel" : "Back"}
       confimBtnDisable={loading}
     >
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-4 sm:gap-8">
         <Stepper activeStep={step} steps={steps} />
 
         {error && (
@@ -343,7 +343,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               type="text"
               value={formData.fullName}
             />
-            <div className="flex items-center gap-3 md:gap-5 w-full">
+            <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-5 w-full">
               <div className="w-full">
                 <ThemeInput
                   required
@@ -423,17 +423,17 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                     <path
                       d="M4.6665 2.6665V1.6665"
                       stroke="#6B7280"
-                      stroke-linecap="round"
+                      strokeLinecap="round"
                     />
                     <path
                       d="M11.3335 2.6665V1.6665"
                       stroke="#6B7280"
-                      stroke-linecap="round"
+                      strokeLinecap="round"
                     />
                     <path
                       d="M1.6665 6H14.3332"
                       stroke="#6B7280"
-                      stroke-linecap="round"
+                      strokeLinecap="round"
                     />
                   </svg>
                 }
@@ -468,7 +468,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               type="text"
               value={formData.street2}
             />
-            <div className="flex items-center gap-3 md:gap-5 w-full">
+            <div className="flex items-center flex-col sm:flex-row gap-3 md:gap-5 w-full">
               <div className="w-full">
                 <ThemeInput
                   required
@@ -522,7 +522,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
 
         {step === 2 && (
           <div className="flex flex-col gap-2 md:gap-5">
-            <div className="flex items-center gap-2 w-full">
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
               <div className="w-full">
                 <ThemeInput
                   label="Emergency Contact Name"

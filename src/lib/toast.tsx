@@ -13,8 +13,8 @@ export const showSuccessToast = (message: string) => {
     draggable: true,
     style: {
       width: "fit-content",
-      maxHeight: "44px",
-      minHeight: "44px",
+      maxHeight: isMobile ? "40px" : "44px",
+      minHeight: isMobile ? "40px" : "44px",
       backgroundColor: "#079455",
       color: "white",
       borderRadius: "8px",
@@ -25,9 +25,9 @@ export const showSuccessToast = (message: string) => {
 
 export const showErrorToast = (message: string) => {
   toast.error(
-    <div style={{ display: "flex", alignItems: "center", gap: "0px" }}>
+    <div className="gap-2" style={{ display: "flex", alignItems: "center" }}>
       <Cross />
-      <span>{message}</span>
+      <span className="text-sm sm:text-base">{message}</span>
     </div>,
     {
       position: isMobile ? "bottom-center" : "top-right",
@@ -40,8 +40,8 @@ export const showErrorToast = (message: string) => {
       icon: false,
       style: {
         width: "fit-content",
-        maxHeight: "44px",
-        minHeight: "44px",
+        maxHeight: isMobile ? "40px" : "44px",
+        minHeight: isMobile ? "40px" : "44px",
         background: "red",
         color: "#fff",
         display: "flex",

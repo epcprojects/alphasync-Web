@@ -11,6 +11,7 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useMutation } from "@apollo/client/react";
 import { CREATE_INVITATION, UPDATE_USER } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface AddEditDoctorModalProps {
   isOpen: boolean;
@@ -35,7 +36,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     status: "Active",
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-
+  const isMobile = useIsMobile();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isFormValid, setIsFormValid] = useState(false);
   const schema = Yup.object().shape({
@@ -218,12 +219,12 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           placeholder="/images/arinaProfile.png"
           showTitle={false}
           roundedClass="rounded-lg"
-          width={96}
-          height={96}
+          width={isMobile ? 72 : 96}
+          height={isMobile ? 72 : 96}
           className="border-b-0"
         />
 
-        <div className="flex items-start gap-2 md:gap-5">
+        <div className="flex flex-col sm:flex-row items-start gap-2 md:gap-5">
           <div className="w-full">
             <ThemeInput
               required
@@ -267,7 +268,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           value={formData.email}
         />
 
-        <div className="flex items-start gap-2 md:gap-5">
+        <div className="flex items-start flex-col sm:flex-row gap-2 md:gap-5">
           <div className="w-full">
             <ThemeInput
               required

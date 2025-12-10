@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import AppModal from "./AppModal";
-import { PlusIcon, ShopingCartIcon, TrashBinIcon } from "@/icons";
+import { CrossIcon, PlusIcon, ShopingCartIcon, TrashBinIcon } from "@/icons";
 import { SelectGroupDropdown, ProductSelect } from "@/app/components";
 import ThemeInput from "../inputs/ThemeInput";
 import ThemeButton from "../buttons/ThemeButton";
@@ -13,6 +13,7 @@ import { formatNumber } from "@/lib/helpers";
 import { useMutation } from "@apollo/client/react";
 import { CREATE_ORDER } from "@/lib/graphql/mutations";
 import { useParams } from "next/navigation";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type DropdownItem = {
   name: string;
@@ -55,7 +56,8 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   // Get patient ID from URL params
   const params = useParams();
   const patientId = params.id as string;
-
+  const [showItems, setShowItems] = useState(false);
+  const isMobile = useIsMobile();
   // GraphQL mutation to create order
   const [
     createOrder,
@@ -170,6 +172,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       }
 
       showSuccessToast("Order created successfully");
+      setShowItems(false);
       onClose();
     } catch (error) {
       console.error("Error creating order:", error);
@@ -180,252 +183,291 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   return (
     <AppModal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => {
+        if (showItems) {
+          setShowItems(false);
+        } else {
+          onClose();
+        }
+      }}
+      hideCancelBtn={!showItems}
+      onConfirm={() => {
+        if (showItems) {
+          handleCreateOrder();
+        } else setShowItems(true);
+      }}
+      confirmLabel={
+        showItems && createOrderLoading
+          ? "Creating Order"
+          : showItems && !createOrderLoading
+          ? "Create Order"
+          : "Continue"
+      }
+      confimBtnDisable={
+        orderItems.length > 0 && !createOrderLoading ? false : true
+      }
+      cancelLabel="Back"
       title="Create New Order"
-      showFooter={false}
+      showFooter={isMobile}
+      btnIcon={showItems && <PlusIcon />}
       size="extraLarge"
       outSideClickClose={false}
       icon={<ShopingCartIcon fill="#374151" height={16} width={16} />}
       bodyPaddingClasses="p-0"
+      hideCrossButton={showItems}
     >
-      <div className="grid grid-cols-2">
-        <div className="flex flex-col gap-4 p-5 xl:p-6 border-e border-gray-200">
-          <h2 className="text-black font-medium text-xl">Order Details</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2">
+        {(!showItems || !isMobile) && (
+          <div className="flex flex-col gap-4 p-5 xl:p-6 border-e border-gray-200">
+            <h2 className="text-black font-medium text-xl">Order Details</h2>
 
-          <Formik
-            initialValues={{
-              customer: customerDraft,
-              product: "",
-              quantity: 1,
-              price: 0,
-            }}
-            validationSchema={OrderSchema}
-            enableReinitialize
-            onSubmit={(values, { resetForm }) => {
-              handleAddItem(values);
-              resetForm({
-                values: {
-                  customer: values.customer,
-                  product: "",
-                  quantity: 1,
-                  price: 0,
-                },
-              });
-            }}
-          >
-            {({ values, setFieldValue, errors, touched }) => (
-              <Form className="flex flex-col gap-5">
-                {!currentCustomer && (
-                  <div>
-                    <SelectGroupDropdown
-                      selectedGroup={values.customer}
-                      setSelectedGroup={(val: string | string[]) => {
-                        if (lockedCustomer) return; // prevent changing after first item
-                        const v = Array.isArray(val) ? val[0] : val;
-                        setFieldValue("customer", v);
-                        setCustomerDraft(v);
-                      }}
-                      groups={customers}
-                      errors={errors.customer || ""}
-                      name="Customer"
-                      multiple={false}
-                      placeholder={
-                        lockedCustomer ? "Customer locked" : "Select a customer"
-                      }
-                      isShowDrop={!lockedCustomer}
-                      searchTerm={""}
-                      setSearchTerm={() => {}}
-                      required={true}
-                      paddingClasses="py-2.5 h-11 px-2"
-                      optionPaddingClasses="p-1"
-                      showLabel={true}
-                      showIcon={false}
-                      disabled={lockedCustomer ? true : false}
-                    />
-                    {errors.customer && touched.customer && (
-                      <p className="text-red-500 text-xs">{errors.customer}</p>
-                    )}
-                  </div>
-                )}
-                <ProductSelect
-                  selectedProduct={values.product}
-                  setSelectedProduct={(product) =>
-                    setFieldValue("product", product)
-                  }
-                  errors={errors.product || ""}
-                  touched={touched.product}
-                  onProductChange={(selectedProduct) => {
-                    setSelectedProductData(selectedProduct);
-                    // Auto-populate price when product is selected
-                    if (selectedProduct && selectedProduct.price) {
-                      setFieldValue("price", selectedProduct.price);
+            <Formik
+              initialValues={{
+                customer: customerDraft,
+                product: "",
+                quantity: 1,
+                price: 0,
+              }}
+              validationSchema={OrderSchema}
+              enableReinitialize
+              onSubmit={(values, { resetForm }) => {
+                handleAddItem(values);
+                resetForm({
+                  values: {
+                    customer: values.customer,
+                    product: "",
+                    quantity: 1,
+                    price: 0,
+                  },
+                });
+              }}
+            >
+              {({ values, setFieldValue, errors, touched }) => (
+                <Form className="flex flex-col gap-5">
+                  {!currentCustomer && (
+                    <div>
+                      <SelectGroupDropdown
+                        selectedGroup={values.customer}
+                        setSelectedGroup={(val: string | string[]) => {
+                          if (lockedCustomer) return; // prevent changing after first item
+                          const v = Array.isArray(val) ? val[0] : val;
+                          setFieldValue("customer", v);
+                          setCustomerDraft(v);
+                        }}
+                        groups={customers}
+                        errors={errors.customer || ""}
+                        name="Customer"
+                        multiple={false}
+                        placeholder={
+                          lockedCustomer
+                            ? "Customer locked"
+                            : "Select a customer"
+                        }
+                        isShowDrop={!lockedCustomer}
+                        searchTerm={""}
+                        setSearchTerm={() => {}}
+                        required={true}
+                        paddingClasses="py-2.5 h-11 px-2"
+                        optionPaddingClasses="p-1"
+                        showLabel={true}
+                        showIcon={false}
+                        disabled={lockedCustomer ? true : false}
+                      />
+                      {errors.customer && touched.customer && (
+                        <p className="text-red-500 text-xs">
+                          {errors.customer}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  <ProductSelect
+                    selectedProduct={values.product}
+                    setSelectedProduct={(product) =>
+                      setFieldValue("product", product)
                     }
-                  }}
-                />
-
-                <div
-                  className={`flex gap-4 ${
-                    currentCustomer ? "flex-col" : "flex-row"
-                  }`}
-                >
-                  <div className="w-full">
-                    <Field
-                      as={ThemeInput}
-                      label="Quantity"
-                      name="quantity"
-                      placeholder="Enter quantity"
-                      type="number"
-                      id="quantity"
-                      required={true}
-                    />
-                    {errors.quantity && touched.quantity && (
-                      <p className="text-red-500 text-xs">{errors.quantity}</p>
-                    )}
-                  </div>
-                  <div className="w-full">
-                    <Field
-                      as={ThemeInput}
-                      label="Price ($)"
-                      name="price"
-                      placeholder="Enter price"
-                      type="number"
-                      id="price"
-                      required={true}
-                    />
-                    {errors.price && touched.price && (
-                      <p className="text-red-500 text-xs">{errors.price}</p>
-                    )}
-                  </div>
-                </div>
-
-                <ThemeButton
-                  label="Add to Order"
-                  type="submit"
-                  icon={<PlusIcon />}
-                  variant="primaryOutline"
-                />
-              </Form>
-            )}
-          </Formik>
-        </div>
-
-        <div className="flex flex-col h-full">
-          <div className="p-4 flex items-center gap-3 border-b border-gray-200">
-            <h2 className="text-black font-medium text-xl">Order Items</h2>
-            <span className="bg-blue-50 border rounded-full text-xs py-0.5 px-2.5 border-blue-200 text-blue-700">
-              {orderItems.length}
-            </span>
-          </div>
-
-          <div className="h-full">
-            {orderItems.length === 0 ? (
-              <div className="flex items-center flex-col gap-4 justify-center h-full text-gray-900">
-                <Image
-                  src={"/images/fallbackImages/noItemIllu.svg"}
-                  alt=""
-                  width={720}
-                  height={720}
-                  className="w-40 h-40"
-                />
-                No item added to order yet
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-6 text-black text-xs font-medium bg-gray-100 py-2 px-3">
-                  <div className="col-span-2">Product</div>
-                  <div>Quantity</div>
-                  <div>Price</div>
-                  <div>Total</div>
-                  <div>Actions</div>
-                </div>
-
-                {orderItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-6 bg-gray-50 items-center py-2 mb-0.5 px-3"
-                  >
-                    <div className="col-span-2 text-xs md:text-sm">
-                      {item.product}
-                    </div>
-
-                    <div>
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          handleUpdateItem(
-                            index,
-                            "quantity",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs"
-                      />
-                    </div>
-
-                    <div>
-                      <input
-                        type="number"
-                        value={item.price}
-                        onChange={(e) =>
-                          handleUpdateItem(
-                            index,
-                            "price",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 h-7 px-2 outline-none text-xs "
-                      />
-                    </div>
-
-                    <div className="text-xs md:text-sm whitespace-nowrap">
-                      ${formatNumber(item.quantity * item.price)}
-                    </div>
-
-                    <div>
-                      <button
-                        onClick={() => handleDeleteItem(index)}
-                        className="rounded-md w-8 h-8 flex items-center border bg-white border-gray-200 justify-center hover:bg-red-100"
-                      >
-                        <TrashBinIcon width="12" height="12" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-                <div className="py-2 px-4 flex flex-col gap-2">
-                  <div className="flex justify-between">
-                    <span className="text-black text-lg font-semibold">
-                      Total Amount:
-                    </span>
-                    <span className="text-primary text-lg font-semibold">
-                      ${formatNumber(totalAmount)}
-                    </span>
-                  </div>
-                  <div className="flex justify-end">
-                    {createOrderError && (
-                      <p className="text-red-500 text-xs mb-2">
-                        Error creating order: {createOrderError.message}
-                      </p>
-                    )}
-                    <ThemeButton
-                      label={
-                        createOrderLoading
-                          ? "Creating Order..."
-                          : "Create Order"
+                    errors={errors.product || ""}
+                    touched={touched.product}
+                    onProductChange={(selectedProduct) => {
+                      setSelectedProductData(selectedProduct);
+                      // Auto-populate price when product is selected
+                      if (selectedProduct && selectedProduct.price) {
+                        setFieldValue("price", selectedProduct.price);
                       }
-                      icon={<PlusIcon height="18" width="18" />}
-                      onClick={handleCreateOrder}
-                      size="medium"
-                      heightClass="h-10"
-                      disabled={createOrderLoading || orderItems.length === 0}
-                    />
+                    }}
+                  />
+
+                  <div
+                    className={`flex gap-4 ${
+                      currentCustomer ? "flex-col" : "flex-row"
+                    }`}
+                  >
+                    <div className="w-full">
+                      <Field
+                        as={ThemeInput}
+                        label="Quantity"
+                        name="quantity"
+                        placeholder="Enter quantity"
+                        type="number"
+                        id="quantity"
+                        required={true}
+                      />
+                      {errors.quantity && touched.quantity && (
+                        <p className="text-red-500 text-xs">
+                          {errors.quantity}
+                        </p>
+                      )}
+                    </div>
+                    <div className="w-full">
+                      <Field
+                        as={ThemeInput}
+                        label="Price ($)"
+                        name="price"
+                        placeholder="Enter price"
+                        type="number"
+                        id="price"
+                        required={true}
+                      />
+                      {errors.price && touched.price && (
+                        <p className="text-red-500 text-xs">{errors.price}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
+
+                  <ThemeButton
+                    label="Add to Order"
+                    type="submit"
+                    icon={<PlusIcon />}
+                    variant="outline"
+                  />
+                </Form>
+              )}
+            </Formik>
           </div>
-        </div>
+        )}
+
+        {(showItems || !isMobile) && (
+          <div className="flex flex-col h-full">
+            <div className="p-4 flex items-center gap-3 border-b border-gray-200">
+              <h2 className="text-black font-medium text-xl">Order Items</h2>
+              <span className="bg-blue-50 border rounded-full text-xs py-0.5 px-2.5 border-blue-200 text-blue-700">
+                {orderItems.length}
+              </span>
+            </div>
+
+            <div className="h-full">
+              {orderItems.length === 0 ? (
+                <div className="flex items-center flex-col gap-4 justify-center h-full text-gray-900">
+                  <Image
+                    src={"/images/fallbackImages/noItemIllu.svg"}
+                    alt=""
+                    width={720}
+                    height={720}
+                    className="w-40 h-40"
+                  />
+                  No item added to order yet
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-6 text-black text-xs font-medium bg-gray-100 py-2 px-3">
+                    <div className="col-span-2">Product</div>
+                    <div>Quantity</div>
+                    <div>Price</div>
+                    <div>Total</div>
+                    <div>Actions</div>
+                  </div>
+
+                  {orderItems.map((item, index) => (
+                    <div
+                      key={index}
+                      className="grid grid-cols-6 bg-gray-50 items-center py-2 mb-0.5 px-3"
+                    >
+                      <div className="col-span-2 text-xs md:text-sm">
+                        {item.product}
+                      </div>
+
+                      <div>
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            handleUpdateItem(
+                              index,
+                              "quantity",
+                              Number(e.target.value)
+                            )
+                          }
+                          className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs"
+                        />
+                      </div>
+
+                      <div>
+                        <input
+                          type="number"
+                          value={item.price}
+                          onChange={(e) =>
+                            handleUpdateItem(
+                              index,
+                              "price",
+                              Number(e.target.value)
+                            )
+                          }
+                          className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 h-7 px-2 outline-none text-xs "
+                        />
+                      </div>
+
+                      <div className="text-xs md:text-sm whitespace-nowrap">
+                        ${formatNumber(item.quantity * item.price)}
+                      </div>
+
+                      <div>
+                        <button
+                          onClick={() => handleDeleteItem(index)}
+                          className="rounded-md w-8 h-8 flex items-center border bg-white border-gray-200 justify-center hover:bg-red-100"
+                        >
+                          <TrashBinIcon width="12" height="12" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="py-2 px-4 flex flex-col gap-2">
+                    <div className="flex justify-between">
+                      <span className="text-black text-lg font-semibold">
+                        Total Amount:
+                      </span>
+                      <span className="text-primary text-lg font-semibold">
+                        ${formatNumber(totalAmount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-end">
+                      {createOrderError && (
+                        <p className="text-red-500 text-xs mb-2">
+                          Error creating order: {createOrderError.message}
+                        </p>
+                      )}
+                      <div className="hidden sm:block">
+                        <ThemeButton
+                          label={
+                            createOrderLoading
+                              ? "Creating Order..."
+                              : "Create Order"
+                          }
+                          icon={<PlusIcon height="18" width="18" />}
+                          onClick={handleCreateOrder}
+                          size="medium"
+                          heightClass="h-10"
+                          disabled={
+                            createOrderLoading || orderItems.length === 0
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </AppModal>
   );

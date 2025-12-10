@@ -92,7 +92,7 @@ export default function OrderListView({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 ">
             <span
-              className={`w-10 h-10 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
+              className={`w-10 h-10 ${bg} ${text} shrink-0 flex items-center font-medium justify-center rounded-full`}
             >
               {getInitials(order.customer)}
             </span>
@@ -108,7 +108,7 @@ export default function OrderListView({
 
           <div className=" font-medium text-xs md:text-sm text-gray-800">
             <span
-              className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
+              className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
                 order.status
               )}`}
             >
@@ -178,7 +178,7 @@ export default function OrderListView({
     <div
       onClick={onRowClick}
       key={order.id}
-      className="hidden sm:grid hover:bg-gray-100 group  md:grid-cols-[4rem_10rem_4rem_6rem_1fr_1fr_1fr_1fr_3rem] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] gap-4 items-center rounded-xl bg-white p-3 shadow-table"
+      className="hidden sm:grid hover:bg-gray-100 group  md:grid-cols-[4rem_8rem_4rem_8rem_1fr_1fr_1fr_1fr_3rem] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] gap-4 items-center rounded-xl bg-white p-3 shadow-table"
     >
       <div className="sm:block hidden">
         <h2 className="text-gray-800 text-xs md:text-sm font-normal">
@@ -187,7 +187,7 @@ export default function OrderListView({
       </div>
       <div className="flex items-center gap-2 md:gap-3">
         <span
-          className={`w-10 h-10 ${bg} ${text} flex items-center  font-medium  justify-center rounded-full`}
+          className={`w-10 h-10 ${bg} ${text} shrink-0 hidden lg:flex items-center  font-medium  justify-center rounded-full`}
         >
           {getInitials(order.customer)}
         </span>
@@ -206,7 +206,7 @@ export default function OrderListView({
 
       <div className=" font-medium text-xs md:text-sm text-gray-800">
         <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
+          className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
             order.status
           )}`}
         >

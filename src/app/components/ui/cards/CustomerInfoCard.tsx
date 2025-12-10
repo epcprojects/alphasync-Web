@@ -32,7 +32,7 @@ const CustomerInfoCard: React.FC<CustomerInfoCardProps> = ({
       <div className="sm:hidden p-3 flex flex-col gap-2 border-b border-gray-200">
         <div className="flex items-start gap-2 justify-between">
           <div className="flex items-start gap-2">
-            <div className="rounded-full h-10 w-10 text-red-600 bg-red-100 text-base md:text-3xl font-medium flex items-center justify-center shrink-0 md:h-19 md:w-19">
+            <div className="rounded-full  h-10 w-10 text-red-600 bg-red-100 text-base md:text-3xl font-medium flex items-center justify-center shrink-0 md:h-19 md:w-19">
               {getInitials(name)}
             </div>
             <div className="flex flex-col gap-1 md:gap-2">
@@ -69,8 +69,10 @@ const CustomerInfoCard: React.FC<CustomerInfoCardProps> = ({
           </div>
         </div>
 
-        <div className="flex items-start gap-2">
-          <h2 className="text-xs font-medium text-black ">Shipping Address:</h2>
+        <div className="flex items-start gap-2 w-full">
+          <h2 className="text-xs whitespace-nowrap font-medium text-black ">
+            Shipping Address:
+          </h2>
           <h3 className="text-xs text-gray-800 font-normal">{address}</h3>
         </div>
       </div>

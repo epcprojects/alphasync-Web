@@ -45,6 +45,7 @@ import {
   DENY_ORDER_REQUEST,
   DELETE_NOTE,
 } from "@/lib/graphql/mutations";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 // Interface for GraphQL response
 interface FetchUserResponse {
@@ -186,7 +187,7 @@ export default function CustomerDetail() {
     useMutation(DENY_ORDER_REQUEST);
   const [createNote, { loading: isCreatingNote }] = useMutation(CREATE_NOTE);
   const [deleteNote, { loading: isDeletingNote }] = useMutation(DELETE_NOTE);
-
+  const isMobile = useIsMobile();
   const customer = data?.fetchUser?.user;
   const patientOrders = ordersData?.patientOrders;
   const orderRequests = requestsData?.allOrderRequests.allData || [];
@@ -327,7 +328,7 @@ export default function CustomerDetail() {
             Customer Profile
           </h2>
         </div>
-        <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] p-6">
+        <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] p-3 md:p-6">
           <div className="space-y-4">
             <Skeleton className="w-full h-32 rounded-lg" />
             <Skeleton className="w-full h-20 rounded-lg" />
@@ -430,43 +431,61 @@ export default function CustomerDetail() {
           <TabGroup selectedIndex={selectedIndex} onChange={setSelectedIndex}>
             <TabList
               className={
-                "flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start  justify-between md:px-6"
+                "flex items-center border-b px-2 border-b-gray-200 gap-2 md:gap-3 md:justify-start  justify-between md:px-6"
               }
             >
               {[
                 {
-                  icon: <PackageOutlineIcon fill="currentColor" />,
-                  label: "Order History",
+                  icon: (
+                    <PackageOutlineIcon
+                      height={isMobile ? "16" : "20"}
+                      width={isMobile ? "16" : "20"}
+                      fill="currentColor"
+                    />
+                  ),
+                  label: isMobile ? "Order" : "Order History",
                 },
                 {
                   icon: (
                     <BubbleChatIcon
                       fill="currentColor"
-                      height="18"
-                      width="18"
+                      height={isMobile ? "16" : "18"}
+                      width={isMobile ? "16" : "18"}
                     />
                   ),
-                  label: "Chat Messages",
+                  label: isMobile ? "Chat" : "Chat Messages",
                 },
                 {
-                  icon: <NoteIcon fill="currentColor" />,
-                  label: "Patient Notes",
+                  icon: (
+                    <NoteIcon
+                      height={isMobile ? "16" : "20"}
+                      width={isMobile ? "16" : "20"}
+                      fill="currentColor"
+                    />
+                  ),
+                  label: isMobile ? "Notes" : "Patient Notes",
                 },
                 {
-                  icon: <RequestTabIcon fill="currentColor" />,
+                  icon: (
+                    <RequestTabIcon
+                      height={isMobile ? "16" : "20"}
+                      width={isMobile ? "16" : "20"}
+                      fill="currentColor"
+                    />
+                  ),
                   label: "Requests",
                 },
               ].map((tab, index) => (
                 <Tab
                   key={index}
                   as="button"
-                  className="flex items-center gap-1 md:gap-2 text-xs md:text-sm outline-none hover:bg-gray-50 border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 md:py-4 md:px-6"
+                  className="flex items-center gap-1 py-2 whitespace-nowrap md:gap-2 text-xs md:text-sm outline-none hover:bg-gray-50 border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 md:py-4 px-2 md:px-6"
                 >
                   {tab.icon} {tab.label}
                 </Tab>
               ))}
             </TabList>
-            <TabPanels className={"p-4 md:p-6"}>
+            <TabPanels className={"p-2 md:p-6"}>
               <TabPanel className={""}>
                 {ordersLoading ? (
                   <div className="space-y-4">
@@ -477,17 +496,20 @@ export default function CustomerDetail() {
                   </div>
                 ) : ordersError ? (
                   <div className="text-center py-8">
-                    <p className="text-red-500 mb-4"> {ordersError.message}</p>
+                    <p className="text-red-500 mb-4 text-sm sm:text-base">
+                      {" "}
+                      {ordersError.message}
+                    </p>
                   </div>
                 ) : currentItems.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">
+                    <p className="text-gray-500 mb-4 text-sm sm:text-base">
                       No orders found for this customer
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-1">
-                    <div className="grid grid-cols-[1fr_1fr_1fr_1fr_5rem] gap-4 p-1.5 md:p-3 text-xs font-medium bg-gray-50 rounded-lg text-black">
+                    <div className="hidden sm:grid grid-cols-[1fr_1fr_1fr_1fr_5rem] gap-4 p-1.5 md:p-3 text-xs font-medium bg-gray-50 rounded-lg text-black">
                       <div className="">Order ID</div>
                       <div className="">Date</div>
                       <div className="">Status</div>
@@ -531,10 +553,16 @@ export default function CustomerDetail() {
                   <ThemeButton
                     variant="outline"
                     label="Add New"
-                    icon={<PlusIcon />}
+                    icon={
+                      <PlusIcon
+                        height={isMobile ? "16" : "20"}
+                        width={isMobile ? "16" : "20"}
+                      />
+                    }
                     onClick={() => {
                       setIsNoteModalOpen(true);
                     }}
+                    size={isMobile ? "small" : "medium"}
                   />
                 </div>
                 {notesLoading ? (
@@ -544,13 +572,15 @@ export default function CustomerDetail() {
                   </div>
                 ) : notesError ? (
                   <div className="text-center py-6">
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-sm sm:text-base">
                       {notesError.message || "Failed to load notes."}
                     </p>
                   </div>
                 ) : notes.length === 0 ? (
                   <div className="text-center py-6">
-                    <p className="text-gray-500">No notes added yet.</p>
+                    <p className="text-gray-500 text-sm sm:text-base">
+                      No notes added yet.
+                    </p>
                   </div>
                 ) : (
                   notes.map((note) => (
@@ -581,11 +611,13 @@ export default function CustomerDetail() {
                   </div>
                 ) : requestsError ? (
                   <div className="text-center py-8">
-                    <p className="text-red-500 mb-4">{requestsError.message}</p>
+                    <p className="text-red-500 mb-4 text-sm sm:text-base">
+                      {requestsError.message}
+                    </p>
                   </div>
                 ) : transformedRequests.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">
+                    <p className="text-gray-500 mb-4 text-sm sm:text-base">
                       No requests found for this customer
                     </p>
                   </div>

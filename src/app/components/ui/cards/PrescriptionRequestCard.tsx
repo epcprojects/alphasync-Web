@@ -120,7 +120,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
               {status && (
                 <div>
                   <span
-                    className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+                    className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
                       status
                     )}`}
                   >

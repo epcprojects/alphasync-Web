@@ -57,10 +57,10 @@ const FormField: React.FC<FormFieldProps> = ({
   onChange,
 }) => (
   <div className="grid grid-cols-12 items-center py-3 md:py-5 border-b border-gray-200">
-    <label className="col-span-3 text-xs md:text-sm font-semibold text-gray-700">
+    <label className="col-span-12 sm:col-span-3  text-sm font-medium text-gray-700">
       {label}
     </label>
-    <div className="col-span-6">
+    <div className="col-span-12 sm:col-span-6">
       <ThemeInput
         type={type}
         name={name}
@@ -174,7 +174,7 @@ const AdminProfilePage: React.FC = () => {
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full mx-auto flex flex-col gap-4 md:gap-6 pt-2">
-      <div className="bg-white rounded-xl py-4 md:py-6 px-4 md:px-8">
+      <div className="bg-white rounded-xl pb-4 md:py-6 px-4 md:px-8">
         <AvatarSection
           imageUrl={user?.imageUrl}
           onImageChange={setSelectedImage}

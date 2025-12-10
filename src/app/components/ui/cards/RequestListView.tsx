@@ -66,7 +66,7 @@ export default function RequestListView({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             <span
-              className={`w-10 h-10 ${bg} ${text} flex items-center text-sm font-medium justify-center rounded-full`}
+              className={`w-10 h-10 shrink-0 ${bg} ${text} flex items-center text-sm font-medium justify-center rounded-full`}
             >
               {getInitials(request.customer)}
             </span>
@@ -84,7 +84,7 @@ export default function RequestListView({
           </div>
           <div className=" font-medium text-xs md:text-sm ">
             <span
-              className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+              className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
                 request.status
               )}`}
             >
@@ -229,7 +229,7 @@ export default function RequestListView({
 
       <div className=" font-medium text-xs md:text-sm ">
         <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+          className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             request.status
           )}`}
         >
