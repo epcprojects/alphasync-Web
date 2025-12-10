@@ -37,6 +37,19 @@ export const ALL_PATIENTS = gql`
     }
   }
 `;
+export const ALL_ADMINS = gql`
+  query AllAdmins($pendingInvites: Boolean, $status: UserStatusEnum $search: String, $page: Int, $perPage: Int) {
+    allAdmins(pendingInvites: $pendingInvites, status: $status, search: $search, page: $page, perPage: $perPage) {
+      allData {
+       ${userpayload}
+      }
+      count
+      nextPage
+      prevPage
+      totalPages
+    }
+  }
+`;
 export const ALL_PRODUCTS = gql`
   query AllProducts {
     allProducts(inStockOnly: true) {
