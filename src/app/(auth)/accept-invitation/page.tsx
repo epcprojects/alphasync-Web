@@ -53,10 +53,8 @@ function Content() {
         setInvitationAccepted(true);
         setIsModalOpen(true);
       },
-      onError: () => {
-        showErrorToast(
-          "There is an error accepting the invitation. Please try again."
-        );
+      onError: (error) => {
+        showErrorToast(error.message);
       },
     }
   );
@@ -65,6 +63,10 @@ function Content() {
   const getLoginRedirect = () => {
     if (isAdmin) {
       return "/login?admin=admin";
+    }
+    // If doctor=false, redirect with type=patient to set Patient tab as default
+    if (doctorParam === "false" || urlString.includes("doctor=false")) {
+      return "/login?type=patient";
     }
     return "/login";
   };

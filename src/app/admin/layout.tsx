@@ -44,7 +44,7 @@ const menuItems = [
   {
     label: "Admins",
     href: "/admin/admins",
-    icon: UserGroupIcon,
+    icon: OrdersIcon,
   },
   {
     label: "Products",

@@ -235,7 +235,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                   </div>
                   <MenuItem>
                     <Link
-                      href={hasPendingPayment ? "/profile" : "/settings"}
+                      href={hasPendingPayment ? "/profile" : "/admin/settings"}
                       className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10"
                     >
                       <ProfileIcon /> Profile
