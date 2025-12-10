@@ -153,7 +153,7 @@ function OTPContent() {
             containerStyle={
               "flex items-center gap-2 justify-center w-full select-none"
             }
-            inputStyle={`bg-white !w-full h-13 font-semibold text-center placeholder:text-gray-200 border text-[32px] [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none rounded-lg outline-primary text-gray-800 focus:ring-1 focus:ring-gray-300 select-none ${
+            inputStyle={`bg-white !w-full h-13 font-semibold text-center placeholder:text-gray-200 border text-[32px] [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none rounded-lg outline-primary text-gray-800 focus:ring-1 focus:ring-gray-300 select-none ${
               error ? "border-red-500" : "border-lightGray"
             }`}
             renderInput={(props) => <input {...props} />}

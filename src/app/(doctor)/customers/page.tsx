@@ -176,7 +176,7 @@ function CustomerContent() {
         </div>
 
         <div className="sm:bg-white rounded-full w-full flex flex-col sm:flex-row items-center gap-1 md:gap-2 sm:p-1.5 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
-          <div className="flex items-center relative w-full">
+          <div className="flex items-center relative w-full bg-white sm:p-0 sm:bg-transparent p-1 rounded-full shadow-table sm:shadow-none">
             <span className="absolute left-3">
               <SearchIcon
                 height={isMobile ? "16" : "20"}

@@ -206,7 +206,7 @@ export default function OrderListView({
 
       <div className=" font-medium text-xs md:text-sm text-gray-800">
         <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
+          className={`flex rounded-full wrap-break-word px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             order.status
           )}`}
         >

@@ -101,7 +101,7 @@ export default function CustomerDatabaseView({
               {getInitials(name || "----")}
             </span>
             <div>
-              <h2 className="text-gray-800 text-xs md:text-sm font-medium">
+              <h2 className="text-gray-800 text-xs  md:text-sm font-medium">
                 {name || "----"}
               </h2>
               <h2 className="text-gray-800 text-xxs md:text-sm font-normal">
@@ -188,7 +188,7 @@ export default function CustomerDatabaseView({
       <div className="col-span-2 flex items-center gap-3">
         <div className="flex items-center gap-1 md:gap-2">
           <span
-            className={`md:w-10 md:h-10 ${bg} ${text} shrink-0 flex items-center font-medium justify-center rounded-full`}
+            className={`md:w-10  hidden md:h-10 ${bg} ${text} shrink-0 lg:flex items-center font-medium justify-center rounded-full`}
           >
             {getInitials(name || "----")}
           </span>
@@ -198,17 +198,17 @@ export default function CustomerDatabaseView({
           </h3>
         </div>
       </div>
-      <div className="col-span-2 text-gray-800 text-xs md:text-sm font-normal">
+      <div className="col-span-2 text-gray-800 wrap-break-word text-xs md:text-sm font-normal">
         {contact || "—"}
       </div>
 
       <div className="col-span-3">
-        <button className="text-gray-800 text-xs md:text-sm font-medium">
+        <span className="text-gray-800 text-xs wrap-break-word md:text-sm font-medium">
           {email || "—"}
-        </button>
+        </span>
       </div>
 
-      <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
+      <div className="col-span-1 font-medium text-xs wrap-break-word md:text-sm text-gray-800">
         {dateOfBirth || "—"}
       </div>
 
@@ -224,7 +224,7 @@ export default function CustomerDatabaseView({
 
       <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
         <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
+          className={`block rounded-full px-2.5 wrap-break-word py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             invitationStatus
           )}`}
         >
@@ -232,7 +232,7 @@ export default function CustomerDatabaseView({
         </span>
       </div>
 
-      <div className="col-span-1 flex items-center justify-end gap-2">
+      <div className="col-span-1 flex items-center flex-wrap justify-end gap-2">
         {/* Show resend invitation icon for pending patients */}
         {patient?.invitationStatus === "pending" && onResendInvitation && (
           <Tooltip content="Resend Invitation">

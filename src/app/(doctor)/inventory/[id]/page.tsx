@@ -334,7 +334,7 @@ export default function PostDetail() {
                   value={price}
                   maxLength={8}
                   onChange={(e) => setPrice(e.target.value)}
-                  className={`border border-gray-200 [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none  outline-none bg-white text-gray-900 text-sm rounded-lg focus:ring-gray-200 focus:ring-1 block w-full ps-8 pe-16 p-1.5 sm:max-w-44`}
+                  className={`border border-gray-200 [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none  outline-none bg-white text-gray-900 text-sm rounded-lg focus:ring-gray-200 focus:ring-1 block w-full ps-8 pe-16 p-1.5 sm:max-w-44`}
                   placeholder=""
                 />
                 <button

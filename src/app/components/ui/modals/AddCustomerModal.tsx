@@ -371,7 +371,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                   onChange={(e) => handleChange("phoneNo", e.target.value)}
                   type="tel"
                   value={formData.phoneNo}
-                  className="w-full [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             </div>
@@ -552,7 +552,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                   }
                   type="tel"
                   value={formData.emergencyPhone}
-                  className="w-full [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             </div>

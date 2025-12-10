@@ -62,7 +62,6 @@ export default function BrowseProductListView({
             <span className="text-gray-600 text-sm font-normal">
               {product.productForm}
             </span>
-            fdlkfdklfdlkdkfllkfd
             <div className="flex items-center gap-2">
               <span
                 className={`inline-block rounded-full  border  px-2.5 py-0.5 text-xs md:text-sm font-medium  ${
