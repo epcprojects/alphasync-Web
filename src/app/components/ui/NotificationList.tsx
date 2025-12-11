@@ -27,6 +27,7 @@ import {
   DENY_ORDER_REQUEST,
   DELETE_NOTIFICATION,
   MARK_ALL_NOTIFICATIONS_AS_READ,
+  MARK_NOTIFICATION_AS_READ,
 } from "@/lib/graphql/mutations";
 
 interface NotificationUser {
@@ -136,6 +137,10 @@ const NotificationList: React.FC<NotificationListProps> = ({
 
   const [markAllAsRead, { loading: isMarkingAllAsRead }] = useMutation(
     MARK_ALL_NOTIFICATIONS_AS_READ
+  );
+
+  const [markNotificationAsRead, { loading: isMarkingAsRead }] = useMutation(
+    MARK_NOTIFICATION_AS_READ
   );
 
   const humanizeDate = (dateString: string): string => {
@@ -275,6 +280,25 @@ const NotificationList: React.FC<NotificationListProps> = ({
     }
   };
 
+  const handleNotificationClick = async (notification: NotificationData) => {
+    // Only mark as read if it's not already read
+    if (!notification.read && !isMarkingAsRead) {
+      try {
+        const result = await markNotificationAsRead({
+          variables: {
+            notificationId: notification.id,
+          },
+        });
+        if (result.data?.markNotificationAsRead?.success) {
+          await refetch();
+        }
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+        // Don't show error toast for this as it's a background operation
+      }
+    }
+  };
+
   const handleViewDetails = (notification: NotificationData) => {
     const handledByModal = tryOpenProductDetails(notification);
     if (handledByModal) {
@@ -287,7 +311,17 @@ const NotificationList: React.FC<NotificationListProps> = ({
     }
 
     if (userType === "doctor" && notification.sender?.id) {
-      router.push(`/customers/${notification.sender.id}`);
+      // Determine which tab to open based on notification type
+      let tab = "";
+      if (notification.notificationType === "message_received") {
+        tab = "?tab=chat";
+      } else if (
+        notification.notificationType === "order_request_created" ||
+        notification.notificationType === "reorder_created"
+      ) {
+        tab = "?tab=requests";
+      }
+      router.push(`/customers/${notification.sender.id}${tab}`);
     }
     // For customers, we might not need navigation or handle it differently
   };
@@ -364,7 +398,10 @@ const NotificationList: React.FC<NotificationListProps> = ({
           notifications.map((message: NotificationData) => (
             <div
               key={message.id}
-              className="p-3 border-b border-mercury last:border-b-0 md:p-5 flex items-start gap-3 justify-between"
+              onClick={() => handleNotificationClick(message)}
+              className={`p-3 border-b border-mercury last:border-b-0 md:p-5 flex items-start gap-3 justify-between transition-colors ${
+                !message.read ? "cursor-pointer hover:bg-gray-50" : ""
+              }`}
             >
               <div className="flex items-start gap-3">
                 <div className="mt-1">
@@ -480,7 +517,7 @@ const NotificationList: React.FC<NotificationListProps> = ({
                           {message.message?.content}
                           &quot;
                         </span>
-                        {userType === "doctor" && (
+                        {/* {userType === "doctor" && (
                           <button
                             type="button"
                             className="ml-2 text-primary font-semibold underline"
@@ -488,7 +525,7 @@ const NotificationList: React.FC<NotificationListProps> = ({
                           >
                             View Details
                           </button>
-                        )}
+                        )} */}
                       </div>
                     )}{" "}
                     {message.notificationType === "order_request_approved" && (
@@ -503,7 +540,10 @@ const NotificationList: React.FC<NotificationListProps> = ({
                     )}
                   </h2>
 
-                  <div className="mt-2 flex items-center gap-2">
+                  <div
+                    className="mt-2 flex items-center gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {userType === "doctor" && (
                       <ThemeButton
                         label="View Details"
@@ -539,7 +579,10 @@ const NotificationList: React.FC<NotificationListProps> = ({
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+              <div
+                className="flex items-center gap-1"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {!message.read && (
                   <span className="h-1.5 w-1.5 rounded-full bg-primary block"></span>
                 )}

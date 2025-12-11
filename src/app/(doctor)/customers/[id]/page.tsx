@@ -23,7 +23,7 @@ import {
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddNoteModal from "@/app/components/ui/modals/AddNoteModal";
 import ProductRequestDetailModal from "@/app/components/ui/modals/ProductRequestDetailModal";
 import ChatModal from "@/app/components/ui/modals/ChatModal";
@@ -117,12 +117,29 @@ export default function CustomerDetail() {
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
 
   // State declarations
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  // Determine initial tab from query parameter
+  const getInitialTabIndex = () => {
+    const tab = searchParams.get("tab");
+    if (tab === "chat") return 1; // Chat Messages tab
+    if (tab === "requests") return 3; // Requests tab
+    return 0; // Default to Order History tab
+  };
+  const [selectedIndex, setSelectedIndex] = useState(getInitialTabIndex());
   const itemsPerPage = 10;
   const initialPage = parseInt(searchParams.get("page") || "0", 10);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [requestsCurrentPage, setRequestsCurrentPage] = useState(0);
   const requestsPerPage = 10;
+
+  // Update tab when query parameter changes
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "chat") {
+      setSelectedIndex(1);
+    } else if (tab === "requests") {
+      setSelectedIndex(3);
+    }
+  }, [searchParams]);
 
   // GraphQL query to fetch customer data
   const { data, loading, error } = useQuery<FetchUserResponse>(FETCH_CUSTOMER, {
