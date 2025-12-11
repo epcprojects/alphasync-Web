@@ -220,7 +220,11 @@ export default function Notifications({ userType }: NotificationsProps) {
     return null;
   };
 
-  const renderList = (limit?: number) => {
+  const renderList = (
+    limit?: number,
+    closeDialog?: () => void,
+    setOpenState?: (value: boolean) => void
+  ) => {
     if (loading) {
       return (
         <div className="p-4 text-center text-gray-500 text-sm">
@@ -287,7 +291,12 @@ export default function Notifications({ userType }: NotificationsProps) {
                         variant="outline"
                         className="w-fit"
                         heightClass={isMobile ? "h-8" : "h-9"}
-                        onClick={() => handleViewDetails(n)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenState?.(false);
+                          closeDialog?.();
+                          handleViewDetails(n);
+                        }}
                       />
                       {n.notificationType !== "message_received" &&
                         n.orderRequest?.status === "pending" && (
@@ -297,11 +306,78 @@ export default function Notifications({ userType }: NotificationsProps) {
                             variant="success"
                             className="w-fit"
                             heightClass={isMobile ? "h-8" : "h-9"}
-                            onClick={() => handleApproveClick(n)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenState?.(false);
+                              closeDialog?.();
+                              handleApproveClick(n);
+                            }}
                           />
                         )}
                     </div>
                   )}
+                  {currentUserType === "customer" &&
+                    n.notificationType !== "message_received" &&
+                    n.orderRequest?.status === "approved" && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <ThemeButton
+                          label="See Details"
+                          size={isMobile ? "small" : "medium"}
+                          variant="filled"
+                          className="w-fit"
+                          heightClass={isMobile ? "h-8" : "h-9"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenState?.(false);
+                            closeDialog?.();
+                            setTimeout(() => {
+                              router.push(`/pending-payments`);
+                            }, 0);
+                          }}
+                        />
+                      </div>
+                    )}
+                  {currentUserType === "customer" &&
+                    n.notificationType !== "message_received" &&
+                    n.orderRequest?.status === "denied" && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <ThemeButton
+                          label="See Details"
+                          size={isMobile ? "small" : "medium"}
+                          variant="filled"
+                          className="w-fit"
+                          heightClass={isMobile ? "h-8" : "h-9"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenState?.(false);
+                            closeDialog?.();
+                            setTimeout(() => {
+                              router.push(`/customer-requests?tab=denied`);
+                            }, 0);
+                          }}
+                        />
+                      </div>
+                    )}
+                  {currentUserType === "customer" &&
+                    n.notificationType === "message_received" && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <ThemeButton
+                          label="Start Chat"
+                          size={isMobile ? "small" : "medium"}
+                          variant="filled"
+                          className="w-fit"
+                          heightClass={isMobile ? "h-8" : "h-9"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenState?.(false);
+                            closeDialog?.();
+                            setTimeout(() => {
+                              router.push(`/chat`);
+                            }, 0);
+                          }}
+                        />
+                      </div>
+                    )}
                 </div>
               </div>
 
@@ -345,9 +421,15 @@ export default function Notifications({ userType }: NotificationsProps) {
             onClose={() => setOpen(false)}
             className="relative z-[99]"
           >
-            <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
-            <div className="fixed inset-0 flex items-center justify-center">
-              <DialogPanel className="bg-white w-full relative h-full rounded-none ">
+            <div
+              className="fixed inset-0 bg-black/50"
+              onClick={() => setOpen(false)}
+            />
+            <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
+              <DialogPanel
+                className="bg-white w-full relative h-full rounded-none pointer-events-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="px-4 py-3 bg-gray-100 flex sm:rounded-t-2xl items-center justify-between border-b border-gray-200">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="h-9 w-9 shrink-0 rounded-xl bg-white flex items-center justify-center border border-lightGray">
@@ -366,7 +448,7 @@ export default function Notifications({ userType }: NotificationsProps) {
                   </button>
                 </div>
                 <div className="overflow-y-auto h-[100dvh]  p-4 pb-16">
-                  {renderList()}
+                  {renderList(undefined, () => setOpen(false), setOpen)}
                   <Link
                     href={
                       currentUserType === "doctor"
@@ -409,7 +491,7 @@ export default function Notifications({ userType }: NotificationsProps) {
             <PopoverPanel>
               {({ close }) => (
                 <div className="absolute px-3 md:min-w-96 py-4 right-0 mt-2 w-96 rounded-xl shadow-lg bg-white">
-                  {renderList(3)}
+                  {renderList(3, close, undefined)}
 
                   <Link
                     href={
