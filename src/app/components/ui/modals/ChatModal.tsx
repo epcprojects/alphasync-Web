@@ -33,6 +33,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
         participantId={participantId}
         participantName={participantName}
         className="min-h-[400px] max-h-[50dvh]"
+        isModal={true}
       />
     </AppModal>
   );
