@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
 import { useQuery } from "@apollo/client/react";
 import { ALL_PATIENTS } from "@/lib/graphql/queries";
@@ -50,6 +50,8 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({
   paddingClasses = "py-2.5 h-11 px-2",
   optionPaddingClasses = "p-1",
 }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
   // GraphQL query to fetch customers
   const {
     data: customersData,
@@ -60,7 +62,7 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({
       search: "",
       status: null, // Only fetch active customers
       page: 1,
-      perPage: 100, // Fetch more customers for dropdown
+      perPage: 200, // Fetch more customers for dropdown
     },
     fetchPolicy: "network-only",
   });
@@ -108,8 +110,8 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({
         name="Select Customer:"
         multiple={false}
         placeholder={placeholder || defaultPlaceholder}
-        searchTerm=""
-        setSearchTerm={() => {}}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
         isShowDrop={!customersLoading && !disabled}
         required={required}
         paddingClasses={paddingClasses}

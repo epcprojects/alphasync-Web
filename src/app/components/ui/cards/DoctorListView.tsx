@@ -31,13 +31,30 @@ function getColorPair(seed: number | string | undefined) {
 
 export function getStatusClasses(status?: string) {
   switch (status) {
-    case "active":
-      return "bg-green-50 border border-green-200 text-green-700";
-    case "inactive":
-      return "bg-red-50 border border-red-200 text-red-700";
+    case "Active":
+      return "bg-emerald-100 border border-emerald-300 text-emerald-800";
+    case "Inactive":
+      return "bg-rose-100 border border-rose-300 text-rose-800";
     default:
       return "bg-gray-100 border border-gray-200 text-gray-700";
   }
+}
+
+// Helper function to determine display status based on invitationStatus and status
+function getDisplayStatus(invitationStatus?: string, status?: string): string {
+  const isInvitationAccepted = invitationStatus === "accepted";
+  const isStatusActive = status?.toUpperCase() === "ACTIVE";
+
+  // If invitation accepted AND status active → show "Active"
+  if (isInvitationAccepted && isStatusActive) {
+    return "Active";
+  }
+  // If invitation NOT accepted AND status active → show "Inactive"
+  if (!isInvitationAccepted && isStatusActive) {
+    return "Inactive";
+  }
+  // For other cases, return the status as is or "Inactive" as default
+  return status || "Inactive";
 }
 
 export default function DoctorListView({
@@ -150,6 +167,10 @@ export default function DoctorListView({
         </div>
       </div>
     );
+  const displayStatus = getDisplayStatus(
+    doctor.invitationStatus,
+    doctor.status
+  );
 
   return (
     <div
@@ -184,10 +205,10 @@ export default function DoctorListView({
       <div className="font-medium text-xs md:text-sm text-gray-800 col-span-1">
         <span
           className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
-            doctor.status
+            displayStatus
           )}`}
         >
-          {doctor.status ?? "Unknown"}
+          {displayStatus}
         </span>
       </div>
 

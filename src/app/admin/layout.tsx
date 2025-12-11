@@ -49,6 +49,11 @@ const menuItems = [
     icon: Doctor,
   },
   {
+    label: "Admins",
+    href: "/admin/admins",
+    icon: OrdersIcon,
+  },
+  {
     label: "Products",
     href: "/admin/products",
     icon: ShoppingCartIcon,
@@ -59,11 +64,12 @@ const menuItems = [
 const headings: Record<string, string> = {
   "/admin/dashboard": "Admin Dashboard",
   "/admin/doctors": "Trusted Peptide Solutions",
+  "/admin/admins": "Admin Management",
   "/admin/products": "Product Management",
   "/admin/settings": "Settings",
 };
 
-const noStatsRoutes = ["/admin/settings", "/admin/dashboard"];
+const noStatsRoutes = ["/admin/settings", "/admin/dashboard", "/admin/admins"];
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 

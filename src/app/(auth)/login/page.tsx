@@ -21,9 +21,13 @@ function LoginContext() {
   const router = useRouter();
 
   const dispatch = useAppDispatch();
-  const [loginType, setLoginType] = useState("Doctor");
   const searchParams = useSearchParams();
   const isAdminLogin = searchParams.get("admin") === "admin";
+  const typeParam = searchParams.get("type");
+
+  // Set initial login type based on URL parameter, default to "Doctor"
+  const initialLoginType = typeParam === "patient" ? "Patient" : "Doctor";
+  const [loginType, setLoginType] = useState(initialLoginType);
 
   const [loginUser, { loading: loginLoading }] = useMutation(LOGIN_USER, {
     onCompleted: (data) => {

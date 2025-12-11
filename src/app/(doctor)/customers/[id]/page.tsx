@@ -18,6 +18,7 @@ import {
   PackageOutlineIcon,
   PlusIcon,
   RequestTabIcon,
+  InfoIcon,
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
@@ -476,6 +477,10 @@ export default function CustomerDetail() {
                   ),
                   label: "Requests",
                 },
+                {
+                  icon: <InfoIcon fill="currentColor" />,
+                  label: "Customer Information",
+                },
               ].map((tab, index) => (
                 <Tab
                   key={index}
@@ -645,6 +650,271 @@ export default function CustomerDetail() {
                     />
                   </>
                 )}
+              </TabPanel>
+
+              <TabPanel className={"px-4 md:px-8"}>
+                <div className="flex flex-col gap-6 md:gap-8">
+                  {/* Personal Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Personal Information
+                    </h3>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Full Name
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900">
+                          {customer.fullName || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Email Address
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900">
+                          {customer.email || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Phone Number
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900">
+                          {customer.phoneNo || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Date of Birth
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900">
+                          {customer.dateOfBirth ? (
+                            new Date(customer.dateOfBirth).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )
+                          ) : (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Address Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Address Information
+                    </h3>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Street Address
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900">
+                          {customer.street1 || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Street Address 2
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900">
+                          {customer.street2 || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          City
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900">
+                          {customer.city || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          State
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900">
+                          {customer.state || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Postal Code
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900">
+                          {customer.postalCode || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    {customer.address && (
+                      <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                            Address
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <p className="text-sm md:text-base text-gray-900">
+                            {customer.address}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Emergency Contact Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Emergency Contact
+                    </h3>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Emergency Contact Name
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900">
+                          {customer.emergencyContactName || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Emergency Contact Phone
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900">
+                          {customer.emergencyContactPhone || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Medical Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Medical Information
+                    </h3>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Medical History
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900 whitespace-pre-wrap">
+                          {customer.medicalHistory || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Known Allergies
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900 whitespace-pre-wrap">
+                          {customer.knownAllergies || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Current Medications
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900 whitespace-pre-wrap">
+                          {customer.currentMedications || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-4 md:gap-6 py-3 md:py-4 border-b border-gray-200">
+                      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                        <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                          Additional Notes
+                        </label>
+                      </div>
+                      <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                        <p className="text-sm md:text-base text-gray-900 whitespace-pre-wrap">
+                          {customer.additionalNotes || (
+                            <span className="text-gray-400">Not provided</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </TabPanel>
             </TabPanels>
           </TabGroup>

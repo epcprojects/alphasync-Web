@@ -27,8 +27,10 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   initialData,
 }) => {
   const [selectedUser, setSelectedUser] = useState("");
+  const [specialtySearchTerm, setSpecialtySearchTerm] = useState("");
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     phoneNo: "",
     email: "",
     medicalLicense: "",
@@ -40,7 +42,8 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isFormValid, setIsFormValid] = useState(false);
   const schema = Yup.object().shape({
-    fullName: Yup.string().required("Doctor fullName is required"),
+    firstName: Yup.string().required("First name is required"),
+    lastName: Yup.string().required("Last name is required"),
     phoneNo: Yup.string()
       .required("Phone number is required")
       .matches(
@@ -81,8 +84,34 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   const loading = createLoading || updateLoading;
   console.log(formData);
 
+  // Format phone number to (XXX) XXX-XXXX format
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-digit characters
+    const numbers = value.replace(/\D/g, "");
+
+    // Limit to 10 digits
+    const limitedNumbers = numbers.slice(0, 10);
+
+    // Format based on length
+    if (limitedNumbers.length === 0) return "";
+    if (limitedNumbers.length <= 3) return `(${limitedNumbers}`;
+    if (limitedNumbers.length <= 6) {
+      return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(3)}`;
+    }
+    return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(
+      3,
+      6
+    )}-${limitedNumbers.slice(6)}`;
+  };
+
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Auto-format phone numbers
+    if (field === "phoneNo" && typeof value === "string") {
+      const formatted = formatPhoneNumber(value);
+      setFormData((prev) => ({ ...prev, [field]: formatted }));
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleGroupSelect = (user: string | string[]) => {
@@ -117,6 +146,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       try {
         const variables = {
           ...formData,
+          fullName: `${formData.firstName} ${formData.lastName}`.trim(),
           status: formData.status.toUpperCase(),
           image: selectedImage,
         };
@@ -153,8 +183,13 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     if (isOpen) {
       if (initialData) {
         // Edit mode
+        // Split fullName into firstName and lastName if available
+        const nameParts = (initialData.fullName || "").split(" ");
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ") || "";
         setFormData({
-          fullName: initialData.fullName || "",
+          firstName: initialData.firstName || firstName,
+          lastName: initialData.lastName || lastName,
           phoneNo: initialData.phoneNo || "",
           email: initialData.email || "",
           medicalLicense: initialData.medicalLicense || "",
@@ -170,7 +205,8 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       } else {
         // Add mode
         setFormData({
-          fullName: "",
+          firstName: "",
+          lastName: "",
           phoneNo: "",
           email: "",
           medicalLicense: "",
@@ -181,18 +217,118 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       }
       setSelectedImage(null);
       setErrors({});
+      setSpecialtySearchTerm("");
     }
   }, [isOpen, initialData]);
 
   useEffect(() => {
-    const { fullName, phoneNo, email, medicalLicense, specialty, status } =
-      formData;
-    if (fullName && phoneNo && email && medicalLicense && specialty && status) {
+    const {
+      firstName,
+      lastName,
+      phoneNo,
+      email,
+      medicalLicense,
+      specialty,
+      status,
+    } = formData;
+    if (
+      firstName &&
+      lastName &&
+      phoneNo &&
+      email &&
+      medicalLicense &&
+      specialty &&
+      status
+    ) {
       setIsFormValid(true);
     } else {
       setIsFormValid(false);
     }
   }, [formData]);
+
+  const specialities = [
+    { name: "cardiology", displayName: "Cardiology" },
+    { name: "dermatology", displayName: "Dermatology" },
+    { name: "neurology", displayName: "Neurology" },
+    { name: "orthopedics", displayName: "Orthopedics" },
+    { name: "pediatrics", displayName: "Pediatrics" },
+    { name: "psychiatry", displayName: "Psychiatry" },
+    { name: "gynecology", displayName: "Gynecology" },
+    { name: "obstetrics", displayName: "Obstetrics" },
+    { name: "oncology", displayName: "Oncology" },
+    { name: "radiology", displayName: "Radiology" },
+    { name: "urology", displayName: "Urology" },
+    { name: "gastroenterology", displayName: "Gastroenterology" },
+    { name: "endocrinology", displayName: "Endocrinology" },
+    { name: "nephrology", displayName: "Nephrology" },
+    { name: "pulmonology", displayName: "Pulmonology" },
+    { name: "general_surgery", displayName: "General Surgery" },
+    { name: "dentistry", displayName: "Dentistry" },
+    { name: "ophthalmology", displayName: "Ophthalmology" },
+    { name: "ent", displayName: "ENT (Ear, Nose, Throat)" },
+    { name: "rheumatology", displayName: "Rheumatology" },
+    { name: "family_medicine", displayName: "Family Medicine" },
+    { name: "internal_medicine", displayName: "Internal Medicine" },
+    { name: "anesthesiology", displayName: "Anesthesiology" },
+    { name: "pathology", displayName: "Pathology" },
+    { name: "hematology", displayName: "Hematology" },
+    { name: "allergy_immunology", displayName: "Allergy & Immunology" },
+    { name: "infectious_disease", displayName: "Infectious Disease" },
+    { name: "plastic_surgery", displayName: "Plastic Surgery" },
+    { name: "vascular_surgery", displayName: "Vascular Surgery" },
+    { name: "thoracic_surgery", displayName: "Thoracic Surgery" },
+    { name: "colorectal_surgery", displayName: "Colorectal Surgery" },
+    { name: "neurosurgery", displayName: "Neurosurgery" },
+    { name: "emergency_medicine", displayName: "Emergency Medicine" },
+    { name: "sports_medicine", displayName: "Sports Medicine" },
+    { name: "geriatrics", displayName: "Geriatrics" },
+    { name: "palliative_medicine", displayName: "Palliative Medicine" },
+    { name: "pain_management", displayName: "Pain Management" },
+    { name: "sleep_medicine", displayName: "Sleep Medicine" },
+    { name: "nuclear_medicine", displayName: "Nuclear Medicine" },
+    {
+      name: "reproductive_endocrinology",
+      displayName: "Reproductive Endocrinology",
+    },
+    { name: "neonatology", displayName: "Neonatology" },
+    { name: "medical_genetics", displayName: "Medical Genetics" },
+    { name: "addiction_medicine", displayName: "Addiction Medicine" },
+    { name: "occupational_medicine", displayName: "Occupational Medicine" },
+    { name: "preventive_medicine", displayName: "Preventive Medicine" },
+    { name: "critical_care", displayName: "Critical Care Medicine" },
+    { name: "trauma_surgery", displayName: "Trauma Surgery" },
+    { name: "bariatric_surgery", displayName: "Bariatric Surgery" },
+    { name: "hand_surgery", displayName: "Hand Surgery" },
+    { name: "foot_ankle_surgery", displayName: "Foot & Ankle Surgery" },
+    { name: "maxillofacial_surgery", displayName: "Maxillofacial Surgery" },
+    { name: "otolaryngology", displayName: "Otolaryngology" },
+    { name: "phlebology", displayName: "Phlebology" },
+    { name: "cosmetic_surgery", displayName: "Cosmetic Surgery" },
+    { name: "dermatopathology", displayName: "Dermatopathology" },
+    {
+      name: "interventional_radiology",
+      displayName: "Interventional Radiology",
+    },
+    { name: "maternal_fetal_medicine", displayName: "Maternal–Fetal Medicine" },
+    { name: "pediatric_surgery", displayName: "Pediatric Surgery" },
+    { name: "pediatric_cardiology", displayName: "Pediatric Cardiology" },
+    { name: "pediatric_neurology", displayName: "Pediatric Neurology" },
+    { name: "pediatric_endocrinology", displayName: "Pediatric Endocrinology" },
+    { name: "pediatric_nephrology", displayName: "Pediatric Nephrology" },
+    { name: "pediatric_oncology", displayName: "Pediatric Oncology" },
+    {
+      name: "pediatric_gastroenterology",
+      displayName: "Pediatric Gastroenterology",
+    },
+    { name: "pulmonary_critical_care", displayName: "Pulmonary Critical Care" },
+    { name: "cardiothoracic_surgery", displayName: "Cardiothoracic Surgery" },
+    { name: "chiropractic_medicine", displayName: "Chiropractic Medicine" },
+    {
+      name: "speech_language_therapy",
+      displayName: "Speech & Language Therapy",
+    },
+    { name: "physiotherapy", displayName: "Physiotherapy" },
+  ];
 
   return (
     <AppModal
@@ -228,31 +364,47 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           <div className="w-full">
             <ThemeInput
               required
-              label="Name"
-              placeholder="Enter doctor name"
-              name="fullName"
-              error={!!errors.fullName}
-              errorMessage={errors.fullName}
-              id="fullName"
-              onChange={(e) => handleChange("fullName", e.target.value)}
+              label="First Name"
+              placeholder="Enter first name"
+              name="firstName"
+              error={!!errors.firstName}
+              errorMessage={errors.firstName}
+              id="firstName"
+              onChange={(e) => handleChange("firstName", e.target.value)}
               type="text"
-              value={formData.fullName}
+              value={formData.firstName}
             />
           </div>
 
           <div className="w-full">
             <ThemeInput
               required
+              label="Last Name"
+              placeholder="Enter last name"
+              name="lastName"
+              error={!!errors.lastName}
+              errorMessage={errors.lastName}
+              id="lastName"
+              onChange={(e) => handleChange("lastName", e.target.value)}
+              type="text"
+              value={formData.lastName}
+            />
+          </div>
+        </div>
+        <div className="flex items-start gap-2 md:gap-5">
+          <div className="w-full">
+            <ThemeInput
+              required
               label="Phone Number"
-              placeholder="Enter phone number"
+              placeholder="(316) 555-0116"
               name="phoneNo"
               error={!!errors.phoneNo}
               errorMessage={errors.phoneNo}
               id="phoneNo"
               onChange={(e) => handleChange("phoneNo", e.target.value)}
-              type="number"
-              className="[&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+              type="tel"
               value={formData.phoneNo}
+              className="w-full [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
         </div>
@@ -289,16 +441,12 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
             <SelectGroupDropdown
               selectedGroup={selectedUser}
               setSelectedGroup={handleGroupSelect}
-              groups={[
-                { name: "Cardiology", displayName: "Cardiology" },
-                { name: "Orthopedics", displayName: "Orthopedics" },
-                { name: "Dermatology", displayName: "Dermatology" },
-              ]}
+              groups={specialities}
               name="Specialty"
               multiple={false}
               placeholder="Select specialty"
-              searchTerm={""}
-              setSearchTerm={() => {}}
+              searchTerm={specialtySearchTerm}
+              setSearchTerm={setSpecialtySearchTerm}
               isShowDrop={true}
               required
               paddingClasses="py-2.5 px-3"

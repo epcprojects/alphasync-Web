@@ -26,6 +26,7 @@ export default function PostDetail() {
 
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [price, setPrice] = useState<string>("");
+  const [priceError, setPriceError] = useState<string>("");
 
   // GraphQL query to fetch product data
   const { data, loading, error, refetch } = useQuery<FetchProductResponse>(
@@ -59,6 +60,7 @@ export default function PostDetail() {
       const currentPrice =
         product.customPrice || product.variants?.[0]?.price || 0;
       setPrice(currentPrice.toString());
+      setPriceError("");
     }
   }, [product]);
 
@@ -86,6 +88,19 @@ export default function PostDetail() {
     const priceValue = parseFloat(price);
     if (isNaN(priceValue) || priceValue < 0) {
       showErrorToast("Please enter a valid price");
+      return;
+    }
+
+    // Get the original price from the product variant
+    const originalPrice = product.variants?.[0]?.price || 0;
+
+    // Prevent setting price lower than the original price
+    if (priceValue < originalPrice) {
+      showErrorToast(
+        `Price cannot be less than the original price ($${originalPrice.toFixed(
+          2
+        )})`
+      );
       return;
     }
 
@@ -333,18 +348,47 @@ export default function PostDetail() {
                   inputMode="numeric"
                   value={price}
                   maxLength={8}
-                  onChange={(e) => setPrice(e.target.value)}
-                  className={`border border-gray-200 [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none  outline-none bg-white text-gray-900 text-sm rounded-lg focus:ring-gray-200 focus:ring-1 block w-full ps-8 pe-16 p-1.5 sm:max-w-44`}
+                  onChange={(e) => {
+                    const newPrice = e.target.value;
+                    setPrice(newPrice);
+                    setPriceError("");
+
+                    // Validate in real-time
+                    const priceValue = parseFloat(newPrice);
+                    if (newPrice && !isNaN(priceValue)) {
+                      const originalPrice = product?.variants?.[0]?.price || 0;
+                      if (priceValue < originalPrice) {
+                        setPriceError(
+                          `Minimum price: $${originalPrice.toFixed(2)}`
+                        );
+                      }
+                    }
+                  }}
+                  onBlur={() => {
+                    // Clear error on blur if user leaves the field
+                    const priceValue = parseFloat(price);
+                    if (!price || isNaN(priceValue)) {
+                      setPriceError("");
+                    }
+                  }}
+                  className={`border ${
+                    priceError
+                      ? "border-red-500 focus:ring-red-200 focus:ring-1"
+                      : "border-gray-200 focus:ring-gray-200 focus:ring-1"
+                  } [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none  outline-none bg-white text-gray-900 text-sm rounded-lg block w-full ps-8 pe-16 p-1.5 sm:max-w-44`}
                   placeholder=""
                 />
                 <button
                   onClick={handleSavePrice}
-                  disabled={updatePriceLoading}
+                  disabled={updatePriceLoading || !!priceError}
                   className="rounded-md py-1.5 cursor-pointer text-primary font-semibold hover:bg-gray-300 px-3 absolute bg-porcelan text-xs end-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {updatePriceLoading ? "Saving..." : "Save"}
                 </button>
               </div>
+              {priceError && (
+                <p className="text-xs text-red-500 mt-1">{priceError}</p>
+              )}
             </div>
 
             <div className="">
@@ -441,7 +485,8 @@ export default function PostDetail() {
         onConfirm={handleConfirmOrder}
         productId={product.id}
         shopifyVariantId={product.variants?.[0]?.shopifyVariantId}
-        defaultPrice={product.customPrice || product.variants?.[0]?.price || 0}
+        customPrice={product.customPrice}
+        price={product.variants?.[0]?.price}
         isLoading={createOrderLoading}
         onClose={() => setIsOrderModalOpen(false)}
       />

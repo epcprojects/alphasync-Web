@@ -11,8 +11,6 @@ import React, { useState, useEffect } from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import { useMutation } from "@apollo/client";
 import { UPDATE_CUSTOMER_PROFILE, REMOVE_IMAGE } from "@/lib/graphql/mutations";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
@@ -21,10 +19,11 @@ import { setUser } from "@/lib/store/slices/authSlice";
 import Cookies from "js-cookie";
 
 interface ProfileFormValues {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNo: string;
-  dateOfBirth: Date;
+  dateOfBirth: string;
   address: string;
   street1: string;
   street2: string;
@@ -47,7 +46,8 @@ const Page = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const profileSchema = Yup.object().shape({
-    fullName: Yup.string().required("Full name is required"),
+    firstName: Yup.string().required("First name is required"),
+    lastName: Yup.string().required("Last name is required"),
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
@@ -57,7 +57,24 @@ const Page = () => {
         /^\(\d{3}\)\s\d{3}-\d{4}$/,
         "Phone number must be in format (512) 312-3123"
       ),
-    dateOfBirth: Yup.string().required("Date of Birth is required"),
+    dateOfBirth: Yup.string()
+      .required("Date of Birth is required")
+      .matches(
+        /^\d{4}-\d{2}-\d{2}$/,
+        "Date must be in format YYYY-MM-DD (e.g., 1990-01-15)"
+      )
+      .test("valid-date", "Please enter a valid date", (value) => {
+        if (!value) return false;
+        const date = new Date(value);
+        return date instanceof Date && !isNaN(date.getTime());
+      })
+      .test("not-future", "Date of Birth cannot be in the future", (value) => {
+        if (!value) return false;
+        const date = new Date(value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return date <= today;
+      }),
     address: Yup.string().optional(),
     street1: Yup.string().required("Street address is required"),
     street2: Yup.string().optional(),
@@ -76,6 +93,46 @@ const Page = () => {
   });
 
   const isMobile = useIsMobile();
+
+  // Format date to YYYY-MM-DD format
+  const formatDate = (value: string): string => {
+    // Remove all non-digit characters
+    const numbers = value.replace(/\D/g, "");
+
+    // Limit to 8 digits (YYYYMMDD)
+    const limitedNumbers = numbers.slice(0, 8);
+
+    // Format based on length
+    if (limitedNumbers.length === 0) return "";
+    if (limitedNumbers.length <= 4) return limitedNumbers;
+    if (limitedNumbers.length <= 6) {
+      return `${limitedNumbers.slice(0, 4)}-${limitedNumbers.slice(4)}`;
+    }
+    return `${limitedNumbers.slice(0, 4)}-${limitedNumbers.slice(
+      4,
+      6
+    )}-${limitedNumbers.slice(6)}`;
+  };
+
+  // Format phone number to (XXX) XXX-XXXX format
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-digit characters
+    const numbers = value.replace(/\D/g, "");
+
+    // Limit to 10 digits
+    const limitedNumbers = numbers.slice(0, 10);
+
+    // Format based on length
+    if (limitedNumbers.length === 0) return "";
+    if (limitedNumbers.length <= 3) return `(${limitedNumbers}`;
+    if (limitedNumbers.length <= 6) {
+      return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(3)}`;
+    }
+    return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(
+      3,
+      6
+    )}-${limitedNumbers.slice(6)}`;
+  };
 
   // Get user data from Redux store
   const user = useAppSelector((state) => state.auth.user);
@@ -153,10 +210,14 @@ const Page = () => {
   const handleProfileSubmit = async (values: ProfileFormValues) => {
     try {
       const variables = {
-        fullName: values.fullName,
+        fullName: `${values.firstName} ${values.lastName}`.trim(),
+        firstName: values.firstName,
+        lastName: values.lastName,
         phoneNo: values.phoneNo,
         email: values.email,
-        dateOfBirth: values.dateOfBirth,
+        dateOfBirth: values.dateOfBirth
+          ? new Date(values.dateOfBirth).toISOString()
+          : undefined,
         address: values.address || undefined,
         street1: values.street1 || undefined,
         street2: values.street2 || undefined,
@@ -197,10 +258,11 @@ const Page = () => {
   const getInitialValues = () => {
     if (!user) {
       return {
-        fullName: "",
+        firstName: "",
+        lastName: "",
         email: "",
         phoneNo: "",
-        dateOfBirth: new Date(),
+        dateOfBirth: "",
         address: "",
         street1: "",
         street2: "",
@@ -217,11 +279,19 @@ const Page = () => {
       };
     }
 
+    // Split fullName into firstName and lastName if firstName/lastName not available
+    const nameParts = (user.fullName || "").split(" ");
+    const firstName = user.firstName || nameParts[0] || "";
+    const lastName = user.lastName || nameParts.slice(1).join(" ") || "";
+
     return {
-      fullName: user.fullName || "",
+      firstName: firstName,
+      lastName: lastName,
       email: user.email || "",
       phoneNo: user.phoneNo || "",
-      dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : new Date(),
+      dateOfBirth: user.dateOfBirth
+        ? new Date(user.dateOfBirth).toISOString().split("T")[0]
+        : "",
       address: user.address || "",
       street1: user.street1 || "",
       street2: user.street2 || "",
@@ -324,17 +394,37 @@ const Page = () => {
                       <div className="grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">
                           <label className="text-xs md:text-sm text-gray-700 font-semibold">
-                            Full Name
+                            First Name
                           </label>
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            name="fullName"
-                            value={values.fullName}
+                            name="firstName"
+                            value={values.firstName}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="fullName"
+                            name="firstName"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label className="text-xs md:text-sm text-gray-700 font-semibold">
+                            Last Name
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            name="lastName"
+                            value={values.lastName}
+                            onChange={handleChange}
+                          />
+                          <ErrorMessage
+                            name="lastName"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -373,10 +463,17 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="phone"
+                            type="tel"
                             name="phoneNo"
                             value={values.phoneNo}
-                            onChange={handleChange}
+                            onChange={(e) => {
+                              const formatted = formatPhoneNumber(
+                                e.target.value
+                              );
+                              setFieldValue("phoneNo", formatted);
+                            }}
+                            placeholder="(316) 555-0116"
+                            className="[&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <ErrorMessage
                             name="phoneNo"
@@ -396,56 +493,16 @@ const Page = () => {
                           </label>
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
-                          <DatePicker
+                          <ThemeInput
+                            type="text"
                             name="dateOfBirth"
-                            showMonthDropdown
-                            showYearDropdown
-                            dropdownMode="select"
-                            wrapperClassName="w-full"
-                            placeholderText="mm/dd/yyyy"
-                            toggleCalendarOnIconClick
-                            selected={
-                              values.dateOfBirth
-                                ? new Date(values.dateOfBirth)
-                                : null
-                            }
-                            onChange={(date) =>
-                              setFieldValue("dateOfBirth", date)
-                            }
-                            className={`border border-lightGray rounded-lg flex px-2 md:px-3 outline-none focus:ring focus:ring-gray-100 
-          placeholder:text-gray-600 text-gray-800 items-center !py-3 h-11 !w-full`}
-                            maxDate={new Date()}
-                            minDate={new Date(1900, 0, 1)}
-                            showIcon
-                            icon={
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 16 16"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M1.3335 7.99984C1.3335 5.48568 1.3335 4.2286 2.11454 3.44755C2.89559 2.6665 4.15267 2.6665 6.66683 2.6665H9.3335C11.8477 2.6665 13.1047 2.6665 13.8858 3.44755C14.6668 4.2286 14.6668 5.48568 14.6668 7.99984V9.33317C14.6668 11.8473 14.6668 13.1044 13.8858 13.8855C13.1047 14.6665 11.8477 14.6665 9.3335 14.6665H6.66683C4.15267 14.6665 2.89559 14.6665 2.11454 13.8855C1.3335 13.1044 1.3335 11.8473 1.3335 9.33317V7.99984Z"
-                                  stroke="#6B7280"
-                                />
-                                <path
-                                  d="M4.6665 2.6665V1.6665"
-                                  stroke="#6B7280"
-                                  strokeLinecap="round"
-                                />
-                                <path
-                                  d="M11.3335 2.6665V1.6665"
-                                  stroke="#6B7280"
-                                  strokeLinecap="round"
-                                />
-                                <path
-                                  d="M1.6665 6H14.3332"
-                                  stroke="#6B7280"
-                                  strokeLinecap="round"
-                                />
-                              </svg>
-                            }
+                            value={values.dateOfBirth}
+                            onChange={(e) => {
+                              const formatted = formatDate(e.target.value);
+                              setFieldValue("dateOfBirth", formatted);
+                            }}
+                            placeholder="YYYY-MM-DD (e.g., 1990-01-15)"
+                            maxLength={10}
                           />
                           <ErrorMessage
                             name="dateOfBirth"
@@ -587,7 +644,7 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="emergencyContactName"
+                            type="text"
                             name="emergencyContactName"
                             value={values.emergencyContactName}
                             onChange={handleChange}
@@ -611,10 +668,17 @@ const Page = () => {
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
-                            type="emergencyContactPhone"
+                            type="tel"
                             name="emergencyContactPhone"
                             value={values.emergencyContactPhone}
-                            onChange={handleChange}
+                            onChange={(e) => {
+                              const formatted = formatPhoneNumber(
+                                e.target.value
+                              );
+                              setFieldValue("emergencyContactPhone", formatted);
+                            }}
+                            placeholder="(316) 555-0116"
+                            className="[&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <ErrorMessage
                             name="emergencyContactPhone"

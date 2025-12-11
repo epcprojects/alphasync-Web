@@ -16,10 +16,7 @@ import {
   UPDATE_USER_ADDRESS_VERIFIED,
 } from "@/lib/graphql/mutations";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
 import React, { Suspense, useMemo, useState } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import { useMutation } from "@apollo/client";
 import { Formik, Form, FormikHelpers } from "formik";
 import * as Yup from "yup";
@@ -28,7 +25,8 @@ const PHONE_MESSAGE = "Phone number must be in format (512) 312-3123";
 const phoneNumberRegex = /^\(\d{3}\)\s\d{3}-\d{4}$/;
 
 type VerifyInfoFormValues = {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNo: string;
   address: string;
@@ -38,11 +36,12 @@ type VerifyInfoFormValues = {
   state: string;
   postalCode: string;
 
-  dateOfBirth: Date | null;
+  dateOfBirth: string;
 };
 
 const validationSchema = Yup.object().shape({
-  fullName: Yup.string().required("Full name is required"),
+  firstName: Yup.string().required("First name is required"),
+  lastName: Yup.string().required("Last name is required"),
   email: Yup.string()
     .email("Invalid email address")
     .required("Email is required"),
@@ -56,7 +55,24 @@ const validationSchema = Yup.object().shape({
   state: Yup.string().required("State is required"),
   postalCode: Yup.string().required("Postal code is required"),
 
-  dateOfBirth: Yup.date().nullable().required("Date of Birth is required"),
+  dateOfBirth: Yup.string()
+    .required("Date of Birth is required")
+    .matches(
+      /^\d{4}-\d{2}-\d{2}$/,
+      "Date must be in format YYYY-MM-DD (e.g., 1990-01-15)"
+    )
+    .test("valid-date", "Please enter a valid date", (value) => {
+      if (!value) return false;
+      const date = new Date(value);
+      return date instanceof Date && !isNaN(date.getTime());
+    })
+    .test("not-future", "Date of Birth cannot be in the future", (value) => {
+      if (!value) return false;
+      const date = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return date <= today;
+    }),
 });
 
 const formatPhoneNumber = (value: string) => {
@@ -72,15 +88,41 @@ const formatPhoneNumber = (value: string) => {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 };
 
+// Format date to YYYY-MM-DD format
+const formatDate = (value: string): string => {
+  // Remove all non-digit characters
+  const numbers = value.replace(/\D/g, "");
+
+  // Limit to 8 digits (YYYYMMDD)
+  const limitedNumbers = numbers.slice(0, 8);
+
+  // Format based on length
+  if (limitedNumbers.length === 0) return "";
+  if (limitedNumbers.length <= 4) return limitedNumbers;
+  if (limitedNumbers.length <= 6) {
+    return `${limitedNumbers.slice(0, 4)}-${limitedNumbers.slice(4)}`;
+  }
+  return `${limitedNumbers.slice(0, 4)}-${limitedNumbers.slice(
+    4,
+    6
+  )}-${limitedNumbers.slice(6)}`;
+};
+
 function VerifyInfoContent() {
   const dispatch = useAppDispatch();
   const { user: currentUser } = useAppSelector((state) => state.auth);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
 
-  const initialValues = useMemo<VerifyInfoFormValues>(
-    () => ({
-      fullName: currentUser?.fullName || "",
+  const initialValues = useMemo<VerifyInfoFormValues>(() => {
+    // Split fullName into firstName and lastName if firstName/lastName not available
+    const nameParts = (currentUser?.fullName || "").split(" ");
+    const firstName = currentUser?.firstName || nameParts[0] || "";
+    const lastName =
+      currentUser?.lastName || nameParts.slice(1).join(" ") || "";
+
+    return {
+      firstName: firstName,
+      lastName: lastName,
       email: currentUser?.email || "",
       phoneNo: formatPhoneNumber(currentUser?.phoneNo || ""),
       address: currentUser?.address || "",
@@ -91,11 +133,10 @@ function VerifyInfoContent() {
       postalCode: currentUser?.postalCode || "",
 
       dateOfBirth: currentUser?.dateOfBirth
-        ? new Date(currentUser.dateOfBirth)
-        : null,
-    }),
-    [currentUser]
-  );
+        ? new Date(currentUser.dateOfBirth).toISOString().split("T")[0]
+        : "",
+    };
+  }, [currentUser]);
 
   const [updateCustomerProfile, { loading: updateLoading }] = useMutation(
     UPDATE_CUSTOMER_PROFILE,
@@ -130,7 +171,9 @@ function VerifyInfoContent() {
             expires: 7,
           });
         }
-        router.replace("/pending-payments");
+        // Use window.location.href to force a full page reload
+        // This ensures the middleware sees the updated cookie
+        window.location.href = "/pending-payments";
       },
       onError: (error) => {
         showErrorToast(
@@ -155,7 +198,9 @@ function VerifyInfoContent() {
     actions: FormikHelpers<VerifyInfoFormValues>
   ) => {
     const variables: Record<string, unknown> = {
-      fullName: values.fullName || undefined,
+      fullName: `${values.firstName} ${values.lastName}`.trim(),
+      firstName: values.firstName || undefined,
+      lastName: values.lastName || undefined,
       email: values.email || undefined,
       phoneNo: values.phoneNo || undefined,
       address: values.address || undefined,
@@ -166,7 +211,7 @@ function VerifyInfoContent() {
       postalCode: values.postalCode || undefined,
 
       dateOfBirth: values.dateOfBirth
-        ? values.dateOfBirth.toISOString().split("T")[0]
+        ? new Date(values.dateOfBirth).toISOString().split("T")[0]
         : undefined,
     };
 
@@ -195,7 +240,14 @@ function VerifyInfoContent() {
 
             <InfoList
               items={[
-                { label: "Full Name", value: currentUser?.fullName },
+                {
+                  label: "First Name",
+                  value: currentUser?.firstName || undefined,
+                },
+                {
+                  label: "Last Name",
+                  value: currentUser?.lastName || undefined,
+                },
                 { label: "Contact", value: currentUser?.phoneNo },
                 { label: "Email", value: currentUser?.email },
                 {
@@ -295,21 +347,48 @@ function VerifyInfoContent() {
                 onCancel={handleClose}
               >
                 <Form className="flex flex-col gap-4">
-                  <ThemeInput
-                    label="Full Name"
-                    name="fullName"
-                    value={formik.values.fullName}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={Boolean(
-                      formik.touched.fullName && formik.errors.fullName
-                    )}
-                    errorMessage={
-                      formik.touched.fullName
-                        ? formik.errors.fullName
-                        : undefined
-                    }
-                  />
+                  <div className="flex items-center gap-3 md:gap-5 w-full">
+                    <div className="w-full">
+                      <ThemeInput
+                        required
+                        label="First Name"
+                        name="firstName"
+                        placeholder="Enter first name"
+                        value={formik.values.firstName}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={Boolean(
+                          formik.touched.firstName && formik.errors.firstName
+                        )}
+                        errorMessage={
+                          formik.touched.firstName
+                            ? formik.errors.firstName
+                            : undefined
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="w-full">
+                      <ThemeInput
+                        required
+                        label="Last Name"
+                        name="lastName"
+                        placeholder="Enter last name"
+                        value={formik.values.lastName}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={Boolean(
+                          formik.touched.lastName && formik.errors.lastName
+                        )}
+                        errorMessage={
+                          formik.touched.lastName
+                            ? formik.errors.lastName
+                            : undefined
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
 
                   <ThemeInput
                     label="Email"
@@ -345,39 +424,28 @@ function VerifyInfoContent() {
                     }
                   />
 
-                  <div>
-                    <span className="block mb-1 text-sm text-gray-700 font-medium text-start">
-                      Date of Birth
-                    </span>
-                    <DatePicker
-                      wrapperClassName="block w-full"
-                      selected={formik.values.dateOfBirth}
-                      onChange={(date) => {
-                        const selectedDate = Array.isArray(date)
-                          ? date[0]
-                          : date;
-                        formik.setFieldValue("dateOfBirth", selectedDate);
-                      }}
-                      onBlur={() => formik.setFieldTouched("dateOfBirth", true)}
-                      showMonthDropdown
-                      showYearDropdown
-                      dropdownMode="select"
-                      maxDate={new Date()}
-                      minDate={new Date(1900, 0, 1)}
-                      className={`w-full focus:ring h-11 px-3 py-2.5 border rounded-lg outline-none text-gray-900 placeholder:text-gray-500 ${
-                        formik.touched.dateOfBirth && formik.errors.dateOfBirth
-                          ? "border-red-500 focus:ring-red-200"
-                          : "border-lightGray focus:ring-gray-200"
-                      }`}
-                      placeholderText="mm/dd/yyyy"
-                    />
-                    {formik.touched.dateOfBirth &&
-                      formik.errors.dateOfBirth && (
-                        <p className="mt-1 text-xs text-red-500">
-                          {formik.errors.dateOfBirth as string}
-                        </p>
-                      )}
-                  </div>
+                  <ThemeInput
+                    label="Date of Birth"
+                    name="dateOfBirth"
+                    placeholder="YYYY-MM-DD (e.g., 1990-01-15)"
+                    value={formik.values.dateOfBirth}
+                    onChange={(event) =>
+                      formik.setFieldValue(
+                        "dateOfBirth",
+                        formatDate(event.target.value)
+                      )
+                    }
+                    onBlur={formik.handleBlur}
+                    error={Boolean(
+                      formik.touched.dateOfBirth && formik.errors.dateOfBirth
+                    )}
+                    errorMessage={
+                      formik.touched.dateOfBirth
+                        ? (formik.errors.dateOfBirth as string)
+                        : undefined
+                    }
+                    maxLength={10}
+                  />
 
                   <ThemeInput
                     required
