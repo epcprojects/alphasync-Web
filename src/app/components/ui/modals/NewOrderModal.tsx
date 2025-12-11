@@ -311,6 +311,49 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         id="quantity"
                         className="[&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                         required={true}
+                        min="1"
+                        step="1"
+                        onKeyDown={(
+                          e: React.KeyboardEvent<HTMLInputElement>
+                        ) => {
+                          if (
+                            e.key === "-" ||
+                            e.key === "e" ||
+                            e.key === "E" ||
+                            e.key === "+" ||
+                            e.key === "."
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onPaste={(
+                          e: React.ClipboardEvent<HTMLInputElement>
+                        ) => {
+                          e.preventDefault();
+                          const pastedText = e.clipboardData.getData("text");
+                          // Remove minus signs and other invalid characters
+                          const cleaned = pastedText.replace(/[-\+eE.]/g, "");
+                          const numValue = parseFloat(cleaned);
+                          if (!isNaN(numValue) && numValue > 0) {
+                            setFieldValue("quantity", Math.floor(numValue));
+                          }
+                        }}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          let value = e.target.value;
+                          // Remove minus sign and any non-numeric characters
+                          value = value.replace(/[^0-9]/g, "");
+                          // If value is empty or valid, set it; otherwise set to minimum (1)
+                          if (value === "") {
+                            setFieldValue("quantity", "");
+                          } else {
+                            const numValue = parseInt(value, 10);
+                            if (!isNaN(numValue) && numValue > 0) {
+                              setFieldValue("quantity", numValue);
+                            } else {
+                              setFieldValue("quantity", 1);
+                            }
+                          }
+                        }}
                       />
                       {errors.quantity && touched.quantity && (
                         <p className="text-red-500 text-xs">
@@ -327,6 +370,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         type="number"
                         id="price"
                         required={true}
+                        disabled={true}
                       />
                       {errors.price && touched.price && (
                         <p className="text-red-500 text-xs">{errors.price}</p>
@@ -390,14 +434,45 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         <input
                           type="number"
                           value={item.quantity}
-                          min={1}
-                          onChange={(e) =>
-                            handleUpdateItem(
-                              index,
-                              "quantity",
-                              Number(e.target.value)
-                            )
-                          }
+                          min="1"
+                          step="1"
+                          onKeyDown={(e) => {
+                            if (
+                              e.key === "-" ||
+                              e.key === "e" ||
+                              e.key === "E" ||
+                              e.key === "+" ||
+                              e.key === "."
+                            ) {
+                              e.preventDefault();
+                            }
+                          }}
+                          onPaste={(e) => {
+                            e.preventDefault();
+                            const pastedText = e.clipboardData.getData("text");
+                            // Remove minus signs and other invalid characters
+                            const cleaned = pastedText.replace(/[-\+eE.]/g, "");
+                            const numValue = parseInt(cleaned, 10);
+                            if (!isNaN(numValue) && numValue > 0) {
+                              handleUpdateItem(index, "quantity", numValue);
+                            }
+                          }}
+                          onChange={(e) => {
+                            let value = e.target.value;
+                            // Remove minus sign and any non-numeric characters
+                            value = value.replace(/[^0-9]/g, "");
+                            // Prevent negative values
+                            if (value === "") {
+                              handleUpdateItem(index, "quantity", 1);
+                            } else {
+                              const numValue = parseInt(value, 10);
+                              if (!isNaN(numValue) && numValue > 0) {
+                                handleUpdateItem(index, "quantity", numValue);
+                              } else {
+                                handleUpdateItem(index, "quantity", 1);
+                              }
+                            }
+                          }}
                           className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
@@ -406,14 +481,8 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         <input
                           type="number"
                           value={item.price}
-                          onChange={(e) =>
-                            handleUpdateItem(
-                              index,
-                              "price",
-                              Number(e.target.value)
-                            )
-                          }
-                          className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 h-7 px-2 outline-none text-xs "
+                          disabled={true}
+                          className="rounded-md border bg-gray-100 border-gray-200 w-full max-w-14 py-0.5 h-7 px-2 outline-none text-xs cursor-not-allowed opacity-60"
                         />
                       </div>
 

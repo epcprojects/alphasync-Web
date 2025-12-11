@@ -22,6 +22,7 @@ import {
 } from "@/app/components/ui/cards/OrderListView";
 import AppModal from "@/app/components/ui/modals/AppModal";
 import { showErrorToast } from "@/lib/toast";
+import ChatWithPhysician from "@/app/components/ui/modals/CharWithPyhsicianModel";
 
 interface OrderItem {
   id: string;
@@ -86,6 +87,7 @@ const Page = () => {
     useLazyQuery<PaymentInvoicesResponse>(PAYMENT_INVOICES);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = React.useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
+  const [isChatModalOpen, setIsChatModalOpen] = React.useState(false);
 
   const order = data?.fetchOrder;
 
@@ -566,7 +568,7 @@ const Page = () => {
               variant="outline"
               size="medium"
               icon={<MessageOutgoingIcon />}
-              onClick={() => {}}
+              onClick={() => setIsChatModalOpen(true)}
               className="w-full sm:w-fit"
               heightClass="md:h-11 h-10"
             />
@@ -593,6 +595,15 @@ const Page = () => {
             </p>
           </div>
         </AppModal>
+      )}
+      {order?.patient?.id && (
+        <ChatWithPhysician
+          isOpen={isChatModalOpen}
+          onClose={() => setIsChatModalOpen(false)}
+          participantId={String(order.patient.id)}
+          participantName={order.patient.fullName || "Customer"}
+          itemTitle={order.displayId ? String(order.displayId) : order.id}
+        />
       )}
     </div>
   );

@@ -26,7 +26,10 @@ const Page = () => {
   const OrderSchema = Yup.object().shape({
     customer: Yup.string().required("Customer is required"),
     product: Yup.string().required("Product is required"),
-    quantity: Yup.number().min(1, "Minimum 1").required("Quantity is required"),
+    quantity: Yup.number()
+      .min(1, "Minimum 1")
+      .positive("Quantity must be positive")
+      .required("Quantity is required"),
     price: Yup.number()
       .min(0.01, "Must be greater than 0")
       .required("Price is required"),
@@ -243,6 +246,47 @@ const Page = () => {
                       type="number"
                       id="quantity"
                       required={true}
+                      min="1"
+                      step="1"
+                      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                        if (
+                          e.key === "-" ||
+                          e.key === "e" ||
+                          e.key === "E" ||
+                          e.key === "+" ||
+                          e.key === "."
+                        ) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onPaste={(e: React.ClipboardEvent<HTMLInputElement>) => {
+                        e.preventDefault();
+                        const pastedText = e.clipboardData.getData("text");
+                        // Remove minus signs and other invalid characters
+                        const cleaned = pastedText.replace(/[-\+eE]/g, "");
+                        const numValue = parseFloat(cleaned);
+                        if (!isNaN(numValue) && numValue > 0) {
+                          setFieldValue("quantity", Math.floor(numValue));
+                        }
+                      }}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        let value = e.target.value;
+                        // Remove minus sign and any negative values
+                        value = value.replace(/-/g, "");
+                        // Remove any non-numeric characters except digits
+                        value = value.replace(/[^0-9]/g, "");
+                        // If value is empty or valid, set it; otherwise set to minimum (1)
+                        if (value === "") {
+                          setFieldValue("quantity", "");
+                        } else {
+                          const numValue = parseInt(value, 10);
+                          if (!isNaN(numValue) && numValue > 0) {
+                            setFieldValue("quantity", numValue);
+                          } else {
+                            setFieldValue("quantity", 1);
+                          }
+                        }
+                      }}
                     />
                     {errors.quantity && touched.quantity && (
                       <p className="text-red-500 text-xs">{errors.quantity}</p>
@@ -318,14 +362,46 @@ const Page = () => {
                     <div>
                       <input
                         type="number"
+                        min="1"
+                        step="1"
                         value={item.quantity}
-                        onChange={(e) =>
-                          handleUpdateItem(
-                            index,
-                            "quantity",
-                            Number(e.target.value)
-                          )
-                        }
+                        onKeyDown={(e) => {
+                          if (
+                            e.key === "-" ||
+                            e.key === "e" ||
+                            e.key === "E" ||
+                            e.key === "+" ||
+                            e.key === "."
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          const pastedText = e.clipboardData.getData("text");
+                          // Remove minus signs and other invalid characters
+                          const cleaned = pastedText.replace(/[-\+eE.]/g, "");
+                          const numValue = parseInt(cleaned, 10);
+                          if (!isNaN(numValue) && numValue > 0) {
+                            handleUpdateItem(index, "quantity", numValue);
+                          }
+                        }}
+                        onChange={(e) => {
+                          let value = e.target.value;
+                          // Remove minus sign and any non-numeric characters
+                          value = value.replace(/[^0-9]/g, "");
+                          // Prevent negative values
+                          if (value === "") {
+                            handleUpdateItem(index, "quantity", 1);
+                          } else {
+                            const numValue = parseInt(value, 10);
+                            if (!isNaN(numValue) && numValue > 0) {
+                              handleUpdateItem(index, "quantity", numValue);
+                            } else {
+                              handleUpdateItem(index, "quantity", 1);
+                            }
+                          }
+                        }}
                         className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs"
                       />
                     </div>

@@ -108,4 +108,9 @@ export interface OrderRequestAttributes {
   patient?: UserAttributes;
   requestedItems?: RequestedItem[];
   notes?: NoteAttributes[];
+  orderPaid?: boolean;
+  order?: {
+    id?: string | number;
+    status?: string;
+  };
 }

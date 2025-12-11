@@ -134,7 +134,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     order?.orderItems?.reduce(
       (acc, item) => acc + item.price * item.quantity,
       0
-    ) ?? 0;
+    ) ??
+    request?.price ??
+    0;
 
   const taxAmount = subTotal * 0.08;
   const tax = taxAmount.toFixed(2);
@@ -408,10 +410,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     )
       return false;
 
-    const isCvvValid =
-      cardType === "American"
-        ? cvv.length === 4
-        : cvv.length === 3 || cvv.length === 4;
+    const isCvvValid = cvv.length === 3;
     if (!cvv || !isCvvValid || !/^\d+$/.test(cvv)) return false;
 
     if (!cardHolderName || cardHolderName.trim() === "") return false;
@@ -695,10 +694,12 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   placeholder="..."
                   value={cvv}
                   onChange={(e) => {
-                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
-                    setCvv(e.target.value);
+                    const value = e.target.value
+                      .replace(/[^0-9]/g, "")
+                      .slice(0, 3);
+                    setCvv(value);
                   }}
-                  maxLength={4}
+                  maxLength={3}
                 />
               </div>
             </div>
