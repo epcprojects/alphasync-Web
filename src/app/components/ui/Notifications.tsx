@@ -82,7 +82,17 @@ export default function Notifications({ userType }: NotificationsProps) {
 
   const handleViewDetails = (notification: NotificationData) => {
     if (currentUserType === "doctor" && notification.sender?.id) {
-      router.push(`/customers/${notification.sender.id}`);
+      // Determine which tab to open based on notification type
+      let tab = "";
+      if (notification.notificationType === "message_received") {
+        tab = "?tab=chat";
+      } else if (
+        notification.notificationType === "order_request_created" ||
+        notification.notificationType === "reorder_created"
+      ) {
+        tab = "?tab=requests";
+      }
+      router.push(`/customers/${notification.sender.id}${tab}`);
     }
   };
 
@@ -357,6 +367,16 @@ export default function Notifications({ userType }: NotificationsProps) {
                 </div>
                 <div className="overflow-y-auto h-[100dvh]  p-4 pb-16">
                   {renderList()}
+                  <Link
+                    href={
+                      currentUserType === "doctor"
+                        ? "/notifications"
+                        : "/customer-notifications"
+                    }
+                    className="w-full mt-2 flex items-center justify-center text-center py-2 bg-blue-100 rounded-lg text-sm font-semibold cursor-pointer hover:bg-blue-200 text-primary"
+                  >
+                    View all
+                  </Link>
                 </div>
               </DialogPanel>
             </div>

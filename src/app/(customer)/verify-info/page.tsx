@@ -58,17 +58,27 @@ const validationSchema = Yup.object().shape({
   dateOfBirth: Yup.string()
     .required("Date of Birth is required")
     .matches(
-      /^\d{4}-\d{2}-\d{2}$/,
-      "Date must be in format YYYY-MM-DD (e.g., 1990-01-15)"
+      /^\d{2}-\d{2}-\d{4}$/,
+      "Date must be in format MM-DD-YYYY (e.g., 01-15-1990)"
     )
     .test("valid-date", "Please enter a valid date", (value) => {
       if (!value) return false;
-      const date = new Date(value);
-      return date instanceof Date && !isNaN(date.getTime());
+      // Parse MM-DD-YYYY format
+      const [month, day, year] = value.split("-").map(Number);
+      const date = new Date(year, month - 1, day);
+      return (
+        date instanceof Date &&
+        !isNaN(date.getTime()) &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day &&
+        date.getFullYear() === year
+      );
     })
     .test("not-future", "Date of Birth cannot be in the future", (value) => {
       if (!value) return false;
-      const date = new Date(value);
+      // Parse MM-DD-YYYY format
+      const [month, day, year] = value.split("-").map(Number);
+      const date = new Date(year, month - 1, day);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       return date <= today;
@@ -88,24 +98,24 @@ const formatPhoneNumber = (value: string) => {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 };
 
-// Format date to YYYY-MM-DD format
+// Format date to MM-DD-YYYY format
 const formatDate = (value: string): string => {
   // Remove all non-digit characters
   const numbers = value.replace(/\D/g, "");
 
-  // Limit to 8 digits (YYYYMMDD)
+  // Limit to 8 digits (MMDDYYYY)
   const limitedNumbers = numbers.slice(0, 8);
 
   // Format based on length
   if (limitedNumbers.length === 0) return "";
-  if (limitedNumbers.length <= 4) return limitedNumbers;
-  if (limitedNumbers.length <= 6) {
-    return `${limitedNumbers.slice(0, 4)}-${limitedNumbers.slice(4)}`;
+  if (limitedNumbers.length <= 2) return limitedNumbers;
+  if (limitedNumbers.length <= 4) {
+    return `${limitedNumbers.slice(0, 2)}-${limitedNumbers.slice(2)}`;
   }
-  return `${limitedNumbers.slice(0, 4)}-${limitedNumbers.slice(
-    4,
-    6
-  )}-${limitedNumbers.slice(6)}`;
+  return `${limitedNumbers.slice(0, 2)}-${limitedNumbers.slice(
+    2,
+    4
+  )}-${limitedNumbers.slice(4)}`;
 };
 
 function VerifyInfoContent() {
@@ -133,7 +143,13 @@ function VerifyInfoContent() {
       postalCode: currentUser?.postalCode || "",
 
       dateOfBirth: currentUser?.dateOfBirth
-        ? new Date(currentUser.dateOfBirth).toISOString().split("T")[0]
+        ? (() => {
+            const date = new Date(currentUser.dateOfBirth);
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const year = date.getFullYear();
+            return `${month}-${day}-${year}`;
+          })()
         : "",
     };
   }, [currentUser]);
@@ -211,7 +227,14 @@ function VerifyInfoContent() {
       postalCode: values.postalCode || undefined,
 
       dateOfBirth: values.dateOfBirth
-        ? new Date(values.dateOfBirth).toISOString().split("T")[0]
+        ? (() => {
+            // Parse MM-DD-YYYY format
+            const [month, day, year] = values.dateOfBirth
+              .split("-")
+              .map(Number);
+            const date = new Date(year, month - 1, day);
+            return date.toISOString();
+          })()
         : undefined,
     };
 
@@ -427,7 +450,7 @@ function VerifyInfoContent() {
                   <ThemeInput
                     label="Date of Birth"
                     name="dateOfBirth"
-                    placeholder="YYYY-MM-DD (e.g., 1990-01-15)"
+                    placeholder="MM-DD-YYYY (e.g., 01-15-1990)"
                     value={formik.values.dateOfBirth}
                     onChange={(event) =>
                       formik.setFieldValue(

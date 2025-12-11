@@ -133,7 +133,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     // Remove all non-digit characters
     const numbers = value.replace(/\D/g, "");
 
-    // Limit to 8 digits (YYYYMMDD)
+    // Limit to 8 digits (MMDDYYYY)
     const limitedNumbers = numbers.slice(0, 8);
 
     // Format based on length

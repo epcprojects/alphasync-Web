@@ -661,3 +661,11 @@ export const UPDATE_PRODUCT_PRICE = gql`
     }
   }
 `;
+
+export const MARK_NOTIFICATION_AS_READ = gql`
+  mutation MarkNotificationAsRead($notificationId: ID!) {
+    markNotificationAsRead(input: { notificationId: $notificationId }) {
+      success
+    }
+  }
+`;
