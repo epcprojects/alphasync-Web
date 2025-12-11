@@ -433,7 +433,7 @@ export default function CustomerDetail() {
           <TabGroup selectedIndex={selectedIndex} onChange={setSelectedIndex}>
             <TabList
               className={
-                "flex items-center border-b px-2 border-b-gray-200 gap-2 md:gap-3 md:justify-start  justify-between md:px-6"
+                "flex items-center border-b px-2 border-b-gray-200 gap-0 md:gap-3 md:justify-start  justify-between md:px-6"
               }
             >
               {[
@@ -479,7 +479,7 @@ export default function CustomerDetail() {
                 },
                 {
                   icon: <InfoIcon fill="currentColor" />,
-                  label: "Customer Information",
+                  label: isMobile ? "Information" : "Customer Information",
                 },
               ].map((tab, index) => (
                 <Tab
@@ -487,7 +487,7 @@ export default function CustomerDetail() {
                   as="button"
                   className="flex items-center gap-1 py-2 whitespace-nowrap md:gap-2 text-xs md:text-sm outline-none hover:bg-gray-50 border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 md:py-4 px-2 md:px-6"
                 >
-                  {tab.icon} {tab.label}
+                  {!isMobile && tab.icon} {tab.label}
                 </Tab>
               ))}
             </TabList>

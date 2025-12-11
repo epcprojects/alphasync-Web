@@ -72,8 +72,8 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       dateOfBirth: Yup.string()
         .required("Date of Birth is required")
         .matches(
-          /^\d{4}-\d{2}-\d{2}$/,
-          "Date must be in format YYYY-MM-DD (e.g., 1990-01-15)"
+          /^\d{2}-\d{2}-\d{4}$/,
+          "Date must be in format MM-DD-YYYY (e.g., 01-15-1990)"
         )
         .test("valid-date", "Please enter a valid date", (value) => {
           if (!value) return false;
@@ -128,7 +128,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     )}-${limitedNumbers.slice(6)}`;
   };
 
-  // Format date to YYYY-MM-DD format
+  // Format date to MM-DD-YYYY format
   const formatDate = (value: string): string => {
     // Remove all non-digit characters
     const numbers = value.replace(/\D/g, "");
@@ -138,14 +138,14 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
 
     // Format based on length
     if (limitedNumbers.length === 0) return "";
-    if (limitedNumbers.length <= 4) return limitedNumbers;
-    if (limitedNumbers.length <= 6) {
-      return `${limitedNumbers.slice(0, 4)}-${limitedNumbers.slice(4)}`;
+    if (limitedNumbers.length <= 2) return limitedNumbers;
+    if (limitedNumbers.length <= 4) {
+      return `${limitedNumbers.slice(0, 2)}-${limitedNumbers.slice(2)}`;
     }
-    return `${limitedNumbers.slice(0, 4)}-${limitedNumbers.slice(
-      4,
-      6
-    )}-${limitedNumbers.slice(6)}`;
+    return `${limitedNumbers.slice(0, 2)}-${limitedNumbers.slice(
+      2,
+      4
+    )}-${limitedNumbers.slice(4)}`;
   };
 
   const handleChange = (field: string, value: string | Date | null) => {
@@ -157,7 +157,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       const formatted = formatPhoneNumber(value);
       setFormData((prev) => ({ ...prev, [field]: formatted }));
     } else if (field === "dateOfBirth" && typeof value === "string") {
-      // Auto-format date to YYYY-MM-DD
+      // Auto-format date to MM-DD-YYYY
       const formatted = formatDate(value);
       setFormData((prev) => ({ ...prev, [field]: formatted }));
     } else {
@@ -448,7 +448,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
             <ThemeInput
               required
               label="Date of Birth"
-              placeholder="YYYY-MM-DD (e.g., 1990-01-15)"
+              placeholder="MM-DD-YYYY (e.g., 01-15-1990)"
               name="dateOfBirth"
               error={!!errors.dateOfBirth}
               errorMessage={errors.dateOfBirth}

@@ -63,6 +63,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
         return "bg-green-50 border border-green-200 text-green-700";
     }
   };
+
   return (
     <AppModal
       isOpen={isOpen}
@@ -72,7 +73,8 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
       outSideClickClose={false}
       subtitle={order.displayId}
       position={ModalPosition.RIGHT}
-      showFooter={false}
+      showFooter={window.innerWidth < 640}
+      cancelLabel="Close"
     >
       {order && (
         <div className="flex flex-col gap-4">

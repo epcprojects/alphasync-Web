@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
 
   useEffect(() => {
     const handleScroll = (): void => {
-      const isStickyNow = window.scrollY > 50;
+      const isStickyNow = window.scrollY > 150;
       setIsSticky(isStickyNow);
     };
 
@@ -361,7 +361,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
       <div
         dir="ltr"
         className={`
-    fixed hidden lg:flex justify-between top-0 md:top-4 z-[99]
+    fixed flex justify-between top-0 md:top-4 z-[98]
     md:w-[97.5%] w-full md:rounded-2xl px-2 md:px-4
     bg-red-500 border-b border-white/20
     bg-[url(/images/bannerImage.png)] !bg-top !bg-cover !bg-no-repeat
