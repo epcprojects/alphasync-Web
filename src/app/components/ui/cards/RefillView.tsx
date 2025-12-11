@@ -51,7 +51,7 @@ export default function RefillView({
   if (isMobile)
     return (
       <div className="bg-white rounded-lg  flex flex-col gap-1.5 p-3 shadow-table">
-        <div className="flex items-center gap-2">
+        <div className="flex items-start gap-2">
           <span
             className={`w-10 h-10 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
           >
@@ -64,29 +64,29 @@ export default function RefillView({
 
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-black font-medium text-xs pe-1">
+            <span className="text-black font-medium text-sm pe-1">
               Product:
             </span>
-            <span className="text-gray-800 font-normal text-xs">
+            <span className="text-gray-800 font-normal text-sm">
               {order.product}
             </span>
           </div>
 
           <div>
-            <span className="text-black font-medium text-xs pe-1">
+            <span className="text-black font-medium text-sm pe-1">
               Last Order:
             </span>
-            <span className="text-gray-800 font-normal text-xs">
+            <span className="text-gray-800 font-normal text-sm">
               {order.lastOrder}
             </span>
           </div>
         </div>
 
         <div>
-          <span className="text-black font-medium text-xs pe-1">
+          <span className="text-black font-medium text-sm pe-1">
             Days Since:
           </span>
-          <span className="text-gray-800 font-normal text-xs">
+          <span className="text-gray-800 font-normal text-sm">
             {order.daysSince}
           </span>
         </div>
@@ -170,20 +170,20 @@ export default function RefillView({
         >
           {getInitials(order.customer)}
         </span>
-        <h2 className="text-gray-800 whitespace-nowrap text-xs md:text-sm font-medium">
+        <h2 className="text-gray-800 whitespace-nowrap text-sm md:text-base font-medium">
           {order.customer}
         </h2>
       </div>
 
-      <div className="text-xs md:text-sm text-gray-800 font-normal line-clamp-1">
+      <div className="text-sm md:text-base text-gray-800 font-normal line-clamp-1">
         {order.product}
       </div>
 
-      <div className="text-xs md:text-sm text-gray-800 font-normal">
+      <div className="text-sm md:text-base text-gray-800 font-normal">
         {order.lastOrder}
       </div>
 
-      <div className=" font-medium text-xs md:text-sm text-gray-800">
+      <div className=" font-medium text-sm md:text-base text-gray-800">
         <span className="inline-block rounded-full px-2 py-0.5 text-xs md:text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200">
           {order.daysSince}
         </span>

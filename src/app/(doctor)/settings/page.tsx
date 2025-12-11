@@ -428,7 +428,7 @@ const Page = () => {
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 text-xs whitespace-nowrap md:text-sm hover:bg-gray-50 outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
+                  "flex items-center gap-1 md:gap-2 whitespace-nowrap text-sm md:text-base hover:bg-gray-50 outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-1.5 py-3 md:py-4 md:px-6"
                 }
               >
                 <UserIcon
@@ -441,7 +441,7 @@ const Page = () => {
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 whitespace-nowrap outline-none text-xs md:text-sm border-b-2 hover:bg-gray-50 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
+                  "flex items-center gap-1 md:gap-2 whitespace-nowrap outline-none text-sm md:text-base border-b-2 hover:bg-gray-50 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-1.5 py-3 md:py-4 md:px-6"
                 }
               >
                 <LockIcon
@@ -449,12 +449,12 @@ const Page = () => {
                   width={isMobile ? "16" : "20"}
                   height={isMobile ? "16" : "20"}
                 />
-                Change Password
+                {isMobile ? "Password" : "Change Password"}
               </Tab>
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 outline-none text-xs md:text-sm border-b-2 hover:bg-gray-50 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
+                  "flex items-center gap-1 md:gap-2 outline-none text-sm md:text-base border-b-2 hover:bg-gray-50 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-1.5 py-3 md:py-4 md:px-6"
                 }
               >
                 <ReminderIcon
@@ -466,7 +466,7 @@ const Page = () => {
               </Tab>
             </TabList>
             <TabPanels className={"pb-0 lg:p-6"}>
-              <TabPanel className={"px-5 lg:px-8"}>
+              <TabPanel className={"px-5 pb-4 lg:px-8"}>
                 <ImageUpload
                   imageUrl={
                     user?.imageUrl

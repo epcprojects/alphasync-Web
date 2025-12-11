@@ -2,8 +2,8 @@ import React from "react";
 
 const InventoryIcon = ({
   fill = "currentColor",
-  width = "19",
-  height = "18",
+  width = "20",
+  height = "20",
 }) => {
   return (
     <svg

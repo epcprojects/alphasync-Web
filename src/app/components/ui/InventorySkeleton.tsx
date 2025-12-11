@@ -49,7 +49,7 @@ const InventorySkeleton = ({ viewMode = "grid" }: InventorySkeletonProps) => {
         /* List view skeleton */
         <div className="flex flex-col gap-2 md:gap-6">
           {/* List header skeleton */}
-          <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-table">
+          <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium bg-white rounded-xl text-black shadow-table">
             <div className="col-span-5 md:col-span-4 lg:col-span-5">
               <Skeleton className="h-4 w-20" />
             </div>

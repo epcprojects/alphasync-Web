@@ -78,13 +78,13 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
           onClick={() => onPress && onPress(order)}
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-950">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-950">
               {order.displayId}
             </h2>
             <span
               className={` capitalize ${getOrderTags(
                 order.status
-              )} px-3 py-0.5 rounded-full text-sm font-medium whitespace-nowrap`}
+              )} px-3 py-0.5 rounded-full text-sm  font-medium whitespace-nowrap`}
             >
               {order.status === "pending_payment"
                 ? "Pending Payment"
@@ -93,17 +93,19 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-8 mt-4 md:mt-0 mb-2">
             <div className="flex justify-between md:flex-col md:gap-1">
-              <p className="text-sm font-normal text-gray-800">
+              <p className="text-sm sm:text-base font-normal text-gray-800">
                 Prescribing Doctor
               </p>
-              <p className="text-sm font-semibold text-gray-800 md:text-left">
+              <p className="text-sm sm:text-base font-semibold text-gray-800 md:text-left">
                 {order.doctorName}
               </p>
             </div>
 
             <div className="flex justify-between md:flex-col md:gap-1">
-              <p className="text-sm font-normal text-gray-800">Order Items</p>
-              <p className="text-sm font-semibold text-gray-800 md:text-left">
+              <p className="text-sm sm:text-base font-normal text-gray-800">
+                Order Items
+              </p>
+              <p className="text-sm sm:text-base font-semibold text-gray-800 md:text-left">
                 {String(order.orderItems.length).padStart(2, "0")}
               </p>
             </div>
@@ -134,7 +136,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                   </div>
                   <span
                     className="
-            text-sm font-normal text-gray-800 ml-2
+            text-sm sm:text-base  font-normal text-gray-800 ml-2
             line-clamp-2 overflow-hidden text-ellipsis
           "
                   >

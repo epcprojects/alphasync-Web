@@ -1,6 +1,6 @@
 import React from "react";
 
-const ShoppingCartIcon = ({ fill = "white", width = 18, height = 18 }) => {
+const ShoppingCartIcon = ({ fill = "white", width = 20, height = 20 }) => {
   return (
     <svg
       width={width}

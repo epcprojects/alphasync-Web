@@ -3,6 +3,7 @@ import { PencilEditIcon, TrashBinIcon, MailIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type AdminListingProps = {
   admin: UserAttributes;
@@ -63,7 +64,75 @@ export default function AdminListView({
   const { bg, text } = getColorPair(admin.id);
 
   const displayStatus = getDisplayStatus(admin.invitationStatus, admin.status);
+  const isMobile = useIsMobile();
 
+  if (isMobile) {
+    return (
+      <div className="p-2 bg-white rounded-lg mt-2 flex flex-col gap-3 shadow-table">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-2">
+            <span
+              className={`w-10 h-10 shrink-0 ${bg} ${text} flex items-center text-sm font-medium justify-center rounded-full`}
+            >
+              {getInitials(admin.fullName ?? admin.email ?? "----")}
+            </span>
+            <div className="flex flex-col ">
+              <h2 className="text-gray-800 text-base font-semibold">
+                {admin.fullName ?? "----"}
+              </h2>
+              <h2 className="text-gray-800 text-sm font-normal">
+                {admin.email}
+              </h2>
+            </div>
+          </div>
+          <div className=" font-medium text-xs md:text-sm ">
+            <span
+              className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+                displayStatus
+              )}`}
+            >
+              {displayStatus}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-black font-medium text-sm pe-1">Phone:</span>
+            <span className="text-gray-800 font-normal text-sm">
+              {admin.phoneNo}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            {admin.invitationStatus === "pending" && (
+              <Tooltip content="Resend Invitation">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (admin.id) onResendInvitation?.(admin.id);
+                  }}
+                  className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-400 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+                >
+                  <MailIcon fill="currentColor" height={18} width={18} />
+                </button>
+              </Tooltip>
+            )}
+            <Tooltip content="Delete">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (admin.id) onDeleteAdmin?.(Number(admin.id));
+                }}
+                className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+              >
+                <TrashBinIcon width="15" height="15" />
+              </button>
+            </Tooltip>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div
       key={admin.id}
@@ -71,23 +140,23 @@ export default function AdminListView({
     >
       <div className="flex items-center gap-2 col-span-4">
         <span
-          className={`md:w-10 md:h-10 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
+          className={`md:w-11 md:h-11 w-8 h-8 shrink-0 text-sm sm:text-base ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
         >
           {getInitials(admin.fullName ?? admin.email ?? "----")}
         </span>
         <div>
-          <h2 className="text-gray-800 text-xs md:text-sm font-medium">
+          <h2 className="text-gray-800 text-sm md:text-base font-medium">
             {admin.fullName ?? "----"}
           </h2>
-          <h2 className="text-gray-800 text-xs font-normal">{admin.email}</h2>
+          <h2 className="text-gray-800 text-sm font-normal">{admin.email}</h2>
         </div>
       </div>
 
-      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-3">
+      <div className="text-sm md:text-base font-normal text-gray-800 col-span-3">
         {admin.phoneNo ?? "—"}
       </div>
 
-      <div className="font-medium text-xs md:text-sm text-gray-800 col-span-2">
+      <div className="font-medium text-sm md:text-base text-gray-800 col-span-2">
         <span
           className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
             displayStatus
@@ -105,9 +174,9 @@ export default function AdminListView({
                 e.stopPropagation();
                 if (admin.id) onResendInvitation?.(admin.id);
               }}
-              className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+              className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-400 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
             >
-              <MailIcon />
+              <MailIcon fill="currentColor" height={18} width={18} />
             </button>
           </Tooltip>
         )}
@@ -117,7 +186,7 @@ export default function AdminListView({
               e.stopPropagation();
               if (admin.id) onDeleteAdmin?.(Number(admin.id));
             }}
-            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+            className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
           >
             <TrashBinIcon width="15" height="15" />
           </button>

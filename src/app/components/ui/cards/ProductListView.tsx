@@ -49,7 +49,7 @@ export default function ProductListView({
             {product.title}
           </h3>
           <p
-            className="text-gray-800 text-[10px] font-normal md:text-xs line-clamp-1"
+            className="text-gray-800 text-xs font-normal md:text-sm line-clamp-1"
             dangerouslySetInnerHTML={{
               __html: product.description || "No description available",
             }}

@@ -2,8 +2,8 @@ import React from "react";
 
 const CustomerIcon = ({
   fill = "currentColor",
-  width = "19",
-  height = "18",
+  width = "21",
+  height = "20",
 }) => {
   return (
     <svg

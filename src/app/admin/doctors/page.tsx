@@ -193,7 +193,7 @@ function DoctorContent() {
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
+          <h2 className="lg:w-full text-black font-semibold text-xl md:text-3xl lg:4xl">
             Doctors
           </h2>
         </div>
@@ -201,13 +201,16 @@ function DoctorContent() {
         <div className="sm:bg-white rounded-full w-full flex flex-col sm:flex-row items-center gap-1 md:gap-2 sm:p-1.5 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
           <div className="flex items-center relative bg-white sm:p-0 sm:bg-transparent w-full sm:w-fit p-1 rounded-full  shadow-table sm:shadow-none">
             <span className="absolute left-3">
-              <SearchIcon />
+              <SearchIcon
+                height={isMobile ? "16" : "20"}
+                width={isMobile ? "16" : "20"}
+              />
             </span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 w-full sm:w-80 sm:min-w-80 focus:bg-white outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
 
@@ -259,7 +262,7 @@ function DoctorContent() {
               <Tab
                 key={index}
                 as="button"
-                className="flex items-center gap-1 md:gap-2 w-full justify-center text-[11px] hover:bg-gray-50 whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-2 py-2.5 md:py-4 md:px-6"
+                className="flex items-center gap-1 md:gap-2 w-full justify-center hover:bg-gray-50 whitespace-nowrap md:text-base text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-1.5 py-2.5 md:py-4 md:px-6"
               >
                 {tab}
               </Tab>
@@ -268,7 +271,7 @@ function DoctorContent() {
           <TabPanels>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden sm:grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="hidden sm:grid grid-cols-12 text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div className="col-span-3">
                     <h2>Name</h2>
                   </div>
@@ -332,7 +335,7 @@ function DoctorContent() {
             </TabPanel>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden sm:grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="hidden sm:grid grid-cols-12 text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div className="col-span-3">
                     <h2>Name</h2>
                   </div>

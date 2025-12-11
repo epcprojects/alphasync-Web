@@ -58,7 +58,7 @@ export default function BrowserProductCard({
         <div className="flex flex-col gap-2 h-full justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex justify-between items-start">
-              <h2 className="text-gray-800 font-semibold  overflow-hidden line-clamp-1 text-base md:text-lg">
+              <h2 className="text-gray-800 font-semibold  overflow-hidden line-clamp-1 text-lg md:text-xl">
                 {product.title}
               </h2>
               {product.tags?.[0] && (
@@ -68,7 +68,7 @@ export default function BrowserProductCard({
               )}
             </div>
             <h3
-              className="text-gray-600 text-xs line-clamp-2 md:text-sm"
+              className="text-gray-600 text-sm line-clamp-2 md:text-base"
               dangerouslySetInnerHTML={{ __html: product.description }}
             ></h3>
           </div>

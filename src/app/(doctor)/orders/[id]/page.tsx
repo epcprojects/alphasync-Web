@@ -419,8 +419,8 @@ const Page = () => {
 
           <div className="p-3 md:p-6 flex flex-col gap-1.5 md:gap-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 md:gap-4">
-                <h2 className="text-xs whitespace-nowrap md:text-lg font-semibold text-black">
+              <div className="flex items-center gap-1 md:gap-4">
+                <h2 className="text-sm whitespace-nowrap md:text-lg font-semibold text-black">
                   Order {order.displayId || order.id}
                 </h2>
                 <span className="text-gray-700 font-medium text-xxs md:text-sm py-0.5 px-2.5 rounded-full bg-gray-100 border border-gray-200">
@@ -437,7 +437,7 @@ const Page = () => {
             </div>
 
             <div className="flex flex-col gap-1">
-              <div className="hidden sm:grid grid-cols-4 gap-2 text-xs font-medium text-black rounded-xl bg-gray-50 p-1.5 md:p-3">
+              <div className="hidden sm:grid grid-cols-4 gap-2 text-sm font-medium text-black rounded-xl bg-gray-50 p-1.5 md:p-3">
                 <div>Product</div>
                 <div>Quantity</div>
                 <div>Unit Price</div>
@@ -449,28 +449,28 @@ const Page = () => {
                   key={item.id}
                   className="grid grid-cols-2 gap-2 sm:grid-cols-4 items-start rounded-lg sm:rounded-xl bg-gray-50 p-1.5 md:py-2 md:px-3"
                 >
-                  <div className="text-gray-800 text-xs md:text-sm sm:order-1 order-1">
-                    <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                  <div className="text-gray-800 text-sm md:text-base sm:order-1 order-1">
+                    <span className="text-black font-medium text-sm sm:hidden inline-block pe-2">
                       Product:
                     </span>
                     {item.product.title}
                   </div>
                   <div className="flex sm:order-2 order-3">
-                    <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                    <span className="text-black font-medium text-sm sm:hidden inline-block pe-2">
                       Quantity:
                     </span>
-                    <span className="inline-block rounded-full sm:px-2 sm:py-0.5 text-xs sm:font-medium text-gray-800 sm:text-gray-700 sm:bg-gray-50 sm:border sm:border-gray-200">
+                    <span className="inline-block rounded-full sm:px-2 sm:py-0.5 text-sm sm:font-medium text-gray-800 sm:text-gray-700 sm:bg-gray-50 sm:border sm:border-gray-200">
                       {item.quantity}
                     </span>
                   </div>
-                  <div className="text-gray-800 flex sm:justify-start justify-end text-xs md:text-sm font-normal sm:order-3 order-2">
-                    <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                  <div className="text-gray-800 flex sm:justify-start justify-end text-sm md:text-base font-normal sm:order-3 order-2">
+                    <span className="text-black font-medium text-sm sm:hidden inline-block pe-2">
                       Unit Price:
                     </span>
                     ${item.price.toFixed(2)}
                   </div>
-                  <div className="text-gray-800 text-xs flex sm:justify-start justify-end md:text-sm sm:font-medium sm:order-4 order-4">
-                    <span className="text-black font-medium text-xs sm:hidden inline-block pe-2">
+                  <div className="text-gray-800 text-sm flex sm:justify-start justify-end md:text-base sm:font-medium sm:order-4 order-4">
+                    <span className="text-black font-medium text-sm sm:hidden inline-block pe-2">
                       Total:
                     </span>
                     ${item.totalPrice.toFixed(2)}
@@ -479,10 +479,10 @@ const Page = () => {
               ))}
 
               <div className="grid grid-cols-4 bg-sky-50 p-1.5 md:py-2 md:px-3 rounded-lg md:rounded-xl">
-                <div className="col-span-3 text-gray-800 font-semibold text-sm md:text-lg">
+                <div className="col-span-3 text-gray-800 font-semibold text-base md:text-lg">
                   Order Total
                 </div>
-                <div className="text-sm md:text-lg font-semibold text-primary">
+                <div className="text-base md:text-lg font-semibold text-primary">
                   ${order.totalPrice.toFixed(2)}
                 </div>
               </div>
@@ -500,23 +500,23 @@ const Page = () => {
                 <DeliveryTruckIcon />
               </div>
               <div className="flex flex-col gap-0.5">
-                <h2 className="font-medium text-xs text-gray-500 ">
+                <h2 className="font-medium text-sm text-gray-500 ">
                   Tracking Number:
                 </h2>
-                <h3 className="text-xs md:text-sm text-gray-800">
+                <h3 className="text-xs md:text-base text-gray-800">
                   TRK123456789
                 </h3>
               </div>
             </div>
             <div className="rounded-lg flex items-center gap-1 md:gap-2 p-2 bg-gray-50 ">
-              <div className="rounded-lg bg-white border border-gray-200 flex items-center justify-center w-10 h-10">
+              <div className="rounded-lg shrink-0 bg-white border border-gray-200 flex items-center justify-center w-10 h-10">
                 <LocationIcon />
               </div>
               <div className="flex flex-col gap-0.5">
-                <h2 className="font-medium text-xs text-gray-500 ">
+                <h2 className="font-medium text-sm text-gray-500 ">
                   Shipping Address:
                 </h2>
-                <h3 className="text-xs md:text-sm text-gray-800">
+                <h3 className="text-sm md:text-base text-gray-800">
                   {order.patient.address || "No address provided"}
                 </h3>
               </div>

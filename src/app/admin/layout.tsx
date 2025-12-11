@@ -189,7 +189,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             </div>
           )}
         </div>
-        <main className="px-3  pb-3">{children}</main>
+        <main className="px-2  pb-2">{children}</main>
       </div>
     </AdminRoute>
   );

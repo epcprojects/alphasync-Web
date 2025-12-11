@@ -136,8 +136,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         : formatCurrency(dashboardData?.doctorDashboard?.totalSales),
       icon: (
         <SyrupIcon
-          height={isMobile ? "16" : "32"}
-          width={isMobile ? "16" : "32"}
+          height={isMobile ? "20" : "32"}
+          width={isMobile ? "20" : "32"}
         />
       ),
       bgColor: "bg-purple-500",
@@ -149,8 +149,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         : formatCurrency(dashboardData?.doctorDashboard?.totalProfit),
       icon: (
         <SyrupIcon
-          height={isMobile ? "16" : "32"}
-          width={isMobile ? "16" : "32"}
+          height={isMobile ? "20" : "32"}
+          width={isMobile ? "20" : "32"}
         />
       ),
       bgColor: "bg-emerald-400",
@@ -162,8 +162,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         : formatCurrency(dashboardData?.doctorDashboard?.averageOrderValue),
       icon: (
         <SyrupIcon
-          height={isMobile ? "16" : "32"}
-          width={isMobile ? "16" : "32"}
+          height={isMobile ? "20" : "32"}
+          width={isMobile ? "20" : "32"}
         />
       ),
       bgColor: "bg-pink-400",
@@ -175,8 +175,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         : formatNumber(dashboardData?.doctorDashboard?.ordersCount),
       icon: (
         <SyrupIcon
-          height={isMobile ? "16" : "32"}
-          width={isMobile ? "16" : "32"}
+          height={isMobile ? "20" : "32"}
+          width={isMobile ? "20" : "32"}
         />
       ),
       bgColor: "bg-orange-400",
@@ -212,7 +212,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             </div>
           )}
         </div>
-        <main className="px-3  pb-3">{children}</main>
+        <main className="px-2  pb-2">{children}</main>
       </div>
     </DoctorRoute>
   );

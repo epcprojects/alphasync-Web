@@ -357,7 +357,7 @@ const Page = () => {
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 sm:w-fit w-full justify-center md:gap-2 text-[11px] hover:bg-gray-50 whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
+                  "flex items-center gap-1 sm:w-fit w-full justify-center md:gap-2 text-sm hover:bg-gray-50 whitespace-nowrap md:text-base outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-1.5 py-3 md:py-4 md:px-6"
                 }
               >
                 <UserIcon
@@ -370,7 +370,7 @@ const Page = () => {
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 text-[11px] sm:w-fit w-full justify-center hover:bg-gray-50 whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
+                  "flex items-center gap-1 md:gap-2 text-sm sm:w-fit w-full justify-center hover:bg-gray-50 whitespace-nowrap md:text-base outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-1.5 py-3 md:py-4 md:px-6"
                 }
               >
                 <InfoIcon

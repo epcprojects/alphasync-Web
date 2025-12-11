@@ -64,27 +64,27 @@ export default function RequestListView({
     return (
       <div className="p-2 bg-white rounded-lg  flex flex-col gap-3 shadow-table">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-start gap-2">
             <span
               className={`w-10 h-10 shrink-0 ${bg} ${text} flex items-center text-sm font-medium justify-center rounded-full`}
             >
               {getInitials(request.customer)}
             </span>
-            <div className="flex flex-col">
-              <h2 className="text-gray-800 text-sm font-semibold">
+            <div className="flex flex-col ">
+              <h2 className="text-gray-800 text-base font-semibold">
                 {request.requestID}
               </h2>
-              <h2 className="text-gray-800 text-xs font-normal">
+              <h2 className="text-gray-800 text-sm font-normal">
                 {request.customer}
               </h2>
-              <h3 className="text-gray-800 text-xs font-normal">
+              <h3 className="text-gray-800 text-sm font-normal">
                 {request.email}
               </h3>
             </div>
           </div>
           <div className=" font-medium text-xs md:text-sm ">
             <span
-              className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
+              className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
                 request.status
               )}`}
             >
@@ -95,15 +95,15 @@ export default function RequestListView({
 
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-black font-medium text-xs pe-1">Date:</span>
-            <span className="text-gray-800 font-normal text-xs">
+            <span className="text-black font-medium text-sm pe-1">Date:</span>
+            <span className="text-gray-800 font-normal text-sm">
               {request.date}
             </span>
           </div>
 
           <div>
-            <span className="text-black font-medium text-xs pe-1">Total:</span>
-            <span className="text-gray-800 font-normal text-xs">
+            <span className="text-black font-medium text-sm pe-1">Total:</span>
+            <span className="text-gray-800 font-normal text-sm">
               {request.amount}
             </span>
           </div>
@@ -111,8 +111,8 @@ export default function RequestListView({
 
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-black font-medium text-xs pe-1">Items:</span>
-            <span className="text-gray-800 font-normal text-xs">
+            <span className="text-black font-medium text-sm pe-1">Items:</span>
+            <span className="text-gray-800 font-normal text-sm">
               {request.items}
             </span>
           </div>
@@ -127,7 +127,7 @@ export default function RequestListView({
                       e.stopPropagation();
                       onAcceptBtn();
                     }}
-                    className="bg-green-500 hover:bg-green-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
+                    className="bg-green-500 hover:bg-green-700 cursor-pointer rounded-md md:h-8 md:w-8 h-7 w-7 flex items-center justify-center"
                   >
                     <CheckMarkCircle />
                   </button>
@@ -141,7 +141,7 @@ export default function RequestListView({
                     e.stopPropagation();
                     onRejectBtn();
                   }}
-                  className="bg-red-500 cursor-pointer rounded-md h-6 w-6 flex items-center justify-center"
+                  className="bg-red-500 cursor-pointer rounded-md h-7 w-7 flex items-center justify-center"
                 >
                   <span className="bg-white rounded-full w-3 h-3 flex items-center justify-center">
                     <CrossIcon fill="red" width="12" height="12" />
@@ -153,7 +153,7 @@ export default function RequestListView({
                 e.stopPropagation();
                 onProfileBtn();
               }}
-              className="bg-primary cursor-pointer rounded-md h-6 w-6 flex items-center justify-center"
+              className="bg-primary cursor-pointer rounded-md h-7 w-7 flex items-center justify-center"
             >
               <UserFilledIcon width={14} height={14} />
             </button>
@@ -163,7 +163,7 @@ export default function RequestListView({
                 e.stopPropagation();
                 onChatBtn();
               }}
-              className="flex  md:h-8 md:w-8 h-6 w-6 cursor-pointer bg-blue-500 items-center justify-center rounded-md border  border-blue-500"
+              className="flex  md:h-8 md:w-8 h-7 w-7 cursor-pointer bg-blue-500 items-center justify-center rounded-md border  border-blue-500"
             >
               <svg
                 width="14s"
@@ -192,7 +192,7 @@ export default function RequestListView({
       className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div>
-        <h2 className="text-gray-800 text-xs md:text-sm font-normal whitespace-nowrap">
+        <h2 className="text-gray-800 text-sm md:text-base font-normal whitespace-nowrap">
           {request.requestID}
         </h2>
       </div>
@@ -206,28 +206,28 @@ export default function RequestListView({
           <h2 className="text-gray-800 text-xs md:text-base font-medium">
             {request.customer}
           </h2>
-          <h3 className="text-gray-800 text-xs font-normal">{request.email}</h3>
+          <h3 className="text-gray-800 text-sm font-normal">{request.email}</h3>
         </div>
       </div>
-      <div className="text-xs lg:block hidden md:text-sm font-normal text-gray-600 ">
+      <div className="text-xs lg:block hidden md:text-base font-normal text-gray-600 ">
         {request.date}
       </div>
 
-      <div className="lg:block hidden font-normal text-xs md:text-sm text-gray-800">
+      <div className="lg:block hidden font-normal text-sm md:text-sm text-gray-800">
         <ul>
           {request.items.map((item, index) => (
-            <li key={index} className="line-clamp-1">
+            <li key={index} className="">
               {item}
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="text-xs md:text-sm font-medium text-gray-800 ">
+      <div className="text-xs md:text-base font-medium text-gray-800 ">
         ${request.amount}
       </div>
 
-      <div className=" font-medium text-xs md:text-sm ">
+      <div className=" font-medium text-xs md:text-base ">
         <span
           className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             request.status
@@ -247,7 +247,7 @@ export default function RequestListView({
                   e.stopPropagation();
                   onAcceptBtn();
                 }}
-                className="bg-green-500 hover:bg-green-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
+                className="bg-green-500 hover:bg-green-700 cursor-pointer rounded-md md:h-8 md:w-8 h-7 w-7 flex items-center justify-center"
               >
                 <CheckMarkCircle />
               </button>
@@ -262,7 +262,7 @@ export default function RequestListView({
                   e.stopPropagation();
                   onRejectBtn();
                 }}
-                className="bg-red-500 hover:bg-red-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
+                className="bg-red-500 hover:bg-red-700 cursor-pointer rounded-md md:h-8 md:w-8 h-7 w-7 flex items-center justify-center"
               >
                 <span className="bg-white rounded-full w-4 h-4 flex items-center justify-center">
                   <CrossIcon fill="red" width="14" height="14" />
@@ -277,7 +277,7 @@ export default function RequestListView({
               e.stopPropagation();
               onProfileBtn();
             }}
-            className="bg-primary hover:bg-blue-700 cursor-pointer rounded-md md:h-8 md:w-8 h-6 w-6 flex items-center justify-center"
+            className="bg-primary hover:bg-blue-700 cursor-pointer rounded-md md:h-8 md:w-8 h-7 w-7 flex items-center justify-center"
           >
             <UserFilledIcon />
           </button>
@@ -289,7 +289,7 @@ export default function RequestListView({
               e.stopPropagation();
               onChatBtn();
             }}
-            className="flex  md:h-8 md:w-8 h-6 w-6 cursor-pointer bg-blue-500 hover:bg-blue-700 items-center justify-center rounded-md border  border-blue-500"
+            className="flex  md:h-8 md:w-8 h-7 w-7 cursor-pointer bg-blue-500 hover:bg-blue-700 items-center justify-center rounded-md border  border-blue-500"
           >
             <svg
               width="19"

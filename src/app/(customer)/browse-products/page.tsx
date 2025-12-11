@@ -210,7 +210,7 @@ function InventoryContent() {
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="lg:w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
+          <h2 className="lg:w-full text-black font-semibold text-xl md:text-3xl lg:4xl">
             Browse Products
           </h2>
           <div className="px-2.5 py-0.5 rounded-full bg-white border border-indigo-200">
@@ -320,7 +320,7 @@ function InventoryContent() {
             </div>
           ) : (
             <div className="space-y-1">
-              <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-table">
+              <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium bg-white rounded-xl text-black shadow-table">
                 <div className="lg:col-span-3 sm:col-span-4">Product</div>
                 <div className="lg:col-span-2 sm:col-span-3">Category</div>
                 <div className="col-span-2">Form</div>

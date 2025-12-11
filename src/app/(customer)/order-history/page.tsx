@@ -269,11 +269,11 @@ function History() {
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="text-black font-semibold text-lg xl:text-2xl whitespace-nowrap">
+          <h2 className="text-black font-semibold text-xl xl:text-3xl whitespace-nowrap">
             Your Order History
           </h2>
           <div className="px-3 py-1 rounded-full bg-white border border-indigo-200">
-            <p className="text-sm font-medium text-primary whitespace-nowrap">
+            <p className="text-base font-medium text-primary whitespace-nowrap">
               {totalResults}
             </p>
           </div>

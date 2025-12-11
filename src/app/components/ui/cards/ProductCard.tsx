@@ -59,11 +59,11 @@ export default function ProductCard({
       <div className="bg-gray-50 border border-gray-100 p-2 md:p-4 md:min-h-56 md:max-h-56 w-full rounded-lg">
         <div className="flex flex-col gap-2 h-full justify-between">
           <div className="flex flex-col gap-1">
-            <h2 className="text-gray-900 font-semibold line-clamp-2 text-base md:text-lg">
+            <h2 className="text-gray-900 font-semibold line-clamp-2 text-lg md:text-xl">
               {product.title}
             </h2>
             <div
-              className="text-gray-600 text-xs line-clamp-2 md:text-sm"
+              className="text-gray-600 text-sm line-clamp-2 md:text-base"
               dangerouslySetInnerHTML={{ __html: product.description }}
             />
           </div>

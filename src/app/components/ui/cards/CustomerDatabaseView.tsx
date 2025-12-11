@@ -96,18 +96,18 @@ export default function CustomerDatabaseView({
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-start gap-2 ">
             <span
-              className={`w-10 h-10 ${bg} ${text} flex shrink-0 items-center font-medium justify-center rounded-full`}
+              className={`w-11 h-11 ${bg} ${text} flex shrink-0 items-center font-medium justify-center rounded-full`}
             >
               {getInitials(name || "----")}
             </span>
-            <div>
-              <h2 className="text-gray-800 text-xs  md:text-sm font-medium">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-gray-800 text-sm  md:text-base font-semibold">
                 {name || "----"}
               </h2>
-              <h2 className="text-gray-800 text-xxs md:text-sm font-normal">
+              <h2 className="text-gray-800 text-sm md:text-sm font-normal">
                 {contact || "—"}
               </h2>
-              <h2 className="text-gray-800 text-xxs md:text-sm font-normal">
+              <h2 className="text-gray-800 text-sm md:text-sm font-normal">
                 {email || "—"}
               </h2>
             </div>
@@ -115,7 +115,7 @@ export default function CustomerDatabaseView({
 
           <div className=" font-medium text-xs md:text-sm text-gray-800">
             <span
-              className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
+              className={`inline-block rounded-full px-2.5 py-0.5 text-xs capitalize md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
                 invitationStatus
               )}`}
             >
@@ -126,19 +126,19 @@ export default function CustomerDatabaseView({
 
         <div className="flex items-center gap-1 w-full">
           <div className="flex items-center  gap-1.5 w-full">
-            <span className="text-black font-medium text-xs block">
+            <span className="text-black font-medium text-sm whitespace-nowrap block">
               Date of Birth:
             </span>
-            <span className="text-gray-800 text-xs font-normal block">
+            <span className="text-gray-800 text-sm font-normal block">
               {dateOfBirth || "—"}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 w-full">
-            <span className="text-black font-medium text-xs block">
+            <span className="text-black font-medium text-sm block">
               Last Order:
             </span>
-            <span className="text-gray-800 text-xs font-normal block">
+            <span className="text-gray-800 text-sm font-normal block">
               {lastOrder || "—"}
             </span>
           </div>
@@ -146,10 +146,10 @@ export default function CustomerDatabaseView({
 
         <div className="flex items-center gap-1 w-full">
           <div className="flex items-center gap-1.5 w-full">
-            <span className="text-black font-medium text-xs block">
+            <span className="text-black font-medium text-sm block">
               Total Orders:
             </span>
-            <span className="text-gray-800 text-xs font-normal block">
+            <span className="text-gray-800 text-sm font-normal block">
               {totalOrder}
             </span>
           </div>
@@ -160,7 +160,7 @@ export default function CustomerDatabaseView({
                   e.stopPropagation();
                   if (id) onResendInvitation(id);
                 }}
-                className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+                className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
               >
                 <MailIcon fill="currentColor" height={16} width={16} />
               </button>
@@ -170,7 +170,7 @@ export default function CustomerDatabaseView({
                 e.stopPropagation();
                 if (id) onViewCustomer?.(Number(id));
               }}
-              className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+              className="flex rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
             >
               <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
             </button>
@@ -198,12 +198,12 @@ export default function CustomerDatabaseView({
           </h3>
         </div>
       </div>
-      <div className="col-span-2 text-gray-800 wrap-break-word text-xs md:text-sm font-normal">
+      <div className="col-span-2 text-gray-800 wrap-break-word text-sm md:text-base font-normal">
         {contact || "—"}
       </div>
 
       <div className="col-span-3">
-        <span className="text-gray-800 text-xs wrap-break-word md:text-sm font-medium">
+        <span className="text-gray-800 text-sm wrap-break-word md:text-base font-medium">
           {email || "—"}
         </span>
       </div>
@@ -212,19 +212,19 @@ export default function CustomerDatabaseView({
         {dateOfBirth || "—"}
       </div>
 
-      <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
+      <div className="col-span-1 font-medium text-sm md:text-base text-gray-800">
         {lastOrder || "—"}
       </div>
 
-      <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
-        <span className="inline-block rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+      <div className="col-span-1 font-medium text-sm md:text-base text-gray-800">
+        <span className="inline-block rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-sm font-medium text-gray-700">
           {totalOrder}
         </span>
       </div>
 
-      <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
+      <div className="col-span-1 font-medium text-sm md:text-base text-gray-800">
         <span
-          className={`block rounded-full px-2.5  md:whitespace-nowrap wrap-break-word py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
+          className={`block rounded-full px-2.5 capitalize  md:whitespace-nowrap wrap-break-word py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             invitationStatus
           )}`}
         >
@@ -241,7 +241,7 @@ export default function CustomerDatabaseView({
                 e.stopPropagation();
                 if (id) onResendInvitation(id);
               }}
-              className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+              className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
             >
               <MailIcon fill="currentColor" height={16} width={16} />
             </button>
@@ -254,7 +254,7 @@ export default function CustomerDatabaseView({
               e.stopPropagation();
               if (id) onViewCustomer?.(Number(id));
             }}
-            className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+            className="flex rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
             <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
           </button>

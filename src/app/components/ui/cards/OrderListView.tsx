@@ -87,20 +87,20 @@ export default function OrderListView({
       <div
         onClick={onRowClick}
         key={order.id}
-        className="bg-white flex flex-col gap-2 p-2  cursor-pointer  rounded-xl "
+        className="bg-white flex flex-col gap-2 p-2  cursor-pointer shadow-table  rounded-xl "
       >
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2 ">
+          <div className="flex items-start gap-2 ">
             <span
               className={`w-10 h-10 ${bg} ${text} shrink-0 flex items-center font-medium justify-center rounded-full`}
             >
               {getInitials(order.customer)}
             </span>
             <div>
-              <h2 className="text-gray-800 text-sm sm:hidden font-semibold">
+              <h2 className="text-gray-800 text-base sm:hidden font-semibold">
                 {order.orderId}
               </h2>
-              <h2 className="text-gray-800 text-xs md:text-sm font-medium">
+              <h2 className="text-gray-800 text-sm font-medium">
                 {order.customer}
               </h2>
             </div>
@@ -108,7 +108,7 @@ export default function OrderListView({
 
           <div className=" font-medium text-xs md:text-sm text-gray-800">
             <span
-              className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
+              className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${getStatusClasses(
                 order.status
               )}`}
             >
@@ -119,22 +119,22 @@ export default function OrderListView({
 
         <div className="flex items-center gap-1 w-full">
           <div className="flex items-center  gap-1.5 w-full">
-            <span className="text-black font-medium text-xs block">Date:</span>
-            <span className="text-gray-800 text-xs font-normal block">
+            <span className="text-black font-medium text-sm block">Date:</span>
+            <span className="text-gray-800 text-sm font-normal block">
               {order.date}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 w-fit">
-            <span className="text-black font-medium text-xs block">Items:</span>
-            <span className="text-gray-800 text-xs font-normal block">
+            <span className="text-black font-medium text-sm block">Items:</span>
+            <span className="text-gray-800 text-sm font-normal block">
               {order.items}
             </span>
           </div>
 
           <div className="flex items-center justify-end gap-1.5 w-full">
-            <span className="text-black font-medium text-xs block">Total:</span>
-            <span className="text-gray-800 text-xs font-normal block">
+            <span className="text-black font-medium text-sm block">Total:</span>
+            <span className="text-gray-800 text-sm font-normal block">
               ${order.total}
             </span>
           </div>
@@ -142,20 +142,20 @@ export default function OrderListView({
 
         <div className="flex items-center gap-1 w-full">
           <div className="flex items-center  gap-1.5 w-full">
-            <span className="text-black font-medium text-xs block">
+            <span className="text-black font-medium text-sm block">
               Net Cost:
             </span>
-            <span className="text-gray-800 text-xs font-normal block">
+            <span className="text-gray-800 text-sm font-normal block">
               ${order.netCost}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 w-fit">
-            <span className="text-black font-medium text-xs block">
+            <span className="text-black font-medium text-sm block">
               Profit:
             </span>
 
-            <span className="text-green-600 text-xs font-normal block">
+            <span className="text-green-600 text-sm font-normal block">
               ${order.profit || 0}
             </span>
           </div>
@@ -166,7 +166,7 @@ export default function OrderListView({
                 e.stopPropagation();
                 onViewOrderDetail?.(order.displayId);
               }}
-              className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+              className="flex rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
             >
               <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
             </button>
@@ -181,7 +181,7 @@ export default function OrderListView({
       className="hidden sm:grid hover:bg-gray-100 group  md:grid-cols-[4rem_8rem_4rem_8rem_1fr_1fr_1fr_1fr_3rem] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] gap-4 items-center rounded-xl bg-white p-3 shadow-table"
     >
       <div className="sm:block hidden">
-        <h2 className="text-gray-800 text-xs md:text-sm font-normal">
+        <h2 className="text-gray-800 text-sm md:text-base font-normal">
           {order.orderId}
         </h2>
       </div>
@@ -192,21 +192,21 @@ export default function OrderListView({
           {getInitials(order.customer)}
         </span>
         <div>
-          <h2 className="text-gray-800 text-sm sm:hidden font-semibold">
+          <h2 className="text-gray-800 text-sm md:text-base sm:hidden font-semibold">
             {order.orderId}
           </h2>
-          <h2 className="text-gray-800 text-xs md:text-sm font-medium">
+          <h2 className="text-gray-800 text-sm md:text-base font-medium">
             {order.customer}
           </h2>
         </div>
       </div>
-      <div className="text-xs md:text-sm font-normal text-gray-600 ">
+      <div className="text-sm md:text-base font-normal text-gray-600 ">
         {order.date}
       </div>
 
-      <div className=" font-medium text-xs md:text-sm text-gray-800">
+      <div className=" font-medium text-sm md:text-base text-gray-800">
         <span
-          className={`flex md:inline rounded-full md:whitespace-nowrap wrap-break-word px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
+          className={`flex md:inline rounded-full md:whitespace-nowrap wrap-break-word px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
             order.status
           )}`}
         >
@@ -214,21 +214,21 @@ export default function OrderListView({
         </span>
       </div>
 
-      <div className=" font-medium text-xs md:text-sm text-gray-800">
+      <div className=" font-medium text-sm md:text-base text-gray-800">
         <span className="inline-block rounded-full px-2 py-0.5 text-xs  font-medium text-gray-700 bg-gray-50 border border-gray-200">
           {order.items}
         </span>
       </div>
 
-      <div className="text-gray-800 font-medium text-xs md:text-sm">
+      <div className="text-gray-800 font-medium text-sm md:text-base">
         ${order.total}
       </div>
 
-      <div className="text-gray-800 font-normal text-xs md:text-sm">
+      <div className="text-gray-800 font-normal text-sm md:text-base">
         ${order.netCost}
       </div>
 
-      <div className="text-green-600 font-normal text-xs md:text-sm">
+      <div className="text-green-600 font-normal text-sm md:text-base">
         ${order.profit}
       </div>
 
@@ -239,7 +239,7 @@ export default function OrderListView({
               e.stopPropagation();
               onViewOrderDetail?.(order.displayId);
             }}
-            className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+            className="flex rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
             <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
           </button>

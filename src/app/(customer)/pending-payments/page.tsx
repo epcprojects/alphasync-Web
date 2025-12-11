@@ -358,7 +358,7 @@ function PendingPayments() {
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="text-black font-semibold text-lg xl:text-2xl whitespace-nowrap">
+          <h2 className="text-black font-semibold text-xl xl:text-3xl whitespace-nowrap">
             Pending Payments
           </h2>
           <div className=" px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-white border border-indigo-200">
