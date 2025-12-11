@@ -114,12 +114,13 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
       }`}
     >
       <div className="flex items-start gap-3 md:border-b md:border-gray-200 md:pb-4">
-        <div className="w-18 h-18 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
+        <div className="w-18 h-18 flex-shrink-0   bg-gray-100 rounded-lg flex items-center justify-center">
           <ProductImage
             alt="prduct"
             src={item.primaryImage}
             width={1024}
             height={1024}
+            className="w-full h-full border rounded-lg border-gray-200"
           />
         </div>
         <div className="flex-1 flex flex-col gap-3 md:gap-1.5 ">
@@ -134,7 +135,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
               }}
             />
           </div>
-          <div className="flex justify-between gap-3 items-start text-sm text-gray-500">
+          <div className="flex justify-between flex-col-reverse sm:flex-row gap-3 w-full items-start text-sm text-gray-500">
             <div
               className={`flex items-center ${item.status ? "gap-2" : "gap-0"}`}
             >
@@ -215,11 +216,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
         </div>
       </div>
       {/* Mobile version - full width, aligned from start */}
-      <div
-        className={`w-full px-2 ${
-          requestStatus ? "border-b border-gray-200 pb-4" : ""
-        } md:hidden`}
-      >
+      <div className={`w-full px-2 ${requestStatus ? " pb-0" : ""} md:hidden`}>
         <div className="flex flex-col gap-2">
           <div className="flex justify-between">
             <span className="text-xs font-normal text-gray-800">
@@ -288,7 +285,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
               )}
             </>
           )}
-          <div className="flex justify-between">
+          <div className="flex justify-between border-b border-b-gray-200 pb-4">
             <span className="text-base font-medium text-gray-800">
               {requestStatus && !paymentRequest ? "Price" : "Total"}
             </span>
@@ -309,7 +306,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
         <div className="flex flex-col gap-1.5">
           {notes.map((note, index) => (
             <div key={index}>
-              <p className="text-base font-medium text-gray-900">
+              <p className="text-sm sm:text-base font-medium text-gray-900">
                 {note.label}
               </p>
               <div
@@ -320,7 +317,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                 } p-3 rounded-lg mt-1`}
               >
                 <p
-                  className={`text-base font-normal ${
+                  className={`text-xs sm:text-base font-normal ${
                     note.label === "Reason for Denial:"
                       ? "text-red-900"
                       : "text-gray-600"

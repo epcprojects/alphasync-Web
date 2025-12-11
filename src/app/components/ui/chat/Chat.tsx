@@ -63,52 +63,51 @@ export default function Chat({
   const [sendMessage] = useMutation(SEND_MESSAGE);
 
   // Map GraphQL message -> local UI type
-  const mapGraphQLMessage = useCallback((msg: GraphQLMessage): ChatMessageType => {
-    const isCurrentUser =
-      msg.user?.id === currentUser?.id ||
-      msg.user?.id === String(currentUser?.id) ||
-      String(msg.user?.id) === currentUser?.id;
+  const mapGraphQLMessage = useCallback(
+    (msg: GraphQLMessage): ChatMessageType => {
+      const isCurrentUser =
+        msg.user?.id === currentUser?.id ||
+        msg.user?.id === String(currentUser?.id) ||
+        String(msg.user?.id) === currentUser?.id;
 
-    // Get sender name - if it's current user, show "You", otherwise show the sender's name
-    const senderName = isCurrentUser
-      ? "You"
-      : msg.sender?.fullName ||
-        msg.otherParticipant?.fullName ||
-        participantName;
+      // Get sender name - if it's current user, show "You", otherwise show the sender's name
+      const senderName = isCurrentUser
+        ? "You"
+        : msg.sender?.fullName ||
+          msg.otherParticipant?.fullName ||
+          participantName;
 
-    return {
-      id: msg.id,
-      sender: senderName,
-      time: msg.createdAt
-        ? new Date(msg.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-      text: msg.content,
-      isUser: isCurrentUser,
-    };
-  }, [currentUser?.id, participantName]);
+      return {
+        id: msg.id,
+        sender: senderName,
+        time: msg.createdAt
+          ? new Date(msg.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+        text: msg.content,
+        isUser: isCurrentUser,
+      };
+    },
+    [currentUser?.id, participantName]
+  );
 
   // Fetch existing messages
-  const { loading: MessageLoading } = useQuery(
-    FETCH_ALL_MESSAGES,
-    {
-      variables: { chatId },
-      skip: !chatId,
-      fetchPolicy: "cache-first",
-      onCompleted: (data) => {
-        if (data?.fetchAllMessages?.allData) {
-          const formatted =
-            data.fetchAllMessages.allData.map(mapGraphQLMessage);
-          setMessages(formatted.reverse());
-        }
-      },
-    }
-  );
+  const { loading: MessageLoading } = useQuery(FETCH_ALL_MESSAGES, {
+    variables: { chatId },
+    skip: !chatId,
+    fetchPolicy: "cache-first",
+    onCompleted: (data) => {
+      if (data?.fetchAllMessages?.allData) {
+        const formatted = data.fetchAllMessages.allData.map(mapGraphQLMessage);
+        setMessages(formatted.reverse());
+      }
+    },
+  });
 
   // Subscription for new messages
   const { data: subscriptionData } = useSubscription(MESSAGE_ADDED, {
@@ -234,7 +233,7 @@ export default function Chat({
         </div>
       ) : (
         <>
-          <div className="rounded-2xl border border-gray-200 p-3 flex flex-col gap-3 max-h-[470px] min-h-[470px]">
+          <div className="rounded-xl sm:rounded-2xl border border-gray-200 p-1.5 sm:p-3 flex flex-col gap-3 max-h-[470px] min-h-[470px]">
             <QuickTemplates
               templates={templates}
               onTemplateClick={handleSend}
@@ -268,11 +267,11 @@ export default function Chat({
                 e.key === "Enter" && !isSendingMessage && handleSend(input)
               }
               disabled={isSendingMessage}
-              className="border border-gray-200 h-12 rounded-full w-full outline-none focus:ring focus:ring-gray-200 placeholder:text-gray-400 ps-4 pe-20 bg-gray-50 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border border-gray-200 h-10 sm:h-12  rounded-full w-full outline-none focus:ring focus:ring-gray-200 placeholder:text-gray-400 ps-4 pe-20 bg-gray-50 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <ThemeButton
               label={isSendingMessage ? "Sending..." : "Send"}
-              heightClass="h-10"
+              heightClass="h-8 sm:h-10"
               className="absolute end-1"
               onClick={() => handleSend(input)}
               disabled={!chatId || isSendingMessage}

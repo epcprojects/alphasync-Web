@@ -3,6 +3,7 @@ import { ArrowLeftIcon, MailIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type Customer = {
   id: number;
@@ -83,16 +84,111 @@ export default function CustomerDatabaseView({
 
   const { bg, text } = getColorPair(id);
 
+  const ismobile = useIsMobile();
+
+  if (ismobile)
+    return (
+      <div
+        onClick={onRowClick}
+        key={id}
+        className="bg-white flex flex-col gap-2 p-2  cursor-pointer  rounded-xl shadow-table"
+      >
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-start gap-2 ">
+            <span
+              className={`w-10 h-10 ${bg} ${text} flex shrink-0 items-center font-medium justify-center rounded-full`}
+            >
+              {getInitials(name || "----")}
+            </span>
+            <div>
+              <h2 className="text-gray-800 text-xs  md:text-sm font-medium">
+                {name || "----"}
+              </h2>
+              <h2 className="text-gray-800 text-xxs md:text-sm font-normal">
+                {contact || "—"}
+              </h2>
+              <h2 className="text-gray-800 text-xxs md:text-sm font-normal">
+                {email || "—"}
+              </h2>
+            </div>
+          </div>
+
+          <div className=" font-medium text-xs md:text-sm text-gray-800">
+            <span
+              className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
+                invitationStatus
+              )}`}
+            >
+              {invitationStatus || "Unknown"}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 w-full">
+          <div className="flex items-center  gap-1.5 w-full">
+            <span className="text-black font-medium text-xs block">
+              Date of Birth:
+            </span>
+            <span className="text-gray-800 text-xs font-normal block">
+              {dateOfBirth || "—"}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 w-full">
+            <span className="text-black font-medium text-xs block">
+              Last Order:
+            </span>
+            <span className="text-gray-800 text-xs font-normal block">
+              {lastOrder || "—"}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 w-full">
+          <div className="flex items-center gap-1.5 w-full">
+            <span className="text-black font-medium text-xs block">
+              Total Orders:
+            </span>
+            <span className="text-gray-800 text-xs font-normal block">
+              {totalOrder}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            {patient?.invitationStatus === "pending" && onResendInvitation && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (id) onResendInvitation(id);
+                }}
+                className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+              >
+                <MailIcon fill="currentColor" height={16} width={16} />
+              </button>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (id) onViewCustomer?.(Number(id));
+              }}
+              className="flex rotate-180 md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+            >
+              <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+
   return (
     <div
       onClick={onRowClick}
       key={id}
       className="grid cursor-pointer grid-cols-12 hover:bg-gray-100 group gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
-      <div className="col-span-3 flex items-center gap-3">
+      <div className="col-span-2 flex items-center gap-3">
         <div className="flex items-center gap-1 md:gap-2">
           <span
-            className={`md:w-10 md:h-10 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
+            className={`md:w-10  hidden md:h-10 ${bg} ${text} shrink-0 lg:flex items-center font-medium justify-center rounded-full`}
           >
             {getInitials(name || "----")}
           </span>
@@ -102,17 +198,17 @@ export default function CustomerDatabaseView({
           </h3>
         </div>
       </div>
-      <div className="col-span-2 text-gray-800 text-xs md:text-sm font-normal">
+      <div className="col-span-2 text-gray-800 wrap-break-word text-xs md:text-sm font-normal">
         {contact || "—"}
       </div>
 
-      <div className="col-span-2">
-        <button className="text-gray-800 text-xs md:text-sm font-medium">
+      <div className="col-span-3">
+        <span className="text-gray-800 text-xs wrap-break-word md:text-sm font-medium">
           {email || "—"}
-        </button>
+        </span>
       </div>
 
-      <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
+      <div className="col-span-1 font-medium text-xs wrap-break-word md:text-sm text-gray-800">
         {dateOfBirth || "—"}
       </div>
 
@@ -128,7 +224,7 @@ export default function CustomerDatabaseView({
 
       <div className="col-span-1 font-medium text-xs md:text-sm text-gray-800">
         <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+          className={`block rounded-full px-2.5  md:whitespace-nowrap wrap-break-word py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             invitationStatus
           )}`}
         >
@@ -136,7 +232,7 @@ export default function CustomerDatabaseView({
         </span>
       </div>
 
-      <div className="col-span-1 flex items-center justify-center gap-2">
+      <div className="col-span-1 flex items-center flex-wrap justify-end gap-2">
         {/* Show resend invitation icon for pending patients */}
         {patient?.invitationStatus === "pending" && onResendInvitation && (
           <Tooltip content="Resend Invitation">
@@ -147,7 +243,7 @@ export default function CustomerDatabaseView({
               }}
               className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
             >
-              <MailIcon />
+              <MailIcon fill="currentColor" height={16} width={16} />
             </button>
           </Tooltip>
         )}

@@ -35,6 +35,7 @@ interface AppModalProps {
   hideConfirmButton?: boolean;
   cancelBtnIcon?: React.ReactNode;
   disableCloseButton?: boolean;
+  hideCrossButton?: boolean;
 }
 
 const sizeClasses = {
@@ -69,6 +70,7 @@ const AppModal: React.FC<AppModalProps> = ({
   scrollNeeded = true,
   cancelBtnIcon,
   disableCloseButton = false,
+  hideCrossButton = false,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -81,7 +83,7 @@ const AppModal: React.FC<AppModalProps> = ({
   const modalClasses =
     position === ModalPosition.RIGHT
       ? `${baseModalClasses} w-full md:w-[600px] md:rounded-xl overflow-hidden`
-      : `${baseModalClasses} sm:h-fit relative w-full   md:m-auto container md:mx-4 ${sizeClasses[size]}`;
+      : `${baseModalClasses} sm:h-fit relative w-full sm:max-h-[90dvh]  md:m-auto container md:mx-4 ${sizeClasses[size]}`;
 
   const wrapperClasses =
     position === ModalPosition.RIGHT
@@ -102,7 +104,7 @@ const AppModal: React.FC<AppModalProps> = ({
               </div>
               <div>
                 <h2
-                  className={`text-sm ${
+                  className={`text-base ${
                     subtitle ? "md:text-lg" : "md:text-xl"
                   }  text-black font-semibold`}
                 >
@@ -116,23 +118,25 @@ const AppModal: React.FC<AppModalProps> = ({
               </div>
             </div>
 
-            <button
-              onClick={disableCloseButton ? undefined : onClose}
-              disabled={disableCloseButton}
-              className={`md:p-1 p-1 hover:bg-gray-200 rounded-md ${
-                disableCloseButton
-                  ? "cursor-not-allowed opacity-50"
-                  : "cursor-pointer"
-              }`}
-            >
-              <CrossIcon />
-            </button>
+            {!hideCrossButton && (
+              <button
+                onClick={disableCloseButton ? undefined : onClose}
+                disabled={disableCloseButton}
+                className={`md:p-1 p-1 hover:bg-gray-200 rounded-md ${
+                  disableCloseButton
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer"
+                }`}
+              >
+                <CrossIcon />
+              </button>
+            )}
           </div>
 
           <div
             className={`flex-1 bg-white ${
-              scrollNeeded && "overflow-y-auto max-h-[calc(100vh-200px)]"
-            }  ${!showFooter && "rounded-b-2xl"} ${bodyPaddingClasses}`}
+              scrollNeeded && "overflow-y-auto max-h-dvh "
+            }  ${!showFooter && "sm:rounded-b-2xl"} ${bodyPaddingClasses}`}
           >
             {children}
           </div>
@@ -141,14 +145,16 @@ const AppModal: React.FC<AppModalProps> = ({
             <div
               className={`${
                 btnFullWidth && "gap-6"
-              } border-t border-gray-200 bg-white flex  sm:rounded-b-2xl items-center justify-between p-2 md:p-4`}
+              } border-t border-gray-200 bg-white flex gap-2 sm:rounded-b-2xl items-center justify-between p-2 md:p-4`}
             >
               {!hideCancelBtn && (
                 <ThemeButton
                   label={cancelLabel}
                   onClick={onCancel ? onCancel : onClose}
                   size="medium"
-                  className={`${btnFullWidth ? "flex-1" : "min-w-36"}`}
+                  className={`${
+                    btnFullWidth ? "flex-1" : "w-full sm:w-fit sm:min-w-36"
+                  }`}
                   variant="outline"
                   heightClass="h-10"
                   icon={cancelBtnIcon}
@@ -157,7 +163,9 @@ const AppModal: React.FC<AppModalProps> = ({
               {onConfirm && !hideConfirmButton && (
                 <ThemeButton
                   label={confirmLabel}
-                  className={` ${btnFullWidth ? "flex-1" : "min-w-36"}`}
+                  className={` ${
+                    btnFullWidth ? "flex-1" : "w-full sm:w-fit sm:min-w-36"
+                  }`}
                   onClick={onConfirm}
                   size="medium"
                   heightClass="h-10"

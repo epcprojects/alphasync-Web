@@ -411,6 +411,7 @@ const Page = () => {
             getInitials={(name) =>
               name
                 .split(" ")
+                .slice(0, 2)
                 .map((n) => n[0])
                 .join("")
             }
@@ -419,15 +420,15 @@ const Page = () => {
           <div className="p-3 md:p-6 flex flex-col gap-1.5 md:gap-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-4">
-                <h2 className="text-base md:text-lg font-semibold text-black">
+                <h2 className="text-xs whitespace-nowrap md:text-lg font-semibold text-black">
                   Order {order.displayId || order.id}
                 </h2>
-                <span className="text-gray-700 font-medium text-xs md:text-sm py-0.5 px-2.5 rounded-full bg-gray-100 border border-gray-200">
+                <span className="text-gray-700 font-medium text-xxs md:text-sm py-0.5 px-2.5 rounded-full bg-gray-100 border border-gray-200">
                   {formatDate(order.createdAt)}
                 </span>
               </div>
               <span
-                className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium capitalize ${getStatusClasses(
+                className={`inline-block rounded-full whitespace-nowrap px-2.5 py-0.5 text-xxs md:text-sm font-medium capitalize ${getStatusClasses(
                   order.status
                 )}`}
               >
@@ -436,7 +437,7 @@ const Page = () => {
             </div>
 
             <div className="flex flex-col gap-1">
-              <div className="hidden sm:grid grid-cols-4 text-xs font-medium text-black rounded-xl bg-gray-50 p-1.5 md:p-3">
+              <div className="hidden sm:grid grid-cols-4 gap-2 text-xs font-medium text-black rounded-xl bg-gray-50 p-1.5 md:p-3">
                 <div>Product</div>
                 <div>Quantity</div>
                 <div>Unit Price</div>

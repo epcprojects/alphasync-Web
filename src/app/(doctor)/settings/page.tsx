@@ -422,13 +422,13 @@ const Page = () => {
           <TabGroup>
             <TabList
               className={
-                "flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start  justify-between md:px-6"
+                "flex items-center border-b border-b-gray-200 gap-1 md:gap-3 md:justify-start  justify-between md:px-6"
               }
             >
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 text-[11px] whitespace-nowrap md:text-sm hover:bg-gray-50 outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
+                  "flex items-center gap-1 md:gap-2 text-xs whitespace-nowrap md:text-sm hover:bg-gray-50 outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
                 }
               >
                 <UserIcon
@@ -436,12 +436,12 @@ const Page = () => {
                   width={isMobile ? "16" : "20"}
                   height={isMobile ? "16" : "20"}
                 />
-                My Profile
+                {isMobile ? "Profile" : "My Profile"}
               </Tab>
               <Tab
                 as="button"
                 className={
-                  "flex items-center gap-1 md:gap-2 outline-none text-xs md:text-sm border-b-2 hover:bg-gray-50 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
+                  "flex items-center gap-1 md:gap-2 whitespace-nowrap outline-none text-xs md:text-sm border-b-2 hover:bg-gray-50 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-2 py-3 md:py-4 md:px-6"
                 }
               >
                 <LockIcon
@@ -465,7 +465,7 @@ const Page = () => {
                 Notifications
               </Tab>
             </TabList>
-            <TabPanels className={"pb-4 lg:p-6"}>
+            <TabPanels className={"pb-0 lg:p-6"}>
               <TabPanel className={"px-5 lg:px-8"}>
                 <ImageUpload
                   imageUrl={

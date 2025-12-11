@@ -76,7 +76,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   }
 
   const baseClasses =
-    " flex-col flex items-start gap-1.5 md:gap-3  bg-white p-2 lg:p-4";
+    " flex-col flex items-start py-4 gap-1.5 md:gap-3  bg-white p-2 lg:p-4";
 
   const variantClasses: Record<cardVariantType, string> = {
     Customer: "border-b border-b-gray-200 last:border-b-0",
@@ -120,7 +120,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
               {status && (
                 <div>
                   <span
-                    className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+                    className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
                       status
                     )}`}
                   >

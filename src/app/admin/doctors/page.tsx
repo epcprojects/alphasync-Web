@@ -9,7 +9,17 @@ import {
   ThemeButton,
   Pagination,
 } from "@/app/components";
-import { Menu, MenuButton, MenuItem, MenuItems, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+} from "@headlessui/react";
 import { useQuery, useMutation } from "@apollo/client/react";
 
 import DoctorListView from "@/app/components/ui/cards/DoctorListView";
@@ -53,10 +63,10 @@ function DoctorContent() {
   const [editDoctor, setEditDoctor] = useState<DoctorFormData>();
   const [doctorToDelete, setDoctorToDelete] = useState<DoctorFormData>();
   const [doctorToResend, setDoctorToResend] = useState<DoctorFormData>();
-  
+
   // Tab state for Active/Pending doctors
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
-  
+
   const orderStatuses = [
     { label: "All Status", value: null },
     { label: "Active", value: "ACTIVE" },
@@ -92,9 +102,16 @@ function DoctorContent() {
 
   // Transform GraphQL data to match Doctor interface
   const doctors = data?.allDoctors.allData;
-  
+
   // Debug log to check doctors data
-  console.log("All doctors:", doctors?.map(d => ({ id: d.id, name: d.fullName, invitationStatus: d.invitationStatus })));
+  console.log(
+    "All doctors:",
+    doctors?.map((d) => ({
+      id: d.id,
+      name: d.fullName,
+      invitationStatus: d.invitationStatus,
+    }))
+  );
 
   const pageCount = data?.allDoctors.totalPages;
 
@@ -143,7 +160,9 @@ function DoctorContent() {
 
   const handleResendInvitation = (doctorId: string | number) => {
     console.log("handleResendInvitation called with doctorId:", doctorId);
-    const doctor = doctors?.find(d => d.id === doctorId || d.id === String(doctorId));
+    const doctor = doctors?.find(
+      (d) => d.id === doctorId || d.id === String(doctorId)
+    );
     console.log("Found doctor:", doctor);
     if (doctor) {
       setDoctorToResend({
@@ -166,21 +185,21 @@ function DoctorContent() {
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
-          <span className="flex items-center text-primary justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
+          <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] md:w-11 md:h-11">
             <DoctorFilledIcon
               height={isMobile ? 16 : 24}
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="text-black font-semibold text-lg md:text-3xl">
+          <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
             Doctors
           </h2>
         </div>
 
-        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-table w-fit">
-          <div className="flex items-center relative">
+        <div className="sm:bg-white rounded-full w-full flex flex-col sm:flex-row items-center gap-1 md:gap-2 sm:p-1.5 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
+          <div className="flex items-center relative bg-white sm:p-0 sm:bg-transparent w-full sm:w-fit p-1 rounded-full  shadow-table sm:shadow-none">
             <span className="absolute left-3">
               <SearchIcon />
             </span>
@@ -188,51 +207,59 @@ function DoctorContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 min-w-80 focus:bg-white outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 w-full sm:w-80 sm:min-w-80 focus:bg-white outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
 
-          <Menu>
-            <MenuButton className="inline-flex py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full  text-sm/6 font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-              {selectedStatus} <ArrowDownIcon fill="#717680" />
-            </MenuButton>
+          <div className="flex items-center gap-1 md:gap-2 bg-white sm:p-0 sm:bg-transparent w-full sm:w-fit p-1 rounded-full shadow-table sm:shadow-none">
+            <Menu>
+              <MenuButton className="w-full sm:w-fit flex justify-between py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm/6 font-medium shadow-inner focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+                {selectedStatus} <ArrowDownIcon fill="#717680" />
+              </MenuButton>
 
-            <MenuItems
-              transition
-              anchor="bottom end"
-              className={`min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
-            >
-              {orderStatuses.map((status) => (
-                <MenuItem key={status.label}>
-                  <button
-                    onClick={() => handleStatusChange(status.label)}
-                    className="flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full"
-                  >
-                    {status.label}
-                  </button>
-                </MenuItem>
-              ))}
-            </MenuItems>
-          </Menu>
-          <ThemeButton label="Import" onClick={() => setIsCsvImportModalOpen(true)} />
+              <MenuItems
+                transition
+                anchor={isMobile ? "bottom end" : "bottom end"}
+                className={`min-w-40 sm:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+              >
+                {orderStatuses.map((status) => (
+                  <MenuItem key={status.label}>
+                    <button
+                      onClick={() => handleStatusChange(status.label)}
+                      className="flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full"
+                    >
+                      {status.label}
+                    </button>
+                  </MenuItem>
+                ))}
+              </MenuItems>
+            </Menu>
+            <ThemeButton
+              label="Import"
+              onClick={() => setIsCsvImportModalOpen(true)}
+            />
 
-          <ThemeButton
-            label="Add New"
-            icon={<PlusIcon />}
-            onClick={() => setIsModalOpen(true)}
-          />
+            <ThemeButton
+              label="Add New"
+              icon={<PlusIcon />}
+              onClick={() => setIsModalOpen(true)}
+            />
+          </div>
         </div>
       </div>
 
       {/* Tabs for Active/Pending Doctors */}
-      <div className="bg-white rounded-xl shadow-table">
-        <TabGroup selectedIndex={selectedTabIndex} onChange={setSelectedTabIndex}>
-          <TabList className="flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-6">
+      <div className="sm:bg-white rounded-xl sm:shadow-table">
+        <TabGroup
+          selectedIndex={selectedTabIndex}
+          onChange={setSelectedTabIndex}
+        >
+          <TabList className="flex items-center border-b bg-white rounded-t-xl mb-2 sm:mb-0 border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-4">
             {["All Doctors", "Pending Doctors"].map((tab, index) => (
               <Tab
                 key={index}
                 as="button"
-                className="flex items-center gap-1 md:gap-2 w-full justify-center text-[11px] hover:bg-gray-50 whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-2 py-3 md:py-4 md:px-6"
+                className="flex items-center gap-1 md:gap-2 w-full justify-center text-[11px] hover:bg-gray-50 whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-2 py-2.5 md:py-4 md:px-6"
               >
                 {tab}
               </Tab>
@@ -240,68 +267,8 @@ function DoctorContent() {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <div className="space-y-1 p-4 md:p-6 pt-0">
-        <div className="grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
-          <div className="col-span-3">
-            <h2>Name</h2>
-          </div>
-          <div className="col-span-2">
-            <h2>Specialty</h2>
-          </div>
-          <div className="col-span-2">
-            <h2>Phone</h2>
-          </div>
-          <div className="col-span-2">
-            <h2>Medical License</h2>
-          </div>
-          <div className="col-span-1">
-            <h2>Status</h2>
-          </div>
-          <div className="col-span-1">
-            <h2>Actions</h2>
-          </div>
-        </div>
-        {error && (
-          <div className="text-center">
-            <p className="text-red-500 mb-4">{error.message}</p>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="my-3 space-y-1">
-            <Skeleton className="w-full h-12 rounded-full" />
-            <Skeleton className="w-full h-12 rounded-full" />
-            <Skeleton className="w-full h-12 rounded-full" />
-            <Skeleton className="w-full h-12 rounded-full" />
-          </div>
-        ) : (
-          <>
-            {doctors?.map((doctor: UserAttributes) => (
-              <DoctorListView
-                // onRowClick={() => router.push(`/orders/${doctor.id}`)}
-                key={doctor.id}
-                doctor={doctor}
-                onEditDoctor={() => handleEdit(doctor)}
-                onDeleteDoctor={() => handleDelete(doctor)}
-                onResendInvitation={() => doctor.id && handleResendInvitation(doctor.id)}
-              />
-            ))}
-          </>
-        )}
-        {(!doctors || doctors.length === 0) && !loading && <EmptyState />}
-
-        {pageCount && pageCount > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={pageCount}
-            onPageChange={handlePageChange}
-          />
-        )}
-      </div>
-            </TabPanel>
-            <TabPanel>
-              <div className="space-y-1 p-4 md:p-6 pt-0">
-                <div className="grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+              <div className="space-y-1 p-0 md:p-4 pt-0">
+                <div className="hidden sm:grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div className="col-span-3">
                     <h2>Name</h2>
                   </div>
@@ -311,7 +278,71 @@ function DoctorContent() {
                   <div className="col-span-2">
                     <h2>Phone</h2>
                   </div>
+                  <div className="col-span-3">
+                    <h2>Medical License</h2>
+                  </div>
+                  <div className="col-span-1">
+                    <h2>Status</h2>
+                  </div>
+                  <div className="col-span-1">
+                    <h2>Actions</h2>
+                  </div>
+                </div>
+                {error && (
+                  <div className="text-center">
+                    <p className="text-red-500 mb-4">{error.message}</p>
+                  </div>
+                )}
+
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                  </div>
+                ) : (
+                  <>
+                    {doctors?.map((doctor: UserAttributes) => (
+                      <DoctorListView
+                        // onRowClick={() => router.push(`/orders/${doctor.id}`)}
+                        key={doctor.id}
+                        doctor={doctor}
+                        onEditDoctor={() => handleEdit(doctor)}
+                        onDeleteDoctor={() => handleDelete(doctor)}
+                        onResendInvitation={() =>
+                          doctor.id && handleResendInvitation(doctor.id)
+                        }
+                      />
+                    ))}
+                  </>
+                )}
+                {(!doctors || doctors.length === 0) && !loading && (
+                  <EmptyState />
+                )}
+
+                {pageCount && pageCount > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pageCount}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div className="space-y-1 p-0 md:p-4 pt-0">
+                <div className="hidden sm:grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                  <div className="col-span-3">
+                    <h2>Name</h2>
+                  </div>
                   <div className="col-span-2">
+                    <h2>Specialty</h2>
+                  </div>
+                  <div className="col-span-2">
+                    <h2>Phone</h2>
+                  </div>
+                  <div className="col-span-3">
                     <h2>Medical License</h2>
                   </div>
                   <div className="col-span-1">
@@ -342,12 +373,16 @@ function DoctorContent() {
                         doctor={doctor}
                         onEditDoctor={() => handleEdit(doctor)}
                         onDeleteDoctor={() => handleDelete(doctor)}
-                        onResendInvitation={() => doctor.id && handleResendInvitation(doctor.id)}
+                        onResendInvitation={() =>
+                          doctor.id && handleResendInvitation(doctor.id)
+                        }
                       />
                     ))}
                   </>
                 )}
-                {(!doctors || doctors.length === 0) && !loading && <EmptyState />}
+                {(!doctors || doctors.length === 0) && !loading && (
+                  <EmptyState />
+                )}
 
                 {pageCount && pageCount > 1 && (
                   <Pagination
@@ -396,6 +431,7 @@ function DoctorContent() {
         subtitle="Are you sure you want to delete this doctor? This action cannot be undone."
         title="Delete Doctor?"
         isLoading={modifyLoading}
+        isMobile={isMobile}
       />
 
       <ResendInvitationModal

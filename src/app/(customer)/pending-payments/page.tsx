@@ -469,7 +469,7 @@ function PendingPayments() {
           )}
         </div>
       </div>
-      <div className="flex flex-col gap-2 md:gap-4">
+      <div className="flex flex-col gap-4">
         {showSkeleton ? (
           <PendingPaymentsSkeleton />
         ) : patientOrdersError ? (
@@ -503,9 +503,9 @@ function PendingPayments() {
         )}
       </div>
       <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-        {showEmptyState && <EmptyState mtClasses="-mt-6" />}
-
-        {!showSkeleton && (
+        {/* {showEmptyState && <EmptyState mtClasses="-mt-6" />} */}
+        {(!currentItems || currentItems.length === 0) && <EmptyState />}
+        {!showSkeleton && currentItems.length > 0 && (
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

@@ -123,29 +123,29 @@ function ProductsContent() {
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
-          <span className="flex items-center text-primary justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
+          <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] md:w-11 md:h-11">
             <PackageIcon
               height={isMobile ? 16 : 24}
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="text-black font-semibold text-lg md:text-3xl">
+          <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
             Products
           </h2>
         </div>
 
-        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-table w-fit">
-          <div className="flex items-center relative">
+        <div className="sm:bg-white rounded-full w-full gap-2 flex flex-col sm:flex-row items-center gap-1 md:gap-2 sm:p-1.5 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
+          <div className="flex items-center relative bg-white sm:p-0 sm:bg-transparent w-full sm:w-fit p-1 rounded-full  shadow-table sm:shadow-none">
             <span className="absolute left-3">
               <SearchIcon />
             </span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search products"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 min-w-80 focus:bg-white outline-none focus:ring focus:ring-gray-200 rounded-full"
+              placeholder="Search"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 w-full sm:w-80 sm:min-w-80 focus:bg-white outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
 
@@ -188,12 +188,13 @@ function ProductsContent() {
             icon={<ReloadIcon />}
             onClick={handleSyncProducts}
             disabled={isSyncing}
+            className="w-full sm:w-fit"
           />
         </div>
       </div>
 
       <div className="space-y-1">
-        <div className="grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+        <div className="hidden sm:grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
           <div className="col-span-3">
             <h2>Product</h2>
           </div>
@@ -232,33 +233,47 @@ function ProductsContent() {
             {products.map((product) => (
               <div
                 key={product.originalId}
-                className="grid grid-cols-12 gap-4 px-2 py-3 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow"
+                className="flex flex-col md:grid md:grid-cols-12 gap-2 mb-4 sm:mb-auto md:gap-4 px-3 py-4 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow"
               >
-                <div className="col-span-3 flex items-center gap-3">
+                {/* Product */}
+                <div className="md:col-span-3 flex items-center gap-3">
                   <ProductImage
                     width={60}
                     height={60}
                     src={product.image}
                     alt={product.title}
-                    className="h-full object-contain"
+                    className="h-[60px] w-[60px] object-contain border rounded-lg border-gray-200"
                   />
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-medium text-sm md:text-base text-black truncate">
+                    <h3 className="font-medium text-sm md:text-base text-black ">
                       {product.title}
                     </h3>
                   </div>
                 </div>
-                <div className="col-span-2 flex items-center">
+
+                {/* Category */}
+                <div className="md:col-span-2 flex justify-between md:justify-start items-center">
+                  <span className="text-xs text-gray-500 md:hidden">
+                    Category
+                  </span>
                   <span className="text-sm text-gray-700">
                     {product.category}
                   </span>
                 </div>
-                <div className="col-span-2 flex items-center">
+
+                {/* Form */}
+                <div className="md:col-span-2 flex justify-between md:justify-start items-center">
+                  <span className="text-xs text-gray-500 md:hidden">Form</span>
                   <span className="text-sm text-gray-700">
                     {product.productForm}
                   </span>
                 </div>
-                <div className="col-span-2 flex items-center">
+
+                {/* Prescription */}
+                <div className="md:col-span-2 flex justify-between md:justify-start items-center">
+                  <span className="text-xs text-gray-500 md:hidden">
+                    Prescription
+                  </span>
                   <span
                     className={`text-xs px-2 py-1 rounded-full ${
                       product.prescription
@@ -269,12 +284,18 @@ function ProductsContent() {
                     {product.prescription ? "Required" : "Not Required"}
                   </span>
                 </div>
-                <div className="col-span-2 flex items-center">
+
+                {/* Price */}
+                <div className="md:col-span-2 flex justify-between md:justify-start items-center">
+                  <span className="text-xs text-gray-500 md:hidden">Price</span>
                   <span className="text-sm font-medium text-gray-900">
                     ${product.price}
                   </span>
                 </div>
-                <div className="col-span-1 flex items-center">
+
+                {/* Stock */}
+                <div className="md:col-span-1 flex justify-between md:justify-start items-center">
+                  <span className="text-xs text-gray-500 md:hidden">Stock</span>
                   <span
                     className={`text-xs px-2 py-1 rounded-full ${
                       product.stock

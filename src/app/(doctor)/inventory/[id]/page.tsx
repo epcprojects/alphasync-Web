@@ -339,7 +339,7 @@ export default function PostDetail() {
               >
                 Price to Customer ($)
               </label>
-              <div className="relative flex flex-col items-start w-fit">
+              <div className="relative flex items-center w-full sm:w-fit">
                 <div className="absolute inset-y-0 text-gray-400 start-0 text-sm flex items-center ps-3.5 pointer-events-none">
                   $
                 </div>
@@ -375,7 +375,7 @@ export default function PostDetail() {
                     priceError
                       ? "border-red-500 focus:ring-red-200 focus:ring-1"
                       : "border-gray-200 focus:ring-gray-200 focus:ring-1"
-                  } [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none  outline-none bg-white text-gray-900 text-sm rounded-lg block w-full ps-8 pe-16 p-1.5 max-w-44`}
+                  } [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none  outline-none bg-white text-gray-900 text-sm rounded-lg block w-full ps-8 pe-16 p-1.5 sm:max-w-44`}
                   placeholder=""
                 />
                 <button
@@ -445,7 +445,7 @@ export default function PostDetail() {
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 md:gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-2 md:gap-4">
               <div>
                 <h2 className="text-xs md:text-sm text-gray-600 font-normal">
                   Current Stock:
@@ -459,7 +459,7 @@ export default function PostDetail() {
                 label="Order"
                 icon={<ShopingCartIcon fill="white" height={20} width={20} />}
                 onClick={() => setIsOrderModalOpen(true)}
-                className="w-fit min-w-40"
+                className="w-full sm:w-fit sm:min-w-40"
                 heightClass="h-11"
               />
             </div>
@@ -471,7 +471,7 @@ export default function PostDetail() {
                 </h2>
               </div>
               <div
-                className="p-2 md:p-4"
+                className="p-2 md:p-4 text-xs sm:text-base"
                 dangerouslySetInnerHTML={{
                   __html: product.description || "No description available.",
                 }}

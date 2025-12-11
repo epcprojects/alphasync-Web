@@ -32,7 +32,7 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        className={`${heightClasses} w-full focus:ring p-2 md:px-3 md:py-2.5  border rounded-lg outline-none text-gray-900 placeholder:text-gravel border-lightGray focus:ring-gray-200`}
+        className={`${heightClasses} w-full focus:ring text-sm sm:text-base placeholder:text-gray-400 p-2 md:px-3 md:py-2.5  border rounded-lg outline-none text-gray-900  border-lightGray focus:ring-gray-200`}
       ></textarea>
     </div>
   );

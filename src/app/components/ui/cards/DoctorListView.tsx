@@ -3,6 +3,7 @@ import { PencilEditIcon, TrashBinIcon, MailIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type DoctorListingProps = {
   doctor: UserAttributes;
@@ -64,6 +65,108 @@ export default function DoctorListView({
 }: DoctorListingProps) {
   const { bg, text } = getColorPair(doctor.id);
 
+  const ismobile = useIsMobile();
+
+  if (ismobile)
+    return (
+      <div
+        key={doctor.id}
+        className="bg-white flex flex-col gap-2 p-2  cursor-pointer  rounded-xl shadow-table"
+      >
+        <div className="flex items-start gap-1 justify-between mb-2">
+          <div className="flex items-start sm:items-center gap-2 ">
+            <span
+              className={`w-10 h-10 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
+            >
+              {getInitials(doctor.fullName ?? doctor.email ?? "----")}
+            </span>
+            <div>
+              <h2 className="text-gray-800 text-xs md:text-sm font-semibold">
+                {doctor.fullName ?? "----"}
+              </h2>
+              <h2 className="text-gray-800 text-xxs md:text-sm font-normal">
+                {doctor.phoneNo ?? "—"}
+              </h2>
+              <h2 className="text-gray-800 text-xxs md:text-sm font-normal">
+                {doctor.email}
+              </h2>
+            </div>
+          </div>
+
+          <div className=" font-medium flex justify-end  gap-1 flex-wrap text-xs md:text-sm text-gray-800">
+            <span
+              className={`inline-block rounded-full px-2 py-0.5 text-xxs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
+                doctor.specialty
+              )}`}
+            >
+              {doctor.specialty || "Unknown"}
+            </span>
+
+            <span
+              className={`inline-block rounded-full px-2 py-0.5 text-xxs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
+                doctor.status
+              )}`}
+            >
+              {doctor.status || "Unknown"}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 w-full">
+          <div className="flex items-start gap-1.5 w-full">
+            <span className="text-black whitespace-nowrap font-medium text-xs block">
+              Medical License
+            </span>
+            <span className="text-gray-800 text-xs font-normal block">
+              {doctor.medicalLicense ?? "—"} {doctor.medicalLicense ?? "—"}
+            </span>
+          </div>
+          <div className="flex items-center justify-start gap-1">
+            {doctor.invitationStatus === "pending" && (
+              <Tooltip content="Resend Invitation">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log(
+                      "Resend button clicked for doctor:",
+                      doctor.id,
+                      "invitationStatus:",
+                      doctor.invitationStatus
+                    );
+                    if (doctor.id) onResendInvitation?.(doctor.id);
+                  }}
+                  className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+                >
+                  <MailIcon fill="currentColor" height={16} width={16} />
+                </button>
+              </Tooltip>
+            )}
+            <Tooltip content="Edit">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (doctor.id) onEditDoctor?.(Number(doctor.id));
+                }}
+                className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+              >
+                <PencilEditIcon width="15" height="15" fill={"currentColor"} />
+              </button>
+            </Tooltip>
+
+            <Tooltip content="Delete">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (doctor.id) onDeleteDoctor?.(Number(doctor.id));
+                }}
+                className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+              >
+                <TrashBinIcon width="15" height="15" />
+              </button>
+            </Tooltip>
+          </div>
+        </div>
+      </div>
+    );
   const displayStatus = getDisplayStatus(
     doctor.invitationStatus,
     doctor.status
@@ -77,7 +180,7 @@ export default function DoctorListView({
     >
       <div className="flex items-center gap-2 col-span-3">
         <span
-          className={`md:w-10 md:h-10 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
+          className={`md:w-10 md:h-10 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
         >
           {getInitials(doctor.fullName ?? doctor.email ?? "----")}
         </span>
@@ -95,13 +198,13 @@ export default function DoctorListView({
       <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
         {doctor.phoneNo ?? "—"}
       </div>
-      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
+      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-3">
         {doctor.medicalLicense ?? "—"}
       </div>
 
       <div className="font-medium text-xs md:text-sm text-gray-800 col-span-1">
         <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
+          className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             displayStatus
           )}`}
         >
@@ -109,18 +212,7 @@ export default function DoctorListView({
         </span>
       </div>
 
-      <div className="flex items-center justify-start gap-1">
-        <Tooltip content="Edit">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (doctor.id) onEditDoctor?.(Number(doctor.id));
-            }}
-            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
-          >
-            <PencilEditIcon width="15" height="15" fill={"currentColor"} />
-          </button>
-        </Tooltip>
+      <div className="flex items-center justify-end gap-1">
         {doctor.invitationStatus === "pending" && (
           <Tooltip content="Resend Invitation">
             <button
@@ -136,10 +228,22 @@ export default function DoctorListView({
               }}
               className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
             >
-              <MailIcon />
+              <MailIcon fill="currentColor" height={16} width={16} />
             </button>
           </Tooltip>
         )}
+        <Tooltip content="Edit">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (doctor.id) onEditDoctor?.(Number(doctor.id));
+            }}
+            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+          >
+            <PencilEditIcon width="15" height="15" fill={"currentColor"} />
+          </button>
+        </Tooltip>
+
         <Tooltip content="Delete">
           <button
             onClick={(e) => {

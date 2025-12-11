@@ -137,7 +137,7 @@ function OrderContent() {
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
-      <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
+      <div className="flex sm:flex-row flex-col lg:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
           <span className="flex items-center text-primary justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
             <PackageIcon
@@ -151,7 +151,7 @@ function OrderContent() {
           </h2>
         </div>
 
-        <div className="md:bg-white rounded-full flex md:flex-row flex-col w-full items-center gap-2 md:p-2  md:shadow-table lg:w-fit">
+        <div className="md:bg-white rounded-full flex md:flex-row flex-col w-full items-center gap-2 md:p-2  md:shadow-table sm:w-fit">
           {/* <div className="flex items-center relative w-full md:shadow-none bg-white md:bg-transparent md:p-0  p-2 rounded-full shadow-table">
             <span className="absolute left-3">
               <SearchIcon

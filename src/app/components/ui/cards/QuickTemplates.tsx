@@ -7,13 +7,16 @@ interface QuickTemplatesProps {
   onTemplateClick?: (template: string) => void;
 }
 
-const QuickTemplates: React.FC<QuickTemplatesProps> = ({ templates, onTemplateClick }) => {
+const QuickTemplates: React.FC<QuickTemplatesProps> = ({
+  templates,
+  onTemplateClick,
+}) => {
   const [isOpen, setIsOpen] = useState(true);
 
   if (!isOpen) return null;
 
   return (
-    <div className="p-1.5 md:p-3 rounded-xl bg-gray-50 relative">
+    <div className="p-1.5 md:p-3 rounded-lg sm:rounded-xl bg-gray-50 relative">
       <button
         onClick={() => setIsOpen(false)}
         className="absolute top-1 hover:text-gray-700 cursor-pointer text-gray-500 hover:bg-gray-300 rounded-lg p-1.5 end-1"

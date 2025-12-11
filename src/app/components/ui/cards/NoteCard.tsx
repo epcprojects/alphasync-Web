@@ -2,6 +2,7 @@
 import React from "react";
 import { TrashBinIcon } from "@/icons";
 import Tooltip from "../tooltip";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface NoteCardProps {
   doctor: string;
@@ -16,6 +17,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
   text,
   onDelete,
 }) => {
+  const isMobile = useIsMobile();
   return (
     <div className="py-3 md:py-5 flex items-center justify-between gap-2.5 md:gap-5 last:border-b-0 border-b border-b-gray-200">
       <div className="flex flex-col gap-0.5">
@@ -24,7 +26,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
             {doctor}
           </h2>
           <span className="w-1.5 h-1.5 block rounded-full shrink-0 bg-gray-200"></span>
-          <h3 className="text-xs md:text-sm font-medium text-gray-500">
+          <h3 className="text-[11px] md:text-sm font-medium text-gray-500">
             {date}
           </h3>
         </div>
@@ -34,9 +36,12 @@ const NoteCard: React.FC<NoteCardProps> = ({
       <Tooltip content="Delete Note">
         <button
           onClick={onDelete}
-          className="rounded-lg hover:bg-red-100 flex items-center justify-center w-6 h-6 md:w-8 md:h-8 cursor-pointer"
+          className="rounded-lg bg-red-50 sm:bg-transparent hover:bg-red-100 flex items-center justify-center w-6 h-6 md:w-8 md:h-8 cursor-pointer"
         >
-          <TrashBinIcon />
+          <TrashBinIcon
+            height={isMobile ? "14" : "18"}
+            width={isMobile ? "14" : "18"}
+          />
         </button>
       </Tooltip>
     </div>

@@ -10,6 +10,7 @@ import * as Yup from "yup";
 import { useMutation } from "@apollo/client";
 import { CREATE_CUSTOMER } from "@/lib/graphql/mutations";
 import { showErrorToast } from "@/lib/toast";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 interface AddCustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -345,7 +346,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData, step, isOpen, touchedFields]);
-
+  useBodyScrollLock(isOpen);
   return (
     <AppModal
       isOpen={isOpen}
@@ -365,8 +366,9 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       onCancel={handleCancel}
       cancelLabel={step === 1 ? "Cancel" : "Back"}
       confimBtnDisable={loading}
+      scrollNeeded={true}
     >
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-4 sm:gap-8">
         <Stepper activeStep={step} steps={steps} />
 
         {error && (
@@ -378,7 +380,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
         )}
 
         {step === 1 && (
-          <div className="flex flex-col gap-2 md:gap-5">
+          <div className="flex flex-col gap-4 md:gap-5">
             <div className="flex items-center gap-3 md:gap-5 w-full">
               <div className="w-full">
                 <ThemeInput
@@ -439,7 +441,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                   onChange={(e) => handleChange("phoneNo", e.target.value)}
                   type="tel"
                   value={formData.phoneNo}
-                  className="w-full [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             </div>
@@ -480,7 +482,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               type="text"
               value={formData.street2}
             />
-            <div className="flex items-center gap-3 md:gap-5 w-full">
+            <div className="flex items-center flex-col sm:flex-row gap-3 md:gap-5 w-full">
               <div className="w-full">
                 <ThemeInput
                   required
@@ -533,8 +535,8 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
         )}
 
         {step === 2 && (
-          <div className="flex flex-col gap-2 md:gap-5">
-            <div className="flex items-center gap-2 w-full">
+          <div className="flex flex-col gap-4 md:gap-5">
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
               <div className="w-full">
                 <ThemeInput
                   label="Emergency Contact Name"
@@ -564,7 +566,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                   }
                   type="tel"
                   value={formData.emergencyPhone}
-                  className="w-full [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             </div>
@@ -602,7 +604,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
         )}
 
         {step === 3 && (
-          <div className="flex flex-col gap-2 md:gap-4">
+          <div className="flex flex-col gap-4 md:gap-4">
             <TextAreaField
               label="Additional Notes"
               value={formData.notes}

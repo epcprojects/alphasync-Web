@@ -41,6 +41,7 @@ export default function ProductListView({
             height={36}
             src={product.image}
             alt={product.title}
+            className="w-full h-full border rounded-lg border-gray-200"
           />
         </div>
         <div>
@@ -86,7 +87,7 @@ export default function ProductListView({
         {product.price}
       </div>
 
-      <div className="col-span-1 flex items-center justify-end md:justify-center gap-2">
+      <div className="ol-span-1 md:col-span-2 lg:col-span-1 flex items-center justify-end md:justify-center gap-2">
         <Tooltip
           content={product.isFavourite ? "Remove Favourite" : "Mark Favourite"}
         >

@@ -13,6 +13,7 @@ interface DashboardStatsProps {
   showUserName: boolean;
   heading: string;
   stats: StatItem[];
+  showWelcome?: boolean;
 }
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({
@@ -20,16 +21,18 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
   showUserName,
   heading,
   stats,
+  showWelcome,
 }) => {
   return (
     <div className="flex items-center gap-3 w-full md:gap-12 flex-col">
       {/* Header */}
       <div className="flex items-center flex-col gap-1 md:gap-5 justify-center">
-        {showUserName && (
-          <h2 className="text-white font-normal text-base md:text-2xl">
-            👋 Welcome {username},
-          </h2>
-        )}
+        {showUserName ||
+          (showWelcome && (
+            <h2 className="text-white font-normal text-base md:text-2xl">
+              👋 Welcome {username},
+            </h2>
+          ))}
 
         <h3 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
           {heading}

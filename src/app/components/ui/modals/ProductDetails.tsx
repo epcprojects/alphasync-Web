@@ -79,7 +79,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 height={80}
                 src={product.primaryImage || ""}
                 alt={product.title}
-                className="h-full object-contain"
+                className="h-full object-contain w-full border rounded-lg border-gray-200"
               />
             </div>
             <div className="flex flex-col md:flex-row md:items-start md:justify-between flex-1 gap-2 md:gap-4">
@@ -92,7 +92,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 </p>
                 <div className="flex items-center gap-2 md:gap-3 text-xs font-normal text-gray-800">
                   <span>{product?.variants?.[0]?.sku || " "}</span>
-                  <span className="border-l border-gray-200 pl-2 md:pl-3">
+                  <span
+                    className={`${
+                      product?.variants?.[0]?.sku && "border-l pl-2 md:pl-3"
+                    }  border-gray-200 `}
+                  >
                     Injectable
                   </span>
                   <span className="border-l border-gray-200 pl-2 md:pl-3">
@@ -111,7 +115,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
           </div>
         </div>
         <div
-          className=""
+          className="text-sm sm:text-base"
           dangerouslySetInnerHTML={{ __html: product.description || "" }}
         ></div>
       </div>

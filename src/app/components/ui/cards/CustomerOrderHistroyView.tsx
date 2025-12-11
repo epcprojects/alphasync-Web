@@ -1,6 +1,7 @@
 "use client";
 import { ArrowLeftIcon, PackageOutlineIcon } from "@/icons";
 import Tooltip from "../tooltip";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type Order = {
   orderId: string;
@@ -43,6 +44,53 @@ export default function CustomerOrderHistroyView({
   onViewOrderDetails,
   onRowClick,
 }: CustomerOrderHistroyViewProps) {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <div
+        onClick={onRowClick}
+        key={customer.orderId}
+        className="bg-gray-50 p-2 rounded-lg space-y-2"
+      >
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center gap-1 sm:gap-3">
+            <span className="w-6 h-6 md:h-8 shrink-0 text-gray-700 md:w-8 rounded-md bg-white border border-lightGray flex items-center justify-center">
+              <PackageOutlineIcon width="16" height="16" fill="currentColor" />
+            </span>
+            <h3 className="font-semibold sm:font-normal line-clamp-1 text-gray-800 text-xs md:text-sm">
+              {customer.orderId}
+            </h3>
+          </div>
+          <div
+            className={`px-2 py-0.5 rounded-full text-xs font-medium text-center capitalize w-fit ${
+              statusStyles[customer.status] ||
+              "bg-gray-100 text-gray-700 border border-gray-300"
+            }`}
+          >
+            {formatStatusDisplay(customer.status)}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 w-full">
+          <div className="flex items-center  gap-1.5 w-full">
+            <span className="text-black font-medium text-xs block">Date:</span>
+            <span className="text-gray-800 text-xs font-normal block">
+              {customer.date}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 w-full justify-end">
+            <span className="text-black font-medium text-xs block">Total:</span>
+            <span className="text-gray-800 text-xs font-normal block ">
+              ${customer.totalAmount}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       onClick={onRowClick}
@@ -50,7 +98,7 @@ export default function CustomerOrderHistroyView({
       className="grid cursor-pointer hover:bg-gray-100 group grid-cols-[1fr_1fr_1fr_1fr_5rem] gap-4 items-center rounded-lg bg-gray-50 p-1 md:p-2 "
     >
       <div className="flex items-center gap-3">
-        <span className="w-6 h-6 md:h-8 text-gray-700 md:w-8 rounded-lg bg-white border border-lightGray flex items-center justify-center">
+        <span className="w-6 h-6 md:h-8 shrink-0 text-gray-700 md:w-8 rounded-lg bg-white border border-lightGray flex items-center justify-center">
           <PackageOutlineIcon width="16" height="16" fill="currentColor" />
         </span>
         <h3 className="font-normal line-clamp-1 text-gray-800 text-xs md:text-sm">

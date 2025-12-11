@@ -159,7 +159,7 @@ const SelectGroupDropdown = ({
   return (
     <>
       {showLabel && (
-        <label className="block mb-1 md:mb-1.5 text-sm font-medium text-gray-900">
+        <label className="block mb-1 md:mb-1.5 text-sm  font-medium text-gray-700">
           {name}
           {required && <span className="text-red-500 ps-1">*</span>}
         </label>
@@ -190,7 +190,7 @@ const SelectGroupDropdown = ({
                 <UserIcon />
               </span>
             )}
-            <span className="line-clamp-1 text-gray-900 text-sm md:text- pe-3 ">
+            <span className="line-clamp-1 text-gray-900 text-sm md:text- pe-3 sm:leading-7">
               {selectedDisplay()}
             </span>
           </span>
@@ -263,7 +263,7 @@ const SelectGroupDropdown = ({
                       )}
                       onClick={() => handleSelect(group)}
                     >
-                      <span className="text-sm flex font-medium items-center gap-2 text-gray-900">
+                      <span className="text-xs sm:text-sm flex font-medium items-center gap-2 text-gray-900">
                         {label}
                         {email && (
                           <span className="text-gray-600 font-normal">
@@ -272,7 +272,7 @@ const SelectGroupDropdown = ({
                         )}
                       </span>
                       {isSelected(key) && (
-                        <span className="text-green-500 font-bold">
+                        <span className="text-green-500 text-sm font-bold">
                           &#10003;
                         </span>
                       )}

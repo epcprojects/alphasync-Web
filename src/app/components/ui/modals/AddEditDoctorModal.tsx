@@ -11,6 +11,7 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useMutation } from "@apollo/client/react";
 import { CREATE_INVITATION, UPDATE_USER } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface AddEditDoctorModalProps {
   isOpen: boolean;
@@ -37,7 +38,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     status: "Active",
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-
+  const isMobile = useIsMobile();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isFormValid, setIsFormValid] = useState(false);
   const schema = Yup.object().shape({
@@ -343,7 +344,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       onCancel={handleCancel}
       cancelLabel={"Cancel"}
     >
-      <div className="flex flex-col gap-2 md:gap-5">
+      <div className="flex flex-col gap-3 md:gap-5">
         <ImageUpload
           imageUrl={
             initialData?.imageUrl
@@ -354,12 +355,12 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           placeholder="/images/arinaProfile.png"
           showTitle={false}
           roundedClass="rounded-lg"
-          width={96}
-          height={96}
+          width={isMobile ? 72 : 96}
+          height={isMobile ? 72 : 96}
           className="border-b-0"
         />
 
-        <div className="flex items-start gap-2 md:gap-5">
+        <div className="flex flex-col sm:flex-row items-start gap-3 md:gap-5">
           <div className="w-full">
             <ThemeInput
               required
@@ -403,7 +404,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
               onChange={(e) => handleChange("phoneNo", e.target.value)}
               type="tel"
               value={formData.phoneNo}
-              className="w-full [&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+              className="w-full [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
         </div>
@@ -420,7 +421,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           value={formData.email}
         />
 
-        <div className="flex items-start gap-2 md:gap-5">
+        <div className="flex items-start flex-col sm:flex-row gap-3 md:gap-5">
           <div className="w-full">
             <ThemeInput
               required
