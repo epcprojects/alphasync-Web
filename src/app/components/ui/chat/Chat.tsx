@@ -267,7 +267,7 @@ export default function Chat({
                 e.key === "Enter" && !isSendingMessage && handleSend(input)
               }
               disabled={isSendingMessage}
-              className="border border-gray-200 h-10 sm:h-12  rounded-full w-full outline-none focus:ring focus:ring-gray-200 placeholder:text-gray-400 ps-4 pe-20 bg-gray-50 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border border-gray-200 h-10 sm:h-12  rounded-full w-full outline-none focus:ring focus:ring-gray-200 placeholder:text-gray-400 ps-4 pe-20 bg-gray-50 text-base disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <ThemeButton
               label={isSendingMessage ? "Sending..." : "Send"}

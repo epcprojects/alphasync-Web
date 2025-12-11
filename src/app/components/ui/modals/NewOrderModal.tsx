@@ -309,6 +309,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         placeholder="Enter quantity"
                         type="number"
                         id="quantity"
+                        className="[&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                         required={true}
                       />
                       {errors.quantity && touched.quantity && (
@@ -389,6 +390,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         <input
                           type="number"
                           value={item.quantity}
+                          min={1}
                           onChange={(e) =>
                             handleUpdateItem(
                               index,
@@ -396,7 +398,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                               Number(e.target.value)
                             )
                           }
-                          className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs"
+                          className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
 

@@ -375,7 +375,7 @@ export default function PostDetail() {
                     priceError
                       ? "border-red-500 focus:ring-red-200 focus:ring-1"
                       : "border-gray-200 focus:ring-gray-200 focus:ring-1"
-                  } [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none  outline-none bg-white text-gray-900 text-sm rounded-lg block w-full ps-8 pe-16 p-1.5 sm:max-w-44`}
+                  } [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none  outline-none bg-white text-gray-900 text-base rounded-lg block w-full ps-8 pe-16 p-1.5 sm:max-w-44`}
                   placeholder=""
                 />
                 <button

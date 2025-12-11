@@ -45,7 +45,8 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
       outSideClickClose={false}
       subtitle={order ? `Order #${order.displayId}` : ""}
       position={ModalPosition.RIGHT}
-      showFooter={false}
+      showFooter={window.innerWidth < 640}
+      cancelLabel="Close"
     >
       {order && (
         <div className="flex flex-col gap-4">

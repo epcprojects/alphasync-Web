@@ -245,7 +245,7 @@ function CustomerRequestContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-sm md:text-base md:py-2 bg-gray-100 w-full focus:bg-white md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 bg-gray-100 w-full focus:bg-white md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
         </div>
