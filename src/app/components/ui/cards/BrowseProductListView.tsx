@@ -54,7 +54,7 @@ export default function BrowseProductListView({
               </h3>
               <div
                 dangerouslySetInnerHTML={{ __html: product?.description }}
-                className="text-gray-800 text-[10px] font-normal md:text-xs line-clamp-1"
+                className="text-gray-800 text-xs font-normal md:text-sm line-clamp-1"
               />
             </div>
           </div>
@@ -139,7 +139,7 @@ export default function BrowseProductListView({
           </h3>
           <div
             dangerouslySetInnerHTML={{ __html: product?.description }}
-            className="text-gray-800 text-[10px] font-normal md:text-xs line-clamp-1"
+            className="text-gray-800 text-xs font-normal md:text-sm line-clamp-1"
           />
         </div>
       </div>
@@ -150,7 +150,7 @@ export default function BrowseProductListView({
       </div>
 
       <div className="col-span-2 lg:block hidden items-start md:items-center md:justify-start justify-end">
-        <span className="text-gray-800  text-xs md:text-sm font-normal">
+        <span className="text-gray-800  text-sm md:text-base font-normal">
           {product.productForm}
         </span>
       </div>
@@ -179,8 +179,8 @@ export default function BrowseProductListView({
         </span>
       </div>
 
-      <div className="col-span-1 font-medium text-xs md:text-sm text-primary">
-        <span className="font-medium text-xs pe-1 text-black inline-flex md:hidden">
+      <div className="col-span-1 font-medium text-sm md:text-base text-primary">
+        <span className="font-medium text-sm pe-1 text-black inline-flex md:hidden">
           Price:
         </span>
         {product.price}

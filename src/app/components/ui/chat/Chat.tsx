@@ -31,6 +31,7 @@ interface ChatProps {
   className?: string;
   templates?: string[];
   onChatCreated?: (chatId: string) => void;
+  isModal?: boolean;
 }
 
 export default function Chat({
@@ -44,6 +45,7 @@ export default function Chat({
     "We have updated your records",
   ],
   onChatCreated,
+  isModal,
 }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [input, setInput] = useState("");
@@ -233,7 +235,13 @@ export default function Chat({
         </div>
       ) : (
         <>
-          <div className="rounded-xl sm:rounded-2xl border border-gray-200 p-1.5 sm:p-3 flex flex-col gap-3 max-h-[470px] min-h-[470px]">
+          <div
+            className={`rounded-xl sm:rounded-2xl border border-gray-200 p-1.5 sm:p-3  gap-3 ${
+              isModal
+                ? "flex-1 overflow-y-scroll"
+                : "max-h-[430px] min-h-[430px] flex flex-col"
+            }`}
+          >
             <QuickTemplates
               templates={templates}
               onTemplateClick={handleSend}

@@ -9,6 +9,7 @@ import {
   ShoppingCartIcon,
   DashboardIcon,
   SettingsIcon,
+  AdminIcon,
 } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
@@ -51,7 +52,7 @@ const menuItems = [
   {
     label: "Admins",
     href: "/admin/admins",
-    icon: OrdersIcon,
+    icon: AdminIcon,
   },
   {
     label: "Products",
@@ -189,7 +190,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             </div>
           )}
         </div>
-        <main className="px-3  pb-3">{children}</main>
+        <main className="px-2  pb-2">{children}</main>
       </div>
     </AdminRoute>
   );

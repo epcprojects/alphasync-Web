@@ -243,7 +243,7 @@ function OrderContent() {
       </div>
 
       <div className="space-y-1">
-        <div className="hidden md:grid md:grid-cols-[4rem_10rem_4rem_6rem_1fr_1fr_1fr_1fr_3rem]  lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+        <div className="hidden md:grid md:grid-cols-[4rem_10rem_4rem_6rem_1fr_1fr_1fr_1fr_3rem]  lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
           <div>
             <h2 className="whitespace-nowrap">Order ID</h2>
           </div>

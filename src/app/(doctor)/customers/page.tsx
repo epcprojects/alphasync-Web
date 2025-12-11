@@ -170,7 +170,7 @@ function CustomerContent() {
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
+          <h2 className="lg:w-full text-black font-semibold text-xl md:text-3xl lg:4xl">
             Customer Database
           </h2>
         </div>
@@ -235,7 +235,7 @@ function CustomerContent() {
               <Tab
                 key={index}
                 as="button"
-                className="flex items-center gap-1 md:gap-2 w-full justify-center text-[11px] hover:bg-gray-50 whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-2 py-2.5 md:py-4 md:px-6"
+                className="flex items-center gap-1 md:gap-2 w-full justify-center hover:bg-gray-50 whitespace-nowrap text-sm sm:text-base outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-1.5 py-2.5 md:py-4 md:px-6"
               >
                 {tab}
               </Tab>
@@ -244,7 +244,7 @@ function CustomerContent() {
           <TabPanels>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium shadow-table bg-white rounded-xl text-black">
+                <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium shadow-table bg-white rounded-xl text-black">
                   <div className="col-span-2">Name</div>
                   <div className="col-span-2">Contact</div>
                   <div className="col-span-3">Email</div>
@@ -303,7 +303,7 @@ function CustomerContent() {
             </TabPanel>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-6 pt-0">
-                <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium shadow-table bg-white rounded-xl text-black">
+                <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium shadow-table bg-white rounded-xl text-black">
                   <div className="col-span-3">Name</div>
                   <div className="col-span-2">Contact</div>
                   <div className="col-span-2">Email</div>

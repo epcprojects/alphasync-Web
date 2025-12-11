@@ -95,7 +95,12 @@ import Lock from "./Lock";
 import TickDouble from "./TickDouble";
 import FolderIcon from "./FolderIcon";
 import DashboardIcon from "./DashboardIcon";
+import AdminIcon from "./AdminIcon";
+import AdminFilledIcon from "./AdminFilledIcon";
+
 export {
+    AdminFilledIcon,
+    AdminIcon,
     DashboardIcon,
     FolderIcon,
     TickDouble,

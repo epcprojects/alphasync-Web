@@ -196,11 +196,11 @@ function InventoryContent() {
             />
           </span>
           <div className="flex items-center gap-2 md:gap-3">
-            <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
+            <h2 className="lg:w-full text-black font-semibold text-xl md:text-3xl lg:4xl">
               Peptide Inventory
             </h2>
             {!productsLoading && (
-              <span className="flex items-center justify-center px-2 md:px-3 py-1 md:py-1.5 bg-gray-100 text-gray-700 text-xs md:text-sm font-medium rounded-full">
+              <span className="flex items-center justify-center px-2 md:px-3 py-1 md:py-1.5 bg-gray-100 text-gray-700 text-sm md:text-base font-medium rounded-full">
                 {showFavourites
                   ? displayProducts.length
                   : productsData?.allProducts.count || 0}
@@ -338,7 +338,7 @@ function InventoryContent() {
             </div>
           ) : (
             <div className="space-y-1">
-              <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-xs font-medium bg-white rounded-xl text-black shadow-table">
+              <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium bg-white rounded-xl text-black shadow-table">
                 <div className="col-span-5 md:col-span-4 lg:col-span-5">
                   Product
                 </div>

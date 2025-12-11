@@ -229,7 +229,7 @@ function ReminderContent() {
 
       <div className="space-y-4 md:space-y-6">
         <div className="flex flex-col gap-1">
-          <div className="hidden sm:grid sm:grid-cols-[4fr_2fr_1fr_1fr_3fr] lg:grid-cols-[1fr_1fr_1fr_1fr_400px] text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+          <div className="hidden sm:grid sm:grid-cols-[4fr_2fr_1fr_1fr_3fr] lg:grid-cols-[1fr_1fr_1fr_1fr_400px] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
             <div>
               <h2>Customer</h2>
             </div>

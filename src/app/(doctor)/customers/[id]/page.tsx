@@ -342,7 +342,7 @@ export default function CustomerDetail() {
           >
             <ArrowDownIcon />
           </button>
-          <h2 className="text-black font-semibold text-lg md:text-3xl">
+          <h2 className="text-black font-semibold text-lg md:text-3xl xl:text-4xl">
             Customer Profile
           </h2>
         </div>
@@ -368,7 +368,7 @@ export default function CustomerDetail() {
           >
             <ArrowDownIcon />
           </button>
-          <h2 className="text-black font-semibold text-lg md:text-3xl">
+          <h2 className="text-black font-semibold text-lg md:text-3xl xl:text-4xl">
             Customer Profile
           </h2>
         </div>
@@ -392,7 +392,7 @@ export default function CustomerDetail() {
           >
             <ArrowDownIcon />
           </button>
-          <h2 className="text-black font-semibold text-lg md:text-3xl">
+          <h2 className="text-black font-semibold text-lg md:text-3xl xl:text-4xl">
             Customer Profile
           </h2>
         </div>
@@ -415,7 +415,7 @@ export default function CustomerDetail() {
         >
           <ArrowDownIcon />
         </button>
-        <h2 className="text-black font-semibold text-lg md:text-3xl">
+        <h2 className="text-black font-semibold text-lg md:text-3xl xl:text-4xl">
           Customer Profile
         </h2>
       </div>
@@ -502,7 +502,7 @@ export default function CustomerDetail() {
                 <Tab
                   key={index}
                   as="button"
-                  className="flex items-center gap-1 py-2 whitespace-nowrap md:gap-2 text-xs md:text-sm outline-none hover:bg-gray-50 border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 md:py-4 px-2 md:px-6"
+                  className="flex items-center gap-1 py-2 whitespace-nowrap md:gap-2 text-sm md:text-base outline-none hover:bg-gray-50 border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 md:py-4 px-1.5 md:px-6"
                 >
                   {!isMobile && tab.icon} {tab.label}
                 </Tab>
@@ -532,7 +532,7 @@ export default function CustomerDetail() {
                   </div>
                 ) : (
                   <div className="space-y-1">
-                    <div className="hidden sm:grid grid-cols-[1fr_1fr_1fr_1fr_5rem] gap-4 p-1.5 md:p-3 text-xs font-medium bg-gray-50 rounded-lg text-black">
+                    <div className="hidden sm:grid grid-cols-[1fr_1fr_1fr_1fr_5rem] gap-4 p-1.5 md:p-3 text-sm font-medium bg-gray-50 rounded-lg text-black">
                       <div className="">Order ID</div>
                       <div className="">Date</div>
                       <div className="">Status</div>

@@ -320,7 +320,7 @@ export default function PostDetail() {
           </div>
           <div className="flex flex-col gap-2.5 md:gap-5">
             <div>
-              <h2 className="text-gray-900 font-semibold text-xl md:text-3xl xl:text-4xl">
+              <h2 className="text-gray-900 font-semibold text-lg md:text-3xl xl:text-3xl">
                 {product.title}
               </h2>
 
@@ -335,7 +335,7 @@ export default function PostDetail() {
             <div>
               <label
                 htmlFor="input-group-1"
-                className="block mb-1 text-sm font-normal text-gray-600"
+                className="block mb-1 text-base font-normal text-gray-600"
               >
                 Price to Customer ($)
               </label>
@@ -397,7 +397,7 @@ export default function PostDetail() {
               </h2>
 
               <p
-                className="text-gray-800 text-xs font-normal"
+                className="text-gray-800 text-sm sm:text-base font-normal"
                 dangerouslySetInnerHTML={{
                   __html: product.description || "No description available.",
                 }}
@@ -406,7 +406,7 @@ export default function PostDetail() {
 
             <div className="grid grid-cols-1 gap-2 md:gap-4 md:grid-cols-4">
               <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
-                <span className="block text-gray-800 text-xs !font-normal">
+                <span className="block text-gray-800 text-sm !font-normal">
                   Manufacturer
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
@@ -415,7 +415,7 @@ export default function PostDetail() {
               </div>
 
               <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
-                <span className="block text-gray-800 text-xs !font-normal">
+                <span className="block text-gray-800 text-sm !font-normal">
                   Dosage
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
@@ -426,7 +426,7 @@ export default function PostDetail() {
               </div>
 
               <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
-                <span className="block text-gray-800 text-xs !font-normal">
+                <span className="block text-gray-800 text-sm !font-normal">
                   Active Ingredient
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
@@ -435,7 +435,7 @@ export default function PostDetail() {
               </div>
               {product?.tags && product.tags.length > 0 && (
                 <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
-                  <span className="block text-gray-800 text-xs !font-normal">
+                  <span className="block text-gray-800 text-sm !font-normal">
                     Category
                   </span>
                   <span className="text-gray-800 block font-xs md:text-sm font-medium">
@@ -447,7 +447,7 @@ export default function PostDetail() {
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-2 md:gap-4">
               <div>
-                <h2 className="text-xs md:text-sm text-gray-600 font-normal">
+                <h2 className="text-sm text-gray-600 font-normal">
                   Current Stock:
                   <span className="text-primary ps-2 font-semibold">
                     {product.totalInventory || 0} units
@@ -471,7 +471,7 @@ export default function PostDetail() {
                 </h2>
               </div>
               <div
-                className="p-2 md:p-4 text-xs sm:text-base"
+                className="p-2 md:p-4 text-sm sm:text-base"
                 dangerouslySetInnerHTML={{
                   __html: product.description || "No description available.",
                 }}

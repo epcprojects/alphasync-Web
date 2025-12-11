@@ -20,11 +20,11 @@ const InfoGrid: React.FC<InfoGridProps> = ({
     if (!value) return null;
     return (
       <div className="flex items-center sm:items-start justify-between flex-row sm:flex-col">
-        <span className="block mb-1 text-gray-800 text-xs md:text-sm">
+        <span className="block mb-1 text-gray-800 text-sm md:text-base">
           {label}
         </span>
         <span
-          className={`block text-xs md:text-sm font-semibold ${
+          className={`block text-sm md:text-base font-semibold ${
             isPrice ? "text-primary" : "text-gray-800"
           }`}
         >

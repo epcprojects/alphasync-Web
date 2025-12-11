@@ -1,6 +1,12 @@
 "use client";
 
-import { ArrowDownIcon, UserFilledIcon, PlusIcon, SearchIcon } from "@/icons";
+import {
+  ArrowDownIcon,
+  UserFilledIcon,
+  PlusIcon,
+  SearchIcon,
+  AdminFilledIcon,
+} from "@/icons";
 import React, { Suspense, useState } from "react";
 import {
   EmptyState,
@@ -158,60 +164,66 @@ function AdminsContent() {
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
-          <span className="flex items-center text-primary justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
-            <UserFilledIcon
+          <span className="flex items-center justify-center text-primary rounded-full shrink-0 bg-white w-8 h-8 shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] md:w-11 md:h-11">
+            <AdminFilledIcon
+              fill="currentColor"
               height={isMobile ? 16 : 24}
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="text-black font-semibold text-lg md:text-3xl">
+          <h2 className="lg:w-full text-black font-semibold text-xl md:text-3xl lg:4xl">
             Admins
           </h2>
         </div>
 
-        <div className="bg-white rounded-full flex items-center gap-1 md:gap-2 p-2 shadow-table w-fit">
-          <div className="flex items-center relative">
+        <div className="sm:bg-white rounded-full w-full flex flex-col sm:flex-row items-center gap-1 md:gap-2 sm:p-1.5 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
+          <div className="flex items-center relative w-full bg-white sm:p-0 sm:bg-transparent p-1 rounded-full shadow-table sm:shadow-none">
             <span className="absolute left-3">
-              <SearchIcon />
+              <SearchIcon
+                height={isMobile ? "16" : "20"}
+                width={isMobile ? "16" : "20"}
+              />
             </span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 min-w-80 focus:bg-white outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
 
-          <Menu>
-            <MenuButton className="inline-flex py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full  text-sm/6 font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-              {selectedStatus} <ArrowDownIcon fill="#717680" />
-            </MenuButton>
+          <div className="flex items-center gap-1 md:gap-2 bg-white sm:p-0 sm:bg-transparent w-full sm:w-fit p-1 rounded-full shadow-table sm:shadow-none">
+            <Menu>
+              <MenuButton className="w-full sm:w-fit flex whitespace-nowrap justify-between py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm/6 font-medium shadow-inner focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+                {selectedStatus} <ArrowDownIcon fill="#717680" />
+              </MenuButton>
 
-            <MenuItems
-              transition
-              anchor="bottom end"
-              className={`min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
-            >
-              {orderStatuses.map((status) => (
-                <MenuItem key={status.label}>
-                  <button
-                    onClick={() => handleStatusChange(status.label)}
-                    className="flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full"
-                  >
-                    {status.label}
-                  </button>
-                </MenuItem>
-              ))}
-            </MenuItems>
-          </Menu>
+              <MenuItems
+                transition
+                anchor="bottom end"
+                className={`min-w-44 z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+              >
+                {orderStatuses.map((status) => (
+                  <MenuItem key={status.label}>
+                    <button
+                      onClick={() => handleStatusChange(status.label)}
+                      className="flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full"
+                    >
+                      {status.label}
+                    </button>
+                  </MenuItem>
+                ))}
+              </MenuItems>
+            </Menu>
 
-          <ThemeButton
-            label="Add New"
-            icon={<PlusIcon />}
-            onClick={() => setIsModalOpen(true)}
-          />
+            <ThemeButton
+              icon={<PlusIcon />}
+              label="Add New"
+              onClick={() => setIsModalOpen(true)}
+            />
+          </div>
         </div>
       </div>
 
@@ -226,7 +238,7 @@ function AdminsContent() {
               <Tab
                 key={index}
                 as="button"
-                className="flex items-center gap-1 md:gap-2 w-full justify-center text-[11px] hover:bg-gray-50 whitespace-nowrap md:text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-2 py-3 md:py-4 md:px-6"
+                className="flex items-center gap-1 md:gap-2 w-full justify-center text-sm hover:bg-gray-50 whitespace-nowrap md:text-base outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-1.5 py-3 md:py-4 md:px-6"
               >
                 {tab}
               </Tab>
@@ -235,7 +247,7 @@ function AdminsContent() {
           <TabPanels>
             <TabPanel>
               <div className="space-y-1 p-4 md:p-6 pt-0">
-                <div className="grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="hidden sm:grid grid-cols-12 text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div className="col-span-4">
                     <h2>Name</h2>
                   </div>
@@ -289,7 +301,7 @@ function AdminsContent() {
             </TabPanel>
             <TabPanel>
               <div className="space-y-1 p-4 md:p-6 pt-0">
-                <div className="grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="hidden sm:grid grid-cols-12 text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div className="col-span-4">
                     <h2>Name</h2>
                   </div>

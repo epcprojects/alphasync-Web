@@ -122,7 +122,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
                 </h2>
                 {description && (
                   <p
-                    className="text-[10px] md:text-xs mb-1.5 text-gray-800"
+                    className="text-sm md:text-base mb-1.5 text-gray-800"
                     dangerouslySetInnerHTML={{ __html: description }}
                   />
                 )}
@@ -131,7 +131,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
               <div className="flex items-center gap-2">
                 {status && (
                   <span
-                    className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
+                    className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
                       status
                     )}`}
                   >
@@ -174,7 +174,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
         Array.isArray(userNotes) &&
         userNotes.length > 0 && (
           <div className="w-full">
-            <h2 className="text-gray-900 mb-1.5 font-medium text-xs md:text-sm">
+            <h2 className="text-gray-900 mb-1.5 font-medium text-sm md:text-base">
               Your Notes:
             </h2>
             <div>
@@ -183,7 +183,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
                   className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full mb-2"
                   key={index}
                 >
-                  <div className="text-xs sm:text-sm md:text-base text-gray-600">
+                  <div className="text-sm sm:text-base md:text-lg text-gray-600">
                     {note?.content}
                   </div>
                 </div>
@@ -194,7 +194,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
 
       {physicianNotes && (
         <div className="w-full">
-          <h2 className="text-gray-900  mb-1.5 font-medium text-xs md:text-sm">
+          <h2 className="text-gray-900  mb-1.5 font-medium text-sm md:text-base">
             Physician Notes:
           </h2>
           <div
@@ -207,8 +207,8 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             <p
               className={
                 status === "Denied"
-                  ? "text-xs sm:text-sm md:text-base font-medium text-red-900"
-                  : "text-xs sm:text-sm md:text-base text-gray-600"
+                  ? "text-sm sm:text-base md:text-lg font-medium text-red-900"
+                  : "text-sm sm:text-base md:text-lg text-gray-600"
               }
             >
               {physicianNotes}
@@ -219,11 +219,11 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
 
       {customerReason && (
         <div className="w-full">
-          <h2 className="text-gray-900  mb-1.5 font-medium text-xs md:text-sm">
+          <h2 className="text-gray-900  mb-1.5 font-medium text-sm md:text-base">
             Request Reason:
           </h2>
           <div className="bg-porcelan p-1.5 md:p-3 rounded-lg w-full">
-            <p className="text-xs sm:text-sm md:text-base text-gray-600">
+            <p className="text-sm sm:text-base md:text-lg text-gray-600">
               {customerReason}
             </p>
           </div>

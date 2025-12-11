@@ -27,6 +27,7 @@ import {
   transformGraphQLProduct,
 } from "@/types/products";
 import ProductImage from "@/app/components/ui/ProductImage";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
 // Interface for SyncProducts response
 interface SyncProductsResponse {
@@ -121,6 +122,13 @@ function ProductsContent() {
     }
   };
 
+  const orderStatuses = [
+    { label: "Blood", value: "Blood" },
+    { label: "Immunity", value: "Immunity" },
+    { label: "Recovery", value: "Recovery" },
+    { label: "Vial", value: "Vial" },
+  ];
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
@@ -131,25 +139,28 @@ function ProductsContent() {
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="w-full text-black font-semibold text-lg md:text-2xl lg:3xl">
+          <h2 className="lg:w-full text-black font-semibold text-xl md:text-3xl lg:4xl">
             Products
           </h2>
         </div>
 
-        <div className="sm:bg-white rounded-full w-full gap-2 flex flex-col sm:flex-row items-center gap-1 md:gap-2 sm:p-1.5 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
+        <div className="sm:bg-white rounded-full w-full flex flex-col sm:flex-row items-center gap-1 md:gap-2 sm:p-1.5 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
           <div className="flex items-center relative bg-white sm:p-0 sm:bg-transparent w-full sm:w-fit p-1 rounded-full  shadow-table sm:shadow-none">
             <span className="absolute left-3">
-              <SearchIcon />
+              <SearchIcon
+                height={isMobile ? "16" : "20"}
+                width={isMobile ? "16" : "20"}
+              />
             </span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 w-full sm:w-80 sm:min-w-80 focus:bg-white outline-none focus:ring focus:ring-gray-200 rounded-full"
+              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
 
-          <div className="relative">
+          {/* <div className="relative">
             <select
               value={selectedCategory}
               onChange={(e) => {
@@ -166,35 +177,70 @@ function ProductsContent() {
             <div className="absolute -translate-y-1/2 right-2 top-1/2 pointer-events-none">
               <ArrowDownIcon fill="#717680" />
             </div>
+          </div> */}
+
+          <div className="flex items-center gap-1 p-1 rounded-full sm:bg-transparent sm:p-0 sm:shadow-none bg-white w-full shadow-table">
+            <Menu>
+              <MenuButton className="inline-flex py-2 px-3 cursor-pointer whitespace-nowrap bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+                {selectedCategory ? selectedCategory : "All Categories"}
+                <ArrowDownIcon fill="#717680" />
+              </MenuButton>
+
+              <MenuItems
+                transition
+                anchor="bottom end"
+                className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+              >
+                {orderStatuses.map((status) => (
+                  <MenuItem key={status.label}>
+                    <button
+                      onClick={() => {
+                        setSelectedCategory(status.label);
+                        // setCurrentPage(0);
+                        // refetchOrderRequests({
+                        //   search: search || undefined,
+                        //   status: status.value,
+                        //   page: 1,
+                        //   perPage: itemsPerPage,
+                        // });
+                      }}
+                      className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full`}
+                    >
+                      {status.label}
+                    </button>
+                  </MenuItem>
+                ))}
+              </MenuItems>
+            </Menu>
+
+            <Tooltip content="Out of Stock">
+              <button
+                onClick={() => setShowOutOfStock((prev) => !prev)}
+                className={`w-10 h-10 md:h-11 shrink-0 md:w-11 ${
+                  showOutOfStock &&
+                  "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+                }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+              >
+                <PackageOutlineIcon
+                  height={isMobile ? "15" : "20"}
+                  width={isMobile ? "15" : "20"}
+                />
+              </button>
+            </Tooltip>
+
+            <ThemeButton
+              label={isSyncing ? "Syncing..." : "Sync Products"}
+              icon={<ReloadIcon />}
+              onClick={handleSyncProducts}
+              disabled={isSyncing}
+              className="w-full sm:w-fit"
+            />
           </div>
-
-          <Tooltip content="Out of Stock">
-            <button
-              onClick={() => setShowOutOfStock((prev) => !prev)}
-              className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-                showOutOfStock &&
-                "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-              }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-            >
-              <PackageOutlineIcon
-                height={isMobile ? "15" : "20"}
-                width={isMobile ? "15" : "20"}
-              />
-            </button>
-          </Tooltip>
-
-          <ThemeButton
-            label={isSyncing ? "Syncing..." : "Sync Products"}
-            icon={<ReloadIcon />}
-            onClick={handleSyncProducts}
-            disabled={isSyncing}
-            className="w-full sm:w-fit"
-          />
         </div>
       </div>
 
-      <div className="space-y-1">
-        <div className="hidden sm:grid grid-cols-12 text-black font-medium text-xs gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+      <div className="space-y-4">
+        <div className="hidden sm:grid grid-cols-12 text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
           <div className="col-span-3">
             <h2>Product</h2>
           </div>
@@ -233,7 +279,7 @@ function ProductsContent() {
             {products.map((product) => (
               <div
                 key={product.originalId}
-                className="flex flex-col md:grid md:grid-cols-12 gap-2 mb-4 sm:mb-auto md:gap-4 px-3 py-4 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow"
+                className="flex flex-col md:grid md:grid-cols-12 gap-2 mb-2 md:gap-4 px-3 py-4 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow"
               >
                 {/* Product */}
                 <div className="md:col-span-3 flex items-center gap-3">
@@ -245,7 +291,7 @@ function ProductsContent() {
                     className="h-[60px] w-[60px] object-contain border rounded-lg border-gray-200"
                   />
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-medium text-sm md:text-base text-black ">
+                    <h3 className="font-medium line text-sm md:text-base text-black ">
                       {product.title}
                     </h3>
                   </div>

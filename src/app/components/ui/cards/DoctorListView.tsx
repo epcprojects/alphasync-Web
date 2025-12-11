@@ -76,18 +76,18 @@ export default function DoctorListView({
         <div className="flex items-start gap-1 justify-between mb-2">
           <div className="flex items-start sm:items-center gap-2 ">
             <span
-              className={`w-10 h-10 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
+              className={`w-9 h-9 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
             >
               {getInitials(doctor.fullName ?? doctor.email ?? "----")}
             </span>
             <div>
-              <h2 className="text-gray-800 text-xs md:text-sm font-semibold">
+              <h2 className="text-gray-800 text-base md:text-base font-semibold">
                 {doctor.fullName ?? "----"}
               </h2>
-              <h2 className="text-gray-800 text-xxs md:text-sm font-normal">
+              <h2 className="text-gray-800 text-sm md:text-sm font-normal">
                 {doctor.phoneNo ?? "—"}
               </h2>
-              <h2 className="text-gray-800 text-xxs md:text-sm font-normal">
+              <h2 className="text-gray-800 text-sm md:text-sm font-normal">
                 {doctor.email}
               </h2>
             </div>
@@ -95,7 +95,7 @@ export default function DoctorListView({
 
           <div className=" font-medium flex justify-end  gap-1 flex-wrap text-xs md:text-sm text-gray-800">
             <span
-              className={`inline-block rounded-full px-2 py-0.5 text-xxs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
+              className={`inline-block rounded-full px-2 capitalize py-0.5 text-xs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
                 doctor.specialty
               )}`}
             >
@@ -103,7 +103,7 @@ export default function DoctorListView({
             </span>
 
             <span
-              className={`inline-block rounded-full px-2 py-0.5 text-xxs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
+              className={`inline-block rounded-full px-2 py-0.5 capitalize text-xs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
                 doctor.status
               )}`}
             >
@@ -112,11 +112,11 @@ export default function DoctorListView({
           </div>
         </div>
         <div className="flex items-center gap-1 w-full">
-          <div className="flex items-start gap-1.5 w-full">
-            <span className="text-black whitespace-nowrap font-medium text-xs block">
-              Medical License
+          <div className="flex items-start flex-col gap-1 w-full">
+            <span className="text-black whitespace-nowrap font-medium text-sm block">
+              Medical License:
             </span>
-            <span className="text-gray-800 text-xs font-normal block">
+            <span className="text-gray-800 text-sm font-normal block">
               {doctor.medicalLicense ?? "—"} {doctor.medicalLicense ?? "—"}
             </span>
           </div>
@@ -134,7 +134,7 @@ export default function DoctorListView({
                     );
                     if (doctor.id) onResendInvitation?.(doctor.id);
                   }}
-                  className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+                  className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
                 >
                   <MailIcon fill="currentColor" height={16} width={16} />
                 </button>
@@ -146,7 +146,7 @@ export default function DoctorListView({
                   e.stopPropagation();
                   if (doctor.id) onEditDoctor?.(Number(doctor.id));
                 }}
-                className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+                className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
               >
                 <PencilEditIcon width="15" height="15" fill={"currentColor"} />
               </button>
@@ -158,7 +158,7 @@ export default function DoctorListView({
                   e.stopPropagation();
                   if (doctor.id) onDeleteDoctor?.(Number(doctor.id));
                 }}
-                className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+                className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
               >
                 <TrashBinIcon width="15" height="15" />
               </button>
@@ -185,26 +185,26 @@ export default function DoctorListView({
           {getInitials(doctor.fullName ?? doctor.email ?? "----")}
         </span>
         <div>
-          <h2 className="text-gray-800 text-xs md:text-sm font-medium">
+          <h2 className="text-gray-800 text-sm md:text-base font-medium">
             {doctor.fullName ?? "----"}
           </h2>
-          <h2 className="text-gray-800 text-xs font-normal">{doctor.email}</h2>
+          <h2 className="text-gray-800 text-sm  font-normal">{doctor.email}</h2>
         </div>
       </div>
 
-      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
+      <div className="text-sm md:text-base font-normal text-gray-800 col-span-2">
         {doctor.specialty ?? "—"}
       </div>
-      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-2">
+      <div className="text-sm md:text-base font-normal text-gray-800 col-span-2">
         {doctor.phoneNo ?? "—"}
       </div>
-      <div className="text-xs md:text-sm font-normal text-gray-800 col-span-3">
+      <div className="text-sm md:text-base font-normal text-gray-800 col-span-3">
         {doctor.medicalLicense ?? "—"}
       </div>
 
-      <div className="font-medium text-xs md:text-sm text-gray-800 col-span-1">
+      <div className="font-medium text-sm md:text-base text-gray-800 col-span-1">
         <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
+          className={`inline-block rounded-full capitalize px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             displayStatus
           )}`}
         >
@@ -226,7 +226,7 @@ export default function DoctorListView({
                 );
                 if (doctor.id) onResendInvitation?.(doctor.id);
               }}
-              className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+              className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
             >
               <MailIcon fill="currentColor" height={16} width={16} />
             </button>
@@ -238,7 +238,7 @@ export default function DoctorListView({
               e.stopPropagation();
               if (doctor.id) onEditDoctor?.(Number(doctor.id));
             }}
-            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+            className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
           >
             <PencilEditIcon width="15" height="15" fill={"currentColor"} />
           </button>
@@ -250,7 +250,7 @@ export default function DoctorListView({
               e.stopPropagation();
               if (doctor.id) onDeleteDoctor?.(Number(doctor.id));
             }}
-            className="flex md:h-8 md:w-8 h-6 w-6 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+            className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
           >
             <TrashBinIcon width="15" height="15" />
           </button>
