@@ -410,9 +410,14 @@ export default function Notifications({ userType }: NotificationsProps) {
             onClick={() => setOpen(!open)}
             className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center relative"
           >
-            <ReminderIcon fill="white" />
+            <ReminderIcon
+              fill={user?.unreadNotifications ? "#10b981" : "white"}
+            />
             {user?.unreadNotifications && (
-              <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white"></span>
+              <span
+                className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full 
+              bg-green-500 border-2 border-white"
+              ></span>
             )}
           </button>
 
@@ -433,7 +438,17 @@ export default function Notifications({ userType }: NotificationsProps) {
                 <div className="px-4 py-3 bg-gray-100 flex sm:rounded-t-2xl items-center justify-between border-b border-gray-200">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="h-9 w-9 shrink-0 rounded-xl bg-white flex items-center justify-center border border-lightGray">
-                      <ReminderIcon height="18" width="18" fill="#374151" />
+                      <ReminderIcon
+                        height="18"
+                        width="18"
+                        fill={user?.unreadNotifications ? "#10b981" : "#374151"}
+                      />
+                      {user?.unreadNotifications && (
+                        <span
+                          className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full 
+              bg-green-500 border-2 border-white"
+                        ></span>
+                      )}
                     </div>
                     <h2 className="text-lg font-semibold text-black">
                       Notifications
@@ -473,9 +488,14 @@ export default function Notifications({ userType }: NotificationsProps) {
             }}
             className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 bg-black/40 backdrop-blur-sm flex items-center justify-center relative"
           >
-            <ReminderIcon fill="white" />
+            <ReminderIcon
+              fill={user?.unreadNotifications ? "#10b981" : "white"}
+            />
             {user?.unreadNotifications && (
-              <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white"></span>
+              <span
+                className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full 
+              bg-green-500 border-2 border-white"
+              ></span>
             )}
           </PopoverButton>
 
