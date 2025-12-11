@@ -38,6 +38,8 @@ interface PrescriptionRequestCardProps {
   onAddNote?: () => void;
   category?: string;
   cardVarient?: cardVariantType;
+  orderPaid?: boolean;
+  orderStatus?: string | null;
 }
 
 const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
@@ -61,6 +63,8 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   category,
   cardVarient = "Doctor",
   onPayment,
+  orderPaid,
+  orderStatus,
 }) => {
   function getStatusClasses(status: string) {
     switch (status) {
@@ -73,6 +77,13 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
       default:
         return "bg-gray-50 border border-gray-200 text-gray-700";
     }
+  }
+
+  function getPaymentStatusClasses(orderPaid: boolean | undefined) {
+    if (orderPaid) {
+      return "bg-green-50 border border-green-200 text-green-700";
+    }
+    return "bg-gray-50 border border-gray-200 text-gray-700";
   }
 
   const baseClasses =
@@ -117,8 +128,8 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
                 )}
               </div>
 
-              {status && (
-                <div>
+              <div className="flex items-center gap-2">
+                {status && (
                   <span
                     className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
                       status
@@ -126,8 +137,17 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
                   >
                     {status}
                   </span>
-                </div>
-              )}
+                )}
+                {cardVarient === "Customer" && orderPaid === true && (
+                  <span
+                    className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getPaymentStatusClasses(
+                      orderPaid
+                    )}`}
+                  >
+                    Payment Paid
+                  </span>
+                )}
+              </div>
             </div>
             {!isMobile && (
               <InfoGrid
@@ -250,15 +270,18 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             />
           )}
 
-        {cardVarient === "Customer" && status === "Approved" && (
-          <ThemeButton
-            label="Proceed to Payment"
-            icon={<CreditCardOutlineIcon />}
-            onClick={onPayment}
-            heightClass="h-10"
-            className="w-full sm:w-fit"
-          />
-        )}
+        {cardVarient === "Customer" &&
+          status === "Approved" &&
+          !orderPaid &&
+          orderStatus === "pending_payment" && (
+            <ThemeButton
+              label="Proceed to Payment"
+              icon={<CreditCardOutlineIcon />}
+              onClick={onPayment}
+              heightClass="h-10"
+              className="w-full sm:w-fit"
+            />
+          )}
 
         {onViewDetails && (
           <ThemeButton

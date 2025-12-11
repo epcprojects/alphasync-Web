@@ -20,6 +20,8 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/slices/authSlice";
 
 import { useMutation } from "@apollo/client";
 import {
@@ -114,6 +116,8 @@ const NotificationList: React.FC<NotificationListProps> = ({
   onViewDetails,
 }) => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -268,6 +272,17 @@ const NotificationList: React.FC<NotificationListProps> = ({
             updatedCount !== 1 ? "s" : ""
           } marked as read.`
         );
+
+        // Update Redux store to set unreadNotifications to false
+        if (user) {
+          dispatch(
+            setUser({
+              ...user,
+              unreadNotifications: false,
+            })
+          );
+        }
+
         await refetch();
       } else {
         showErrorToast("Failed to mark all notifications as read.");
@@ -573,6 +588,49 @@ const NotificationList: React.FC<NotificationListProps> = ({
                             className="w-fit"
                             heightClass="h-9"
                             onClick={() => handleRejectClick(message)}
+                          />
+                        </>
+                      )}
+                    {userType === "customer" &&
+                      message.notificationType !== "message_received" &&
+                      message.orderRequest?.status === "approved" && (
+                        <>
+                          <ThemeButton
+                            label="See Details"
+                            size="medium"
+                            variant="filled"
+                            className="w-fit"
+                            heightClass="h-9"
+                            onClick={() => router.push(`/pending-payments`)}
+                          />
+                        </>
+                      )}
+                    {userType === "customer" &&
+                      message.notificationType !== "message_received" &&
+                      message.orderRequest?.status === "denied" && (
+                        <>
+                          <ThemeButton
+                            label="See Details"
+                            size="medium"
+                            variant="filled"
+                            className="w-fit"
+                            heightClass="h-9"
+                            onClick={() =>
+                              router.push(`/customer-requests?tab=denied`)
+                            }
+                          />
+                        </>
+                      )}
+                    {userType === "customer" &&
+                      message.notificationType == "message_received" && (
+                        <>
+                          <ThemeButton
+                            label="Start Chat"
+                            size="medium"
+                            variant="filled"
+                            className="w-fit"
+                            heightClass="h-9"
+                            onClick={() => router.push(`/chat`)}
                           />
                         </>
                       )}

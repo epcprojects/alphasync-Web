@@ -67,7 +67,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
               />
             ))}
           </div>
-          <h2 className="text-lg font-semibold text-primary">Order Summary</h2>
+          {/* <h2 className="text-lg font-semibold text-primary">Order Summary</h2>
           <div className="flex flex-col gap-2 p-4 bg-gray-100 rounded-xl ">
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
@@ -114,8 +114,8 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
                 ${order?.totalPrice}
               </span>
             </div>
-          </div>
-          <h2 className="text-lg font-semibold text-primary">
+          </div> */}
+          {/* <h2 className="text-lg font-semibold text-primary">
             Shipment Travel History
           </h2>
           <div className="flex flex-col gap-2 p-4 bg-gray-100 rounded-xl ">
@@ -157,8 +157,8 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
                 Aug 28, 2025
               </span>
             </div>
-          </div>
-          <div className="flex flex-col gap-4">
+          </div> */}
+          {/* <div className="flex flex-col gap-4">
             {trackingSummary.map((event, index) => (
               <div key={event.id} className="flex gap-4 relative">
                 <div className="flex flex-col items-center relative">
@@ -192,7 +192,7 @@ const CustomerOrderSummary: React.FC<CustomerOrderSummaryProps> = ({
                 </div>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       )}
     </AppModal>

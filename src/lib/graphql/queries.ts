@@ -330,10 +330,15 @@ export const ALL_ORDER_REQUESTS = gql`
     ) {
       allData {
         displayId
+        orderPaid
         id
         status
         doctorMessage
         reason
+        order {
+          id
+           status
+        }
         notes {
           content
           notableId

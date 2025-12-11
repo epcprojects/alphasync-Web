@@ -1,6 +1,12 @@
 "use client";
 
-import { ArrowDownIcon, UserFilledIcon, PlusIcon, SearchIcon } from "@/icons";
+import {
+  ArrowDownIcon,
+  UserFilledIcon,
+  PlusIcon,
+  SearchIcon,
+  AdminFilledIcon,
+} from "@/icons";
 import React, { Suspense, useState } from "react";
 import {
   EmptyState,
@@ -160,8 +166,9 @@ function AdminsContent() {
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
-          <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] md:w-11 md:h-11">
-            <UserFilledIcon
+          <span className="flex items-center justify-center text-primary rounded-full shrink-0 bg-white w-8 h-8 shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] md:w-11 md:h-11">
+            <AdminFilledIcon
+              fill="currentColor"
               height={isMobile ? 16 : 24}
               width={isMobile ? 16 : 24}
             />

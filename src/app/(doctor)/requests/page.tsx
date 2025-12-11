@@ -125,6 +125,7 @@ function RequestContent() {
             return sum + price;
           }, 0) || 0,
         status: normalizeStatus(request.status),
+        orderPaid: request.orderPaid || false,
         originalId: request.id,
         patientId: request.patient?.id,
       };
@@ -265,7 +266,7 @@ function RequestContent() {
       <div className=" flex flex-col md:gap-6">
         <div className="flex flex-col gap-1">
           {!orderRequestsLoading && (
-            <div className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+            <div className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px_120px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_160px] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
               <div>
                 <h2 className="whitespace-nowrap">Request ID</h2>
               </div>
@@ -283,6 +284,9 @@ function RequestContent() {
               </div>
               <div>
                 <h2>Status</h2>
+              </div>
+              <div>
+                <h2>Payment Status</h2>
               </div>
               <div>
                 <h2>Actions</h2>

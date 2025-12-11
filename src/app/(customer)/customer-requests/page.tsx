@@ -10,6 +10,7 @@ import { RequestFilledIcon, SearchIcon } from "@/icons";
 import Pagination from "@/app/components/ui/Pagination";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import React, { useState, Suspense, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import RequestDetails, {
   requestDetails,
 } from "@/app/components/ui/modals/RequestDetails";
@@ -35,6 +36,7 @@ interface OrderRequestsResponse {
 }
 
 function CustomerRequestContent() {
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [noteTargetRequest, setNoteTargetRequest] = useState<{
@@ -50,7 +52,18 @@ function CustomerRequestContent() {
   const [isPaymentModel, setisPaymentModel] = useState(false);
   const [isSummaryModel, setIsSummaryModel] = useState(false);
   const [isChatModel, setIsChatModel] = useState(false);
-  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+
+  // Initialize tab index from query parameter
+  const getInitialTabIndex = () => {
+    const tab = searchParams.get("tab");
+    if (tab === "pending") return 1;
+    if (tab === "approved") return 2;
+    if (tab === "denied") return 3;
+    return 0; // Default to "All"
+  };
+  const [selectedTabIndex, setSelectedTabIndex] = useState(
+    getInitialTabIndex()
+  );
   const [selectedPaymentRequest, setSelectedPaymentRequest] =
     useState<requestDetails | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -153,6 +166,9 @@ function CustomerRequestContent() {
         originalId: request.id,
         displayId: request.displayId,
         doctorId: request.doctor?.id ? String(request.doctor.id) : "",
+        orderPaid: request.orderPaid,
+        orderId: request.order?.id,
+        orderStatus: request.order?.status,
       };
     }) || [];
 
@@ -192,6 +208,20 @@ function CustomerRequestContent() {
   };
 
   const pageCount = orderRequestsData?.allOrderRequests.totalPages || 1;
+
+  // Update tab when query parameter changes
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "pending") {
+      setSelectedTabIndex(1);
+    } else if (tab === "approved") {
+      setSelectedTabIndex(2);
+    } else if (tab === "denied") {
+      setSelectedTabIndex(3);
+    } else {
+      setSelectedTabIndex(0);
+    }
+  }, [searchParams]);
 
   // Reset to page 1 when tab changes
   useEffect(() => {
@@ -412,6 +442,9 @@ function CustomerRequestContent() {
             setIsDetailModelOpen(false);
             setIsChatModel(true);
           }}
+          onPaymentSuccess={async () => {
+            await refetchOrderRequests();
+          }}
         />
       )}
       {isPaymentModel && selectedPaymentRequest && (
@@ -421,22 +454,42 @@ function CustomerRequestContent() {
             setisPaymentModel(false);
             setSelectedPaymentRequest(null);
           }}
-          request={{
-            id: selectedPaymentRequest.id,
-            medicineName: selectedPaymentRequest.title,
+          order={{
+            id:
+              selectedPaymentRequest.orderId ||
+              selectedPaymentRequest.originalId ||
+              selectedPaymentRequest.id,
+            displayId:
+              selectedPaymentRequest.displayId ||
+              `REQ-${
+                selectedPaymentRequest.originalId || selectedPaymentRequest.id
+              }`,
             doctorName: selectedPaymentRequest.doctorName || "Unknown Doctor",
-            strength: selectedPaymentRequest.subtitle || "",
-            requestedOn: selectedPaymentRequest.requestedDate || "",
-            price: parseFloat(
+            orderedOn:
+              selectedPaymentRequest.requestedDate ||
+              new Date().toLocaleDateString("en-US"),
+            totalPrice: parseFloat(
               selectedPaymentRequest.price?.replace(/[^0-9.-]+/g, "") || "0"
             ),
-            status: selectedPaymentRequest.status,
-            category: selectedPaymentRequest.category || "",
+            orderItems: [
+              {
+                id:
+                  selectedPaymentRequest.originalId ||
+                  selectedPaymentRequest.id,
+                medicineName: selectedPaymentRequest.title,
+                quantity: 1,
+                price: parseFloat(
+                  selectedPaymentRequest.price?.replace(/[^0-9.-]+/g, "") || "0"
+                ),
+                amount: selectedPaymentRequest.price || "$0",
+              },
+            ],
           }}
-          onClick={() => {
+          onClick={async () => {
             setisPaymentModel(false);
             setSelectedPaymentRequest(null);
             setIsSuccess(true);
+            await refetchOrderRequests();
           }}
         />
       )}

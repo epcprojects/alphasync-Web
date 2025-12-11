@@ -524,13 +524,14 @@ function PendingPayments() {
           isOpen={isPaymentModelOpen}
           onClose={() => {
             setIsPaymentModelOpen(false);
-            refetchPatientOrders();
+            setSelectedOrder(null);
           }}
           order={selectedOrder}
-          onClick={() => {
+          onClick={async () => {
             setIsPaymentModelOpen(false);
+            setSelectedOrder(null);
             setIsSuccess(true);
-            refetchPatientOrders();
+            await refetchPatientOrders();
           }}
         />
       )}

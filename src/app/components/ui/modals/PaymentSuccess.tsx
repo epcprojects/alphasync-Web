@@ -49,13 +49,13 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
                 email.
               </p>
             </div>
-            <ThemeButton
+            {/* <ThemeButton
               label={btnTitle}
               onClick={viewOrder}
               variant="outline"
               className=" w-fit whitespace-nowrap font-semibold text-base outline-none transition cursor-pointer"
               minWidthClass={"min-w-40"}
-            />
+            /> */}
           </div>
         </div>
       </div>

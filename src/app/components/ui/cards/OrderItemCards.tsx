@@ -208,7 +208,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
               )}
               {requestStatus && paymentRequest && (
                 <span className="text-base font-semibold text-primary">
-                  ${item.price.toFixed(2)}
+                  ${(item.price + item.price * 0.08).toFixed(2)}
                 </span>
               )}
             </div>
@@ -243,7 +243,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                       Subtotal:
                     </span>
                     <span className="text-xs font-medium text-gray-800">
-                      $125.99
+                      ${item.price.toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between border-b border-gray-200 pb-2">
@@ -251,7 +251,15 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                       Tax (8%):
                     </span>
                     <span className="text-xs font-medium text-gray-800">
-                      $12.00
+                      ${(item.price * 0.08).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pt-2">
+                    <span className="text-xs font-medium text-gray-800">
+                      Total:
+                    </span>
+                    <span className="text-xs font-semibold text-primary">
+                      ${(item.price + item.price * 0.08).toFixed(2)}
                     </span>
                   </div>
                 </>

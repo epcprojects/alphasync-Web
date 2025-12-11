@@ -146,7 +146,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
 
                 <div className="flex items-center gap-2">
                   <span className="bg-white rounded-xs px-1.5 text-sm font-medium text-gray-600">
-                    x{item.quantity}
+                    Quantity - {item.quantity}
                   </span>
                   <span className="text-sm font-semibold text-primary">
                     ${item.price.toFixed(2)}

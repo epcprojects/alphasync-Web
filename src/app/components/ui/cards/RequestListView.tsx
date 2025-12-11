@@ -13,6 +13,7 @@ type Request = {
   items: string[];
   amount: number;
   status: string;
+  orderPaid?: boolean;
 };
 
 type RequestListViewProps = {
@@ -47,6 +48,13 @@ function getStatusClasses(status: Request["status"]) {
     default:
       return "bg-gray-50 border border-gray-200 text-gray-700";
   }
+}
+
+function getPaymentStatusClasses(orderPaid: boolean | undefined) {
+  if (orderPaid) {
+    return "bg-green-50 border border-green-200 text-green-700";
+  }
+  return "bg-gray-50 border border-gray-200 text-gray-700";
 }
 
 export default function RequestListView({
@@ -114,6 +122,21 @@ export default function RequestListView({
             <span className="text-black font-medium text-sm pe-1">Items:</span>
             <span className="text-gray-800 font-normal text-sm">
               {request.items}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-black font-medium text-xs pe-1">
+              Payment Status:
+            </span>
+            <span
+              className={`inline-block rounded-full px-2 py-0.5 text-xxs font-medium ${getPaymentStatusClasses(
+                request.orderPaid
+              )}`}
+            >
+              {request.orderPaid ? "Paid" : "Unpaid"}
             </span>
           </div>
 
@@ -189,7 +212,7 @@ export default function RequestListView({
   return (
     <div
       key={request.id}
-      className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_160px] gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
+      className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px_120px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_160px] gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div>
         <h2 className="text-gray-800 text-sm md:text-base font-normal whitespace-nowrap">
@@ -234,6 +257,16 @@ export default function RequestListView({
           )}`}
         >
           {request.status}
+        </span>
+      </div>
+
+      <div className=" font-medium text-xs md:text-sm ">
+        <span
+          className={`inline-block rounded-full px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getPaymentStatusClasses(
+            request.orderPaid
+          )}`}
+        >
+          {request.orderPaid ? "Paid" : "Unpaid"}
         </span>
       </div>
 

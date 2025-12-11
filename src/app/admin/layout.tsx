@@ -9,6 +9,7 @@ import {
   ShoppingCartIcon,
   DashboardIcon,
   SettingsIcon,
+  AdminIcon,
 } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
@@ -51,7 +52,7 @@ const menuItems = [
   {
     label: "Admins",
     href: "/admin/admins",
-    icon: OrdersIcon,
+    icon: AdminIcon,
   },
   {
     label: "Products",
