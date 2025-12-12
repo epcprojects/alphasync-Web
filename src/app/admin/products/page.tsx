@@ -17,6 +17,7 @@ import {
 } from "@/app/components";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useRouter } from "next/navigation";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import Tooltip from "@/app/components/ui/tooltip";
 import { SYNC_PRODUCTS } from "@/lib/graphql/mutations";
@@ -39,6 +40,7 @@ interface SyncProductsResponse {
 }
 
 function ProductsContent() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
@@ -84,6 +86,7 @@ function ProductsContent() {
     }
   );
 
+  console.log("data", data);
   // GraphQL mutation for syncing products
   const [syncProducts] = useMutation<SyncProductsResponse>(SYNC_PRODUCTS);
 
@@ -279,7 +282,10 @@ function ProductsContent() {
             {products.map((product) => (
               <div
                 key={product.originalId}
-                className="flex flex-col md:grid md:grid-cols-12 gap-2 mb-2 md:gap-4 px-3 py-4 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow"
+                onClick={() =>
+                  router.push(`/admin/products/${product.originalId}`)
+                }
+                className="flex flex-col md:grid md:grid-cols-12 gap-2 mb-2 md:gap-4 px-3 py-4 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow cursor-pointer"
               >
                 {/* Product */}
                 <div className="md:col-span-3 flex items-center gap-3">
@@ -335,7 +341,7 @@ function ProductsContent() {
                 <div className="md:col-span-2 flex justify-between md:justify-start items-center">
                   <span className="text-xs text-gray-500 md:hidden">Price</span>
                   <span className="text-sm font-medium text-gray-900">
-                    ${product.price}
+                    {product.price}
                   </span>
                 </div>
 
