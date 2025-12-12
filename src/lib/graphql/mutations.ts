@@ -51,6 +51,12 @@ export const CREATE_INVITATION = gql`
     $status: UserStatusEnum
     $specialty: String
     $image: Upload
+    $street1: String
+    $street2: String
+    $city: String
+    $state: String
+    $postalCode: String
+    $address: String
   ) {
     createInvitation(
       input: {
@@ -64,6 +70,12 @@ export const CREATE_INVITATION = gql`
           phoneNo: $phoneNo
           medicalLicense: $medicalLicense
           status: $status
+          street1: $street1
+          street2: $street2
+          city: $city
+          state: $state
+          postalCode: $postalCode
+          address: $address
         }
       }
     ) {
@@ -101,6 +113,12 @@ export const UPDATE_USER = gql`
     $specialty: String
     $image: Upload
     $addressVerified: Boolean
+    $street1: String
+    $street2: String
+    $city: String
+    $state: String
+    $postalCode: String
+    $address: String
   ) {
     updateUser(
       input: {
@@ -117,6 +135,12 @@ export const UPDATE_USER = gql`
           medicalLicense: $medicalLicense
           status: $status
           addressVerified: $addressVerified
+          street1: $street1
+          street2: $street2
+          city: $city
+          state: $state
+          postalCode: $postalCode
+          address: $address
         }
       }
     ) {
@@ -200,6 +224,12 @@ export const UPDATE_DOCTOR = gql`
     $image: Upload
     $medicalLicense: String
     $specialty: String
+    $street1: String
+    $street2: String
+    $city: String
+    $state: String
+    $postalCode: String
+    $address: String
   ) {
     updateUser(
       input: {
@@ -212,6 +242,12 @@ export const UPDATE_DOCTOR = gql`
           image: $image
           medicalLicense: $medicalLicense
           specialty: $specialty
+          street1: $street1
+          street2: $street2
+          city: $city
+          state: $state
+          postalCode: $postalCode
+          address: $address
         }
       }
     ) {

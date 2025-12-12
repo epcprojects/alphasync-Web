@@ -309,6 +309,11 @@ const Page = () => {
       ),
     medicalLicense: Yup.string().required("Medical license is required"),
     specialty: Yup.string().required("Specialty is required"),
+    street1: Yup.string().required("Street address is required"),
+    street2: Yup.string().optional(),
+    city: Yup.string().required("City is required"),
+    state: Yup.string().required("State is required"),
+    postalCode: Yup.string().required("Postal code is required"),
   });
 
   // Format phone number to (XXX) XXX-XXXX format
@@ -495,6 +500,11 @@ const Page = () => {
                     phoneNo: user?.phoneNo ?? "",
                     medicalLicense: user?.medicalLicense ?? "",
                     specialty: user?.specialty ?? "",
+                    street1: user?.street1 ?? "",
+                    street2: user?.street2 ?? "",
+                    city: user?.city ?? "",
+                    state: user?.state ?? "",
+                    postalCode: user?.postalCode ?? "",
                   }}
                   validationSchema={profileSchema}
                   onSubmit={async (values) => {
@@ -508,6 +518,18 @@ const Page = () => {
                         phoneNo: values.phoneNo,
                         medicalLicense: values.medicalLicense,
                         specialty: values.specialty,
+                        street1: values.street1 || null,
+                        street2: values.street2 || null,
+                        city: values.city || null,
+                        state: values.state || null,
+                        postalCode: values.postalCode || null,
+                        address: values.street1
+                          ? `${values.street1}${
+                              values.street2 ? `, ${values.street2}` : ""
+                            }, ${values.city}, ${values.state} ${
+                              values.postalCode
+                            }`
+                          : null,
                         ...(selectedImage && { image: selectedImage }),
                       };
 
@@ -672,6 +694,132 @@ const Page = () => {
                           />
                         </div>
                       </div>
+
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Street Address
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="street1"
+                            value={values.street1}
+                            onChange={handleChange}
+                            placeholder="Enter street address"
+                          />
+                          <ErrorMessage
+                            name="street1"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Street Address 2 (Optional)
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="street2"
+                            value={values.street2}
+                            onChange={handleChange}
+                            placeholder="Apartment, suite, etc. (optional)"
+                          />
+                          <ErrorMessage
+                            name="street2"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            City
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="city"
+                            value={values.city}
+                            onChange={handleChange}
+                            placeholder="Enter city"
+                          />
+                          <ErrorMessage
+                            name="city"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            State
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="state"
+                            value={values.state}
+                            onChange={handleChange}
+                            placeholder="Enter state"
+                          />
+                          <ErrorMessage
+                            name="state"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Postal Code
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="postalCode"
+                            value={values.postalCode}
+                            onChange={handleChange}
+                            placeholder="Enter postal code"
+                          />
+                          <ErrorMessage
+                            name="postalCode"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
                       <div className="flex pt-3 md:pt-6 justify-end">
                         <ThemeButton
                           label={updateLoading ? "Saving..." : "Save Changes"}
