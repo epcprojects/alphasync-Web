@@ -20,6 +20,8 @@ type DropdownItem = {
   productId?: string;
   variantId?: string;
   price?: number;
+  originalPrice?: number;
+  customPrice?: number;
 };
 
 export interface OrderItem {
@@ -71,7 +73,9 @@ const ClinicOrderModal: React.FC<ClinicOrderModalProps> = ({
     quantity: number;
     price: number;
   }) => {
-    const originalPrice = selectedProductData?.price || values.price;
+    // Use originalPrice (actual price) for clinic orders, not customPrice
+    // Never use selectedProductData.price as it may contain customPrice
+    const originalPrice = selectedProductData?.originalPrice ?? values.price;
 
     const newItem: OrderItem = {
       product: values.product,
@@ -196,8 +200,12 @@ const ClinicOrderModal: React.FC<ClinicOrderModalProps> = ({
                     onProductChange={(selectedProduct) => {
                       setSelectedProductData(selectedProduct);
                       // Auto-populate price when product is selected
-                      if (selectedProduct && selectedProduct.price) {
-                        setFieldValue("price", selectedProduct.price);
+                      // Use originalPrice (actual price) instead of customPrice for clinic orders
+                      if (selectedProduct) {
+                        // Only use originalPrice (actual variant price) for clinic orders
+                        // Never use price field as it may contain customPrice
+                        const actualPrice = selectedProduct.originalPrice ?? 0;
+                        setFieldValue("price", actualPrice);
                       }
                     }}
                   />
