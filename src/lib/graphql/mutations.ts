@@ -359,7 +359,7 @@ export const CREATE_ORDER = gql`
   mutation CreateOrder(
     $orderItems: [OrderItemAttributes!]!
     $totalPrice: Float!
-    $patientId: ID!
+    $patientId: ID
     $useCustomPricing: Boolean
   ) {
     createOrder(

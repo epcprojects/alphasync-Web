@@ -49,7 +49,7 @@ interface FetchOrderResponse {
     subtotalPrice: number;
     totalPrice: number;
     totalTax: number;
-    patient: UserAttributes;
+    patient: UserAttributes | null;
     orderItems: OrderItem[];
   };
 }
@@ -250,9 +250,9 @@ const Page = () => {
       ];
 
       const patientBoxRows = [
-        { label: "Patient", value: order.patient.fullName || "Unknown" },
-        { label: "Email", value: order.patient.email || "N/A" },
-        { label: "Phone", value: order.patient.phoneNo || "N/A" },
+        { label: "Patient", value: order.patient?.fullName || "Unknown" },
+        { label: "Email", value: order.patient?.email || "N/A" },
+        { label: "Phone", value: order.patient?.phoneNo || "N/A" },
       ];
 
       const leftBoxEndY = drawInfoCard(
@@ -402,14 +402,16 @@ const Page = () => {
       <div className="w-full bg-white rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)]">
         <div>
           <CustomerInfoCard
-            name={order.patient.fullName || "Unknown"}
-            email={order.patient.email || ""}
-            phone={order.patient.phoneNo || ""}
-            totalOrders={order.patient.patientOrdersCount || 0}
+            name={order.patient?.fullName || "Clinic Order"}
+            email={order.patient?.email || ""}
+            phone={order.patient?.phoneNo || ""}
+            totalOrders={order.patient?.patientOrdersCount || 0}
             lastOrder={formatDate(order.createdAt)}
-            address={order.patient.address || ""}
+            address={order.patient?.address || ""}
             onBack={() => console.log("Go back")}
-            onViewProfile={() => router.push(`/customers/${order.patient.id}`)}
+            onViewProfile={() =>
+              order.patient?.id && router.push(`/customers/${order.patient.id}`)
+            }
             getInitials={(name) =>
               name
                 .split(" ")
@@ -519,7 +521,7 @@ const Page = () => {
                   Shipping Address:
                 </h2>
                 <h3 className="text-sm md:text-base text-gray-800">
-                  {order.patient.address || "No address provided"}
+                  {order.patient?.address || "No address provided"}
                 </h3>
               </div>
             </div>
@@ -601,7 +603,7 @@ const Page = () => {
           isOpen={isChatModalOpen}
           onClose={() => setIsChatModalOpen(false)}
           participantId={String(order.patient.id)}
-          participantName={order.patient.fullName || "Customer"}
+          participantName={order.patient?.fullName || "Customer"}
           itemTitle={order.displayId ? String(order.displayId) : order.id}
         />
       )}
