@@ -32,6 +32,7 @@ export interface PrescriptionOrder {
   patient?: {
     address?: string | null;
   };
+  doctorAddress?: string | null;
 }
 
 interface PrescriptionOrderCardProps {
@@ -179,18 +180,20 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
               >
                 {icon}
               </button>
-              <ThemeButton
-                variant="outline"
-                label={btnTitle}
-                disabled={btnDisabled}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPay?.(order);
-                }}
-                className="flex-1 sm:flex-none sm:min-w-32"
-                heightClass="h-11"
-                icon={type === "order" && <Reload />}
-              />
+              {btnTitle && (
+                <ThemeButton
+                  variant="outline"
+                  label={btnTitle}
+                  disabled={btnDisabled}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPay?.(order);
+                  }}
+                  className="flex-1 sm:flex-none sm:min-w-32"
+                  heightClass="h-11"
+                  icon={type === "order" && <Reload />}
+                />
+              )}
               <span className="text-xl font-semibold text-primary text-left sm:text-right">
                 ${order.totalPrice.toFixed(2)}
               </span>
