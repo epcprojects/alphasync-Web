@@ -70,9 +70,7 @@ export default function ProductDetailPage() {
       // Refetch the product to get updated favorite status
       await refetch();
       showSuccessToast(
-        product.isFavorited
-          ? "Removed from favorites"
-          : "Added to favorites"
+        product.isFavorited ? "Removed from favorites" : "Added to favorites"
       );
     } catch (error) {
       console.error("Error toggling favorite:", error);
@@ -132,16 +130,16 @@ export default function ProductDetailPage() {
 
   // Transform product images for ProductSwiper
   const productViews = (() => {
-    // Use all images if available
-    if (product?.images && product.images.length > 0) {
-      return product.images
-        .filter((img): img is string => typeof img === "string" && img.trim().length > 0)
-        .map((image, index) => ({
-          id: `image-${index}`,
+    // Fallback to primary image
+    if (product?.primaryImage) {
+      return [
+        {
+          id: "primary",
           title: product.title || "Product Image",
-          imagePath: image,
-          thumbnailPath: image,
-        }));
+          imagePath: product.primaryImage,
+          thumbnailPath: product.primaryImage,
+        },
+      ];
     }
 
     // Fallback to primary image
@@ -284,9 +282,7 @@ export default function ProductDetailPage() {
 
               <span
                 className={`inline-block whitespace-nowrap text-xs md:text-sm font-semibold ${
-                  product.inStock
-                    ? "text-green-600"
-                    : "text-red-600"
+                  product.inStock ? "text-green-600" : "text-red-600"
                 }`}
               >
                 {product.inStock ? "In Stock" : "Out of Stock"}
@@ -315,7 +311,7 @@ export default function ProductDetailPage() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
+              {/* <div className="flex items-center justify-between mb-1">
                 <label
                   htmlFor="product-price"
                   className="block text-base font-normal text-gray-600"
@@ -331,7 +327,7 @@ export default function ProductDetailPage() {
                     Edit
                   </button>
                 )}
-              </div>
+              </div> */}
               {isEditingPrice ? (
                 <div className="flex items-center gap-2">
                   <div className="relative flex items-center w-full sm:w-fit">
@@ -352,7 +348,8 @@ export default function ProductDetailPage() {
                         // Validate in real-time
                         const priceValue = parseFloat(newPrice);
                         if (newPrice && !isNaN(priceValue)) {
-                          const originalPrice = product?.variants?.[0]?.price || 0;
+                          const originalPrice =
+                            product?.variants?.[0]?.price || 0;
                           if (priceValue < originalPrice) {
                             setPriceError(
                               `Minimum price: $${originalPrice.toFixed(2)}`
@@ -458,9 +455,6 @@ export default function ProductDetailPage() {
 
             {product.variants && product.variants.length > 0 && (
               <div className="bg-gray-50 rounded-xl p-2 md:p-4">
-                <h2 className="text-black font-medium text-sm md:text-base mb-3">
-                  Variants:
-                </h2>
                 <div className="space-y-2">
                   {product.variants.map((variant, index) => (
                     <div
@@ -468,7 +462,8 @@ export default function ProductDetailPage() {
                       className="bg-white rounded-lg p-2 md:p-3 border border-gray-200"
                     >
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div>Price:</div>
+                        {/* <div>
                           <span className="text-sm font-medium text-gray-700">
                             Variant {index + 1}
                           </span>
@@ -477,16 +472,16 @@ export default function ProductDetailPage() {
                               (SKU: {variant.sku})
                             </span>
                           )}
-                        </div>
-                        <span className="text-sm font-semibold text-primary">
+                        </div> */}
+                        <span className="text-xl font-semibold text-primary">
                           ${variant.price.toFixed(2)}
                         </span>
                       </div>
-                      {variant.shopifyVariantId && (
+                      {/* {variant.shopifyVariantId && (
                         <div className="text-xs text-gray-500 mt-1">
                           Shopify ID: {variant.shopifyVariantId}
                         </div>
-                      )}
+                      )} */}
                     </div>
                   ))}
                 </div>
@@ -512,4 +507,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
