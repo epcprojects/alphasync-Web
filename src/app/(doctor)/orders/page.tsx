@@ -28,7 +28,7 @@ interface DoctorOrdersResponse {
       patient: {
         email: string;
         fullName: string;
-      };
+      } | null;
       createdAt: string;
       status: string;
       orderItems: {
@@ -83,6 +83,7 @@ function OrderContent() {
         status: selectedStatus === "All Status" ? undefined : selectedStatus,
         page: currentPage + 1, // GraphQL pagination is 1-based
         perPage: itemsPerPage,
+        myClinic: false,
       },
       fetchPolicy: "network-only",
     }
@@ -292,7 +293,7 @@ function OrderContent() {
                 displayId: order.displayId
                   ? parseInt(order.displayId.toString())
                   : parseInt(order.id),
-                customer: order.patient.fullName,
+                customer: order.patient?.fullName || "Unknown Customer",
 
                 date: format(new Date(order.createdAt), "MM-dd-yy"),
                 status: order.status,

@@ -10,6 +10,7 @@ import {
   ReminderIcon,
   RequestIcon,
   SettingsIcon,
+  DeliveryBoxIcon,
 } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
@@ -42,6 +43,7 @@ const menuItems = [
   { label: "Inventory", href: "/inventory", icon: InventoryIcon },
   { label: "Customers", href: "/customers", icon: CustomerIcon },
   { label: "Orders", href: "/orders", icon: OrdersIcon },
+  { label: "My Clinic", href: "/clinic", icon: DeliveryBoxIcon },
   {
     label: "Reminder",
     href: "/reminder",
@@ -55,6 +57,7 @@ const headings: Record<string, string> = {
   "/inventory": "Trusted Peptide Solutions",
   "/customers": "Customer Management",
   "/orders": "Order Management",
+  "/clinic": "Clinic",
   "/reminder": "Refill Reminders",
   "/request": "Patient Requests",
   "/settings": "Settings",
@@ -68,6 +71,7 @@ const subHeadings: Record<string, string> = {
 
 const noStatsRoutes = [
   "/customers",
+  "/clinic",
   "/reminder",
   "/requests",
   "/settings",

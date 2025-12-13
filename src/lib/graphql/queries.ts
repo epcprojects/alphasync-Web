@@ -111,8 +111,8 @@ export const ALL_PRODUCTS_INVENTORY = gql`
   }
 `;
 export const DOCTOR_ORDERS = gql`
-  query DoctorOrders($status: String, $page: Int, $perPage: Int) {
-    doctorOrders(status: $status, page: $page, perPage: $perPage) {
+  query DoctorOrders($status: String, $page: Int, $perPage: Int, $myClinic: Boolean) {
+    doctorOrders(status: $status, page: $page, perPage: $perPage, myClinic: $myClinic) {
       allData {
         id
         displayId

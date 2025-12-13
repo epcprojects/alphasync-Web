@@ -25,6 +25,7 @@ type order = {
   patient?: {
     address?: string | null;
   };
+  doctorAddress?: string | null;
 };
 
 interface CustomerOrderDetailsProps {
@@ -32,6 +33,7 @@ interface CustomerOrderDetailsProps {
   onClose: () => void;
   order: order | null;
   type?: pageVarient;
+  showDoctorName?: boolean;
 }
 
 const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
@@ -39,6 +41,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
   onClose,
   order,
   type = "order",
+  showDoctorName = true, // Default to true for customer side
 }) => {
   useBodyScrollLock(isOpen);
   const normalizeAddress = (value?: string | null) => {
@@ -48,8 +51,9 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
   };
   if (!order) return null;
   const shippingAddress =
-    normalizeAddress(order.patient?.address ?? undefined) ??
+    normalizeAddress(order.doctorAddress ?? undefined) ??
     normalizeAddress(order.shippingAddress) ??
+    normalizeAddress(order.patient?.address ?? undefined) ??
     "Address not available";
   const getOrderTags = (status?: string) => {
     switch (status) {
@@ -97,12 +101,16 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                 </span>
               </div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-normal text-gray-800">Doctor</span>
-              <span className="text-sm font-medium text-gray-800">
-                {order.doctorName}
-              </span>
-            </div>
+            {showDoctorName && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-normal text-gray-800">
+                  Doctor
+                </span>
+                <span className="text-sm font-medium text-gray-800">
+                  {order.doctorName}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Order Date
