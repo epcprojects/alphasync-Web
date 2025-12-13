@@ -92,7 +92,7 @@ export default function OrderListView({
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-2 ">
             <span
-              className={`w-10 h-10 ${bg} ${text} shrink-0 flex items-center font-medium justify-center rounded-full`}
+              className={`w-10 h-10 ${bg} ${text} shrink-0 hidden sm:flex items-center font-medium justify-center rounded-full`}
             >
               {getInitials(order.customer)}
             </span>

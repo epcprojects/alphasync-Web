@@ -136,10 +136,10 @@ export default function CustomerDatabaseView({
 
           <div className="flex items-center gap-1.5 w-full">
             <span className="text-black font-medium text-sm block">
-              Last Order:
+              Total Orders:
             </span>
             <span className="text-gray-800 text-sm font-normal block">
-              {lastOrder || "—"}
+              {totalOrder}
             </span>
           </div>
         </div>
@@ -147,10 +147,10 @@ export default function CustomerDatabaseView({
         <div className="flex items-center gap-1 w-full">
           <div className="flex items-center gap-1.5 w-full">
             <span className="text-black font-medium text-sm block">
-              Total Orders:
+              Last Order:
             </span>
             <span className="text-gray-800 text-sm font-normal block">
-              {totalOrder}
+              {lastOrder || "—"}
             </span>
           </div>
           <div className="flex items-center gap-1">

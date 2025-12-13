@@ -51,7 +51,7 @@ export default function RefillView({
   if (isMobile)
     return (
       <div className="bg-white rounded-lg  flex flex-col gap-1.5 p-3 shadow-table">
-        <div className="flex items-start gap-2">
+        <div className="flex items-center gap-2">
           <span
             className={`w-10 h-10 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
           >
@@ -91,13 +91,13 @@ export default function RefillView({
           </span>
         </div>
 
-        <div className=" flex items-center justify-center gap-2">
+        <div className=" flex items-center justify-center gap-1">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onContactClick();
             }}
-            className="flex px-3 h-8 gap-1 md:gap-2 w-full text-xs md:text-sm bg-blue-500  text-white  items-center justify-center rounded-md border cursor-pointer border-blue-500"
+            className="flex px-2 h-8 gap-1 md:gap-2 w-full text-xs md:text-sm bg-blue-500  text-white  items-center justify-center rounded-md border cursor-pointer border-blue-500"
           >
             <svg
               width="15"
@@ -123,7 +123,7 @@ export default function RefillView({
                 onAutoReOrderClick(false);
               }}
               disabled={isAutoReorderLoading}
-              className="flex px-3 py-2 h-8 gap-1 md:gap-2 w-full whitespace-nowrap text-xs md:text-sm bg-red-500 text-white items-center justify-center rounded-md border cursor-pointer border-red-500 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex px-2 py-2 h-8 gap-1 md:gap-2 w-full whitespace-nowrap text-xs md:text-sm bg-red-500 text-white items-center justify-center rounded-md border cursor-pointer border-red-500 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <AutoReloadIcon />
               {isAutoReorderLoading ? "Cancelling..." : "Cancel Auto-Reorder"}
@@ -136,7 +136,7 @@ export default function RefillView({
                   onReOrderClick();
                 }}
                 disabled={isReorderLoading}
-                className="flex px-3 py-2 h-8 gap-1 md:gap-2 w-full text-xs md:text-sm bg-green-600 text-white  items-center justify-center rounded-md border cursor-pointer border-green-600 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex px-2 py-2 h-8 gap-1 md:gap-2 w-full text-xs md:text-sm bg-green-600 text-white  items-center justify-center rounded-md border cursor-pointer border-green-600 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <ReloadIcon />
                 {isReorderLoading ? "Reordering..." : "Reorder"}
@@ -148,7 +148,7 @@ export default function RefillView({
                   onAutoReOrderClick(true);
                 }}
                 disabled={isAutoReorderLoading}
-                className="flex px-3 py-2 gap-1 md:gap-2 w-full h-8 text-xs md:text-sm bg-primary text-white  items-center justify-center rounded-md border cursor-pointer border-primary disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
+                className="flex px-2 py-2 gap-1 md:gap-2 w-full h-8 text-xs md:text-sm bg-primary text-white  items-center justify-center rounded-md border cursor-pointer border-primary disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
               >
                 <AutoReloadIcon />
                 {isAutoReorderLoading ? "Saving..." : "Auto-Reorder"}

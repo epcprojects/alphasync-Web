@@ -213,7 +213,7 @@ function RequestContent() {
           </div>
 
           <Menu>
-            <MenuButton className="inline-flex py-1 md:py-2 px-3 cursor-pointer whitespace-nowrap bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+            <MenuButton className="inline-flex py-1.5 md:py-2 px-2 sm:px-3 cursor-pointer whitespace-nowrap bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
               {selectedStatus} <ArrowDownIcon fill="#717680" />
             </MenuButton>
 

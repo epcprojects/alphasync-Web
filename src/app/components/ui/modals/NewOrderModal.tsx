@@ -413,7 +413,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-6 text-black text-xs font-medium bg-gray-100 py-2 px-3">
+                  <div className="hidden sm:grid grid-cols-6 text-black text-xs font-medium bg-gray-100 py-2 px-3">
                     <div className="col-span-2">Product</div>
                     <div>Quantity</div>
                     <div>Price</div>
@@ -424,13 +424,13 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                   {orderItems.map((item, index) => (
                     <div
                       key={index}
-                      className="grid grid-cols-6 bg-gray-50 items-center py-2 mb-0.5 px-3"
+                      className="grid grid-cols-6 sm:gap-0 gap-2 bg-gray-50 items-center py-2 mb-0.5 px-3"
                     >
-                      <div className="col-span-2 text-xs md:text-sm">
+                      <div className="col-span-6 sm:col-span-2 text-xs md:text-sm">
                         {item.product}
                       </div>
 
-                      <div>
+                      <div className="col-span-2 sm:col-auto">
                         <input
                           type="number"
                           value={item.quantity}
@@ -477,7 +477,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         />
                       </div>
 
-                      <div>
+                      <div className="col-span-2 sm:col-auto">
                         <input
                           type="number"
                           value={item.price}

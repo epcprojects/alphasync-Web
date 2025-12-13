@@ -233,7 +233,13 @@ function OrderContent() {
 
             <ThemeButton
               label={"New Order"}
-              icon={<PlusIcon />}
+              className="w-full sm:w-fit"
+              icon={
+                <PlusIcon
+                  width={isMobile ? "16" : "20"}
+                  height={isMobile ? "16" : "20"}
+                />
+              }
               onClick={() => {
                 router.push("/orders/new-order");
               }}

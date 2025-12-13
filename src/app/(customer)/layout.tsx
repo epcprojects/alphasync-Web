@@ -96,12 +96,12 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
           <div className="flex items-center flex-col">
             {pathname.startsWith(menuItems[0].href) && (
-              <h2 className="text-white font-normal mb-3 text-base md:text-2xl">
-                👋 Welcome {user?.fullName}
+              <h2 className="text-white font-normal mb-3 text-center text-base md:text-2xl">
+                👋 Welcome <br className="sm:hidden block" /> {user?.fullName}
               </h2>
             )}
             {hideStats && (
-              <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
+              <h2 className="text-white text-2xl text-center font-semibold md:text-4xl xl:text-[44px]">
                 {heading}
               </h2>
             )}

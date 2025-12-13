@@ -210,7 +210,7 @@ function InventoryContent() {
         </div>
 
         <div className="sm:bg-white rounded-full flex-col sm:flex-row w-full flex items-center gap-1 md:gap-2 p-0 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
-          <div className="flex items-center relative w-full p-1 sm:p-1 rounded-full bg-white sm:bg-transparent shadow-table sm:showdow-none">
+          <div className="flex items-center relative w-full p-1 sm:p-0 rounded-full bg-white sm:bg-transparent shadow-table sm:shadow-none">
             <span className="absolute left-3">
               <SearchIcon
                 height={isMobile ? "16" : "20"}
@@ -225,7 +225,7 @@ function InventoryContent() {
             />
           </div>
 
-          <div className="sm:p-0 flex items-center gap-1 md:gap-2 rounded-full bg-white sm:bg-transparent p-1 shadow-table sm:showdow-none">
+          <div className="sm:p-0 flex items-center gap-1 md:gap-2 rounded-full bg-white sm:bg-transparent p-1 shadow-table sm:shadow-none">
             <Tooltip content="Favourite Products">
               <button
                 onClick={() => setShowFavourites((prev) => !prev)}

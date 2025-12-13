@@ -71,7 +71,7 @@ export default function RequestListView({
   if (isMobile) {
     return (
       <div className="p-2 bg-white rounded-lg  flex flex-col gap-3 shadow-table">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start gap-1 flex-wrap justify-between">
           <div className="flex items-start gap-2">
             <span
               className={`w-10 h-10 shrink-0 ${bg} ${text} flex items-center text-sm font-medium justify-center rounded-full`}
