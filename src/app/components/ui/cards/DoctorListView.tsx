@@ -73,7 +73,7 @@ export default function DoctorListView({
         key={doctor.id}
         className="bg-white flex flex-col gap-2 p-2  cursor-pointer  rounded-xl shadow-table"
       >
-        <div className="flex items-start gap-1 justify-between mb-2">
+        <div className="flex items-start flex-wrap gap-1 justify-between mb-2">
           <div className="flex items-start sm:items-center gap-2 ">
             <span
               className={`w-9 h-9 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
@@ -111,7 +111,7 @@ export default function DoctorListView({
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-1 w-full">
+        <div className="flex items-end sm:items-center gap-1 w-full">
           <div className="flex items-start flex-col gap-1 w-full">
             <span className="text-black whitespace-nowrap font-medium text-sm block">
               Medical License:

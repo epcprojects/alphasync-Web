@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ArrowDownIcon,
-  UserFilledIcon,
-  PlusIcon,
-  SearchIcon,
-  AdminFilledIcon,
-} from "@/icons";
+import { ArrowDownIcon, PlusIcon, SearchIcon, AdminFilledIcon } from "@/icons";
 import React, { Suspense, useState } from "react";
 import {
   EmptyState,
@@ -246,7 +240,7 @@ function AdminsContent() {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <div className="space-y-1 p-4 md:p-6 pt-0">
+              <div className="space-y-1 p-3 md:p-6 pt-0">
                 <div className="hidden sm:grid grid-cols-12 text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div className="col-span-4">
                     <h2>Name</h2>

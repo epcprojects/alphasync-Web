@@ -108,7 +108,7 @@ export default function OrderListView({
 
           <div className=" font-medium text-xs md:text-sm text-gray-800">
             <span
-              className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${getStatusClasses(
+              className={`inline-block rounded-full capitalize px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${getStatusClasses(
                 order.status
               )}`}
             >

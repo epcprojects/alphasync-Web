@@ -209,8 +209,8 @@ function InventoryContent() {
           </div>
         </div>
 
-        <div className="bg-white rounded-full w-full flex items-center gap-1 md:gap-2 p-1.5 md:px-2.5 md:py-2 shadow-table lg:w-fit">
-          <div className="flex items-center relative w-full">
+        <div className="sm:bg-white rounded-full flex-col sm:flex-row w-full flex items-center gap-1 md:gap-2 p-0 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
+          <div className="flex items-center relative w-full p-1 sm:p-1 rounded-full bg-white sm:bg-transparent shadow-table sm:showdow-none">
             <span className="absolute left-3">
               <SearchIcon
                 height={isMobile ? "16" : "20"}
@@ -225,75 +225,77 @@ function InventoryContent() {
             />
           </div>
 
-          <Tooltip content="Favourite Products">
-            <button
-              onClick={() => setShowFavourites((prev) => !prev)}
-              className={`w-8 h-8 shrink-0 md:h-11 md:w-11 ${
-                showFavourites &&
-                "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-              }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-            >
-              {showFavourites ? (
-                <HeartFilledIcon
-                  height={isMobile ? 16 : 20}
-                  width={isMobile ? 16 : 20}
+          <div className="sm:p-0 flex items-center gap-1 md:gap-2 rounded-full bg-white sm:bg-transparent p-1 shadow-table sm:showdow-none">
+            <Tooltip content="Favourite Products">
+              <button
+                onClick={() => setShowFavourites((prev) => !prev)}
+                className={`w-8 h-8 shrink-0 md:h-11 md:w-11 ${
+                  showFavourites &&
+                  "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+                }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+              >
+                {showFavourites ? (
+                  <HeartFilledIcon
+                    height={isMobile ? 16 : 20}
+                    width={isMobile ? 16 : 20}
+                  />
+                ) : (
+                  <FavoriteIcon
+                    height={isMobile ? "16" : "20"}
+                    width={isMobile ? "16" : "20"}
+                  />
+                )}
+              </button>
+            </Tooltip>
+            <Tooltip content="Out of Stock">
+              <button
+                onClick={() => setShowOutOfStock((prev) => !prev)}
+                className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
+                  showOutOfStock &&
+                  "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+                }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+              >
+                <PackageOutlineIcon
+                  height={isMobile ? "15" : "20"}
+                  width={isMobile ? "15" : "20"}
                 />
-              ) : (
-                <FavoriteIcon
-                  height={isMobile ? "16" : "20"}
-                  width={isMobile ? "16" : "20"}
+              </button>
+            </Tooltip>
+
+            <Tooltip content="Grid View">
+              <button
+                onClick={() => {
+                  setShowGridView(true);
+                }}
+                className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
+                  showGridView &&
+                  "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+                }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+              >
+                <GridViewIcon
+                  height={isMobile ? "15" : "20"}
+                  width={isMobile ? "15" : "20"}
                 />
-              )}
-            </button>
-          </Tooltip>
-          <Tooltip content="Out of Stock">
-            <button
-              onClick={() => setShowOutOfStock((prev) => !prev)}
-              className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-                showOutOfStock &&
-                "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-              }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-            >
-              <PackageOutlineIcon
-                height={isMobile ? "15" : "20"}
-                width={isMobile ? "15" : "20"}
-              />
-            </button>
-          </Tooltip>
+              </button>
+            </Tooltip>
 
-          <Tooltip content="Grid View">
-            <button
-              onClick={() => {
-                setShowGridView(true);
-              }}
-              className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-                showGridView &&
-                "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-              }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-            >
-              <GridViewIcon
-                height={isMobile ? "15" : "20"}
-                width={isMobile ? "15" : "20"}
-              />
-            </button>
-          </Tooltip>
-
-          <Tooltip content="List View">
-            <button
-              onClick={() => {
-                setShowGridView(false);
-              }}
-              className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-                !showGridView &&
-                "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-              }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-            >
-              <ListViewIcon
-                height={isMobile ? "15" : "20"}
-                width={isMobile ? "15" : "20"}
-              />
-            </button>
-          </Tooltip>
+            <Tooltip content="List View">
+              <button
+                onClick={() => {
+                  setShowGridView(false);
+                }}
+                className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
+                  !showGridView &&
+                  "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+                }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+              >
+                <ListViewIcon
+                  height={isMobile ? "15" : "20"}
+                  width={isMobile ? "15" : "20"}
+                />
+              </button>
+            </Tooltip>
+          </div>
         </div>
       </div>
       {productsLoading && !isRefetchingFavorites ? (

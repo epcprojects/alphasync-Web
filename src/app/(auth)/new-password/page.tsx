@@ -22,17 +22,20 @@ function Content() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [setPassword, { loading: setPasswordLoading }] = useMutation(SET_PASSWORD, {
-    onCompleted: (data) => {
-      if (data?.setPassword) {
-        showSuccessToast("Password updated successfully!");
-        setIsModalOpen(true);
-      }
-    },
-    onError: (error) => {
-      showErrorToast(error.message || "Failed to update password");
-    },
-  });
+  const [setPassword, { loading: setPasswordLoading }] = useMutation(
+    SET_PASSWORD,
+    {
+      onCompleted: (data) => {
+        if (data?.setPassword) {
+          showSuccessToast("Password updated successfully!");
+          setIsModalOpen(true);
+        }
+      },
+      onError: (error) => {
+        showErrorToast(error.message || "Failed to update password");
+      },
+    }
+  );
 
   const validationSchema = Yup.object({
     password: Yup.string()
@@ -55,7 +58,9 @@ function Content() {
     validationSchema,
     onSubmit: async (values) => {
       if (!token) {
-        showErrorToast("Reset token is missing. Please request a new password reset.");
+        showErrorToast(
+          "Reset token is missing. Please request a new password reset."
+        );
         return;
       }
 
@@ -84,7 +89,7 @@ function Content() {
 
       <form
         onSubmit={formik.handleSubmit}
-        className="md:w-96 flex flex-col gap-5 md:gap-6 w-80"
+        className="md:w-96 flex flex-col gap-5 md:gap-6 w-72 sm:w-84"
       >
         <div className="flex flex-col gap-5 md:gap-6">
           <ThemeInput

@@ -251,11 +251,11 @@ function VerifyInfoContent() {
     <>
       <div className="relative flex flex-col gap-3 md:gap-5 items-center justify-center max-h-screen">
         <AuthHeader
-          width="md:w-[480px] w-80"
+          width="md:w-[480px] w-72 sm:w-84"
           logo={Images.auth.logo}
           title="Please verify below information"
         />
-        <div className="w-80 flex flex-col gap-3 md:gap-5 lg:gap-8 md:w-[480px]">
+        <div className="w-72 sm:w-84 flex flex-col gap-3 md:gap-5 lg:gap-8 md:w-[480px]">
           <div className="rounded-xl flex flex-col gap-1 md:gap-3 bg-gray-100  w-full p-3 md:p-4">
             <h2 className="text-gray-900 text-sm md:text-base mb-0 font-semibold ">
               Personal Information
