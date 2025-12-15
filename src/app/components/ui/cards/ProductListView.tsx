@@ -34,7 +34,7 @@ export default function ProductListView({
       key={product.id}
       className="grid cursor-pointer grid-cols-2 hover:bg-gray-100 group md:grid-cols-12 gap-2 md:gap-4 items-center rounded-xl bg-white p-3 shadow-table"
     >
-      <div className="col-span-2 md:col-span-4 lg:col-span-5 flex items-center gap-3">
+      <div className="col-span-2 md:col-span-4 lg:col-span-5 flex items-start sm:items-center gap-3">
         <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 group-hover:bg-white bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
           <ProductImage
             width={36}
@@ -45,11 +45,11 @@ export default function ProductListView({
           />
         </div>
         <div>
-          <h3 className="font-semibold line-clamp-1 text-gray-800 text-sm md:text-base">
+          <h3 className="font-semibold sm:line-clamp-1 text-gray-800 text-sm md:text-base">
             {product.title}
           </h3>
           <p
-            className="text-gray-800 text-xs font-normal md:text-sm line-clamp-1"
+            className="text-gray-800 text-xs font-normal md:text-sm line-clamp-3 sm:line-clamp-1"
             dangerouslySetInnerHTML={{
               __html: product.description || "No description available",
             }}
@@ -65,7 +65,7 @@ export default function ProductListView({
         )}
       </div>
 
-      <div className="col-span-1 md:col-span-2 md:block flex items-start md:items-center md:justify-start justify-end">
+      <div className="col-span-1 md:col-span-2 md:block flex items-center md:justify-start justify-end">
         <span className="font-medium text-xs inline-flex pe-1 md:hidden text-primary">
           Stock:
         </span>

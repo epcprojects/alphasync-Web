@@ -217,7 +217,7 @@ function CustomerContent() {
 
             <ThemeButton
               icon={<UserAddIcon />}
-              label="Add New Customer"
+              label={isMobile ? "Add Customer" : "Add New Customer"}
               onClick={() => setIsModalOpen(true)}
             />
           </div>

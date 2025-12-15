@@ -38,7 +38,7 @@ export default function BrowseProductListView({
     return (
       <div className="bg-white flex flex-col  gap-5 p-3 shadow-table rounded-xl">
         <div className="flex flex-col gap-3">
-          <div className=" flex items-center gap-3">
+          <div className=" flex items-start gap-3">
             <div className="h-10 w-10 md:w-14 md:h-14 shrink-0 bg-gray-100 rounded-md md:rounded-lg flex items-center justify-center">
               <ProductImage
                 width={60}
@@ -49,12 +49,12 @@ export default function BrowseProductListView({
               />
             </div>
             <div>
-              <h3 className="font-semibold line-clamp-1 text-gray-800 text-sm md:text-base">
+              <h3 className="font-semibold  text-gray-800 text-sm md:text-base">
                 {product.title}
               </h3>
               <div
                 dangerouslySetInnerHTML={{ __html: product?.description }}
-                className="text-gray-800 text-xs font-normal md:text-sm line-clamp-1"
+                className="text-gray-800 text-xs font-normal md:text-sm line-clamp-2"
               />
             </div>
           </div>
@@ -109,7 +109,7 @@ export default function BrowseProductListView({
               disabled={!product.stock}
             >
               <ShopingCartIcon width={16} height={16} />
-              Request from Doctor
+              {isMobile ? " Request Now" : "Request from Doctor"}
             </button>
           </div>
         </div>

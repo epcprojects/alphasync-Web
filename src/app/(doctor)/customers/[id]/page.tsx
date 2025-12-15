@@ -450,7 +450,7 @@ export default function CustomerDetail() {
           <TabGroup selectedIndex={selectedIndex} onChange={setSelectedIndex}>
             <TabList
               className={
-                "flex items-center border-b px-2 border-b-gray-200 gap-0 md:gap-3 md:justify-start  justify-between md:px-6"
+                "flex items-center border-b flex-wrap px-2 border-b-gray-200 gap-0 md:gap-3 md:justify-start  justify-between md:px-6"
               }
             >
               {[

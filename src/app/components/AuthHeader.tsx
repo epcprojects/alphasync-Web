@@ -15,7 +15,7 @@ interface AuthHeaderProps {
 const AuthHeader: React.FC<AuthHeaderProps> = ({
   logo,
   title = "Welcome back",
-  width = "md:w-96 w-80",
+  width = "md:w-96 w-72 sm:w-84",
   subtitle = "",
   options,
   defaultValue,

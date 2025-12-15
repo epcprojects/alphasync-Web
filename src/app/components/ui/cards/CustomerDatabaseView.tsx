@@ -93,10 +93,10 @@ export default function CustomerDatabaseView({
         key={id}
         className="bg-white flex flex-col gap-2 p-2  cursor-pointer  rounded-xl shadow-table"
       >
-        <div className="flex items-start justify-between mb-2">
+        <div className="flex items-start flex-col sm:flex-row gap-1 justify-between mb-2">
           <div className="flex items-start gap-2 ">
             <span
-              className={`w-11 h-11 ${bg} ${text} flex shrink-0 items-center font-medium justify-center rounded-full`}
+              className={`w-10 h-10 ${bg} ${text} flex shrink-0 items-center font-medium justify-center rounded-full`}
             >
               {getInitials(name || "----")}
             </span>
@@ -136,10 +136,10 @@ export default function CustomerDatabaseView({
 
           <div className="flex items-center gap-1.5 w-full">
             <span className="text-black font-medium text-sm block">
-              Last Order:
+              Total Orders:
             </span>
             <span className="text-gray-800 text-sm font-normal block">
-              {lastOrder || "—"}
+              {totalOrder}
             </span>
           </div>
         </div>
@@ -147,10 +147,10 @@ export default function CustomerDatabaseView({
         <div className="flex items-center gap-1 w-full">
           <div className="flex items-center gap-1.5 w-full">
             <span className="text-black font-medium text-sm block">
-              Total Orders:
+              Last Order:
             </span>
             <span className="text-gray-800 text-sm font-normal block">
-              {totalOrder}
+              {lastOrder || "—"}
             </span>
           </div>
           <div className="flex items-center gap-1">

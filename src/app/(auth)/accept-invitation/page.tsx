@@ -145,7 +145,7 @@ function Content() {
       {isDoctor === true || isAdmin === true ? (
         <form
           onSubmit={formik.handleSubmit}
-          className="md:w-96 flex flex-col gap-5 md:gap-6 w-80"
+          className="md:w-96 flex flex-col gap-5 md:gap-6 w-72 sm:w-84"
         >
           <div className="flex flex-col gap-5 md:gap-6">
             <ThemeInput
@@ -190,7 +190,7 @@ function Content() {
           />
         </form>
       ) : (
-        <div className="md:w-96 flex flex-col gap-5 md:gap-6 w-80 items-center">
+        <div className="md:w-96 flex flex-col gap-5 md:gap-6 w-72 sm:w-84 items-center">
           {invitationAccepted ? (
             <div className="text-center py-8">
               <div className="mb-6">

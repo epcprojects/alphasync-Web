@@ -194,14 +194,14 @@ function ReminderContent() {
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-2 flex-wrap md:gap-4">
           <span className="flex items-center text-primary justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-lg md:w-11 md:h-11">
             <ReminderFilledIcon
               height={isMobile ? 16 : 24}
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="text-black font-semibold text-lg md:text-3xl">
+          <h2 className="text-black font-semibold text-base md:text-3xl">
             Customers Due for Refills
           </h2>
           <div className="px-3 py-1 rounded-full bg-white border border-indigo-200">

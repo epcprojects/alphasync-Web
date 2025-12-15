@@ -2,7 +2,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import AppModal from "./AppModal";
-import { UserFilledIcon } from "@/icons";
+import { AdminIcon, UserFilledIcon } from "@/icons";
 import ThemeInput from "../inputs/ThemeInput";
 import * as Yup from "yup";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -158,7 +158,7 @@ const AddAdminModal: React.FC<AddAdminModalProps> = ({
       title="Add New Admin"
       onConfirm={handleConfirm}
       confirmLabel="Create Admin"
-      icon={<UserFilledIcon />}
+      icon={<AdminIcon fill="#374151" />}
       size="medium"
       outSideClickClose={false}
       confimBtnDisable={!isFormValid || loading}
@@ -166,7 +166,7 @@ const AddAdminModal: React.FC<AddAdminModalProps> = ({
       cancelLabel={"Cancel"}
     >
       <div className="flex flex-col gap-2 md:gap-5">
-        <div className="flex items-start gap-2 md:gap-5">
+        <div className="flex items-start flex-col sm:flex-row gap-2 md:gap-5">
           <div className="w-full">
             <ThemeInput
               required

@@ -48,7 +48,9 @@ const CustomerInfoCard: React.FC<CustomerInfoCardProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onBack();
+                if (onViewProfile) {
+                  onViewProfile();
+                }
               }}
               className="flex rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
             >

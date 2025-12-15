@@ -422,7 +422,7 @@ const Page = () => {
           />
 
           <div className="p-3 md:p-6 flex flex-col gap-1.5 md:gap-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 flex-wrap justify-between">
               <div className="flex items-center gap-1 md:gap-4">
                 <h2 className="text-sm whitespace-nowrap md:text-lg font-semibold text-black">
                   Order {order.displayId || order.id}
@@ -512,7 +512,7 @@ const Page = () => {
                 </h3>
               </div>
             </div>
-            <div className="rounded-lg flex items-center gap-1 md:gap-2 p-2 bg-gray-50 ">
+            <div className="rounded-lg flex items-start sm:items-center gap-1 md:gap-2 p-2 bg-gray-50 ">
               <div className="rounded-lg shrink-0 bg-white border border-gray-200 flex items-center justify-center w-10 h-10">
                 <LocationIcon />
               </div>

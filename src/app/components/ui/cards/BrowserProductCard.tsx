@@ -57,8 +57,8 @@ export default function BrowserProductCard({
       <div className="bg-gray-50 border border-gray-100 p-2 md:p-5 md:min-h-48 md:max-h-48 w-full rounded-lg">
         <div className="flex flex-col gap-2 h-full justify-between">
           <div className="flex flex-col gap-1">
-            <div className="flex justify-between items-start">
-              <h2 className="text-gray-800 font-semibold  overflow-hidden line-clamp-1 text-lg md:text-xl">
+            <div className="flex justify-between flex-wrap gap-1 flex-col-reverse sm:flex-row items-start">
+              <h2 className="text-gray-800 font-semibold  overflow-hidden  text-lg md:text-xl">
                 {product.title}
               </h2>
               {product.tags?.[0] && (

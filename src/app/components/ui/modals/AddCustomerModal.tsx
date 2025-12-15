@@ -381,7 +381,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
 
         {step === 1 && (
           <div className="flex flex-col gap-4 md:gap-5">
-            <div className="flex items-center gap-3 md:gap-5 w-full">
+            <div className="flex items-center flex-col sm:flex-row gap-3 md:gap-5 w-full">
               <div className="w-full">
                 <ThemeInput
                   required
@@ -413,7 +413,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                 />
               </div>
             </div>
-            <div className="flex items-center gap-3 md:gap-5 w-full">
+            <div className="flex items-center flex-col sm:flex-row gap-3 md:gap-5 w-full">
               <div className="w-full">
                 <ThemeInput
                   required

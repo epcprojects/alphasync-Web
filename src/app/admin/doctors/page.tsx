@@ -216,7 +216,7 @@ function DoctorContent() {
 
           <div className="flex items-center gap-1 md:gap-2 bg-white sm:p-0 sm:bg-transparent w-full sm:w-fit p-1 rounded-full shadow-table sm:shadow-none">
             <Menu>
-              <MenuButton className="w-full sm:w-fit flex justify-between py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm/6 font-medium shadow-inner focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+              <MenuButton className="w-full sm:w-fit whitespace-nowrap flex justify-between py-1.5 sm:py-2 px-2 sm:px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm/6 font-medium shadow-inner focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
                 {selectedStatus} <ArrowDownIcon fill="#717680" />
               </MenuButton>
 
@@ -239,13 +239,17 @@ function DoctorContent() {
             </Menu>
             <ThemeButton
               label="Import"
+              size={isMobile ? "small" : "medium"}
               onClick={() => setIsCsvImportModalOpen(true)}
+              heightClass="h-9 sm:h-auto"
             />
 
             <ThemeButton
               label="Add New"
+              size={isMobile ? "small" : "medium"}
               icon={<PlusIcon />}
               onClick={() => setIsModalOpen(true)}
+              heightClass="h-9 sm:h-auto"
             />
           </div>
         </div>

@@ -184,7 +184,7 @@ function ProductsContent() {
 
           <div className="flex items-center gap-1 p-1 rounded-full sm:bg-transparent sm:p-0 sm:shadow-none bg-white w-full shadow-table">
             <Menu>
-              <MenuButton className="inline-flex py-2 px-3 cursor-pointer whitespace-nowrap bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+              <MenuButton className="inline-flex py-2 px-3 cursor-pointer whitespace-nowrap bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
                 {selectedCategory ? selectedCategory : "All Categories"}
                 <ArrowDownIcon fill="#717680" />
               </MenuButton>
@@ -232,7 +232,13 @@ function ProductsContent() {
             </Tooltip>
 
             <ThemeButton
-              label={isSyncing ? "Syncing..." : "Sync Products"}
+              label={
+                isSyncing
+                  ? "Syncing..."
+                  : !isSyncing && isMobile
+                  ? "Sync"
+                  : "Sync Products"
+              }
               icon={<ReloadIcon />}
               onClick={handleSyncProducts}
               disabled={isSyncing}

@@ -20,7 +20,7 @@ const ToggleGroup: React.FC<ToggleGroupProps> = ({
   };
 
   return (
-    <div className="flex rounded-xl md:w-96 w-80 gap-2 mt-2 mb-4 border border-mercury bg-neutral-50 p-1 ">
+    <div className="flex rounded-xl md:w-96 w-72 sm:w-84 gap-2 mt-2 mb-4 border border-mercury bg-neutral-50 p-1 ">
       {options.map((option) => (
         <button
           key={option}

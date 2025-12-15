@@ -69,7 +69,7 @@ export default function AdminListView({
   if (isMobile) {
     return (
       <div className="p-2 bg-white rounded-lg mt-2 flex flex-col gap-3 shadow-table">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start flex-wrap gap-1 justify-between">
           <div className="flex items-start gap-2">
             <span
               className={`w-10 h-10 shrink-0 ${bg} ${text} flex items-center text-sm font-medium justify-center rounded-full`}

@@ -78,7 +78,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
           w-full max-w-7xl"
           onClick={() => onPress && onPress(order)}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center flex-wrap gap-1 justify-between mb-4">
             <h2 className="text-lg md:text-xl font-semibold text-gray-950">
               {order.displayId}
             </h2>

@@ -32,9 +32,9 @@ const CustomerProfileHeaderCard: React.FC<CustomerProfileHeaderCardProps> = ({
     <>
       {/* Mobile View */}
       <div className="sm:hidden p-3 flex flex-col gap-2 border-b border-gray-200">
-        <div className="flex items-start gap-2 justify-between">
+        <div className="flex items-start  gap-1 justify-between">
           <div className="flex items-start gap-2">
-            <div className="rounded-full h-11 w-11 text-red-600 bg-red-100 text-base md:text-3xl font-medium flex items-center justify-center shrink-0 md:h-18 md:w-18">
+            <div className="rounded-full h-10 w-10 text-red-600 bg-red-100 text-base md:text-3xl font-medium hidden sm:flex items-center justify-center shrink-0 md:h-18 md:w-18">
               {getInitials(name)}
             </div>
             <div className="flex flex-col gap-1 md:gap-2">

@@ -47,7 +47,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
             className="border flex items-start md:items-center gap-2 md:gap-4 border-white/10 px-2 py-3 rounded-2xl bg-black/30 backdrop-blur-sm md:p-3"
           >
             <span
-              className={`w-9 h-9 shrink-0 md:w-15 md:h-15 rounded-full flex items-center justify-center ${item.bgColor}`}
+              className={`w-7 h-7 shrink-0 md:w-15 md:h-15 rounded-full flex items-center justify-center ${item.bgColor}`}
             >
               {item.icon}
             </span>
