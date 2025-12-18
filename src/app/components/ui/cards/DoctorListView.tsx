@@ -4,6 +4,7 @@ import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import Image from "next/image";
 
 type DoctorListingProps = {
   doctor: UserAttributes;
@@ -75,11 +76,21 @@ export default function DoctorListView({
       >
         <div className="flex items-start flex-wrap gap-1 justify-between mb-2">
           <div className="flex items-start sm:items-center gap-2 ">
-            <span
-              className={`w-9 h-9 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
-            >
-              {getInitials(doctor.fullName ?? doctor.email ?? "----")}
-            </span>
+            {doctor.imageUrl ? (
+              <Image
+                src={doctor.imageUrl}
+                alt={doctor.fullName || "Doctor"}
+                width={36}
+                height={36}
+                className="w-9 h-9 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <span
+                className={`w-9 h-9 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
+              >
+                {getInitials(doctor.fullName ?? doctor.email ?? "----")}
+              </span>
+            )}
             <div>
               <h2 className="text-gray-800 text-base md:text-base font-semibold">
                 {doctor.fullName ?? "----"}
@@ -179,11 +190,21 @@ export default function DoctorListView({
       className="grid  grid-cols-12 gap-2 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div className="flex items-center gap-2 col-span-3">
-        <span
-          className={`md:w-10 md:h-10 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
-        >
-          {getInitials(doctor.fullName ?? doctor.email ?? "----")}
-        </span>
+        {doctor.imageUrl ? (
+          <Image
+            src={doctor.imageUrl}
+            alt={doctor.fullName || "Doctor"}
+            width={40}
+            height={40}
+            className="md:w-10 md:h-10 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <span
+            className={`md:w-10 md:h-10 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
+          >
+            {getInitials(doctor.fullName ?? doctor.email ?? "----")}
+          </span>
+        )}
         <div>
           <h2 className="text-gray-800 text-sm md:text-base font-medium">
             {doctor.fullName ?? "----"}

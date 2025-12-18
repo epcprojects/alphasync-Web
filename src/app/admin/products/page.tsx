@@ -142,9 +142,16 @@ function ProductsContent() {
               width={isMobile ? 16 : 24}
             />
           </span>
-          <h2 className="lg:w-full text-black font-semibold text-xl md:text-3xl lg:4xl">
-            Products
-          </h2>
+          <div className="flex items-center gap-2 md:gap-3">
+            <h2 className="text-black font-semibold text-xl md:text-3xl lg:4xl">
+              Products
+            </h2>
+            {data?.allProducts.count !== undefined && (
+              <span className="inline-flex items-center justify-center px-2.5 py-1 md:px-3 md:py-1.5 text-xs md:text-sm font-medium text-gray-700 bg-gray-100 rounded-full">
+                {data.allProducts.count}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="sm:bg-white rounded-full w-full flex flex-col sm:flex-row items-center gap-1 md:gap-2 sm:p-1.5 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
