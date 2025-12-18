@@ -323,7 +323,7 @@ export default function Notifications({ userType }: NotificationsProps) {
             key={n.id}
             className="pb-2.5 lg:pb-4 border-b border-mercury last:border-b-0"
           >
-            <div className="flex items-start gap-2 justify-between">
+            <div className="flex items-start gap-4 justify-between">
               <div className="flex items-start gap-2">
                 <div className="mt-1">
                   {n.notificationType === "reorder" ||
@@ -349,7 +349,7 @@ export default function Notifications({ userType }: NotificationsProps) {
                     <div className="mt-2 flex items-center gap-2">
                       <ThemeButton
                         label="View Details"
-                        size={isMobile ? "small" : "medium"}
+                        size={isMobile ? "small" : "small"}
                         variant="outline"
                         className="w-fit"
                         heightClass={isMobile ? "h-8" : "h-9"}
@@ -365,7 +365,7 @@ export default function Notifications({ userType }: NotificationsProps) {
                           <>
                             <ThemeButton
                               label="Approve"
-                              size={isMobile ? "small" : "medium"}
+                              size={isMobile ? "small" : "small"}
                               variant="success"
                               className="w-fit"
                               heightClass={isMobile ? "h-8" : "h-9"}
@@ -378,7 +378,7 @@ export default function Notifications({ userType }: NotificationsProps) {
                             />
                             <ThemeButton
                               label="Decline"
-                              size={isMobile ? "small" : "medium"}
+                              size={isMobile ? "small" : "small"}
                               variant="danger"
                               className="w-fit"
                               heightClass={isMobile ? "h-8" : "h-9"}
@@ -399,7 +399,7 @@ export default function Notifications({ userType }: NotificationsProps) {
                       <div className="mt-2 flex items-center gap-2">
                         <ThemeButton
                           label="See Details"
-                          size={isMobile ? "small" : "medium"}
+                          size={isMobile ? "small" : "small"}
                           variant="filled"
                           className="w-fit"
                           heightClass={isMobile ? "h-8" : "h-9"}
@@ -420,7 +420,7 @@ export default function Notifications({ userType }: NotificationsProps) {
                       <div className="mt-2 flex items-center gap-2">
                         <ThemeButton
                           label="See Details"
-                          size={isMobile ? "small" : "medium"}
+                          size={isMobile ? "small" : "small"}
                           variant="filled"
                           className="w-fit"
                           heightClass={isMobile ? "h-8" : "h-9"}
@@ -440,7 +440,7 @@ export default function Notifications({ userType }: NotificationsProps) {
                       <div className="mt-2 flex items-center gap-2">
                         <ThemeButton
                           label="Start Chat"
-                          size={isMobile ? "small" : "medium"}
+                          size={isMobile ? "small" : "small"}
                           variant="filled"
                           className="w-fit"
                           heightClass={isMobile ? "h-8" : "h-9"}
