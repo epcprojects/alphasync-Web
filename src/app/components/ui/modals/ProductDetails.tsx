@@ -124,4 +124,3 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 };
 
 export default ProductDetails;
-

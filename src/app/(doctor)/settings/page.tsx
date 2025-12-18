@@ -70,9 +70,11 @@ const Page = () => {
   }, [user?.specialty]);
 
   // Fetch notification settings
-  const { loading: notificationLoading, data: notificationData, error: notificationError } = useQuery(
-    FETCH_NOTIFICATION_SETTINGS
-  );
+  const {
+    loading: notificationLoading,
+    data: notificationData,
+    error: notificationError,
+  } = useQuery(FETCH_NOTIFICATION_SETTINGS);
 
   useEffect(() => {
     if (notificationData?.notificationSettings) {

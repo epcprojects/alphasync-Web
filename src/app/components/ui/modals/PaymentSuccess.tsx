@@ -11,10 +11,7 @@ interface PaymentSuccessProps {
   btnTitle: string;
 }
 
-const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
-  isOpen,
-  onClose,
-}) => {
+const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ isOpen, onClose }) => {
   useBodyScrollLock(isOpen);
   if (!isOpen) return null;
 
