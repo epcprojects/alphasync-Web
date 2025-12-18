@@ -165,7 +165,7 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
               },
             ],
           }}
-          onClick={async (_token) => {
+          onClick={async () => {
             // Handle payment token - close payment modal and call original onClick
             setIsPaymentModalOpen(false);
             // The token is passed from CustomerOrderPayment after successful payment processing

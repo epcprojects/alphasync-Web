@@ -1,5 +1,5 @@
 "use client";
-import { PencilEditIcon, TrashBinIcon, MailIcon } from "@/icons";
+import { TrashBinIcon, MailIcon } from "@/icons";
 import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";

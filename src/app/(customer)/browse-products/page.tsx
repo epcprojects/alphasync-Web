@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  FilterIcon,
   GridViewIcon,
   ListViewIcon,
   SearchIcon,
@@ -14,7 +13,7 @@ import Pagination from "@/app/components/ui/Pagination";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import BrowserProductCard from "@/app/components/ui/cards/BrowserProductCard";
 import RequestModel from "@/app/components/ui/modals/RequestModel";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { Menu, MenuItem, MenuItems } from "@headlessui/react";
 import BrowseProductListView from "@/app/components/ui/cards/BrowseProductListView";
 import ProductDetails from "@/app/components/ui/modals/ProductDetails";
 import Tooltip from "@/app/components/ui/tooltip";

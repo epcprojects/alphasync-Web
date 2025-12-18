@@ -125,35 +125,3 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
 export default ProductDetails;
 
-interface InfoBlockProps {
-  icon?: React.ReactNode;
-  title: string;
-  description?: string;
-  list?: string[];
-}
-
-const InfoBlock: React.FC<InfoBlockProps> = ({
-  icon,
-  title,
-  description,
-  list,
-}) => {
-  return (
-    <div className="flex flex-col gap-3 border-b border-gray-200 pb-4">
-      <div className="flex items-center gap-2">
-        {icon}
-        <h3 className="text-lg font-medium text-gray-800">{title}</h3>
-      </div>
-      {description && (
-        <p className="text-sm font-normal text-gray-700">{description}</p>
-      )}
-      {list && (
-        <ul className="list-disc list-outside pl-5 text-sm font-normal text-gray-700 flex flex-col gap-2">
-          {list.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-};

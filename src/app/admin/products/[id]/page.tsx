@@ -4,7 +4,6 @@ import {
   ArrowDownIcon,
   HeartFilledIcon,
   HeartOutlineIcon,
-  PencilEditIcon,
 } from "@/icons";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useParams, useRouter } from "next/navigation";

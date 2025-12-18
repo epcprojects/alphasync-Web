@@ -15,7 +15,6 @@ import { useQuery, useMutation } from "@apollo/client/react";
 import { ALL_PATIENTS } from "@/lib/graphql/queries";
 import {
   MODIFY_ACCESSS_USER,
-  RESEND_INVITATION,
 } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";

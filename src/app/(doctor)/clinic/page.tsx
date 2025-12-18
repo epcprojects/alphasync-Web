@@ -235,10 +235,6 @@ function ClinicContent() {
   const clinicCountLabel = doctorOrdersLoading
     ? "Loading..."
     : `${clinicCount} ${clinicCount === 1 ? "Order" : "Orders"}`;
-  const showEmptyState =
-    !doctorOrdersLoading &&
-    !doctorOrdersError &&
-    transformedOrders.length === 0;
   const showSkeleton = doctorOrdersLoading && currentItems.length === 0;
 
   const handlePageChange = (selectedPage: number) => {

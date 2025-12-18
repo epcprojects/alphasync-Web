@@ -20,7 +20,7 @@ import CustomerOrderSummary from "@/app/components/ui/modals/CustomerOrderSummar
 import { useIsMobile } from "@/hooks/useIsMobile";
 import ChatWithPhysician from "@/app/components/ui/modals/CharWithPyhsicianModel";
 import { useMutation, useQuery } from "@apollo/client";
-import { ALL_ORDER_REQUESTS, FETCH_NOTES } from "@/lib/graphql/queries";
+import { ALL_ORDER_REQUESTS } from "@/lib/graphql/queries";
 import { OrderRequestAttributes } from "@/lib/graphql/attributes";
 import { CREATE_NOTE } from "@/lib/graphql/mutations";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";

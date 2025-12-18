@@ -2,7 +2,6 @@ import React from "react";
 import Verify from "../../../../../public/icons/Verify";
 import { CrossIcon } from "@/icons";
 import Portal from "../portal";
-import ThemeButton from "../buttons/ThemeButton";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 interface PaymentSuccessProps {
@@ -15,8 +14,6 @@ interface PaymentSuccessProps {
 const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
   isOpen,
   onClose,
-  viewOrder,
-  btnTitle,
 }) => {
   useBodyScrollLock(isOpen);
   if (!isOpen) return null;

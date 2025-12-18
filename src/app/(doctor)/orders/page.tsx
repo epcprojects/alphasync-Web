@@ -53,7 +53,6 @@ interface DoctorOrdersResponse {
 
 function OrderContent() {
   const router = useRouter();
-  const [search, setSearch] = useState("");
   const searchParams = useSearchParams();
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const orderStatuses = [
@@ -102,7 +101,7 @@ function OrderContent() {
     selectedStatus !== "All Status" ||
     range.startDate.getTime() !== defaultRange.startDate.getTime();
 
-  // Refetch data when search, status, or page changes
+  // Refetch data when status or page changes
   useEffect(() => {
     setCurrentPage(0);
     const params = new URLSearchParams(searchParams.toString());
@@ -111,7 +110,7 @@ function OrderContent() {
     router.replace(queryString ? `?${queryString}` : "/orders");
     refetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, selectedStatus]);
+  }, [selectedStatus]);
 
   const handlePageChange = ({ selected }: { selected: number }) => {
     setCurrentPage(selected);

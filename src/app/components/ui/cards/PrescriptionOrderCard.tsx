@@ -1,6 +1,6 @@
 import React from "react";
 import ThemeButton from "../buttons/ThemeButton";
-import { MedicineIcon, Reload } from "@/icons";
+import { Reload } from "@/icons";
 import ProductImage from "@/app/components/ui/ProductImage";
 
 export type pageVarient = "order" | "Pending-page";

@@ -7,7 +7,7 @@ import {
   SearchIcon,
 } from "@/icons";
 import { useMutation, useQuery } from "@apollo/client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import PrescriptionOrderCard, {
   PrescriptionOrder,
@@ -68,7 +68,6 @@ interface PatientOrdersResponse {
 
 function History() {
   const [search, setSearch] = useState("");
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("all");
