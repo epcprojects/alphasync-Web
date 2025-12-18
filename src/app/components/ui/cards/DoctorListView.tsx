@@ -40,21 +40,30 @@ export function getStatusClasses(status?: string) {
   }
 }
 
-// Helper function to determine display status based on invitationStatus and status
-function getDisplayStatus(invitationStatus?: string, status?: string): string {
-  const isInvitationAccepted = invitationStatus === "accepted";
+// Helper function to get invitation status chip classes
+export function getInvitationStatusClasses(invitationStatus?: string) {
+  const normalizedStatus = invitationStatus?.toLowerCase();
+  switch (normalizedStatus) {
+    case "accepted":
+      return "bg-emerald-100 border border-emerald-300 text-emerald-800";
+    case "pending":
+      return "bg-gray-100 border border-gray-300 text-gray-700";
+    default:
+      return "bg-gray-100 border border-gray-200 text-gray-700";
+  }
+}
+
+// Helper function to determine display status - only Active or Inactive
+function getDisplayStatus(status?: string): string {
   const isStatusActive = status?.toUpperCase() === "ACTIVE";
 
-  // If invitation accepted AND status active → show "Active"
-  if (isInvitationAccepted && isStatusActive) {
+  // If status is active → show "Active" (green)
+  if (isStatusActive) {
     return "Active";
   }
-  // If invitation NOT accepted AND status active → show "Inactive"
-  if (!isInvitationAccepted && isStatusActive) {
-    return "Inactive";
-  }
-  // For other cases, return the status as is or "Inactive" as default
-  return status || "Inactive";
+
+  // Otherwise → show "Inactive" (red)
+  return "Inactive";
 }
 
 export default function DoctorListView({
@@ -64,6 +73,7 @@ export default function DoctorListView({
   onResendInvitation,
 }: DoctorListingProps) {
   const { bg, text } = getColorPair(doctor.id);
+  const displayStatus = getDisplayStatus(doctor.status);
 
   const ismobile = useIsMobile();
 
@@ -80,6 +90,7 @@ export default function DoctorListView({
             >
               {getInitials(doctor.fullName ?? doctor.email ?? "----")}
             </span>
+
             <div>
               <h2 className="text-gray-800 text-base md:text-base font-semibold">
                 {doctor.fullName ?? "----"}
@@ -94,20 +105,24 @@ export default function DoctorListView({
           </div>
 
           <div className=" font-medium flex justify-end  gap-1 flex-wrap text-xs md:text-sm text-gray-800">
-            <span
-              className={`inline-block rounded-full px-2 capitalize py-0.5 text-xs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
-                doctor.specialty
-              )}`}
-            >
+            <span className="inline-block rounded-full px-2 capitalize py-0.5 text-xs md:text-sm font-medium whitespace-nowrap bg-blue-100 border border-blue-300 text-blue-800">
               {doctor.specialty || "Unknown"}
             </span>
 
             <span
               className={`inline-block rounded-full px-2 py-0.5 capitalize text-xs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
-                doctor.status
+                displayStatus
               )}`}
             >
-              {doctor.status || "Unknown"}
+              {displayStatus}
+            </span>
+
+            <span
+              className={`inline-block rounded-full px-2 py-0.5 capitalize text-xs md:text-sm font-medium whitespace-nowrap ${getInvitationStatusClasses(
+                doctor.invitationStatus
+              )}`}
+            >
+              {doctor.invitationStatus || "Pending"}
             </span>
           </div>
         </div>
@@ -167,23 +182,20 @@ export default function DoctorListView({
         </div>
       </div>
     );
-  const displayStatus = getDisplayStatus(
-    doctor.invitationStatus,
-    doctor.status
-  );
 
   return (
     <div
       // onClick={onRowClick}
       key={doctor.id}
-      className="grid  grid-cols-12 gap-2 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
+      className="grid  grid-cols-[2fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr] gap-2 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
-      <div className="flex items-center gap-2 col-span-3">
+      <div className="flex items-center gap-2">
         <span
           className={`md:w-10 md:h-10 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
         >
           {getInitials(doctor.fullName ?? doctor.email ?? "----")}
         </span>
+
         <div>
           <h2 className="text-gray-800 text-sm md:text-base font-medium">
             {doctor.fullName ?? "----"}
@@ -192,23 +204,33 @@ export default function DoctorListView({
         </div>
       </div>
 
-      <div className="text-sm md:text-base font-normal text-gray-800 col-span-2">
+      <div className="text-sm md:text-base font-normal text-gray-800">
         {doctor.specialty ?? "—"}
       </div>
-      <div className="text-sm md:text-base font-normal text-gray-800 col-span-2">
+      <div className="text-sm md:text-base font-normal text-gray-800">
         {doctor.phoneNo ?? "—"}
       </div>
-      <div className="text-sm md:text-base font-normal text-gray-800 col-span-3">
+      <div className="text-sm md:text-base font-normal text-gray-800">
         {doctor.medicalLicense ?? "—"}
       </div>
 
-      <div className="font-medium text-sm md:text-base text-gray-800 col-span-1">
+      <div className="font-medium text-sm md:text-base text-gray-800">
         <span
           className={`inline-block rounded-full capitalize px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             displayStatus
           )}`}
         >
           {displayStatus}
+        </span>
+      </div>
+
+      <div className="font-medium text-sm md:text-base text-gray-800">
+        <span
+          className={`inline-block rounded-full capitalize px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getInvitationStatusClasses(
+            doctor.invitationStatus
+          )}`}
+        >
+          {doctor.invitationStatus || "Pending"}
         </span>
       </div>
 

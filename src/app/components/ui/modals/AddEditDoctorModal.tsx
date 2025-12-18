@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import AppModal from "./AppModal";
 import { DoctorIcon } from "@/icons";
-import { ImageUpload } from "@/app/components";
+import { ImageUpload, GoogleAutocompleteInput } from "@/app/components";
 import ThemeInput from "../inputs/ThemeInput";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
 import * as Yup from "yup";
@@ -92,7 +92,6 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   });
 
   const loading = createLoading || updateLoading;
-  console.log(formData);
 
   // Format phone number to (XXX) XXX-XXXX format
   const formatPhoneNumber = (value: string): string => {
@@ -265,24 +264,39 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       state,
       postalCode,
     } = formData;
-    if (
-      firstName &&
-      lastName &&
-      phoneNo &&
-      email &&
-      medicalLicense &&
-      specialty &&
-      status &&
-      street1 &&
-      city &&
-      state &&
-      postalCode
-    ) {
-      setIsFormValid(true);
-    } else {
+
+    // Check which fields are empty
+    const emptyFields = [];
+    if (!firstName) emptyFields.push("firstName");
+    if (!lastName) emptyFields.push("lastName");
+    if (!phoneNo) emptyFields.push("phoneNo");
+    if (!email) emptyFields.push("email");
+    if (!medicalLicense) emptyFields.push("medicalLicense");
+    if (!specialty) emptyFields.push("specialty");
+    if (!status) emptyFields.push("status");
+    if (!street1) emptyFields.push("street1");
+    if (!city) emptyFields.push("city");
+    if (!state) emptyFields.push("state");
+    if (!postalCode) emptyFields.push("postalCode");
+
+    if (emptyFields.length > 0) {
+      console.log("⚠️ Form invalid - Empty fields:", emptyFields);
+      console.log("📋 Current form data:", formData);
       setIsFormValid(false);
+    } else {
+      console.log("✅ Form is valid - All fields filled");
+      setIsFormValid(true);
     }
   }, [formData]);
+
+  // Debug button state
+  useEffect(() => {
+    console.log("🔘 Button state:", {
+      isFormValid,
+      loading,
+      buttonDisabled: !isFormValid || loading,
+    });
+  }, [isFormValid, loading]);
 
   const specialities = [
     { name: "cardiology", displayName: "Cardiology" },
@@ -533,7 +547,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           )}
         </div>
 
-        <ThemeInput
+        <GoogleAutocompleteInput
           required
           label="Street Address"
           placeholder="Enter street address"
@@ -541,9 +555,18 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           error={!!errors.street1}
           errorMessage={errors.street1}
           id="street1"
-          onChange={(e) => handleChange("street1", e.target.value)}
-          type="text"
           value={formData.street1}
+          onChange={(value) => handleChange("street1", value)}
+          onAddressSelect={(address) => {
+            // Auto-fill address fields when address is selected
+            setFormData((prev) => ({
+              ...prev,
+              street1: address.street1,
+              city: address.city,
+              state: address.state,
+              postalCode: address.postalCode,
+            }));
+          }}
         />
         <ThemeInput
           label="Street Address 2 (Optional)"

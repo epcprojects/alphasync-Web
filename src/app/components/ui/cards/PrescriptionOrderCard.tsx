@@ -29,6 +29,7 @@ export interface PrescriptionOrder {
   isDueToday?: string;
   status?: string;
   shippingAddress?: string;
+  hasAnotherReorder?: boolean;
   patient?: {
     address?: string | null;
   };

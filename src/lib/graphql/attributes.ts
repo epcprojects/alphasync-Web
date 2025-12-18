@@ -81,6 +81,7 @@ export interface ProductInfo {
   description?: string;
   productType?: string;
   vendor?: string;
+  customPrice?: string | number;
 }
 
 export interface RequestedItem {

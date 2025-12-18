@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cdn.shopify.com",
       },
+      {
+        protocol: "https",
+        hostname: "alpha-sync-staging-20d19e9cadc9.herokuapp.com",
+      },
     ],
   },
 };

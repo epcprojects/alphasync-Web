@@ -68,6 +68,11 @@ function InventoryContent() {
     setCurrentPage(1);
   }, [showOutOfStock]);
 
+  // Reset to first page when favorites filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [showFavourites]);
+
   const {
     data: productsData,
     loading: productsLoading,
@@ -79,6 +84,7 @@ function InventoryContent() {
       page: currentPage, // Use currentPage directly (1-based pagination)
       perPage: itemsPerPage,
       inStockOnly: showOutOfStock ? false : undefined,
+      favoriteProducts: showFavourites ? true : undefined,
     },
     fetchPolicy: "network-only",
     notifyOnNetworkStatusChange: true,
@@ -98,10 +104,8 @@ function InventoryContent() {
   // Get pagination info from GraphQL response
   const pageCount = productsData?.allProducts.totalPages || 1;
 
-  // Apply only favorites filtering on the frontend (search is handled by backend)
-  const displayProducts = showFavourites
-    ? products.filter((p) => p.isFavourite)
-    : products;
+  // All filtering is handled by the backend
+  const displayProducts = products;
 
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
@@ -201,9 +205,7 @@ function InventoryContent() {
             </h2>
             {!productsLoading && (
               <span className="flex items-center justify-center px-2 md:px-3 py-1 md:py-1.5 bg-gray-100 text-gray-700 text-sm md:text-base font-medium rounded-full">
-                {showFavourites
-                  ? displayProducts.length
-                  : productsData?.allProducts.count || 0}
+                {productsData?.allProducts.count || 0}
               </span>
             )}
           </div>

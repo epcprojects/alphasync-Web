@@ -88,7 +88,7 @@ function DoctorContent() {
           selectedStatus === "All Status"
             ? undefined
             : selectedStatus.toUpperCase(),
-        pendingInvites: selectedTabIndex === 1, // true for pending doctors (index 1), false for active doctors (index 0)
+        pendingInvites: selectedTabIndex === 1,
         page: currentPage + 1,
         perPage: itemsPerPage,
       },
@@ -104,14 +104,6 @@ function DoctorContent() {
   const doctors = data?.allDoctors.allData;
 
   // Debug log to check doctors data
-  console.log(
-    "All doctors:",
-    doctors?.map((d) => ({
-      id: d.id,
-      name: d.fullName,
-      invitationStatus: d.invitationStatus,
-    }))
-  );
 
   const pageCount = data?.allDoctors.totalPages;
 
@@ -275,23 +267,26 @@ function DoctorContent() {
           <TabPanels>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden sm:grid grid-cols-12 text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
-                  <div className="col-span-3">
+                <div className="hidden sm:grid grid-cols-[2fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                  <div>
                     <h2>Name</h2>
                   </div>
-                  <div className="col-span-2">
+                  <div>
                     <h2>Specialty</h2>
                   </div>
-                  <div className="col-span-2">
+                  <div>
                     <h2>Phone</h2>
                   </div>
-                  <div className="col-span-3">
+                  <div>
                     <h2>Medical License</h2>
                   </div>
-                  <div className="col-span-1">
+                  <div>
                     <h2>Status</h2>
                   </div>
-                  <div className="col-span-1">
+                  <div>
+                    <h2>Invitation</h2>
+                  </div>
+                  <div>
                     <h2>Actions</h2>
                   </div>
                 </div>
@@ -339,23 +334,26 @@ function DoctorContent() {
             </TabPanel>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden sm:grid grid-cols-12 text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
-                  <div className="col-span-3">
+                <div className="hidden sm:grid grid-cols-[2fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                  <div>
                     <h2>Name</h2>
                   </div>
-                  <div className="col-span-2">
+                  <div>
                     <h2>Specialty</h2>
                   </div>
-                  <div className="col-span-2">
+                  <div>
                     <h2>Phone</h2>
                   </div>
-                  <div className="col-span-3">
+                  <div>
                     <h2>Medical License</h2>
                   </div>
-                  <div className="col-span-1">
+                  <div>
                     <h2>Status</h2>
                   </div>
-                  <div className="col-span-1">
+                  <div>
+                    <h2>Invitation</h2>
+                  </div>
+                  <div>
                     <h2>Actions</h2>
                   </div>
                 </div>

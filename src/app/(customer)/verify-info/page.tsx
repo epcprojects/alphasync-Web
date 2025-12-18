@@ -6,6 +6,7 @@ import {
   Loader,
   ThemeButton,
   ThemeInput,
+  GoogleAutocompleteInput,
 } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -470,14 +471,19 @@ function VerifyInfoContent() {
                     maxLength={10}
                   />
 
-                  <ThemeInput
+                  <GoogleAutocompleteInput
                     required
                     label="Street Address"
                     name="street1"
                     placeholder="Enter street address"
                     value={formik.values.street1}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
+                    onChange={(value) => formik.setFieldValue("street1", value)}
+                    onAddressSelect={(address) => {
+                      formik.setFieldValue("street1", address.street1);
+                      formik.setFieldValue("city", address.city);
+                      formik.setFieldValue("state", address.state);
+                      formik.setFieldValue("postalCode", address.postalCode);
+                    }}
                     error={Boolean(
                       formik.touched.street1 && formik.errors.street1
                     )}

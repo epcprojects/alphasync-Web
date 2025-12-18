@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import AppModal from "./AppModal";
 import { UserAddIcon } from "@/icons";
 import ThemeInput from "../inputs/ThemeInput";
+import GoogleAutocompleteInput from "../inputs/GoogleAutocompleteInput";
 import Stepper from "../../Stepper";
 import TextAreaField from "../inputs/TextAreaField";
 import * as Yup from "yup";
@@ -459,7 +460,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               maxLength={10}
             />
 
-            <ThemeInput
+            <GoogleAutocompleteInput
               required
               label="Street Address"
               placeholder="Enter street address"
@@ -467,9 +468,18 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               error={!!errors.street1}
               errorMessage={errors.street1}
               id="street1"
-              onChange={(e) => handleChange("street1", e.target.value)}
-              type="text"
               value={formData.street1}
+              onChange={(value) => handleChange("street1", value)}
+              onAddressSelect={(address) => {
+                // Auto-fill address fields when address is selected
+                setFormData((prev) => ({
+                  ...prev,
+                  street1: address.street1,
+                  city: address.city,
+                  state: address.state,
+                  postalCode: address.postalCode,
+                }));
+              }}
             />
             <ThemeInput
               label="Street Address 2 (Optional)"
