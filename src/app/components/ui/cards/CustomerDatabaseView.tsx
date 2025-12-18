@@ -75,12 +75,6 @@ export default function CustomerDatabaseView({
     : customer?.lastOrder;
   const totalOrder = patient?.patientOrdersCount;
   const invitationStatus = patient?.invitationStatus;
-  const status =
-    invitationStatus === "accepted"
-      ? "Accepted"
-      : invitationStatus === "pending"
-      ? "Pending"
-      : "Unknown";
 
   const { bg, text } = getColorPair(id);
 

@@ -3,7 +3,6 @@ import React, { ReactNode } from "react";
 import { useQuery } from "@apollo/client";
 import { DashboardStats, Header, AdminRoute } from "../components";
 import {
-  OrdersIcon,
   DashDoctor,
   Doctor,
   ShoppingCartIcon,

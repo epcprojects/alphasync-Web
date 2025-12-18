@@ -23,21 +23,25 @@ function AuthInitializer() {
 
   const shouldSkip = !isClient || !token || !!user;
 
-  const { loading } = useQuery(FETCH_USER, {
+  const { loading, data, error } = useQuery(FETCH_USER, {
     skip: shouldSkip,
     fetchPolicy: "network-only",
-    onCompleted: (data) => {
-      if (data?.fetchUser?.user) {
-        Cookies.set("user_data", JSON.stringify(data.fetchUser.user), {
-          expires: 7,
-        });
-        dispatch(setUser(data.fetchUser.user));
-      }
-    },
-    onError: (error) => {
-      console.log(error.message);
-    },
   });
+
+  useEffect(() => {
+    if (data?.fetchUser?.user) {
+      Cookies.set("user_data", JSON.stringify(data.fetchUser.user), {
+        expires: 7,
+      });
+      dispatch(setUser(data.fetchUser.user));
+    }
+  }, [data, dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      console.log(error.message);
+    }
+  }, [error]);
 
   // Show loader when fetching user data
   if (loading) {

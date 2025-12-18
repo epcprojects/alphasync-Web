@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import AppModal from "./AppModal";
-import { CrossIcon, PlusIcon, ShopingCartIcon, TrashBinIcon } from "@/icons";
+import { PlusIcon, ShopingCartIcon, TrashBinIcon } from "@/icons";
 import { ProductSelect } from "@/app/components";
 import ThemeInput from "../inputs/ThemeInput";
 import ThemeButton from "../buttons/ThemeButton";

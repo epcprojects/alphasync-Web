@@ -1,7 +1,6 @@
 "use client";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { InfoIcon, ShopingCartIcon } from "@/icons";
-import Image from "next/image";
 import Tooltip from "../tooltip";
 import ProductImage from "@/app/components/ui/ProductImage";
 

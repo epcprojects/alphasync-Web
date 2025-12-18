@@ -301,10 +301,6 @@ function PendingPayments() {
   const pendingCountLabel = patientOrdersLoading
     ? "Loading..."
     : `${pendingCount} Pending ${pendingCount === 1 ? "Order" : "Orders"}`;
-  const showEmptyState =
-    !patientOrdersLoading &&
-    !patientOrdersError &&
-    transformedOrders.length === 0;
   const showSkeleton = patientOrdersLoading && currentItems.length === 0;
 
   const handlePageChange = (selectedPage: number) => {

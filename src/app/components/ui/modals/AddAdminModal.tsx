@@ -2,7 +2,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import AppModal from "./AppModal";
-import { AdminIcon, UserFilledIcon } from "@/icons";
+import { AdminIcon } from "@/icons";
 import ThemeInput from "../inputs/ThemeInput";
 import * as Yup from "yup";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";

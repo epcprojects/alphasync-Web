@@ -38,7 +38,7 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
       if (!disableAutoClose) {
         onClose();
       }
-    } catch (error) {
+    } catch {
       // Swallow error so the modal stays open and the note content persists
     }
   };

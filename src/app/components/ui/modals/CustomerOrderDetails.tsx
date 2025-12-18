@@ -40,7 +40,6 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
   isOpen,
   onClose,
   order,
-  type = "order",
   showDoctorName = true, // Default to true for customer side
 }) => {
   useBodyScrollLock(isOpen);

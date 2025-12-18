@@ -1,11 +1,6 @@
 "use client";
 import { ProductSwiper, ThemeButton, Loader } from "@/app/components";
-import {
-  ArrowDownIcon,
-  HeartFilledIcon,
-  HeartOutlineIcon,
-  PencilEditIcon,
-} from "@/icons";
+import { ArrowDownIcon, HeartFilledIcon, HeartOutlineIcon } from "@/icons";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";

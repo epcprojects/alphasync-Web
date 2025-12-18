@@ -70,25 +70,29 @@ const Page = () => {
   }, [user?.specialty]);
 
   // Fetch notification settings
-  const { loading: notificationLoading } = useQuery(
-    FETCH_NOTIFICATION_SETTINGS,
-    {
-      onCompleted: (data) => {
-        if (data?.notificationSettings) {
-          const settings = data.notificationSettings;
-          setToggles({
-            email: settings.emailNotification ?? true,
-            sms: settings.smsNotification ?? false,
-            orders: settings.orderUpdates ?? true,
-            stock: settings.lowStockAlerts ?? true,
-          });
-        }
-      },
-      onError: (error) => {
-        console.error("Error fetching notification settings:", error);
-      },
+  const {
+    loading: notificationLoading,
+    data: notificationData,
+    error: notificationError,
+  } = useQuery(FETCH_NOTIFICATION_SETTINGS);
+
+  useEffect(() => {
+    if (notificationData?.notificationSettings) {
+      const settings = notificationData.notificationSettings;
+      setToggles({
+        email: settings.emailNotification ?? true,
+        sms: settings.smsNotification ?? false,
+        orders: settings.orderUpdates ?? true,
+        stock: settings.lowStockAlerts ?? true,
+      });
     }
-  );
+  }, [notificationData]);
+
+  useEffect(() => {
+    if (notificationError) {
+      console.error("Error fetching notification settings:", notificationError);
+    }
+  }, [notificationError]);
 
   // Mutation hooks for each notification type
   const [updateEmailNotification] = useMutation(EMAIL_NOTIFICATION_SETTINGS, {
