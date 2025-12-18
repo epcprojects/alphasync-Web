@@ -283,6 +283,7 @@ export const PATIENT_ORDERS = gql`
         status
         createdAt
         totalPrice
+        hasAnotherReorder
         patient {
           address
         }
@@ -322,6 +323,7 @@ export const ALL_ORDER_REQUESTS = gql`
     $status: String
     $page: Int
     $perPage: Int
+    $reorder: Boolean
   ) {
     allOrderRequests(
       search: $search
@@ -329,6 +331,7 @@ export const ALL_ORDER_REQUESTS = gql`
       status: $status
       page: $page
       perPage: $perPage
+      reorder: $reorder
     ) {
       allData {
         displayId
@@ -359,6 +362,7 @@ export const ALL_ORDER_REQUESTS = gql`
           title
           price
           product {
+          customPrice
             id
             title
             description

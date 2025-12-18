@@ -17,7 +17,8 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy project files
 COPY . .
 
-
+# Copy env file **before build**
+COPY .env .env.local
 
 # Build the project
 RUN npm run build

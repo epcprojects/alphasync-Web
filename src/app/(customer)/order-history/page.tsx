@@ -47,6 +47,7 @@ interface PatientOrderData {
   status?: string | null;
   createdAt: string;
   totalPrice?: number | null;
+  hasAnotherReorder?: boolean | null;
   doctor?: {
     fullName?: string | null;
   } | null;
@@ -197,6 +198,7 @@ function History() {
         : "--",
       totalPrice: order.totalPrice ?? 0,
       status: order.status ?? undefined,
+      hasAnotherReorder: order.hasAnotherReorder ?? false,
       patient: order.patient
         ? {
             address: normalizeAddress(order.patient.address),
@@ -393,9 +395,15 @@ function History() {
               orders={[order]}
               onPress={handleOrderClick}
               btnTitle={
-                reorderingOrderId === order.id ? "Processing..." : "Reorder"
+                order.hasAnotherReorder
+                  ? "Already submitted"
+                  : reorderingOrderId === order.id
+                  ? "Processing..."
+                  : "Reorder"
               }
-              btnDisabled={reorderingOrderId === order.id}
+              btnDisabled={
+                order.hasAnotherReorder || reorderingOrderId === order.id
+              }
               onPay={handleReorder}
               onDelete={() => {
                 showErrorToast("Order Cancelled");

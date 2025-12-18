@@ -3,7 +3,17 @@
 import { ArrowDownIcon, RequestFilledIcon, SearchIcon } from "@/icons";
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+} from "@headlessui/react";
 
 import RequestListView from "@/app/components/ui/cards/RequestListView";
 import Pagination from "@/app/components/ui/Pagination";
@@ -58,6 +68,7 @@ function RequestContent() {
   const itemsPerPage = 10;
   const [selectedStatus, setSelectedStatus] = useState<string>("All Status");
   const [currentPage, setCurrentPage] = useState(0);
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   // Helper function to convert display label to API value
   const getStatusValue = (statusLabel: string): string | undefined => {
@@ -78,6 +89,7 @@ function RequestContent() {
       status: getStatusValue(selectedStatus),
       page: currentPage + 1, // GraphQL uses 1-based pagination
       perPage: itemsPerPage,
+      reorder: selectedTabIndex === 1 ? true : false,
     },
     fetchPolicy: "network-only",
   });
@@ -118,10 +130,12 @@ function RequestContent() {
           [],
         amount:
           request.requestedItems?.reduce((sum, item) => {
+            // Use customPrice if available, otherwise use regular price
+            const priceToUse = item.product?.customPrice || item.price;
             const price =
-              typeof item.price === "string"
-                ? parseFloat(item.price)
-                : (item.price as number) || 0;
+              typeof priceToUse === "string"
+                ? parseFloat(priceToUse)
+                : (priceToUse as number) || 0;
             return sum + price;
           }, 0) || 0,
         status: normalizeStatus(request.status),
@@ -142,6 +156,7 @@ function RequestContent() {
       status: getStatusValue(selectedStatus),
       page: 1,
       perPage: itemsPerPage,
+      reorder: selectedTabIndex === 1 ? true : false,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
@@ -153,9 +168,23 @@ function RequestContent() {
       status: getStatusValue(selectedStatus),
       page: currentPage + 1,
       perPage: itemsPerPage,
+      reorder: selectedTabIndex === 1 ? true : false,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStatus]);
+
+  // Refetch data when tab changes
+  useEffect(() => {
+    setCurrentPage(0);
+    refetchOrderRequests({
+      search: search || undefined,
+      status: getStatusValue(selectedStatus),
+      page: 1,
+      perPage: itemsPerPage,
+      reorder: selectedTabIndex === 1 ? true : false,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTabIndex]);
 
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
@@ -165,6 +194,7 @@ function RequestContent() {
       status: getStatusValue(selectedStatus),
       page: selectedPage + 1,
       perPage: itemsPerPage,
+      reorder: selectedTabIndex === 1 ? true : false,
     });
   };
 
@@ -232,6 +262,7 @@ function RequestContent() {
                       status: undefined,
                       page: 1,
                       perPage: itemsPerPage,
+                      reorder: selectedTabIndex === 1 ? true : false,
                     });
                   }}
                   className="text-gray-500 hover:bg-gray-100 w-full py-2 px-2.5 rounded-md text-xs md:text-sm text-start"
@@ -250,6 +281,7 @@ function RequestContent() {
                         status: status.value,
                         page: 1,
                         perPage: itemsPerPage,
+                        reorder: selectedTabIndex === 1 ? true : false,
                       });
                     }}
                     className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${status.color}`}
@@ -263,80 +295,180 @@ function RequestContent() {
         </div>
       </div>
 
-      <div className=" flex flex-col md:gap-6">
-        <div className="flex flex-col gap-1">
-          {!orderRequestsLoading && (
-            <div className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px_120px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_160px] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
-              <div>
-                <h2 className="whitespace-nowrap">Request ID</h2>
-              </div>
-              <div>
-                <h2>Patient</h2>
-              </div>
-              <div className="lg:block hidden">
-                <h2>Date</h2>
-              </div>
-              <div className="lg:block hidden">
-                <h2>Items</h2>
-              </div>
-              <div>
-                <h2>Total</h2>
-              </div>
-              <div>
-                <h2>Status</h2>
-              </div>
-              <div>
-                <h2>Payment Status</h2>
-              </div>
-              <div>
-                <h2>Actions</h2>
-              </div>
-            </div>
-          )}
+      {/* Tabs for Requests/Reorder Requests */}
+      <div className="sm:bg-white rounded-xl sm:shadow-table">
+        <TabGroup
+          selectedIndex={selectedTabIndex}
+          onChange={setSelectedTabIndex}
+        >
+          <TabList className="flex items-center border-b bg-white rounded-t-xl mb-2 sm:mb-0 border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-4">
+            {["Requests", "Reorder Requests"].map((tab, index) => (
+              <Tab
+                key={index}
+                as="button"
+                className="flex items-center gap-1 md:gap-2 w-full justify-center hover:bg-gray-50 whitespace-nowrap text-sm sm:text-base outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-1.5 py-2.5 md:py-4 md:px-6"
+              >
+                {tab}
+              </Tab>
+            ))}
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <div className=" flex flex-col md:gap-6 p-0 md:p-4 pt-0">
+                <div className="flex flex-col gap-1">
+                  {!orderRequestsLoading && (
+                    <div className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px_120px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_160px] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                      <div>
+                        <h2 className="whitespace-nowrap">Request ID</h2>
+                      </div>
+                      <div>
+                        <h2>Patient</h2>
+                      </div>
+                      <div className="lg:block hidden">
+                        <h2>Date</h2>
+                      </div>
+                      <div className="lg:block hidden">
+                        <h2>Items</h2>
+                      </div>
+                      <div>
+                        <h2>Total</h2>
+                      </div>
+                      <div>
+                        <h2>Status</h2>
+                      </div>
+                      <div>
+                        <h2>Payment Status</h2>
+                      </div>
+                      <div>
+                        <h2>Actions</h2>
+                      </div>
+                    </div>
+                  )}
 
-          {orderRequestsLoading ? (
-            <RequestListSkeleton />
-          ) : (
-            currentItems.map((order) => (
-              <RequestListView
-                key={order.requestID}
-                request={order}
-                onProfileBtn={() =>
-                  router.push(`/customers/${order.patientId}`)
-                }
-                onAcceptBtn={() => {
-                  setSelectedRequestId(String(order.originalId));
-                  setIsApproveModalOpen(true);
-                }}
-                onRejectBtn={() => {
-                  setSelectedRequestId(String(order.originalId));
-                  setIsRejectModalOpen(true);
-                }}
-                onChatBtn={() => {
-                  setSelectedChatPatient({
-                    id: String(order.patientId || ""),
-                    name: order.customer,
-                    requestId: order.requestID,
-                  });
-                  setIsChatModalOpen(true);
-                }}
-              />
-            ))
-          )}
-        </div>
-        <div className="flex justify-center flex-col gap-2 mt-2 md:gap-6 ">
-          {!orderRequestsLoading && currentItems.length < 1 && (
-            <EmptyState mtClasses="-mt-0 md:-mt-4 " />
-          )}
+                  {orderRequestsLoading ? (
+                    <RequestListSkeleton />
+                  ) : (
+                    currentItems.map((order) => (
+                      <RequestListView
+                        key={order.requestID}
+                        request={order}
+                        onProfileBtn={() =>
+                          router.push(`/customers/${order.patientId}`)
+                        }
+                        onAcceptBtn={() => {
+                          setSelectedRequestId(String(order.originalId));
+                          setIsApproveModalOpen(true);
+                        }}
+                        onRejectBtn={() => {
+                          setSelectedRequestId(String(order.originalId));
+                          setIsRejectModalOpen(true);
+                        }}
+                        onChatBtn={() => {
+                          setSelectedChatPatient({
+                            id: String(order.patientId || ""),
+                            name: order.customer,
+                            requestId: order.requestID,
+                          });
+                          setIsChatModalOpen(true);
+                        }}
+                      />
+                    ))
+                  )}
+                </div>
+                <div className="flex justify-center flex-col gap-2 mt-2 md:gap-6 ">
+                  {!orderRequestsLoading && currentItems.length < 1 && (
+                    <EmptyState mtClasses="-mt-0 md:-mt-4 " />
+                  )}
 
-          {!orderRequestsLoading && currentItems.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={pageCount}
-              onPageChange={handlePageChange}
-            />
-          )}
-        </div>
+                  {!orderRequestsLoading && currentItems.length > 0 && (
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={pageCount}
+                      onPageChange={handlePageChange}
+                    />
+                  )}
+                </div>
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div className=" flex flex-col md:gap-6 p-0 md:p-4 pt-0">
+                <div className="flex flex-col gap-1">
+                  {!orderRequestsLoading && (
+                    <div className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px_120px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_160px] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                      <div>
+                        <h2 className="whitespace-nowrap">Request ID</h2>
+                      </div>
+                      <div>
+                        <h2>Patient</h2>
+                      </div>
+                      <div className="lg:block hidden">
+                        <h2>Date</h2>
+                      </div>
+                      <div className="lg:block hidden">
+                        <h2>Items</h2>
+                      </div>
+                      <div>
+                        <h2>Total</h2>
+                      </div>
+                      <div>
+                        <h2>Status</h2>
+                      </div>
+                      <div>
+                        <h2>Payment Status</h2>
+                      </div>
+                      <div>
+                        <h2>Actions</h2>
+                      </div>
+                    </div>
+                  )}
+
+                  {orderRequestsLoading ? (
+                    <RequestListSkeleton />
+                  ) : (
+                    currentItems.map((order) => (
+                      <RequestListView
+                        key={order.requestID}
+                        request={order}
+                        onProfileBtn={() =>
+                          router.push(`/customers/${order.patientId}`)
+                        }
+                        onAcceptBtn={() => {
+                          setSelectedRequestId(String(order.originalId));
+                          setIsApproveModalOpen(true);
+                        }}
+                        onRejectBtn={() => {
+                          setSelectedRequestId(String(order.originalId));
+                          setIsRejectModalOpen(true);
+                        }}
+                        onChatBtn={() => {
+                          setSelectedChatPatient({
+                            id: String(order.patientId || ""),
+                            name: order.customer,
+                            requestId: order.requestID,
+                          });
+                          setIsChatModalOpen(true);
+                        }}
+                      />
+                    ))
+                  )}
+                </div>
+                <div className="flex justify-center flex-col gap-2 mt-2 md:gap-6 ">
+                  {!orderRequestsLoading && currentItems.length < 1 && (
+                    <EmptyState mtClasses="-mt-0 md:-mt-4 " />
+                  )}
+
+                  {!orderRequestsLoading && currentItems.length > 0 && (
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={pageCount}
+                      onPageChange={handlePageChange}
+                    />
+                  )}
+                </div>
+              </div>
+            </TabPanel>
+          </TabPanels>
+        </TabGroup>
       </div>
       <RequestRejectModal
         isOpen={isRejectModalOpen}
