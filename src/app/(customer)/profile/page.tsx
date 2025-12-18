@@ -4,6 +4,7 @@ import {
   ThemeButton,
   ThemeInput,
   ImageUpload,
+  GoogleAutocompleteInput,
 } from "@/app/components";
 import { InfoIcon, UserIcon } from "@/icons";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
@@ -535,8 +536,8 @@ const Page = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                      <div className="grid grid-cols-12 items-start py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3 pt-3">
                           <label
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
@@ -545,11 +546,20 @@ const Page = () => {
                           </label>
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
-                          <ThemeInput
-                            type="text"
+                          <GoogleAutocompleteInput
                             name="street1"
                             value={values.street1}
-                            onChange={handleChange}
+                            onChange={(value) =>
+                              setFieldValue("street1", value)
+                            }
+                            onAddressSelect={(address) => {
+                              setFieldValue("street1", address.street1);
+                              setFieldValue("city", address.city);
+                              setFieldValue("state", address.state);
+                              setFieldValue("postalCode", address.postalCode);
+                            }}
+                            placeholder="Enter street address"
+                            label=""
                           />
                           <ErrorMessage
                             name="street1"

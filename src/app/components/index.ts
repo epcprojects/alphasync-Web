@@ -2,6 +2,7 @@ import ThemeButton from "./ui/buttons/ThemeButton";
 import ToggleGroup from "./ui/buttons/ToggleGroup";
 import AuthHeader from "./AuthHeader";
 import ThemeInput from "./ui/inputs/ThemeInput";
+import GoogleAutocompleteInput from "./ui/inputs/GoogleAutocompleteInput";
 import ProductSelect from "./ui/inputs/ProductSelect";
 import CustomerSelect from "./ui/inputs/CustomerSelect";
 import AttributionCard from "./ui/cards/AttributionCard";
@@ -61,6 +62,7 @@ export {
   ToggleGroup,
   AuthHeader,
   ThemeInput,
+  GoogleAutocompleteInput,
   ProductSelect,
   CustomerSelect,
   AttributionCard,
