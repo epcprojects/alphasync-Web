@@ -72,6 +72,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
     $perPage: Int
     $inStockOnly: Boolean
     $category: String
+    $favoriteProducts: Boolean
   ) {
     allProducts(
       search: $search
@@ -79,6 +80,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
       perPage: $perPage
       inStockOnly: $inStockOnly
       category: $category
+      favoriteProducts: $favoriteProducts
     ) {
       allData {
         customPrice

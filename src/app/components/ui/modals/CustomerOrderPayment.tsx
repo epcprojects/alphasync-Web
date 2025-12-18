@@ -22,6 +22,7 @@ import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { getToken, AcceptOpaqueData } from "@/lib/authorizeNet";
 import { useMutation } from "@apollo/client";
 import { PROCESS_PAYMENT } from "@/lib/graphql/mutations";
+import { useAppSelector } from "@/lib/store/hooks";
 
 type OrderItem = {
   id: string | number;
@@ -93,6 +94,8 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   request,
   isOpen,
 }) => {
+  const { user } = useAppSelector((state) => state.auth);
+
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState<string>("");
   const [cvv, setCvv] = useState("");
@@ -110,6 +113,37 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
 
   useBodyScrollLock(isOpen);
   const [processPaymentMutation] = useMutation(PROCESS_PAYMENT);
+
+  // Set default values from user profile when modal opens
+  useEffect(() => {
+    if (isOpen && user) {
+      // Set ZIP Code from user's postal code
+      if (user.postalCode && !zipCode) {
+        setZipCode(user.postalCode);
+      }
+
+      // Set billing address from user's address fields
+      if (!billingAddress) {
+        const addressParts = [
+          user.street1,
+          user.street2,
+          user.city,
+          user.state,
+        ].filter(Boolean);
+
+        if (addressParts.length > 0) {
+          setBillingAddress(addressParts.join(", "));
+        } else if (user.address) {
+          setBillingAddress(user.address);
+        }
+      }
+
+      // Set cardholder name from user's full name
+      if (user.fullName && !cardHolderName) {
+        setCardHolderName(user.fullName);
+      }
+    }
+  }, [isOpen, user]);
 
   useEffect(() => {
     const checkScreenSize = () => setIsMobile(window.innerWidth < 768); // md breakpoint

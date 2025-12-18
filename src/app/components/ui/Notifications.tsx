@@ -18,16 +18,21 @@ import {
 import { Fragment, useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Link from "next/link";
-import { useQuery, useMutation } from "@apollo/client";
+import { useMutation, useLazyQuery } from "@apollo/client";
 import { ALL_NOTIFICATIONS } from "@/lib/graphql/queries";
 import { NotificationData } from "./NotificationList";
 import { useAppSelector } from "@/lib/store/hooks";
 import Tooltip from "./tooltip";
 import ThemeButton from "./buttons/ThemeButton";
 import { useRouter } from "next/navigation";
-import { RequestApproveModal, AppModal } from "@/app/components";
+import {
+  RequestApproveModal,
+  RequestRejectModal,
+  AppModal,
+} from "@/app/components";
 import {
   APPROVE_ORDER_REQUEST,
+  DENY_ORDER_REQUEST,
   DELETE_NOTIFICATION,
 } from "@/lib/graphql/mutations";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -42,6 +47,7 @@ export default function Notifications({ userType }: NotificationsProps) {
   const user = useAppSelector((state) => state.auth.user);
   const [open, setOpen] = useState(false);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedNotificationId, setSelectedNotificationId] = useState<
@@ -56,29 +62,36 @@ export default function Notifications({ userType }: NotificationsProps) {
       ? "customer"
       : "doctor");
 
-  const { data, loading, error, refetch } = useQuery(ALL_NOTIFICATIONS, {
-    variables: {
-      page: 1,
-      perPage: 4, // Fetch first 10 for dropdown3
-    },
-    fetchPolicy: "cache-and-network",
-  });
+  const [fetchNotifications, { data, loading, error }] = useLazyQuery(
+    ALL_NOTIFICATIONS,
+    {
+      fetchPolicy: "network-only",
+    }
+  );
 
   const [approveOrderRequest, { loading: isApproving }] = useMutation(
     APPROVE_ORDER_REQUEST
   );
+
+  const [denyOrderRequest, { loading: isDenying }] =
+    useMutation(DENY_ORDER_REQUEST);
 
   const [deleteNotification, { loading: isDeleting }] =
     useMutation(DELETE_NOTIFICATION);
 
   const notifications = data?.allNotifications?.allData || [];
 
-  // Refetch notifications when dialog/popover opens
+  // Fetch notifications when mobile dialog opens
   useEffect(() => {
-    if (open) {
-      refetch();
+    if (open && isMobile) {
+      fetchNotifications({
+        variables: {
+          page: 1,
+          perPage: 4,
+        },
+      });
     }
-  }, [open, refetch]);
+  }, [open, isMobile, fetchNotifications]);
 
   const handleViewDetails = (notification: NotificationData) => {
     if (currentUserType === "doctor" && notification.sender?.id) {
@@ -106,6 +119,16 @@ export default function Notifications({ userType }: NotificationsProps) {
     setIsApproveModalOpen(true);
   };
 
+  const handleRejectClick = (message: NotificationData) => {
+    const requestId = message.orderRequest?.id;
+    if (!requestId) {
+      showErrorToast("Unable to find request details.");
+      return;
+    }
+    setSelectedRequest(requestId);
+    setIsRejectModalOpen(true);
+  };
+
   const handleApproveConfirm = async ({
     doctorMessage,
   }: {
@@ -127,10 +150,44 @@ export default function Notifications({ userType }: NotificationsProps) {
       setIsApproveModalOpen(false);
       setSelectedRequest(null);
       // Refetch notifications after closing modal
-      await refetch();
+      await fetchNotifications({
+        variables: {
+          page: 1,
+          perPage: 4,
+        },
+      });
     } catch (error) {
       showErrorToast("Failed to approve request. Please try again.");
       console.error("Error approving request:", error);
+    }
+  };
+
+  const handleRejectConfirm = async ({ reason }: { reason: string }) => {
+    if (!selectedRequest) {
+      showErrorToast("No request selected.");
+      return;
+    }
+    try {
+      await denyOrderRequest({
+        variables: {
+          requestId: selectedRequest,
+          doctorMessage: reason,
+        },
+      });
+      showSuccessToast("Patient request denied successfully.");
+      // Close modal and reset state immediately after successful mutation
+      setIsRejectModalOpen(false);
+      setSelectedRequest(null);
+      // Refetch notifications after closing modal
+      await fetchNotifications({
+        variables: {
+          page: 1,
+          perPage: 4,
+        },
+      });
+    } catch (error) {
+      showErrorToast("Failed to deny request. Please try again.");
+      console.error("Error denying request:", error);
     }
   };
 
@@ -152,7 +209,12 @@ export default function Notifications({ userType }: NotificationsProps) {
       });
       if (result.data?.deleteNotification?.success) {
         showSuccessToast("Notification deleted successfully.");
-        await refetch();
+        await fetchNotifications({
+          variables: {
+            page: 1,
+            perPage: 4,
+          },
+        });
         setIsDeleteModalOpen(false);
         setSelectedNotificationId(null);
       } else {
@@ -225,7 +287,7 @@ export default function Notifications({ userType }: NotificationsProps) {
     closeDialog?: () => void,
     setOpenState?: (value: boolean) => void
   ) => {
-    if (loading) {
+    if (loading || (!data && !error)) {
       return (
         <div className="p-4 text-center text-gray-500 text-sm">
           Loading notifications...
@@ -300,19 +362,34 @@ export default function Notifications({ userType }: NotificationsProps) {
                       />
                       {n.notificationType !== "message_received" &&
                         n.orderRequest?.status === "pending" && (
-                          <ThemeButton
-                            label="Approve"
-                            size={isMobile ? "small" : "medium"}
-                            variant="success"
-                            className="w-fit"
-                            heightClass={isMobile ? "h-8" : "h-9"}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenState?.(false);
-                              closeDialog?.();
-                              handleApproveClick(n);
-                            }}
-                          />
+                          <>
+                            <ThemeButton
+                              label="Approve"
+                              size={isMobile ? "small" : "medium"}
+                              variant="success"
+                              className="w-fit"
+                              heightClass={isMobile ? "h-8" : "h-9"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenState?.(false);
+                                closeDialog?.();
+                                handleApproveClick(n);
+                              }}
+                            />
+                            <ThemeButton
+                              label="Decline"
+                              size={isMobile ? "small" : "medium"}
+                              variant="danger"
+                              className="w-fit"
+                              heightClass={isMobile ? "h-8" : "h-9"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenState?.(false);
+                                closeDialog?.();
+                                handleRejectClick(n);
+                              }}
+                            />
+                          </>
                         )}
                     </div>
                   )}
@@ -481,53 +558,64 @@ export default function Notifications({ userType }: NotificationsProps) {
         </>
       ) : (
         <Popover className="relative">
-          <PopoverButton
-            onClick={() => {
-              // Refetch notifications when popover button is clicked
-              refetch();
-            }}
-            className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 bg-black/40 backdrop-blur-sm flex items-center justify-center relative"
-          >
-            <ReminderIcon
-              fill={user?.unreadNotifications ? "#10b981" : "white"}
-            />
-            {user?.unreadNotifications && (
-              <span
-                className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full 
+          {({ open: isPopoverOpen }) => (
+            <>
+              <PopoverButton
+                onClick={() => {
+                  // Fetch notifications only when opening the popover
+                  if (!isPopoverOpen) {
+                    fetchNotifications({
+                      variables: {
+                        page: 1,
+                        perPage: 4,
+                      },
+                    });
+                  }
+                }}
+                className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 bg-black/40 backdrop-blur-sm flex items-center justify-center relative"
+              >
+                <ReminderIcon
+                  fill={user?.unreadNotifications ? "#10b981" : "white"}
+                />
+                {user?.unreadNotifications && (
+                  <span
+                    className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full 
               bg-green-500 border-2 border-white"
-              ></span>
-            )}
-          </PopoverButton>
+                  ></span>
+                )}
+              </PopoverButton>
 
-          <Transition
-            as={Fragment}
-            enter="transition ease-out duration-200"
-            enterFrom="opacity-0 translate-y-1"
-            enterTo="opacity-100 translate-y-0"
-            leave="transition ease-in duration-150"
-            leaveFrom="opacity-100 translate-y-0"
-            leaveTo="opacity-0 translate-y-1"
-          >
-            <PopoverPanel>
-              {({ close }) => (
-                <div className="absolute px-3 md:min-w-96 py-4 right-0 mt-2 w-96 rounded-xl shadow-lg bg-white">
-                  {renderList(3, close, undefined)}
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-200"
+                enterFrom="opacity-0 translate-y-1"
+                enterTo="opacity-100 translate-y-0"
+                leave="transition ease-in duration-150"
+                leaveFrom="opacity-100 translate-y-0"
+                leaveTo="opacity-0 translate-y-1"
+              >
+                <PopoverPanel>
+                  {({ close }) => (
+                    <div className="absolute px-3 md:min-w-96 py-4 right-0 mt-2 w-96 rounded-xl shadow-lg bg-white">
+                      {renderList(3, close, undefined)}
 
-                  <Link
-                    href={
-                      currentUserType === "doctor"
-                        ? "/notifications"
-                        : "/customer-notifications"
-                    }
-                    onClick={() => close()}
-                    className="w-full mt-2 flex items-center justify-center text-center py-2 bg-blue-100 rounded-lg text-sm font-semibold cursor-pointer hover:bg-blue-200 text-primary"
-                  >
-                    View all
-                  </Link>
-                </div>
-              )}
-            </PopoverPanel>
-          </Transition>
+                      <Link
+                        href={
+                          currentUserType === "doctor"
+                            ? "/notifications"
+                            : "/customer-notifications"
+                        }
+                        onClick={() => close()}
+                        className="w-full mt-2 flex items-center justify-center text-center py-2 bg-blue-100 rounded-lg text-sm font-semibold cursor-pointer hover:bg-blue-200 text-primary"
+                      >
+                        View all
+                      </Link>
+                    </div>
+                  )}
+                </PopoverPanel>
+              </Transition>
+            </>
+          )}
         </Popover>
       )}
 
@@ -548,7 +636,27 @@ export default function Notifications({ userType }: NotificationsProps) {
               )?.orderRequest?.displayId || ""
             : undefined
         }
-        key={selectedRequest || "modal"} // Force re-render when request changes
+        key={selectedRequest || "approve-modal"} // Force re-render when request changes
+      />
+
+      <RequestRejectModal
+        isOpen={isRejectModalOpen}
+        onClose={() => {
+          if (!isDenying) {
+            setIsRejectModalOpen(false);
+            setSelectedRequest(null);
+          }
+        }}
+        onConfirm={handleRejectConfirm}
+        isSubmitting={isDenying}
+        itemTitle={
+          selectedRequest
+            ? notifications?.find(
+                (n: NotificationData) => n.orderRequest?.id === selectedRequest
+              )?.orderRequest?.displayId || ""
+            : undefined
+        }
+        key={selectedRequest || "reject-modal"} // Force re-render when request changes
       />
 
       <AppModal
