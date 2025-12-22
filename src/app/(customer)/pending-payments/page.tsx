@@ -418,7 +418,6 @@ function PendingPayments() {
             <div
               className="block md:hidden fixed inset-0 z-50 bg-black/40 outline-none"
               onClick={() => {
-                console.log("Overlay clicked, closing modal");
                 setShowFilterDropdown(false);
               }}
             >

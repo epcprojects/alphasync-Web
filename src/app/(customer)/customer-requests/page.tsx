@@ -183,7 +183,6 @@ function CustomerRequestContent() {
 
   const handleApprove = (title: string) => {
     showSuccessToast("Patient request approved successfully.");
-    console.log(title);
   };
 
   const handleReject = (title: string) => {

@@ -315,6 +315,29 @@ const NotificationList: React.FC<NotificationListProps> = ({
   };
 
   const handleViewDetails = (notification: NotificationData) => {
+    // For request-related notifications, skip modal and navigate directly to requests tab
+    if (
+      notification.orderRequest?.id &&
+      userType === "doctor" &&
+      notification.sender?.id
+    ) {
+      router.push(`/customers/${notification.sender.id}?tab=requests`);
+      return;
+    }
+
+    // For message notifications, navigate to chat tab
+    if (notification.notificationType === "message_received") {
+      if (onViewDetails) {
+        onViewDetails(notification);
+        return;
+      }
+      if (userType === "doctor" && notification.sender?.id) {
+        router.push(`/customers/${notification.sender.id}?tab=chat`);
+        return;
+      }
+    }
+
+    // For other cases, try modal first (but this shouldn't happen for request notifications)
     const handledByModal = tryOpenProductDetails(notification);
     if (handledByModal) {
       return;
@@ -325,20 +348,16 @@ const NotificationList: React.FC<NotificationListProps> = ({
       return;
     }
 
+    // Fallback navigation
     if (userType === "doctor" && notification.sender?.id) {
-      // Determine which tab to open based on notification type
       let tab = "";
       if (notification.notificationType === "message_received") {
         tab = "?tab=chat";
-      } else if (
-        notification.notificationType === "order_request_created" ||
-        notification.notificationType === "reorder_created"
-      ) {
+      } else if (notification.orderRequest?.id) {
         tab = "?tab=requests";
       }
       router.push(`/customers/${notification.sender.id}${tab}`);
     }
-    // For customers, we might not need navigation or handle it differently
   };
 
   const tryOpenProductDetails = (message: NotificationData): boolean => {
