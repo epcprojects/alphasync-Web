@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Thumbs } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
@@ -109,35 +108,18 @@ const ProductSwiper: React.FC<ProductSwiperProps> = ({ productViews = [] }) => {
                     : "bg-gray-100  border-gray-200"
                 } rounded-md overflow-hidden p-2 transition-all duration-300`}
               >
-                {view.thumbnailPath || view.imagePath ? (
-                  <div className="w-full h-full">
-                    <Image
-                      src={view.thumbnailPath || view.imagePath || ""}
-                      alt={`${view.title} thumbnail`}
-                      width={400}
-                      height={400}
-                      className={`${
-                        activeIndex !== index && "opacity-50"
-                      } !relative h-full  w-full`}
-                    />
-                  </div>
-                ) : (
-                  <div
-                    className={`w-full aspect-[4/3] flex items-center justify-center ${
-                      activeIndex === index ? "bg-red-50" : "bg-gray-100"
-                    }`}
-                  >
-                    <p
-                      className={`text-sm ${
-                        activeIndex === index
-                          ? "text-red-600 font-medium"
-                          : "text-gray-600"
-                      } text-center`}
-                    >
-                      {view.title}
-                    </p>
-                  </div>
-                )}
+                <div className="w-full h-full">
+                  <ProductImage
+                    src={view.thumbnailPath || view.imagePath}
+                    alt={`${view.title} thumbnail`}
+                    width={400}
+                    height={400}
+                    fallbackSrc="/images/products/placeholder.png"
+                    className={`${
+                      activeIndex !== index && "opacity-50"
+                    } !relative h-full w-full object-contain`}
+                  />
+                </div>
               </div>
             </SwiperSlide>
           ))}

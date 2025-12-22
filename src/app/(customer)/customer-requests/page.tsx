@@ -141,6 +141,12 @@ function CustomerRequestContent() {
         return `request-${index}`;
       };
 
+      // Determine which price to show - custom price takes precedence
+      // Custom price is nested in product object
+      const displayPrice = productInfo?.customPrice
+        ? productInfo.customPrice
+        : firstItem?.price || 0;
+
       return {
         id: getUniqueId(),
         title: productInfo?.title || firstItem?.title || "Requested Item",
@@ -157,7 +163,7 @@ function CustomerRequestContent() {
         doctorName:
           "Dr. " +
           (request.doctor?.fullName || request.patient?.fullName || "Unknown"),
-        price: `$${firstItem?.price || 0}`,
+        price: `$${displayPrice}`,
         userNotes: request.notes || [],
         physicianNotes: request.doctorMessage || "",
         customerReason: request.reason || "",
@@ -177,7 +183,6 @@ function CustomerRequestContent() {
 
   const handleApprove = (title: string) => {
     showSuccessToast("Patient request approved successfully.");
-    console.log(title);
   };
 
   const handleReject = (title: string) => {
