@@ -162,7 +162,6 @@ function InventoryContent() {
         },
       });
 
-      console.log("Order request result:", result);
       setIsOrderModalOpen(false);
       showSuccessToast("Order request sent successfully!");
     } catch (error) {

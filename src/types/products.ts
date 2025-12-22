@@ -117,6 +117,11 @@ export const transformGraphQLProduct = (
 export interface FetchProductResponse {
   fetchProduct: {
     customPrice?: number;
+    customPriceChangeHistory?: {
+      customPrice: number;
+      id: string;
+    }[];
+    markupPercentage?: number;
     description?: string;
     handle?: string;
     id: string;

@@ -35,6 +35,13 @@ const RequestApproveModal: React.FC<RequestApproveModalProps> = ({
     }
   };
 
+  const handleCancel = () => {
+    if (!isSubmitting) {
+      setDoctorMessage(""); // reset on cancel
+      onClose();
+    }
+  };
+
   const handleConfirm = () => {
     onConfirm({ doctorMessage });
     // Don't close here - let parent component handle it
@@ -44,6 +51,7 @@ const RequestApproveModal: React.FC<RequestApproveModalProps> = ({
     <AppModal
       isOpen={isOpen}
       onClose={handleClose}
+      onCancel={handleCancel}
       title="Approve Patient Request"
       onConfirm={handleConfirm}
       confirmLabel={isSubmitting ? "Approving..." : "Approve Request"}

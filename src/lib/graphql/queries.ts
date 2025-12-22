@@ -187,6 +187,11 @@ export const FETCH_ORDER = gql`
 export const FETCH_PRODUCT = gql`
   query FetchProduct($id: ID!) {
     fetchProduct(id: $id) {
+      customPriceChangeHistory {
+        customPrice
+        id
+      }
+      markupPercentage
       customPrice
       description
       handle
