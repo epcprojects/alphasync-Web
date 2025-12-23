@@ -23,7 +23,7 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({
 }) => {
   return (
     <div className={`flex flex-col items-center gap-5 md:gap-6 ${width}`}>
-      <Image alt="Auth logo" src={logo} />
+      <Image alt="Auth logo" src={logo} unoptimized />
       <div className="flex flex-col gap-1">
         {title && (
           <h1 className="text-2xl font-semibold text-center text-gray-900 md:text-3xl">

@@ -318,6 +318,7 @@ const ClinicOrderModal: React.FC<ClinicOrderModalProps> = ({
                     width={720}
                     height={720}
                     className="w-40 h-40"
+                    unoptimized
                   />
                   No item added to order yet
                 </div>

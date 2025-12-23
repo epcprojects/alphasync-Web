@@ -81,7 +81,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   return (
-    <div className={`${showTitle ? 'grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200' : 'flex items-center justify-between'} ${className}`}>
+    <div
+      className={`${
+        showTitle
+          ? "grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200"
+          : "flex items-center justify-between"
+      } ${className}`}
+    >
       {showTitle && (
         <div className="col-span-12 mb-3 sm:mb-0 md:col-span-4 lg:col-span-3">
           <label className="text-xs md:text-sm text-gray-700 font-semibold">
@@ -93,7 +99,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         </div>
       )}
 
-      <div className={`${showTitle ? 'col-span-12 md:col-span-6' : ''} flex items-center justify-between w-full`}>
+      <div
+        className={`${
+          showTitle ? "col-span-12 md:col-span-6" : ""
+        } flex items-center justify-between w-full`}
+      >
         <div className="relative flex items-center justify-center">
           <Image
             src={preview}
@@ -102,6 +112,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             width={width}
             height={height}
             style={{ height: height }}
+            unoptimized
           />
 
           {!hasImage && (

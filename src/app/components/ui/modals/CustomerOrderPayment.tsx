@@ -612,6 +612,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                           src={"/images/products/p1.png"}
                           width={1024}
                           height={1024}
+                          unoptimized
                         />
                       </div>
                       <span className="text-sm font-normal text-gray-800">

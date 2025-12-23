@@ -53,6 +53,7 @@ const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
                 "/images/fallbackImages/medicine-syrup.svg"
               }
               alt={requestData?.title || ""}
+              unoptimized
             />
           </div>
           <div className="flex items-start gap-0.5 md:gap-2 flex-col">

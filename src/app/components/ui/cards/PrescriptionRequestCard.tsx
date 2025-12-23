@@ -108,6 +108,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
               className="h-12 md:h-18 md:w-18 w-12 object-cover"
               src={imageSrc}
               alt={title ? title : ""}
+              unoptimized
             />
           </div>
 

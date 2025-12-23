@@ -31,6 +31,7 @@ export default function NotFound() {
               className="h-60"
               width={1020}
               height={1020}
+              unoptimized
             />
           </div>
         </div>
