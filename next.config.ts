@@ -9,15 +9,13 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: graphqlEndpoint,
-      },
-      {
-        protocol: "http",
-        hostname: graphqlEndpoint,
+        hostname: "backend.alphabiomedlabs.com",
+        pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "cdn.shopify.com",
+        pathname: "/**",
       },
     ],
   },
