@@ -499,7 +499,9 @@ function PendingPayments() {
       </div>
       <div className="flex justify-center flex-col gap-2 md:gap-6 ">
         {/* {showEmptyState && <EmptyState mtClasses="-mt-6" />} */}
-        {(!currentItems || currentItems.length === 0) && <EmptyState />}
+        {!patientOrdersLoading &&
+          !patientOrdersError &&
+          (!currentItems || currentItems.length === 0) && <EmptyState />}
         {!showSkeleton && currentItems.length > 0 && (
           <Pagination
             currentPage={currentPage}
