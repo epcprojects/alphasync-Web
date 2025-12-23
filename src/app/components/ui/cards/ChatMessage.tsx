@@ -37,6 +37,7 @@ export default function ChatMessage({
               height={40}
               src={"/images/arinaProfile.png"}
               className="rounded-full w-full max-h-7 max-w-7 h-full"
+              unoptimized
             />
             <span className="block whitespace-nowrap font-medium text-gray-700 text-xs md:text-sm">
               {sender}

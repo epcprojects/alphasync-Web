@@ -1,9 +1,5 @@
 import type { NextConfig } from "next";
 
-const graphqlEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT
-  ? new URL(process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT).hostname
-  : "localhost";
-
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -15,6 +11,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "cdn.shopify.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.amazonaws.com",
         pathname: "/**",
       },
     ],

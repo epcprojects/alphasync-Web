@@ -90,6 +90,7 @@ export default function ProductImage({
       src={imgSrc}
       width={width}
       height={height}
+      unoptimized
       onError={handleError}
       {...rest}
     />

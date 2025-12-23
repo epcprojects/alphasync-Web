@@ -117,6 +117,7 @@ const ThemeInput = React.forwardRef<HTMLInputElement, ThemeInputProps>(
               width={20}
               height={20}
               priority
+              unoptimized
             />
           )}
 
@@ -132,12 +133,14 @@ const ThemeInput = React.forwardRef<HTMLInputElement, ThemeInputProps>(
                   src={Images.auth.eyeOpened}
                   className="w-5 h-5"
                   alt="eyeOpened Icon"
+                  unoptimized
                 />
               ) : (
                 <Image
                   src={Images.auth.eyeClosed}
                   className="w-5 h-5"
                   alt="eyeClosed Icon"
+                  unoptimized
                 />
               )}
             </button>
