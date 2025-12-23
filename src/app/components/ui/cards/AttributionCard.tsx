@@ -29,6 +29,7 @@ const AttributionCard: React.FC<AttributionCardProps> = ({
           src={image}
           alt={alt}
           className="rounded-full border-3 shadow-lg border-white"
+          unoptimized
         />
 
         <div className="flex flex-col gap-2 md:gap-4">

@@ -24,6 +24,7 @@ const OrderSummaryCard: React.FC<OrderItemCardProps> = ({ item, isLast }) => {
             src={"/images/products/p1.png"}
             width={1024}
             height={1024}
+            unoptimized
           />
         </div>
         <div className="flex-1 flex flex-col gap-3">

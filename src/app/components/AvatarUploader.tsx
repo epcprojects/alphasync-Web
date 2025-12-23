@@ -65,6 +65,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
             width={width}
             height={height}
             style={{ height: height }}
+            unoptimized
           />
 
           {preview === placeholder && (

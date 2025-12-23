@@ -157,6 +157,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                 priority={true}
                 width={240}
                 height={48}
+                unoptimized
               />
 
               <Image
@@ -166,6 +167,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                 priority={true}
                 width={208}
                 height={32}
+                unoptimized
               />
             </Link>
           </div>
@@ -199,6 +201,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                     }
                     className="w-8 h-8 md:h-11 md:w-11 rounded-full"
                     alt="arina profile"
+                    unoptimized
                   />
                 </MenuButton>
 
@@ -270,6 +273,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                     src={Images.auth.logo}
                     width={208}
                     height={32}
+                    unoptimized
                   />
                 </Link>
 

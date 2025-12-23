@@ -337,6 +337,7 @@ const Page = () => {
                   width={720}
                   height={720}
                   className="md:w-40 w-32 h-32 md:h-40"
+                  unoptimized
                 />
                 No item added to order yet
               </div>
