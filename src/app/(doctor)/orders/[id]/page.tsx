@@ -408,6 +408,7 @@ const Page = () => {
             totalOrders={order.patient?.patientOrdersCount || 0}
             lastOrder={formatDate(order.createdAt)}
             address={order.patient?.address || ""}
+            imageUrl={order.patient?.imageUrl}
             onBack={() => console.log("Go back")}
             onViewProfile={() =>
               order.patient?.id && router.push(`/customers/${order.patient.id}`)

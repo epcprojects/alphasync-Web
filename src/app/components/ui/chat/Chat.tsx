@@ -14,14 +14,30 @@ interface ChatMessageType {
   time: string;
   text: string;
   isUser: boolean;
+  imageUrl?: string | null;
+  senderEmail?: string | null;
 }
 
 interface GraphQLMessage {
   id: string;
   content: string;
-  sender?: { id: string; fullName?: string };
-  user?: { id: string; fullName?: string };
-  otherParticipant?: { id: string; fullName?: string };
+  sender?: { id: string; fullName?: string; imageUrl?: string; email?: string };
+  user?: { id: string; fullName?: string; imageUrl?: string; email?: string };
+  chat?: {
+    id: string;
+    otherParticipant?: {
+      id: string;
+      fullName?: string;
+      imageUrl?: string;
+      email?: string;
+    };
+  };
+  otherParticipant?: {
+    id: string;
+    fullName?: string;
+    imageUrl?: string;
+    email?: string;
+  };
   createdAt?: string;
 }
 
@@ -76,8 +92,26 @@ export default function Chat({
       const senderName = isCurrentUser
         ? "You"
         : msg.sender?.fullName ||
+          msg.user?.fullName ||
+          msg.chat?.otherParticipant?.fullName ||
           msg.otherParticipant?.fullName ||
           participantName;
+
+      // Get sender image and email
+      // For current user: use currentUser data
+      // For other users: msg.user is the sender (from query), or msg.sender (from subscription)
+      const senderImageUrl = isCurrentUser
+        ? currentUser?.imageUrl
+        : msg.user?.imageUrl || // msg.user is the sender in FETCH_ALL_MESSAGES
+          msg.sender?.imageUrl || // msg.sender is from MESSAGE_ADDED subscription
+          msg.chat?.otherParticipant?.imageUrl ||
+          msg.otherParticipant?.imageUrl;
+      const senderEmail = isCurrentUser
+        ? currentUser?.email
+        : msg.user?.email || // msg.user is the sender in FETCH_ALL_MESSAGES
+          msg.sender?.email || // msg.sender is from MESSAGE_ADDED subscription
+          msg.chat?.otherParticipant?.email ||
+          msg.otherParticipant?.email;
 
       return {
         id: msg.id,
@@ -93,9 +127,16 @@ export default function Chat({
             }),
         text: msg.content,
         isUser: isCurrentUser,
+        imageUrl: senderImageUrl,
+        senderEmail: senderEmail,
       };
     },
-    [currentUser?.id, participantName]
+    [
+      currentUser?.id,
+      currentUser?.email,
+      currentUser?.imageUrl,
+      participantName,
+    ]
   );
 
   // Fetch existing messages
@@ -209,6 +250,8 @@ export default function Chat({
       }),
       text: msg,
       isUser: true,
+      imageUrl: currentUser?.imageUrl,
+      senderEmail: currentUser?.email,
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
@@ -258,6 +301,8 @@ export default function Chat({
                   time={msg.time}
                   isUser={msg.isUser}
                   message={msg.text}
+                  imageUrl={msg.imageUrl}
+                  senderEmail={msg.senderEmail}
                 />
               ))}
               <div ref={messagesEndRef}></div>

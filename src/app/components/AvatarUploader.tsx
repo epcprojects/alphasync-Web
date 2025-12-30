@@ -2,6 +2,7 @@
 import { PlusIcon } from "@/icons";
 import Image from "next/image";
 import React, { useRef, useState, useEffect } from "react";
+import ImageCropper from "./ui/ImageCropper";
 
 interface AvatarUploaderProps {
   initialImage?: string;
@@ -11,6 +12,9 @@ interface AvatarUploaderProps {
   roundedClass?: string;
   width?: number;
   height?: number;
+  enableCrop?: boolean;
+  cropAspect?: number;
+  cropShape?: "rect" | "round";
 }
 
 const AvatarUploader: React.FC<AvatarUploaderProps> = ({
@@ -21,9 +25,14 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
   roundedClass = "rounded-full",
   width = 64,
   height = 64,
+  enableCrop = true,
+  cropAspect = 1,
+  cropShape = "round",
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string>(initialImage || placeholder);
+  const [showCropper, setShowCropper] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string>("");
 
   useEffect(() => {
     if (initialImage) {
@@ -35,8 +44,34 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       const fileUrl = URL.createObjectURL(file);
-      setPreview(fileUrl);
-      onChange?.(file); // send file to parent for upload
+      if (enableCrop) {
+        setImageToCrop(fileUrl);
+        setShowCropper(true);
+      } else {
+        setPreview(fileUrl);
+        onChange?.(file);
+      }
+    }
+    // Reset input value to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCropComplete = (croppedFile: File) => {
+    const fileUrl = URL.createObjectURL(croppedFile);
+    setPreview(fileUrl);
+    onChange?.(croppedFile);
+    setShowCropper(false);
+    setImageToCrop("");
+  };
+
+  const handleCropperClose = () => {
+    setShowCropper(false);
+    setImageToCrop("");
+    // Clean up the object URL
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
     }
   };
 
@@ -105,6 +140,18 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           onChange={handleFileChange}
         />
       </div>
+
+      {/* Image Cropper Modal */}
+      {enableCrop && (
+        <ImageCropper
+          isOpen={showCropper}
+          onClose={handleCropperClose}
+          imageSrc={imageToCrop}
+          onCropComplete={handleCropComplete}
+          aspect={cropAspect}
+          cropShape={cropShape}
+        />
+      )}
     </div>
   );
 };

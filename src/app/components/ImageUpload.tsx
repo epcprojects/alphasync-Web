@@ -2,6 +2,7 @@
 import { PlusIcon, TrashBinIcon } from "@/icons";
 import Image from "next/image";
 import React, { useRef, useState, useEffect } from "react";
+import ImageCropper from "./ui/ImageCropper";
 
 interface ImageUploadProps {
   imageUrl?: string | null;
@@ -17,6 +18,9 @@ interface ImageUploadProps {
   className?: string;
   accept?: string;
   onImageRemove?: () => Promise<void>;
+  enableCrop?: boolean;
+  cropAspect?: number;
+  cropShape?: "rect" | "round";
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -33,10 +37,15 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   className = "",
   accept = ".png,.jpg,.jpeg,.svg",
   onImageRemove,
+  enableCrop = true,
+  cropAspect = 1,
+  cropShape = "round",
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string>(imageUrl || placeholder);
   const [hasImage, setHasImage] = useState<boolean>(!!imageUrl);
+  const [showCropper, setShowCropper] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string>("");
 
   useEffect(() => {
     if (imageUrl) {
@@ -52,9 +61,36 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       const fileUrl = URL.createObjectURL(file);
-      setPreview(fileUrl);
-      setHasImage(true);
-      onChange?.(file);
+      if (enableCrop) {
+        setImageToCrop(fileUrl);
+        setShowCropper(true);
+      } else {
+        setPreview(fileUrl);
+        setHasImage(true);
+        onChange?.(file);
+      }
+    }
+    // Reset input value to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCropComplete = (croppedFile: File) => {
+    const fileUrl = URL.createObjectURL(croppedFile);
+    setPreview(fileUrl);
+    setHasImage(true);
+    onChange?.(croppedFile);
+    setShowCropper(false);
+    setImageToCrop("");
+  };
+
+  const handleCropperClose = () => {
+    setShowCropper(false);
+    setImageToCrop("");
+    // Clean up the object URL
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
     }
   };
 
@@ -153,6 +189,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           />
         </div>
       </div>
+
+      {/* Image Cropper Modal */}
+      {enableCrop && (
+        <ImageCropper
+          isOpen={showCropper}
+          onClose={handleCropperClose}
+          imageSrc={imageToCrop}
+          onCropComplete={handleCropComplete}
+          aspect={cropAspect}
+          cropShape={cropShape}
+        />
+      )}
     </div>
   );
 };

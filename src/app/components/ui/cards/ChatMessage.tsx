@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import ProfileImage from "../ProfileImage";
 
 type ChatMessageProps = {
   sender: string;
@@ -8,6 +8,8 @@ type ChatMessageProps = {
   time: string;
   isUser?: boolean;
   width?: string;
+  imageUrl?: string | null;
+  senderEmail?: string | null;
 };
 
 export default function ChatMessage({
@@ -16,6 +18,8 @@ export default function ChatMessage({
   time,
   isUser = false,
   width = "min-w-20 w-fit max-w-[75%]",
+  imageUrl,
+  senderEmail,
 }: ChatMessageProps) {
   return (
     <div className={` flex ${isUser ? "justify-end " : "justify-start"}`}>
@@ -26,18 +30,12 @@ export default function ChatMessage({
       >
         <div className="flex items-center w-full md:gap-3 justify-between gap-1">
           <div className="flex gap-1 md:gap-2 items-center">
-            {/* {!isUser && (
-              <span className="bg-red-100 text-red-600 h-7 w-7 justify-center font-medium rounded-full text-xs shrink-0  flex items-center">
-                {getInitials(sender)}
-              </span>
-            )} */}
-            <Image
-              alt=""
+            <ProfileImage
+              imageUrl={imageUrl}
+              fullName={sender}
               width={40}
               height={40}
-              src={"/images/arinaProfile.png"}
-              className="rounded-full w-full max-h-7 max-w-7 h-full"
-              unoptimized
+              className="rounded-full w-full max-h-7 max-w-7 h-full object-cover bg-gray-200"
             />
             <span className="block whitespace-nowrap font-medium text-gray-700 text-xs md:text-sm">
               {sender}
