@@ -1,12 +1,12 @@
 "use client";
 
-import { ArrowDownIcon, ArrowLeftIcon, PackageIcon, PlusIcon } from "@/icons";
+import { ArrowDownIcon, PackageIcon, PlusIcon } from "@/icons";
 import React, { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { EmptyState, Loader, ThemeButton } from "@/app/components";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import OrderListView from "@/app/components/ui/cards/OrderListView";
-import ReactPaginate from "react-paginate";
+import Pagination from "@/app/components/ui/Pagination";
 import NewOrderModal from "@/app/components/ui/modals/NewOrderModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useQuery } from "@apollo/client/react";
@@ -54,7 +54,6 @@ interface DoctorOrdersResponse {
 
 function OrderContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const orderStatuses = [
     { label: "Delivered", color: "before:bg-green-500" },
@@ -72,8 +71,7 @@ function OrderContent() {
 
   const itemsPerPage = 10;
   const [selectedStatus, setSelectedStatus] = useState<string>("All Status");
-  const initialPage = parseInt(searchParams.get("page") || "0", 10);
-  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [currentPage, setCurrentPage] = useState(0);
 
   // GraphQL query to fetch orders
   const { data, loading, error, refetch } = useQuery<DoctorOrdersResponse>(
@@ -102,27 +100,15 @@ function OrderContent() {
     selectedStatus !== "All Status" ||
     range.startDate.getTime() !== defaultRange.startDate.getTime();
 
-  // Refetch data when status or page changes
+  // Refetch data when status changes
   useEffect(() => {
     setCurrentPage(0);
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("page"); // Remove page parameter for first page
-    const queryString = params.toString();
-    router.replace(queryString ? `?${queryString}` : "/orders");
     refetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStatus]);
 
-  const handlePageChange = ({ selected }: { selected: number }) => {
+  const handlePageChange = (selected: number) => {
     setCurrentPage(selected);
-    const params = new URLSearchParams(searchParams.toString());
-    if (selected === 0) {
-      params.delete("page"); // Remove page parameter for first page
-    } else {
-      params.set("page", String(selected + 1));
-    }
-    const queryString = params.toString();
-    router.replace(queryString ? `?${queryString}` : "/orders");
     refetch();
   };
 
@@ -320,43 +306,11 @@ function OrderContent() {
         )}
 
         {!loading && !error && (pageCount || 0) > 1 && (
-          <div className="w-full flex items-center justify-center">
-            <ReactPaginate
-              breakLabel="..."
-              nextLabel={
-                <span className="flex items-center justify-center h-9 md:w-full md:h-full w-9 select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="hidden md:inline-block">Next</span>
-                  <span className="block mb-0.5 rotate-180">
-                    <ArrowLeftIcon />
-                  </span>
-                </span>
-              }
-              previousLabel={
-                <span className="flex items-center  h-9 md:w-full md:h-full w-9 justify-center select-none font-semibold text-xs md:text-sm text-gray-700 gap-1">
-                  <span className="md:mb-0.5">
-                    <ArrowLeftIcon />
-                  </span>
-                  <span className="hidden md:inline-block">Previous</span>
-                </span>
-              }
-              onPageChange={handlePageChange}
-              pageRangeDisplayed={3}
-              marginPagesDisplayed={1}
-              pageCount={pageCount ? pageCount : 1}
-              forcePage={currentPage}
-              pageLinkClassName="px-4 py-2 rounded-lg text-gray-600 h-11 w-11 leading-8 text-center hover:bg-gray-100 cursor-pointer  hidden md:block"
-              containerClassName="flex items-center relative w-full justify-center gap-2 px-3 md:px-4 py-2 md:py-3  h-12 md:h-full rounded-2xl bg-white shadow-table"
-              pageClassName=" rounded-lg text-gray-500 hover:bg-gray-50 cursor-pointer"
-              activeClassName="bg-gray-200 text-gray-900 font-medium"
-              previousClassName="md:px-4 md:py-2 rounded-full  absolute left-3 md:left-4 bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 cursor-pointer"
-              nextClassName="md:px-4 md:py-2 rounded-full bg-gray-50  absolute end-3 md:end-4 border text-gray-600 border-gray-200 hover:bg-gray-100 cursor-pointer"
-              breakClassName="px-3 py-1 font-semibold text-gray-400"
-            />
-
-            <h2 className="absolute md:hidden text-gravel font-medium text-sm">
-              Page {currentPage + 1} of {pageCount}
-            </h2>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={pageCount || 1}
+            onPageChange={handlePageChange}
+          />
         )}
       </div>
       <NewOrderModal
