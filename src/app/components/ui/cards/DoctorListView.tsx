@@ -4,6 +4,7 @@ import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import ProfileImage from "../ProfileImage";
 
 type DoctorListingProps = {
   doctor: UserAttributes;
@@ -85,11 +86,13 @@ export default function DoctorListView({
       >
         <div className="flex items-start flex-wrap gap-1 justify-between mb-2">
           <div className="flex items-start sm:items-center gap-2 ">
-            <span
-              className={`w-9 h-9 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
-            >
-              {getInitials(doctor.fullName ?? doctor.email ?? "----")}
-            </span>
+            <ProfileImage
+              imageUrl={doctor?.imageUrl}
+              fullName={doctor.fullName}
+              email={doctor.email}
+              bg={bg}
+              text={text}
+            />
 
             <div>
               <h2 className="text-gray-800 text-base md:text-base font-semibold">
@@ -190,11 +193,13 @@ export default function DoctorListView({
       className="grid  grid-cols-[2fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr] gap-2 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div className="flex items-center gap-2">
-        <span
-          className={`md:w-10 md:h-10 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`}
-        >
-          {getInitials(doctor.fullName ?? doctor.email ?? "----")}
-        </span>
+        <ProfileImage
+          imageUrl={doctor?.imageUrl}
+          fullName={doctor.fullName}
+          email={doctor.email}
+          bg={bg}
+          text={text}
+        />
 
         <div>
           <h2 className="text-gray-800 text-sm md:text-base font-medium">
