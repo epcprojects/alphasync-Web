@@ -28,6 +28,7 @@ interface DoctorOrdersResponse {
       patient: {
         email: string;
         fullName: string;
+        imageUrl?: string | null;
       } | null;
       createdAt: string;
       status: string;
@@ -299,7 +300,8 @@ function OrderContent() {
                   ? parseInt(order.displayId.toString())
                   : parseInt(order.id),
                 customer: order.patient?.fullName || "Unknown Customer",
-
+                imageUrl: order.patient?.imageUrl,
+                customerEmail: order.patient?.email,
                 date: format(new Date(order.createdAt), "MM-dd-yy"),
                 status: order.status,
                 items: order.orderItems.length,

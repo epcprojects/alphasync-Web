@@ -435,6 +435,7 @@ export default function CustomerDetail() {
               : "No orders"
           }
           dob={customer.dateOfBirth || ""}
+          imageUrl={customer.imageUrl}
           onQuickChat={handleQuickChat}
           onCreateOrder={() => setIsOrderModalOpen(true)}
           getInitials={(name) =>

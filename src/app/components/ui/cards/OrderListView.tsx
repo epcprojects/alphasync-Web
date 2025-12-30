@@ -1,8 +1,8 @@
 "use client";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ArrowLeftIcon } from "@/icons";
-import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
+import ProfileImage from "@/app/components/ui/ProfileImage";
 
 type Order = {
   id: number;
@@ -10,12 +10,13 @@ type Order = {
   displayId: number;
   date: string;
   customer: string;
-
   status: string;
   items: number;
   total: number;
   netCost: number;
   profit: number;
+  imageUrl?: string | null;
+  customerEmail?: string | null;
 };
 
 type OrderListViewProps = {
@@ -91,11 +92,13 @@ export default function OrderListView({
       >
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-2 ">
-            <span
-              className={`w-10 h-10 ${bg} ${text} shrink-0 hidden sm:flex items-center font-medium justify-center rounded-full`}
-            >
-              {getInitials(order.customer)}
-            </span>
+            <ProfileImage
+              imageUrl={order.imageUrl}
+              fullName={order.customer}
+              email={order.customerEmail}
+              bg={bg}
+              text={text}
+            />
             <div>
               <h2 className="text-gray-800 text-base sm:hidden font-semibold">
                 {order.orderId}
@@ -186,11 +189,17 @@ export default function OrderListView({
         </h2>
       </div>
       <div className="flex items-center gap-2 md:gap-3">
-        <span
-          className={`w-10 h-10 ${bg} ${text} shrink-0 hidden lg:flex items-center  font-medium  justify-center rounded-full`}
-        >
-          {getInitials(order.customer)}
-        </span>
+        <ProfileImage
+          imageUrl={order.imageUrl}
+          fullName={order.customer}
+          email={order.customerEmail}
+          bg={bg}
+          text={text}
+          width={40}
+          height={40}
+          className="rounded-full object-cover bg-gray-200 w-10 h-10 shrink-0 hidden lg:flex"
+          fallbackClassName={`w-10 h-10 ${bg} ${text} shrink-0 hidden lg:flex items-center font-medium justify-center rounded-full`}
+        />
         <div>
           <h2 className="text-gray-800 text-sm md:text-base sm:hidden font-semibold">
             {order.orderId}

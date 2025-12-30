@@ -240,9 +240,7 @@ export const FETCH_DOCTOR = gql`
     fetchUser {
       user {
         doctor {
-          id
-          fullName
-          specialty
+          ${userpayload}
         }
       }
     }

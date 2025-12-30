@@ -1,9 +1,9 @@
 "use client";
 import { ArrowLeftIcon, MailIcon } from "@/icons";
-import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import ProfileImage from "@/app/components/ui/ProfileImage";
 
 type Customer = {
   id: number;
@@ -89,11 +89,13 @@ export default function CustomerDatabaseView({
       >
         <div className="flex items-start flex-col sm:flex-row gap-1 justify-between mb-2">
           <div className="flex items-start gap-2 ">
-            <span
-              className={`w-10 h-10 ${bg} ${text} flex shrink-0 items-center font-medium justify-center rounded-full`}
-            >
-              {getInitials(name || "----")}
-            </span>
+            <ProfileImage
+              imageUrl={patient?.imageUrl}
+              fullName={patient?.fullName}
+              email={patient?.email}
+              bg={bg}
+              text={text}
+            />
             <div className="flex flex-col gap-1">
               <h2 className="text-gray-800 text-sm  md:text-base font-semibold">
                 {name || "----"}
@@ -181,11 +183,13 @@ export default function CustomerDatabaseView({
     >
       <div className="col-span-2 flex items-center gap-3">
         <div className="flex items-center gap-1 md:gap-2">
-          <span
-            className={`md:w-10  hidden md:h-10 ${bg} ${text} shrink-0 lg:flex items-center font-medium justify-center rounded-full`}
-          >
-            {getInitials(name || "----")}
-          </span>
+          <ProfileImage
+            imageUrl={patient?.imageUrl}
+            fullName={patient?.fullName}
+            email={patient?.email}
+            bg={bg}
+            text={text}
+          />
 
           <h3 className="font-medium line-clamp-1 text-gray-800 text-sm md:text-base">
             {name || "----"}
