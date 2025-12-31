@@ -68,10 +68,17 @@ export default function Chat({
   const [chatId, setChatId] = useState<string | null>(null);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const chatRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesTopRef = useRef<HTMLDivElement | null>(null);
   const hasCreatedChat = useRef(false);
+  const scrollHeightBeforeLoad = useRef<number>(0);
+  const hasScrolledToBottom = useRef(false);
 
   // Current logged-in user from Redux (auth slice)
   const currentUser = useAppSelector((state) => state.auth?.user);
@@ -139,18 +146,202 @@ export default function Chat({
     ]
   );
 
-  // Fetch existing messages
-  const { loading: MessageLoading } = useQuery(FETCH_ALL_MESSAGES, {
-    variables: { chatId },
+  // Fetch existing messages (initial load)
+  const {
+    loading: MessageLoading,
+    refetch: refetchMessages,
+    data: messagesData,
+  } = useQuery(FETCH_ALL_MESSAGES, {
+    variables: { chatId, page: 1, perPage: 20 },
     skip: !chatId,
-    fetchPolicy: "cache-first",
+    fetchPolicy: "network-only",
     onCompleted: (data) => {
+      console.log("Initial messages loaded:", {
+        count: data?.fetchAllMessages?.allData?.length,
+        totalPages: data?.fetchAllMessages?.totalPages,
+        nextPage: data?.fetchAllMessages?.nextPage,
+      });
       if (data?.fetchAllMessages?.allData) {
         const formatted = data.fetchAllMessages.allData.map(mapGraphQLMessage);
         setMessages(formatted.reverse());
+        setCurrentPage(1);
+        // Check if there are more pages (older messages) to load
+        const pages = data.fetchAllMessages.totalPages ?? 1;
+        setTotalPages(pages);
+        const hasMore = pages > 1;
+        console.log(
+          "Setting hasMoreMessages:",
+          hasMore,
+          "totalPages:",
+          pages,
+          "prevPage:",
+          data.fetchAllMessages.prevPage
+        );
+        setHasMoreMessages(hasMore);
+        // Reset scroll flag for initial load
+        hasScrolledToBottom.current = false;
       }
     },
   });
+
+  // Also handle data changes from the query directly (fallback)
+  useEffect(() => {
+    if (
+      messagesData?.fetchAllMessages &&
+      currentPage === 1 &&
+      messages.length === 0
+    ) {
+      const data = messagesData.fetchAllMessages;
+      if (data.allData) {
+        const formatted = data.allData.map(mapGraphQLMessage);
+        setMessages(formatted.reverse());
+        const pages = data.totalPages ?? 1;
+        setTotalPages(pages);
+        setHasMoreMessages(pages > 1);
+        // Reset scroll flag for initial load
+        hasScrolledToBottom.current = false;
+      }
+    }
+  }, [messagesData, mapGraphQLMessage, currentPage, messages.length]);
+
+  // Load more messages when scrolling to top
+  const loadMoreMessages = useCallback(async () => {
+    if (!chatId || isLoadingMore || !hasMoreMessages) {
+      console.log("Skipping loadMoreMessages:", {
+        chatId: !!chatId,
+        isLoadingMore,
+        hasMoreMessages,
+      });
+      return;
+    }
+
+    setIsLoadingMore(true);
+    const nextPage = currentPage + 1; // Load next page (older messages)
+    console.log("Loading page:", nextPage, "Current page:", currentPage);
+
+    try {
+      const { data } = await refetchMessages({
+        chatId,
+        page: nextPage,
+        perPage: 20,
+      });
+
+      console.log("Fetched messages data:", {
+        hasData: !!data?.fetchAllMessages?.allData,
+        count: data?.fetchAllMessages?.allData?.length,
+        totalPages: data?.fetchAllMessages?.totalPages,
+        nextPage: data?.fetchAllMessages?.nextPage,
+        prevPage: data?.fetchAllMessages?.prevPage,
+      });
+
+      if (
+        data?.fetchAllMessages?.allData &&
+        data.fetchAllMessages.allData.length > 0
+      ) {
+        const formatted = data.fetchAllMessages.allData.map(mapGraphQLMessage);
+        const olderMessages = formatted.reverse();
+
+        // Store scroll position before adding new messages
+        if (chatRef.current) {
+          scrollHeightBeforeLoad.current = chatRef.current.scrollHeight;
+        }
+
+        // Prepend older messages to existing messages
+        setMessages((prev) => {
+          // Avoid duplicates by checking IDs
+          const existingIds = new Set(prev.map((m: ChatMessageType) => m.id));
+          const newMessages = olderMessages.filter(
+            (m: ChatMessageType) => !existingIds.has(m.id)
+          );
+          return [...newMessages, ...prev];
+        });
+
+        // Update pagination state
+        const pages = data.fetchAllMessages.totalPages ?? totalPages;
+        setTotalPages(pages);
+        setCurrentPage(nextPage);
+
+        // Check if there are more pages to load
+        // Use prevPage if available, otherwise check if currentPage < totalPages
+        const prevPage = data.fetchAllMessages.prevPage;
+        const hasMore =
+          prevPage !== null && prevPage > 0 ? true : nextPage < pages;
+
+        console.log("Updated pagination:", {
+          currentPage: nextPage,
+          totalPages: pages,
+          prevPage,
+          hasMore,
+          condition: `nextPage (${nextPage}) < pages (${pages}) = ${
+            nextPage < pages
+          }`,
+        });
+        setHasMoreMessages(hasMore);
+      } else {
+        // No more messages to load
+        console.log("No more messages to load");
+        setHasMoreMessages(false);
+      }
+    } catch (error) {
+      console.error("Failed to load more messages:", error);
+      showErrorToast("Failed to load older messages");
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [
+    chatId,
+    isLoadingMore,
+    hasMoreMessages,
+    currentPage,
+    totalPages,
+    refetchMessages,
+    mapGraphQLMessage,
+  ]);
+
+  // Restore scroll position after loading older messages
+  useEffect(() => {
+    if (chatRef.current && scrollHeightBeforeLoad.current > 0) {
+      const newScrollHeight = chatRef.current.scrollHeight;
+      const scrollDifference = newScrollHeight - scrollHeightBeforeLoad.current;
+      chatRef.current.scrollTop = scrollDifference;
+      scrollHeightBeforeLoad.current = 0;
+    }
+  }, [messages]);
+
+  // Handle scroll to top for loading more messages
+  useEffect(() => {
+    const chatElement = chatRef.current;
+    if (!chatElement || !chatId) return;
+
+    let scrollTimeout: NodeJS.Timeout;
+    const handleScroll = () => {
+      // Clear any existing timeout
+      clearTimeout(scrollTimeout);
+
+      // Debounce scroll events
+      scrollTimeout = setTimeout(() => {
+        if (!chatElement) return;
+
+        // Check if scrolled to top (within 50px threshold)
+        const isNearTop = chatElement.scrollTop <= 50;
+
+        if (isNearTop && hasMoreMessages && !isLoadingMore) {
+          console.log("Loading more messages...", {
+            currentPage,
+            hasMoreMessages,
+            scrollTop: chatElement.scrollTop,
+          });
+          loadMoreMessages();
+        }
+      }, 100);
+    };
+
+    chatElement.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      clearTimeout(scrollTimeout);
+      chatElement.removeEventListener("scroll", handleScroll);
+    };
+  }, [hasMoreMessages, isLoadingMore, loadMoreMessages, chatId, currentPage]);
 
   // Subscription for new messages
   const { data: subscriptionData } = useSubscription(MESSAGE_ADDED, {
@@ -198,10 +389,62 @@ export default function Chat({
     }
   }, [subscriptionData, chatId, mapGraphQLMessage]);
 
-  // Auto-scroll on new message
+  // Scroll to bottom on initial load (when messages are first loaded)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (
+      messages.length > 0 &&
+      !hasScrolledToBottom.current &&
+      !isLoadingMore &&
+      !MessageLoading
+    ) {
+      // Use requestAnimationFrame and setTimeout to ensure DOM is fully updated
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          if (chatRef.current) {
+            // Directly set scroll position to bottom
+            chatRef.current.scrollTop = chatRef.current.scrollHeight;
+            hasScrolledToBottom.current = true;
+            console.log("Scrolled to bottom on initial load");
+          }
+        }, 150);
+      });
+    }
+  }, [messages.length, isLoadingMore, MessageLoading]);
+
+  // Auto-scroll on new message (only when messages are added at the end, not when loading older messages)
+  const previousMessagesLength = useRef(messages.length);
+  useEffect(() => {
+    // Only auto-scroll if a new message was added at the end (not when loading older messages at the top)
+    if (
+      messages.length > previousMessagesLength.current &&
+      !isLoadingMore &&
+      hasScrolledToBottom.current
+    ) {
+      const wasAtBottom =
+        chatRef.current &&
+        chatRef.current.scrollHeight - chatRef.current.scrollTop <=
+          chatRef.current.clientHeight + 100; // Within 100px of bottom
+
+      // Only scroll if user was already at bottom
+      if (wasAtBottom) {
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 50);
+      }
+    }
+    previousMessagesLength.current = messages.length;
+  }, [messages, isLoadingMore]);
+
+  // Reset pagination when chatId changes
+  useEffect(() => {
+    if (chatId) {
+      setCurrentPage(1);
+      setTotalPages(1);
+      setHasMoreMessages(true);
+      setMessages([]);
+      hasScrolledToBottom.current = false;
+    }
+  }, [chatId]);
 
   // Create chat on mount
   useEffect(() => {
@@ -294,6 +537,12 @@ export default function Chat({
               ref={chatRef}
               className="flex-1 flex flex-col gap-3 overflow-y-auto h-full p-1"
             >
+              {isLoadingMore && (
+                <div className="flex justify-center py-2 text-gray-500 text-sm">
+                  Loading older messages...
+                </div>
+              )}
+              <div ref={messagesTopRef}></div>
               {messages.map((msg) => (
                 <ChatMessage
                   key={msg.id}

@@ -746,7 +746,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
               placeholder="12345"
               value={zipCode}
               onChange={(e) => setZipCode(e.target.value)}
-              maxLength={10}
+              maxLength={5}
             />
             <ThemeInput
               id="Billing Address"
