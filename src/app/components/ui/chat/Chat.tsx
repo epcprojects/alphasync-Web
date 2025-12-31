@@ -12,6 +12,7 @@ interface ChatMessageType {
   id?: string;
   sender: string;
   time: string;
+  createdAt?: string;
   text: string;
   isUser: boolean;
   imageUrl?: string | null;
@@ -132,6 +133,7 @@ export default function Chat({
               hour: "2-digit",
               minute: "2-digit",
             }),
+        createdAt: msg.createdAt,
         text: msg.content,
         isUser: isCurrentUser,
         imageUrl: senderImageUrl,
@@ -484,13 +486,15 @@ export default function Chat({
 
     // Add optimistic update for immediate UI feedback
     const tempId = `temp-${Date.now()}`;
+    const now = new Date();
     const optimisticMessage: ChatMessageType = {
       id: tempId,
       sender: "You",
-      time: new Date().toLocaleTimeString([], {
+      time: now.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
+      createdAt: now.toISOString(),
       text: msg,
       isUser: true,
       imageUrl: currentUser?.imageUrl,
@@ -548,6 +552,7 @@ export default function Chat({
                   key={msg.id}
                   sender={msg.sender}
                   time={msg.time}
+                  createdAt={msg.createdAt}
                   isUser={msg.isUser}
                   message={msg.text}
                   imageUrl={msg.imageUrl}
