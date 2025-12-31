@@ -228,14 +228,6 @@ export default function Chat({
         perPage: 20,
       });
 
-      console.log("Fetched messages data:", {
-        hasData: !!data?.fetchAllMessages?.allData,
-        count: data?.fetchAllMessages?.allData?.length,
-        totalPages: data?.fetchAllMessages?.totalPages,
-        nextPage: data?.fetchAllMessages?.nextPage,
-        prevPage: data?.fetchAllMessages?.prevPage,
-      });
-
       if (
         data?.fetchAllMessages?.allData &&
         data.fetchAllMessages.allData.length > 0
