@@ -731,10 +731,10 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   onChange={(e) => {
                     const value = e.target.value
                       .replace(/[^0-9]/g, "")
-                      .slice(0, 3);
+                      .slice(0, 4);
                     setCvv(value);
                   }}
-                  maxLength={3}
+                  maxLength={4}
                 />
               </div>
             </div>

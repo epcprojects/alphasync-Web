@@ -242,10 +242,12 @@ export default function CustomerDetail() {
       const firstItem = request.requestedItems?.[0];
       const totalAmount =
         request.requestedItems?.reduce((sum, item) => {
+          // Use customPrice if available, otherwise use regular price
+          const priceToUse = item.product?.customPrice ?? item.price;
           const price =
-            typeof item.price === "string"
-              ? parseFloat(item.price)
-              : (item.price as number) || 0;
+            typeof priceToUse === "string"
+              ? parseFloat(priceToUse)
+              : (priceToUse as number) || 0;
           return sum + price;
         }, 0) || 0;
 
