@@ -97,8 +97,23 @@ import FolderIcon from "./FolderIcon";
 import DashboardIcon from "./DashboardIcon";
 import AdminIcon from "./AdminIcon";
 import AdminFilledIcon from "./AdminFilledIcon";
+import AccountingIcon from "./AccountingIcon";
+import PercentIcon from "./PercentIcon";
+import ProfitIcon from "./ProfitIcon";
+import RevenueIcon from "./RevenueIcon";
+import ShoppingCardDualIcon from "./ShoppingCardDualIcon";
+import AccountFilledIcon from "./AccountFilledIcon";
+import CalendarDotsIcon from "./CalendarDotsIcon";
+
 
 export {
+    AccountFilledIcon,
+    CalendarDotsIcon,
+    PercentIcon,
+    ShoppingCardDualIcon,
+    RevenueIcon,
+    ProfitIcon,
+    AccountingIcon,
     AdminFilledIcon,
     AdminIcon,
     DashboardIcon,

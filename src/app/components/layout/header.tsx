@@ -3,7 +3,7 @@ import React, { useEffect, useState, MouseEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Images } from "@/app/ui/images";
-import { ProfileIcon, LogoutIcon, RequestIcon } from "@/icons";
+import { ProfileIcon, LogoutIcon, RequestIcon, AccountingIcon } from "@/icons";
 import HeaderMenuNavItems from "./HeaderMenuNavItems";
 import Notifications from "../ui/Notifications";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
@@ -72,6 +72,8 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
   const hasPendingPayment = menuItems.some((item) =>
     item.href.includes("pending-payment")
   );
+
+  const hasMyClinic = menuItems.some((item) => item.href.includes("clinic"));
 
   const isAdminHeader = menuItems.some((item) =>
     item.label.includes("Doctors")
@@ -183,6 +185,15 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                 className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
               >
                 <RequestIcon fill="white" />
+              </Link>
+            )}
+
+            {hasMyClinic && (
+              <Link
+                href={"/accounting"}
+                className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
+              >
+                <AccountingIcon />
               </Link>
             )}
 
