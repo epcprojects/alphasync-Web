@@ -217,11 +217,12 @@ export const FETCH_PRODUCT = gql`
   }
 `;
 export const FETCH_ALL_MESSAGES = gql`
-query FetchAllMessages($chatId: ID!) {
-    fetchAllMessages(chatId: $chatId) {
+query FetchAllMessages($chatId: ID! $page: Int, $perPage: Int) {
+    fetchAllMessages(chatId: $chatId, page: $page, perPage: $perPage) {
         allData {
             content
             id
+            createdAt
             chat {
             id
             otherParticipant {
@@ -232,6 +233,10 @@ query FetchAllMessages($chatId: ID!) {
                 ${userpayload}
             }
         }
+        count
+        nextPage
+        prevPage
+        totalPages
     }
 }
 `;

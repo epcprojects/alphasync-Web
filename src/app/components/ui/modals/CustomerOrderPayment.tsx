@@ -731,10 +731,10 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   onChange={(e) => {
                     const value = e.target.value
                       .replace(/[^0-9]/g, "")
-                      .slice(0, 3);
+                      .slice(0, 4);
                     setCvv(value);
                   }}
-                  maxLength={3}
+                  maxLength={4}
                 />
               </div>
             </div>
@@ -746,7 +746,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
               placeholder="12345"
               value={zipCode}
               onChange={(e) => setZipCode(e.target.value)}
-              maxLength={10}
+              maxLength={5}
             />
             <ThemeInput
               id="Billing Address"
