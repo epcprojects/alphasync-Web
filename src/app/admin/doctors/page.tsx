@@ -267,7 +267,7 @@ function DoctorContent() {
           <TabPanels>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden sm:grid grid-cols-[2fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="hidden sm:grid grid-cols-[2.5fr_1.5fr_1.5fr_2fr_1fr_1fr] xl:grid-cols-[2.5fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div>
                     <h2>Name</h2>
                   </div>
@@ -280,7 +280,7 @@ function DoctorContent() {
                   <div>
                     <h2>Medical License</h2>
                   </div>
-                  <div>
+                  <div className="xl:flex hidden">
                     <h2>Status</h2>
                   </div>
                   <div>
@@ -334,7 +334,7 @@ function DoctorContent() {
             </TabPanel>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden sm:grid grid-cols-[2fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="hidden sm:grid grid-cols-[2.5fr_1.5fr_1.5fr_2fr_1fr_1fr] xl:grid-cols-[2.5fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr] text-black font-medium text-sm  px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div>
                     <h2>Name</h2>
                   </div>
@@ -347,7 +347,7 @@ function DoctorContent() {
                   <div>
                     <h2>Medical License</h2>
                   </div>
-                  <div>
+                  <div className="xl:flex hidden">
                     <h2>Status</h2>
                   </div>
                   <div>
