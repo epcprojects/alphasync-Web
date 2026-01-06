@@ -108,6 +108,7 @@ export interface OrderRequestAttributes {
   doctorMessage?: string;
   reason?: string;
   customPrice?: string | number;
+  requestCustomPrice?: string | number;
   doctor?: UserAttributes;
   patient?: UserAttributes;
   requestedItems?: RequestedItem[];

@@ -128,16 +128,28 @@ function RequestContent() {
         items:
           request.requestedItems?.map((item) => item.title || "Unknown item") ||
           [],
-        amount:
-          request.requestedItems?.reduce((sum, item) => {
-            // Use customPrice if available, otherwise use regular price
-            const priceToUse = item.product?.customPrice || item.price;
-            const price =
-              typeof priceToUse === "string"
-                ? parseFloat(priceToUse)
-                : (priceToUse as number) || 0;
-            return sum + price;
-          }, 0) || 0,
+        amount: (() => {
+          // Priority: requestCustomPrice -> customPrice -> price
+          if (
+            request.requestCustomPrice !== undefined &&
+            request.requestCustomPrice !== null
+          ) {
+            return typeof request.requestCustomPrice === "string"
+              ? parseFloat(request.requestCustomPrice)
+              : (request.requestCustomPrice as number) || 0;
+          }
+          // Fallback to calculating from items
+          return (
+            request.requestedItems?.reduce((sum, item) => {
+              const priceToUse = item.product?.customPrice || item.price;
+              const price =
+                typeof priceToUse === "string"
+                  ? parseFloat(priceToUse)
+                  : (priceToUse as number) || 0;
+              return sum + price;
+            }, 0) || 0
+          );
+        })(),
         status: normalizeStatus(request.status),
         orderPaid: request.orderPaid || false,
         originalId: request.id,
