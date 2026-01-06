@@ -238,7 +238,7 @@ function ProductsContent() {
               </button>
             </Tooltip>
 
-            <ThemeButton
+            {/* <ThemeButton
               label={
                 isSyncing
                   ? "Syncing..."
@@ -250,7 +250,7 @@ function ProductsContent() {
               onClick={handleSyncProducts}
               disabled={isSyncing}
               className="w-full sm:w-fit"
-            />
+            /> */}
           </div>
         </div>
       </div>
