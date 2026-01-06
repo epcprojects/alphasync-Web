@@ -2,6 +2,7 @@ import React from "react";
 import AppModal from "./AppModal";
 import { ShopingCartIcon } from "@/icons";
 import Image from "next/image";
+import type { RequestedItem } from "@/lib/graphql/attributes";
 
 interface ProductRequestDetailModalProps {
   isOpen: boolean;
@@ -17,6 +18,8 @@ interface ProductRequestDetailModalProps {
     doctorName?: string;
     reason?: string;
     imageSrc?: string;
+    requestCustomPrice?: string | number;
+    requestedItems?: RequestedItem[];
   };
 }
 
@@ -29,6 +32,35 @@ const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
   const handleClose = () => {
     onClose();
   };
+
+  // Calculate price with fallback logic: requestCustomPrice -> customPrice -> price
+  const calculatedPrice = React.useMemo<string>(() => {
+    // Priority: requestCustomPrice -> customPrice -> price
+    if (
+      requestData?.requestCustomPrice !== undefined &&
+      requestData?.requestCustomPrice !== null
+    ) {
+      const priceValue =
+        typeof requestData.requestCustomPrice === "string"
+          ? parseFloat(requestData.requestCustomPrice)
+          : (requestData.requestCustomPrice as number) || 0;
+      return `$${priceValue.toFixed(2)}`;
+    }
+    // Fallback to calculating from items
+    if (requestData?.requestedItems && requestData.requestedItems.length > 0) {
+      const totalAmount = requestData.requestedItems.reduce((sum, item) => {
+        const priceToUse = item.product?.customPrice || item.price;
+        const itemPrice =
+          typeof priceToUse === "string"
+            ? parseFloat(priceToUse)
+            : (priceToUse as number) || 0;
+        return sum + itemPrice;
+      }, 0);
+      return `$${totalAmount.toFixed(2)}`;
+    }
+    // Fallback to passed price prop
+    return requestData?.price || "$0.00";
+  }, [requestData]);
 
   return (
     <AppModal
@@ -105,7 +137,7 @@ const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
               Price
             </span>
             <span className="block text-sm md:text-base text-primary font-semibold">
-              {requestData?.price || "$0.00"}
+              {calculatedPrice}
             </span>
           </div>
         </div>
