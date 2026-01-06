@@ -291,7 +291,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
         orderItems.length > 0 && !createOrderLoading ? false : true
       }
       cancelLabel="Back"
-      title="Create New Order hh"
+      title="Create New Order"
       showFooter={isMobile}
       btnIcon={showItems && <PlusIcon />}
       size="extraLarge"
@@ -374,9 +374,11 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     onProductChange={(selectedProduct) => {
                       setSelectedProductData(selectedProduct);
                       // Auto-populate price when product is selected
-                      // Use variants[0].price as original price
+                      // Use customPrice if present, otherwise use originalPrice or variants[0].price
                       if (selectedProduct) {
                         const priceToUse =
+                          selectedProduct.customPrice ??
+                          selectedProduct.originalPrice ??
                           selectedProduct.variants?.[0]?.price ??
                           selectedProduct.price ??
                           0;
