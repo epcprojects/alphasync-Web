@@ -6,6 +6,7 @@ export const userpayload = `
         firstName
         lastName
         specialty
+        clinic
         id
         imageUrl
         lastSignInAt
@@ -47,6 +48,7 @@ export interface UserAttributes {
   firstName?: string;
   lastName?: string;
   specialty?: string;
+  clinic?: string;
   lastSignInAt?: string;
   medicalLicense?: string;
   phoneNo?: string;

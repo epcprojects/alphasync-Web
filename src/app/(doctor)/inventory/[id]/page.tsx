@@ -94,10 +94,10 @@ export default function PostDetail() {
     // Get the original price from the product variant
     const originalPrice = product.variants?.[0]?.price || 0;
 
-    // Prevent setting price lower than the original price
-    if (priceValue < originalPrice) {
+    // Prevent setting price less than or equal to the original price
+    if (priceValue <= originalPrice) {
       showErrorToast(
-        `Price cannot be less than the original price ($${originalPrice.toFixed(
+        `Price must be greater than the original price ($${originalPrice.toFixed(
           2
         )})`
       );
@@ -351,24 +351,43 @@ export default function PostDetail() {
                   onChange={(e) => {
                     const newPrice = e.target.value;
                     setPrice(newPrice);
-                    setPriceError("");
 
                     // Validate in real-time
                     const priceValue = parseFloat(newPrice);
-                    if (newPrice && !isNaN(priceValue)) {
+                    if (!newPrice || newPrice.trim() === "") {
+                      // If empty, clear error but button will still be disabled if price is required
+                      setPriceError("");
+                    } else if (isNaN(priceValue) || priceValue <= 0) {
+                      setPriceError("Please enter a valid price");
+                    } else {
                       const originalPrice = product?.variants?.[0]?.price || 0;
-                      if (priceValue < originalPrice) {
+                      if (priceValue <= originalPrice) {
                         setPriceError(
-                          `Minimum price: $${originalPrice.toFixed(2)}`
+                          `Price must be greater than original price ($${originalPrice.toFixed(
+                            2
+                          )})`
                         );
+                      } else {
+                        setPriceError("");
                       }
                     }
                   }}
                   onBlur={() => {
-                    // Clear error on blur if user leaves the field
+                    // Re-validate on blur
                     const priceValue = parseFloat(price);
                     if (!price || isNaN(priceValue)) {
                       setPriceError("");
+                    } else {
+                      const originalPrice = product?.variants?.[0]?.price || 0;
+                      if (priceValue <= originalPrice) {
+                        setPriceError(
+                          `Price must be greater than original price ($${originalPrice.toFixed(
+                            2
+                          )})`
+                        );
+                      } else {
+                        setPriceError("");
+                      }
                     }
                   }}
                   className={`border ${
@@ -380,7 +399,15 @@ export default function PostDetail() {
                 />
                 <button
                   onClick={handleSavePrice}
-                  disabled={updatePriceLoading || !!priceError}
+                  disabled={
+                    updatePriceLoading ||
+                    !!priceError ||
+                    !price ||
+                    isNaN(parseFloat(price)) ||
+                    parseFloat(price) <= 0 ||
+                    (product?.variants?.[0]?.price != null &&
+                      parseFloat(price) <= product.variants[0].price)
+                  }
                   className="rounded-md py-1.5 cursor-pointer text-primary font-semibold hover:bg-gray-300 px-3 absolute bg-porcelan text-xs end-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {updatePriceLoading ? "Saving..." : "Save"}
