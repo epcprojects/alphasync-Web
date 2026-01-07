@@ -444,7 +444,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     )
       return false;
 
-    const isCvvValid = cvv.length === 3;
+    // American Express requires 4-digit CVV, others require 3-digit
+    const requiredCvvLength = cardType === "American" ? 4 : 3;
+    const isCvvValid = cvv.length === requiredCvvLength;
     if (!cvv || !isCvvValid || !/^\d+$/.test(cvv)) return false;
 
     if (!cardHolderName || cardHolderName.trim() === "") return false;
