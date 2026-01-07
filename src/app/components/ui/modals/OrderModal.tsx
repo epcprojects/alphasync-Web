@@ -88,8 +88,16 @@ const OrderModal: React.FC<OrderModalProps> = ({
 
     if (!price) {
       newErrors.price = "Please enter a price.";
-    } else if (Number(price) <= 0) {
-      newErrors.price = "Price must be greater than 0.";
+    } else {
+      const priceValue = Number(price);
+      if (priceValue <= 0) {
+        newErrors.price = "Price must be greater than 0.";
+      } else if (originalPrice != null && priceValue < originalPrice) {
+        // Original price is variants[0].price
+        newErrors.price = `You cannot put price less than original price ($${originalPrice.toFixed(
+          2
+        )})`;
+      }
     }
 
     setErrors(newErrors);
@@ -117,7 +125,11 @@ const OrderModal: React.FC<OrderModalProps> = ({
       outSideClickClose={false}
       confirmLabel={isLoading ? "Creating Order..." : "Create Order"}
       confimBtnDisable={
-        !selectedUser || !price || Number(price) <= 0 || isLoading
+        !selectedUser ||
+        !price ||
+        Number(price) <= 0 ||
+        (originalPrice != null && Number(price) < originalPrice) ||
+        isLoading
       }
       scrollNeeded={false}
     >
@@ -161,11 +173,47 @@ const OrderModal: React.FC<OrderModalProps> = ({
             <input
               type="number"
               id="input-group-1"
-              disabled={true}
+              min="0.01"
+              step="0.01"
               value={price}
               onChange={(e) => {
-                setPrice(e.target.value);
-                setErrors({});
+                const newPrice = e.target.value;
+                setPrice(newPrice);
+
+                // Validate price in real-time
+                const priceValue = Number(newPrice);
+                if (newPrice && !isNaN(priceValue)) {
+                  if (priceValue <= 0) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      price: "Price must be greater than 0.",
+                    }));
+                  } else if (
+                    originalPrice != null &&
+                    priceValue < originalPrice
+                  ) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      price: `You cannot put price less than original price ($${originalPrice.toFixed(
+                        2
+                      )})`,
+                    }));
+                  } else {
+                    // Clear price error if valid
+                    setErrors((prev) => {
+                      const newErrors = { ...prev };
+                      delete newErrors.price;
+                      return newErrors;
+                    });
+                  }
+                } else if (!newPrice) {
+                  // Clear error if field is empty
+                  setErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors.price;
+                    return newErrors;
+                  });
+                }
               }}
               onKeyDown={(e) => {
                 if (["e", "E", "+", "-"].includes(e.key)) {

@@ -1,6 +1,7 @@
 "use client";
 
 import OrderModal from "@/app/components/ui/modals/OrderModal";
+import BlanketMarkupModal from "@/app/components/ui/modals/BlanketMarkupModal";
 import {
   EmptyState,
   InventorySkeleton,
@@ -38,6 +39,8 @@ function InventoryContent() {
   const [showGridView, setShowGridView] = useState(true);
   const [showOutOfStock, setShowOutOfStock] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isBlanketMarkupModalOpen, setIsBlanketMarkupModalOpen] =
+    useState(false);
   const [isRefetchingFavorites, setIsRefetchingFavorites] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<{
     id: string;
@@ -210,93 +213,104 @@ function InventoryContent() {
             )}
           </div>
         </div>
-
-        <div className="sm:bg-white rounded-full flex-col sm:flex-row w-full flex items-center gap-1 md:gap-2 p-0 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
-          <div className="flex items-center relative w-full p-1 sm:p-0 rounded-full bg-white sm:bg-transparent shadow-table sm:shadow-none">
-            <span className="absolute left-3">
-              <SearchIcon
-                height={isMobile ? "16" : "20"}
-                width={isMobile ? "16" : "20"}
-              />
-            </span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+        <div className="flex items-center gap-2 flex-wrap justify-center">
+          <button
+            onClick={() => setIsBlanketMarkupModalOpen(true)}
+            className="px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white text-sm md:text-base font-medium rounded-full hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer"
+          >
+            <PackageOutlineIcon
+              height={isMobile ? "16" : "18"}
+              width={isMobile ? "16" : "18"}
             />
-          </div>
+            <span className="">Apply Markup</span>
+          </button>
+          <div className="sm:bg-white rounded-full flex-col sm:flex-row w-full flex items-center gap-1 md:gap-2 p-0 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
+            <div className="flex items-center relative w-full p-1 sm:p-0 rounded-full bg-white sm:bg-transparent shadow-table sm:shadow-none">
+              <span className="absolute left-3">
+                <SearchIcon
+                  height={isMobile ? "16" : "20"}
+                  width={isMobile ? "16" : "20"}
+                />
+              </span>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search"
+                className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              />
+            </div>
 
-          <div className="sm:p-0 flex items-center gap-1 md:gap-2 rounded-full bg-white sm:bg-transparent p-1 shadow-table sm:shadow-none">
-            <Tooltip content="Favourite Products">
-              <button
-                onClick={() => setShowFavourites((prev) => !prev)}
-                className={`w-8 h-8 shrink-0 md:h-11 md:w-11 ${
-                  showFavourites &&
-                  "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-                }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-              >
-                {showFavourites ? (
-                  <HeartFilledIcon
-                    height={isMobile ? 16 : 20}
-                    width={isMobile ? 16 : 20}
+            <div className="sm:p-0 flex items-center gap-1 md:gap-2 rounded-full bg-white sm:bg-transparent p-1 shadow-table sm:shadow-none">
+              <Tooltip content="Favourite Products">
+                <button
+                  onClick={() => setShowFavourites((prev) => !prev)}
+                  className={`w-8 h-8 shrink-0 md:h-11 md:w-11 ${
+                    showFavourites &&
+                    "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+                  }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+                >
+                  {showFavourites ? (
+                    <HeartFilledIcon
+                      height={isMobile ? 16 : 20}
+                      width={isMobile ? 16 : 20}
+                    />
+                  ) : (
+                    <FavoriteIcon
+                      height={isMobile ? "16" : "20"}
+                      width={isMobile ? "16" : "20"}
+                    />
+                  )}
+                </button>
+              </Tooltip>
+              <Tooltip content="Out of Stock">
+                <button
+                  onClick={() => setShowOutOfStock((prev) => !prev)}
+                  className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
+                    showOutOfStock &&
+                    "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+                  }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+                >
+                  <PackageOutlineIcon
+                    height={isMobile ? "15" : "20"}
+                    width={isMobile ? "15" : "20"}
                   />
-                ) : (
-                  <FavoriteIcon
-                    height={isMobile ? "16" : "20"}
-                    width={isMobile ? "16" : "20"}
+                </button>
+              </Tooltip>
+
+              <Tooltip content="Grid View">
+                <button
+                  onClick={() => {
+                    setShowGridView(true);
+                  }}
+                  className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
+                    showGridView &&
+                    "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+                  }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+                >
+                  <GridViewIcon
+                    height={isMobile ? "15" : "20"}
+                    width={isMobile ? "15" : "20"}
                   />
-                )}
-              </button>
-            </Tooltip>
-            <Tooltip content="Out of Stock">
-              <button
-                onClick={() => setShowOutOfStock((prev) => !prev)}
-                className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-                  showOutOfStock &&
-                  "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-                }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-              >
-                <PackageOutlineIcon
-                  height={isMobile ? "15" : "20"}
-                  width={isMobile ? "15" : "20"}
-                />
-              </button>
-            </Tooltip>
+                </button>
+              </Tooltip>
 
-            <Tooltip content="Grid View">
-              <button
-                onClick={() => {
-                  setShowGridView(true);
-                }}
-                className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-                  showGridView &&
-                  "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-                }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-              >
-                <GridViewIcon
-                  height={isMobile ? "15" : "20"}
-                  width={isMobile ? "15" : "20"}
-                />
-              </button>
-            </Tooltip>
-
-            <Tooltip content="List View">
-              <button
-                onClick={() => {
-                  setShowGridView(false);
-                }}
-                className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-                  !showGridView &&
-                  "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-                }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-              >
-                <ListViewIcon
-                  height={isMobile ? "15" : "20"}
-                  width={isMobile ? "15" : "20"}
-                />
-              </button>
-            </Tooltip>
+              <Tooltip content="List View">
+                <button
+                  onClick={() => {
+                    setShowGridView(false);
+                  }}
+                  className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
+                    !showGridView &&
+                    "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+                  }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+                >
+                  <ListViewIcon
+                    height={isMobile ? "15" : "20"}
+                    width={isMobile ? "15" : "20"}
+                  />
+                </button>
+              </Tooltip>
+            </div>
           </div>
         </div>
       </div>
@@ -419,6 +433,15 @@ function InventoryContent() {
         onClose={() => {
           setIsOrderModalOpen(false);
           setSelectedProduct(null);
+        }}
+      />
+
+      <BlanketMarkupModal
+        isOpen={isBlanketMarkupModalOpen}
+        onClose={() => setIsBlanketMarkupModalOpen(false)}
+        onSuccess={() => {
+          // Refetch products after successful markup
+          refetch();
         }}
       />
     </div>

@@ -345,6 +345,7 @@ export const ALL_ORDER_REQUESTS = gql`
         displayId
         orderPaid
         id
+        requestCustomPrice
         status
         doctorMessage
         reason
@@ -370,7 +371,7 @@ export const ALL_ORDER_REQUESTS = gql`
           title
           price
           product {
-          customPrice
+            customPrice
             id
             title
             description

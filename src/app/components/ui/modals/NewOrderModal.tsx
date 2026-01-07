@@ -23,6 +23,12 @@ type DropdownItem = {
   productId?: string;
   variantId?: string;
   price?: number;
+  variants?: Array<{
+    id?: string;
+    shopifyVariantId?: string;
+    price?: number;
+    sku?: string;
+  }>;
 };
 
 interface OrderItem {
@@ -63,16 +69,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     createOrder,
     { loading: createOrderLoading, error: createOrderError },
   ] = useMutation(CREATE_ORDER);
-  const OrderSchema = Yup.object().shape({
-    customer: currentCustomer
-      ? Yup.string().optional() // if parent already provides customer
-      : Yup.string().required("Customer is required"),
-    product: Yup.string().required("Product is required"),
-    quantity: Yup.number().min(1, "Minimum 1").required("Quantity is required"),
-    price: Yup.number()
-      .min(0.01, "Must be greater than 0")
-      .required("Price is required"),
-  });
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [customerDraft, setCustomerDraft] = useState("");
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(
@@ -80,6 +76,38 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   );
   const [selectedProductData, setSelectedProductData] =
     useState<DropdownItem | null>(null);
+  const [priceErrors, setPriceErrors] = useState<{ [index: number]: string }>(
+    {}
+  );
+
+  // Create OrderSchema inside component to access selectedProductData
+  const OrderSchema = React.useMemo(() => {
+    return Yup.object().shape({
+      customer: currentCustomer
+        ? Yup.string().optional() // if parent already provides customer
+        : Yup.string().required("Customer is required"),
+      product: Yup.string().required("Product is required"),
+      quantity: Yup.number()
+        .min(1, "Minimum 1")
+        .required("Quantity is required"),
+      price: Yup.number()
+        .min(0.01, "Must be greater than 0")
+        .required("Price is required")
+        .test("greater-than-original", function (value) {
+          if (!value || !selectedProductData) return true;
+          // Original price is variants[0].price
+          const originalPrice = selectedProductData.variants?.[0]?.price ?? 0;
+          if (value < originalPrice) {
+            return this.createError({
+              message: `Price must be greater than or equal to original price ($${originalPrice.toFixed(
+                2
+              )})`,
+            });
+          }
+          return true;
+        }),
+    });
+  }, [currentCustomer, selectedProductData]);
 
   const handleAddItem = (values: {
     customer: string;
@@ -90,7 +118,19 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     // lock on first item
     if (!lockedCustomer) setLockedCustomer(values.customer);
 
-    const originalPrice = selectedProductData?.price || values.price;
+    // Original price is variants[0].price
+    const originalPrice =
+      selectedProductData?.variants?.[0]?.price ?? values.price;
+
+    // Validate price is not less than original price
+    if (values.price < originalPrice) {
+      showErrorToast(
+        `Price must be greater than or equal to original price ($${originalPrice.toFixed(
+          2
+        )})`
+      );
+      return;
+    }
 
     const newItem: OrderItem = {
       product: values.product,
@@ -113,10 +153,31 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     const updated = [...orderItems];
     updated[index] = { ...updated[index], [field]: value };
     setOrderItems(updated);
+    // Clear error for this item when price is updated
+    if (field === "price") {
+      setPriceErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[index];
+        return newErrors;
+      });
+    }
   };
 
   const handleDeleteItem = (index: number) => {
     setOrderItems((prev) => prev.filter((_, i) => i !== index));
+    // Clear error for deleted item and reindex remaining errors
+    setPriceErrors((prev) => {
+      const newErrors: { [index: number]: string } = {};
+      Object.keys(prev).forEach((key) => {
+        const errorIndex = parseInt(key);
+        if (errorIndex < index) {
+          newErrors[errorIndex] = prev[errorIndex];
+        } else if (errorIndex > index) {
+          newErrors[errorIndex - 1] = prev[errorIndex];
+        }
+      });
+      return newErrors;
+    });
   };
 
   const totalAmount = orderItems.reduce(
@@ -129,6 +190,28 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       showErrorToast("Please add at least one item to the order");
       return;
     }
+
+    // Validate all order items before creating order
+    const errors: { [index: number]: string } = {};
+    orderItems.forEach((item, index) => {
+      if (item.price < item.originalPrice) {
+        errors[
+          index
+        ] = `Price must be greater than or equal to original price ($${item.originalPrice.toFixed(
+          2
+        )})`;
+      }
+    });
+
+    // If there are validation errors, show them and prevent order creation
+    if (Object.keys(errors).length > 0) {
+      setPriceErrors(errors);
+      showErrorToast("Please fix price errors before creating the order");
+      return;
+    }
+
+    // Clear any previous errors
+    setPriceErrors({});
 
     try {
       // Validate that patientId exists
@@ -167,6 +250,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       // Reset state for the next order
       setOrderItems([]);
       setCustomerDraft("");
+      setPriceErrors({});
       if (!currentCustomer) {
         setLockedCustomer(null);
       }
@@ -290,8 +374,15 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     onProductChange={(selectedProduct) => {
                       setSelectedProductData(selectedProduct);
                       // Auto-populate price when product is selected
-                      if (selectedProduct && selectedProduct.price) {
-                        setFieldValue("price", selectedProduct.price);
+                      // Use customPrice if present, otherwise use originalPrice or variants[0].price
+                      if (selectedProduct) {
+                        const priceToUse =
+                          selectedProduct.customPrice ??
+                          selectedProduct.originalPrice ??
+                          selectedProduct.variants?.[0]?.price ??
+                          selectedProduct.price ??
+                          0;
+                        setFieldValue("price", priceToUse);
                       }
                     }}
                   />
@@ -370,7 +461,15 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         type="number"
                         id="price"
                         required={true}
-                        disabled={true}
+                        min="0.01"
+                        step="0.01"
+                        onKeyDown={(
+                          e: React.KeyboardEvent<HTMLInputElement>
+                        ) => {
+                          if (["e", "E", "+", "-"].includes(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
                       />
                       {errors.price && touched.price && (
                         <p className="text-red-500 text-xs">{errors.price}</p>
@@ -479,12 +578,50 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                       </div>
 
                       <div className="col-span-2 sm:col-auto">
-                        <input
-                          type="number"
-                          value={item.price}
-                          disabled={true}
-                          className="rounded-md border bg-gray-100 border-gray-200 w-full max-w-14 py-0.5 h-7 px-2 outline-none text-xs cursor-not-allowed opacity-60"
-                        />
+                        <div className="flex flex-col">
+                          <input
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            value={item.price}
+                            onChange={(e) => {
+                              const newPrice = Number(e.target.value);
+                              if (!isNaN(newPrice) && newPrice > 0) {
+                                handleUpdateItem(index, "price", newPrice);
+
+                                // Validate in real-time
+                                const originalPrice = item.originalPrice;
+                                if (newPrice < originalPrice) {
+                                  setPriceErrors((prev) => ({
+                                    ...prev,
+                                    [index]: `Price must be greater than or equal to original price ($${originalPrice.toFixed(
+                                      2
+                                    )})`,
+                                  }));
+                                } else {
+                                  setPriceErrors((prev) => {
+                                    const newErrors = { ...prev };
+                                    delete newErrors[index];
+                                    return newErrors;
+                                  });
+                                }
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (["e", "E", "+", "-"].includes(e.key)) {
+                                e.preventDefault();
+                              }
+                            }}
+                            className={`rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs ${
+                              priceErrors[index] ? "border-red-500" : ""
+                            }`}
+                          />
+                          {priceErrors[index] && (
+                            <p className="text-red-500 text-[12px] mt-0.5 me-2">
+                              {priceErrors[index]}
+                            </p>
+                          )}
+                        </div>
                       </div>
 
                       <div className="text-xs md:text-sm whitespace-nowrap">

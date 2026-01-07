@@ -505,6 +505,7 @@ const Page = () => {
                     phoneNo: user?.phoneNo ?? "",
                     medicalLicense: user?.medicalLicense ?? "",
                     specialty: user?.specialty ?? "",
+                    clinic: user?.clinic ?? "",
                     street1: user?.street1 ?? "",
                     street2: user?.street2 ?? "",
                     city: user?.city ?? "",
@@ -523,6 +524,7 @@ const Page = () => {
                         phoneNo: values.phoneNo,
                         medicalLicense: values.medicalLicense,
                         specialty: values.specialty,
+                        clinic: values.clinic || null,
                         street1: values.street1 || null,
                         street2: values.street2 || null,
                         city: values.city || null,
@@ -696,6 +698,31 @@ const Page = () => {
                             name="specialty"
                             component="div"
                             className="text-red-500 text-xs mt-1"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Clinic
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="clinic"
+                            value={values.clinic}
+                            onChange={handleChange}
+                            placeholder="Enter clinic name"
+                          />
+                          <ErrorMessage
+                            name="clinic"
+                            component="div"
+                            className="text-red-500 text-xs"
                           />
                         </div>
                       </div>

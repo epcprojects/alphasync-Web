@@ -57,6 +57,7 @@ export const CREATE_INVITATION = gql`
     $state: String
     $postalCode: String
     $address: String
+    $clinic: String
   ) {
     createInvitation(
       input: {
@@ -76,6 +77,7 @@ export const CREATE_INVITATION = gql`
           state: $state
           postalCode: $postalCode
           address: $address
+          clinic: $clinic
         }
       }
     ) {
@@ -111,6 +113,7 @@ export const UPDATE_USER = gql`
     $medicalLicense: String
     $status: UserStatusEnum
     $specialty: String
+    $clinic: String
     $image: Upload
     $addressVerified: Boolean
     $street1: String
@@ -126,6 +129,7 @@ export const UPDATE_USER = gql`
         userAttributes: {
           email: $email
           specialty: $specialty
+          clinic: $clinic
           fullName: $fullName
           firstName: $firstName
           lastName: $lastName
@@ -224,6 +228,7 @@ export const UPDATE_DOCTOR = gql`
     $image: Upload
     $medicalLicense: String
     $specialty: String
+    $clinic: String
     $street1: String
     $street2: String
     $city: String
@@ -242,6 +247,7 @@ export const UPDATE_DOCTOR = gql`
           image: $image
           medicalLicense: $medicalLicense
           specialty: $specialty
+          clinic: $clinic
           street1: $street1
           street2: $street2
           city: $city
@@ -701,6 +707,14 @@ export const UPDATE_PRODUCT_PRICE = gql`
 export const MARK_NOTIFICATION_AS_READ = gql`
   mutation MarkNotificationAsRead($notificationId: ID!) {
     markNotificationAsRead(input: { notificationId: $notificationId }) {
+      success
+    }
+  }
+`;
+
+export const BLANKET_MARKUP_PRODUCTS = gql`
+  mutation BlanketMarkupProducts($markupPercentage: Float!) {
+    blanketMarkupProducts(input: { markupPercentage: $markupPercentage }) {
       success
     }
   }
