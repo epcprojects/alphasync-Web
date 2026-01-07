@@ -6,6 +6,7 @@ import {
   PackageIcon,
   ReorderIcon,
   TrashBinIcon,
+  AlertIcon,
 } from "@/icons";
 import {
   Popover,
@@ -94,6 +95,20 @@ export default function Notifications({ userType }: NotificationsProps) {
   }, [open, isMobile, fetchNotifications]);
 
   const handleViewDetails = (notification: NotificationData) => {
+    // Handle low stock alerts first (doctor notifications, no sender needed)
+    if (
+      currentUserType === "doctor" &&
+      notification.notificationType === "low_stock_alert"
+    ) {
+      if (notification.product?.id) {
+        router.push(`/inventory/${notification.product.id}`);
+      } else {
+        // Fallback to inventory page if product id is not available
+        router.push("/inventory");
+      }
+      return;
+    }
+
     if (currentUserType === "doctor" && notification.sender?.id) {
       // Determine which tab to open based on notification type
       let tab = "";
@@ -105,7 +120,9 @@ export default function Notifications({ userType }: NotificationsProps) {
       ) {
         tab = "?tab=requests";
       }
-      router.push(`/customers/${notification.sender.id}${tab}`);
+      if (notification.sender?.id) {
+        router.push(`/customers/${notification.sender.id}${tab}`);
+      }
     }
   };
 
@@ -233,9 +250,13 @@ export default function Notifications({ userType }: NotificationsProps) {
       case "reorder_created":
         return "New reorder request";
       case "order_request_approved":
-        return `Dr. ${message.doctorName} has approved your order`;
+        return `Order request approved`;
       case "order_request_denied":
-        return `Dr. ${message.doctorName} has rejected your order`;
+        return `Order request denied`;
+      case "order_created":
+        return `Order created`;
+      case "low_stock_alert":
+        return "Low stock alert";
       case "message_received":
         return `New message from ${message.senderName}`;
       default:
@@ -278,6 +299,34 @@ export default function Notifications({ userType }: NotificationsProps) {
       return <div>Dr. {message.doctorName} has approved your order</div>;
     } else if (message.notificationType === "order_request_denied") {
       return <div>Dr. {message.doctorName} has rejected your order.</div>;
+    } else if (message.notificationType === "order_created") {
+      return (
+        <div>
+          Dr. {message.doctorName} has created an order for you
+          {message.productNames && message.productNames.length > 0 && (
+            <span className="font-semibold">
+              {" "}
+              with &quot;
+              {message.productNames.map((product, idx) => (
+                <span key={`${product}-${idx}`}>{product}</span>
+              ))}
+              &quot;
+            </span>
+          )}
+          .
+        </div>
+      );
+    } else if (message.notificationType === "low_stock_alert") {
+      return (
+        <div>
+          <span className="font-semibold">
+            {message.productNames.map((product, idx) => (
+              <span key={`${product}-${idx}`}>{product}</span>
+            ))}
+          </span>{" "}
+          is running low (10 or fewer items remaining).
+        </div>
+      );
     }
     return null;
   };
@@ -327,10 +376,13 @@ export default function Notifications({ userType }: NotificationsProps) {
               <div className="flex items-start gap-2">
                 <div className="mt-1">
                   {n.notificationType === "reorder" ||
-                  n.notificationType === "reorder_request" ? (
+                  n.notificationType === "reorder_request" ||
+                  n.notificationType === "reorder_created" ? (
                     <ReorderIcon />
                   ) : n.notificationType === "message_received" ? (
                     <ChatIcon />
+                  ) : n.notificationType === "low_stock_alert" ? (
+                    <AlertIcon />
                   ) : (
                     <PackageIcon />
                   )}
@@ -361,6 +413,7 @@ export default function Notifications({ userType }: NotificationsProps) {
                         }}
                       />
                       {n.notificationType !== "message_received" &&
+                        n.notificationType !== "low_stock_alert" &&
                         n.orderRequest?.status === "pending" && (
                           <>
                             <ThemeButton
@@ -430,6 +483,26 @@ export default function Notifications({ userType }: NotificationsProps) {
                             closeDialog?.();
                             setTimeout(() => {
                               router.push(`/customer-requests?tab=denied`);
+                            }, 0);
+                          }}
+                        />
+                      </div>
+                    )}
+                  {currentUserType === "customer" &&
+                    n.notificationType === "order_created" && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <ThemeButton
+                          label="View Order"
+                          size={isMobile ? "small" : "small"}
+                          variant="filled"
+                          className="w-fit"
+                          heightClass={isMobile ? "h-8" : "h-9"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenState?.(false);
+                            closeDialog?.();
+                            setTimeout(() => {
+                              router.push(`/orders`);
                             }, 0);
                           }}
                         />

@@ -424,6 +424,10 @@ export const ALL_NOTIFICATIONS = gql`
         notificationType
         senderName
         productNames
+        product {
+          id
+          name
+        }
         read
         sender {
           id
