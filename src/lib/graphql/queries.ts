@@ -162,6 +162,7 @@ export const FETCH_ORDER = gql`
       status
       subtotalPrice
       totalPrice
+      trackingNumber
       totalTax
       patient {
         ${userpayload}
