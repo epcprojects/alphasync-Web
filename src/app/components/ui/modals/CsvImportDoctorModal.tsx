@@ -214,7 +214,7 @@ const CsvImportDoctorModal: React.FC<CsvImportDoctorModalProps> = ({
                 &quot;INACTIVE&quot;
               </li>
               <li>
-                • Phone numbers should include country code (e.g., +1234567890)
+                • Phone numbers should be in US format (e.g., (123) 456-7890)
               </li>
               <li>• Email addresses must be valid</li>
               <li>• Download the sample CSV file below for reference</li>
