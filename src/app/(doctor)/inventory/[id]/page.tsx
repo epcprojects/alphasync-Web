@@ -475,7 +475,7 @@ export default function PostDetail() {
                                   className="flex items-center justify-between py-1.5 px-2 bg-gray-50 rounded-md border border-gray-100"
                                 >
                                   <span className="text-gray-600 text-xs md:text-sm">
-                                    Previous Price #{index + 1}
+                                    Mark-up Price #{index + 1}
                                   </span>
                                   <span className="text-gray-800 font-semibold text-xs md:text-sm">
                                     ${priceValue.toFixed(2)}
