@@ -207,6 +207,7 @@ export const FETCH_PRODUCT = gql`
       title
       totalInventory
       vendor
+      price
       tags
       variants {
         price
