@@ -558,15 +558,23 @@ export default function Notifications({ userType }: NotificationsProps) {
         <>
           <button
             onClick={() => setOpen(!open)}
-            className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center relative"
+            className={`h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full flex items-center justify-center relative transition-all duration-300 ${
+              user?.unreadNotifications
+                ? "bg-[#3C85F5]"
+                : "bg-black/40 backdrop-blur-sm"
+            }`}
           >
-            <ReminderIcon
-              fill={user?.unreadNotifications ? "#10b981" : "white"}
-            />
+            <div
+              className={user?.unreadNotifications ? "animate-pulse-icon" : ""}
+            >
+              <ReminderIcon
+                fill={user?.unreadNotifications ? "white" : "white"}
+              />
+            </div>
             {user?.unreadNotifications && (
               <span
                 className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full 
-              bg-green-500 border-2 border-white"
+              bg-white border-1 border-[#1A407A]"
               ></span>
             )}
           </button>
@@ -645,15 +653,25 @@ export default function Notifications({ userType }: NotificationsProps) {
                     });
                   }
                 }}
-                className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 bg-black/40 backdrop-blur-sm flex items-center justify-center relative"
+                className={`h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 flex items-center justify-center relative transition-all duration-300 ${
+                  user?.unreadNotifications
+                    ? "bg-[#3C85F5]"
+                    : "bg-black/40 backdrop-blur-sm"
+                }`}
               >
-                <ReminderIcon
-                  fill={user?.unreadNotifications ? "#10b981" : "white"}
-                />
+                <div
+                  className={
+                    user?.unreadNotifications ? "animate-pulse-icon" : ""
+                  }
+                >
+                  <ReminderIcon
+                    fill={user?.unreadNotifications ? "white" : "white"}
+                  />
+                </div>
                 {user?.unreadNotifications && (
                   <span
                     className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full 
-              bg-green-500 border-2 border-white"
+              bg-white border-1 border-[#1A407A]"
                   ></span>
                 )}
               </PopoverButton>
