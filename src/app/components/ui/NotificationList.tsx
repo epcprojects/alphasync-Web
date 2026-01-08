@@ -604,11 +604,12 @@ const NotificationList: React.FC<NotificationListProps> = ({
                     {message.notificationType === "order_created" && (
                       <div>
                         Dr. {message.doctorName} has created an order for you
+                        with
                         {message.productNames &&
                           message.productNames.length > 0 && (
                             <span className="font-semibold">
                               {" "}
-                              with &quot;
+                              &quot;
                               {message.productNames.map((product, idx) => (
                                 <span key={`${product}-${idx}`}>
                                   {product}
