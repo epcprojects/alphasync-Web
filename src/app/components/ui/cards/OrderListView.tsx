@@ -23,6 +23,9 @@ type OrderListViewProps = {
   order: Order;
   onViewOrderDetail?: (id: number) => void;
   onRowClick?: () => void;
+  hideCustomer?: boolean;
+  onPayNow?: (id?: number) => void;
+  showPayNow?: boolean;
 };
 
 const colorPairs = [
@@ -78,6 +81,9 @@ export default function OrderListView({
   order: order,
   onViewOrderDetail,
   onRowClick,
+  hideCustomer = false,
+  onPayNow,
+  showPayNow = false,
 }: OrderListViewProps) {
   const { bg, text } = getColorPair(order.id) || colorPairs[0];
 
@@ -91,23 +97,32 @@ export default function OrderListView({
         className="bg-white flex flex-col gap-2 p-2  cursor-pointer shadow-table  rounded-xl "
       >
         <div className="flex items-start justify-between">
-          <div className="flex items-start gap-2 ">
-            <ProfileImage
-              imageUrl={order.imageUrl}
-              fullName={order.customer}
-              email={order.customerEmail}
-              bg={bg}
-              text={text}
-            />
+          {!hideCustomer && (
+            <div className="flex items-start gap-2 ">
+              <ProfileImage
+                imageUrl={order.imageUrl}
+                fullName={order.customer}
+                email={order.customerEmail}
+                bg={bg}
+                text={text}
+              />
+              <div>
+                <h2 className="text-gray-800 text-base sm:hidden font-semibold">
+                  {order.orderId}
+                </h2>
+                <h2 className="text-gray-800 text-sm font-medium">
+                  {order.customer}
+                </h2>
+              </div>
+            </div>
+          )}
+          {hideCustomer && (
             <div>
-              <h2 className="text-gray-800 text-base sm:hidden font-semibold">
+              <h2 className="text-gray-800 text-base font-semibold">
                 {order.orderId}
               </h2>
-              <h2 className="text-gray-800 text-sm font-medium">
-                {order.customer}
-              </h2>
             </div>
-          </div>
+          )}
 
           <div className=" font-medium text-xs md:text-sm text-gray-800">
             <span
@@ -115,7 +130,7 @@ export default function OrderListView({
                 order.status
               )}`}
             >
-              {formatStatusDisplay(order.status)}
+              <span>{formatStatusDisplay(order.status)}</span>
             </span>
           </div>
         </div>
@@ -163,13 +178,24 @@ export default function OrderListView({
             </span>
           </div>
 
-          <div className="flex items-center justify-end gap-1.5 w-full">
+          <div className="flex items-center justify-end gap-1.5 w-full flex-nowrap">
+            {showPayNow && order.status === "pending_payment" && onPayNow && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPayNow(order.displayId);
+                }}
+                className="px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors whitespace-nowrap shrink-0"
+              >
+                Pay Now
+              </button>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onViewOrderDetail?.(order.displayId);
               }}
-              className="flex rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+              className="flex rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary shrink-0"
             >
               <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
             </button>
@@ -177,48 +203,54 @@ export default function OrderListView({
         </div>
       </div>
     );
+  const gridCols = hideCustomer
+    ? "md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_1fr_6rem] lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr_7rem]"
+    : "md:grid-cols-[4rem_8rem_4rem_8rem_1fr_1fr_1fr_1fr_6rem] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_7rem]";
+
   return (
     <div
       onClick={onRowClick}
       key={order.id}
-      className="hidden sm:grid hover:bg-gray-100 group  md:grid-cols-[4rem_8rem_4rem_8rem_1fr_1fr_1fr_1fr_3rem] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] gap-4 items-center rounded-xl bg-white p-3 shadow-table"
+      className={`hidden sm:grid hover:bg-gray-100 group ${gridCols} gap-4 items-center rounded-xl bg-white p-3 shadow-table`}
     >
       <div className="sm:block hidden">
         <h2 className="text-gray-800 text-sm md:text-base font-normal">
           {order.orderId}
         </h2>
       </div>
-      <div className="flex items-center gap-2 md:gap-3">
-        <ProfileImage
-          imageUrl={order.imageUrl}
-          fullName={order.customer}
-          email={order.customerEmail}
-          bg={bg}
-          text={text}
-          width={40}
-          height={40}
-          className="rounded-full object-cover bg-gray-200 w-10 h-10 shrink-0 hidden lg:flex"
-          fallbackClassName={`w-10 h-10 ${bg} ${text} shrink-0 hidden lg:flex items-center font-medium justify-center rounded-full`}
-        />
-        <div>
-          <h2 className="text-gray-800 text-sm md:text-base sm:hidden font-semibold">
-            {order.orderId}
-          </h2>
-          <h2 className="text-gray-800 text-sm md:text-base font-medium">
-            {order.customer}
-          </h2>
+      {!hideCustomer && (
+        <div className="flex items-center gap-2 md:gap-3">
+          <ProfileImage
+            imageUrl={order.imageUrl}
+            fullName={order.customer}
+            email={order.customerEmail}
+            bg={bg}
+            text={text}
+            width={40}
+            height={40}
+            className="rounded-full object-cover bg-gray-200 w-10 h-10 shrink-0 hidden lg:flex"
+            fallbackClassName={`w-10 h-10 ${bg} ${text} shrink-0 hidden lg:flex items-center font-medium justify-center rounded-full`}
+          />
+          <div>
+            <h2 className="text-gray-800 text-sm md:text-base sm:hidden font-semibold">
+              {order.orderId}
+            </h2>
+            <h2 className="text-gray-800 text-sm md:text-base font-medium">
+              {order.customer}
+            </h2>
+          </div>
         </div>
-      </div>
+      )}
       <div className="text-sm md:text-base font-normal text-gray-600 ">
         {order.date}
       </div>
 
-      <div className=" font-medium text-sm md:text-base text-gray-800">
-        <span
-          className={`flex md:inline rounded-full md:whitespace-nowrap wrap-break-word px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
-            order.status
-          )}`}
-        >
+      <div
+        className={`flex md:inline w-fit rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium text-center self-center ${getStatusClasses(
+          order.status
+        )}`}
+      >
+        <span className="lg:whitespace-nowrap">
           {formatStatusDisplay(order.status)}
         </span>
       </div>
@@ -241,14 +273,27 @@ export default function OrderListView({
         ${order.profit}
       </div>
 
-      <div className=" flex items-center justify-center gap-2">
+      <div className="flex items-center justify-end gap-2 flex-nowrap">
+        {showPayNow && order.status === "pending_payment" && onPayNow && (
+          <Tooltip content="Pay Now">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPayNow(order.displayId);
+              }}
+              className="px-3 py-1.5 text-xs md:text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors whitespace-nowrap shrink-0"
+            >
+              Pay Now
+            </button>
+          </Tooltip>
+        )}
         <Tooltip content="View Order">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onViewOrderDetail?.(order.displayId);
             }}
-            className="flex rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+            className="flex rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary shrink-0"
           >
             <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
           </button>
