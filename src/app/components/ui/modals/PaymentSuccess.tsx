@@ -3,6 +3,8 @@ import Verify from "../../../../../public/icons/Verify";
 import { CrossIcon } from "@/icons";
 import Portal from "../portal";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { useRouter } from "next/navigation";
+import { ThemeButton } from "@/app/components";
 
 interface PaymentSuccessProps {
   isOpen: boolean;
@@ -12,8 +14,14 @@ interface PaymentSuccessProps {
 }
 
 const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ isOpen, onClose }) => {
+  const router = useRouter();
   useBodyScrollLock(isOpen);
   if (!isOpen) return null;
+
+  const handleGoToHome = () => {
+    onClose();
+    router.push("/inventory");
+  };
 
   return (
     <Portal>
@@ -43,13 +51,13 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ isOpen, onClose }) => {
                 email.
               </p>
             </div>
-            {/* <ThemeButton
-              label={btnTitle}
-              onClick={viewOrder}
+            <ThemeButton
+              label="Go to Home"
+              onClick={handleGoToHome}
               variant="outline"
-              className=" w-fit whitespace-nowrap font-semibold text-base outline-none transition cursor-pointer"
+              className="w-fit whitespace-nowrap font-semibold text-base outline-none transition cursor-pointer"
               minWidthClass={"min-w-40"}
-            /> */}
+            />
           </div>
         </div>
       </div>
