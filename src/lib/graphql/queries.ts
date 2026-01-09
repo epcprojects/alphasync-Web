@@ -162,6 +162,7 @@ export const FETCH_ORDER = gql`
       status
       subtotalPrice
       totalPrice
+      trackingNumber
       totalTax
       patient {
         ${userpayload}
@@ -206,6 +207,7 @@ export const FETCH_PRODUCT = gql`
       title
       totalInventory
       vendor
+      price
       tags
       variants {
         price
@@ -424,6 +426,10 @@ export const ALL_NOTIFICATIONS = gql`
         notificationType
         senderName
         productNames
+        product {
+          id
+          name
+        }
         read
         sender {
           id

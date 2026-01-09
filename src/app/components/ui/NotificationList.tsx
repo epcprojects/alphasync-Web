@@ -15,6 +15,7 @@ import {
   ReorderIcon,
   TickDouble,
   TrashBinIcon,
+  AlertIcon,
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import React, { useState } from "react";
@@ -70,6 +71,10 @@ interface ProductDetailsModalProduct {
 }
 
 export interface NotificationData {
+  product?: {
+    id: string;
+    name: string;
+  };
   date: string;
   id: string;
   notificationType: string;
@@ -157,6 +162,15 @@ const NotificationList: React.FC<NotificationListProps> = ({
     } catch {
       return dateString;
     }
+  };
+
+  const formatNameWithPrefix = (name: string, isDoctor: boolean) => {
+    if (!name) return name;
+    // If sender is a doctor or receiver is a patient, add Dr. prefix
+    if (isDoctor || userType === "customer") {
+      return name.startsWith("Dr. ") ? name : `Dr. ${name}`;
+    }
+    return name;
   };
 
   const handleApproveClick = (message: NotificationData) => {
@@ -315,6 +329,17 @@ const NotificationList: React.FC<NotificationListProps> = ({
   };
 
   const handleViewDetails = (notification: NotificationData) => {
+    // For low stock alerts, navigate to inventory
+    if (notification.notificationType === "low_stock_alert") {
+      if (notification.product?.id) {
+        router.push(`/inventory/${notification.product.id}`);
+      } else {
+        // Fallback to inventory page if product id is not available
+        router.push("/inventory");
+      }
+      return;
+    }
+
     // For request-related notifications, skip modal and navigate directly to requests tab
     if (
       notification.orderRequest?.id &&
@@ -335,6 +360,15 @@ const NotificationList: React.FC<NotificationListProps> = ({
         router.push(`/customers/${notification.sender.id}?tab=chat`);
         return;
       }
+    }
+
+    // For order_created, navigate to orders page for customers
+    if (
+      notification.notificationType === "order_created" &&
+      userType === "customer"
+    ) {
+      router.push("/orders");
+      return;
     }
 
     // For other cases, try modal first (but this shouldn't happen for request notifications)
@@ -439,10 +473,13 @@ const NotificationList: React.FC<NotificationListProps> = ({
             >
               <div className="flex items-start gap-3">
                 <div className="mt-1">
-                  {message.notificationType === "reorder" ? (
+                  {message.notificationType === "reorder" ||
+                  message.notificationType === "reorder_created" ? (
                     <ReorderIcon />
                   ) : message.notificationType === "message_received" ? (
                     <ChatIcon />
+                  ) : message.notificationType === "low_stock_alert" ? (
+                    <AlertIcon />
                   ) : (
                     <PackageIcon />
                   )}
@@ -459,24 +496,24 @@ const NotificationList: React.FC<NotificationListProps> = ({
                             return <span>New reorder request</span>;
 
                           case "order_request_approved":
-                            return (
-                              <span>
-                                Dr. {message.doctorName} has been approved your
-                                order
-                              </span>
-                            );
+                            return <span>Order request approved</span>;
 
                           case "order_request_denied":
-                            return (
-                              <span>
-                                Dr. {message.doctorName} has been rejected your
-                                order.
-                              </span>
-                            );
+                            return <span>Order request denied</span>;
+
+                          case "order_created":
+                            return <span>Order request created</span>;
+
+                          case "low_stock_alert":
+                            return <span>Low stock alert</span>;
 
                           case "message_received":
+                            // If receiver is a patient, sender is likely a doctor
+                            const titleSenderName = userType === "customer" 
+                              ? formatNameWithPrefix(message.senderName, true)
+                              : message.senderName;
                             return (
-                              <span>New message from {message.senderName}</span>
+                              <span>New message from {titleSenderName}</span>
                             );
 
                           default:
@@ -494,7 +531,9 @@ const NotificationList: React.FC<NotificationListProps> = ({
                         message.notificationType === "order_request_created" ||
                         message.notificationType === "reorder_created") && (
                         <span className="font-semibold">
-                          {message.senderName}
+                          {message.notificationType === "message_received" && userType === "customer"
+                            ? formatNameWithPrefix(message.senderName, true)
+                            : message.senderName}
                         </span>
                       )}
 
@@ -505,6 +544,11 @@ const NotificationList: React.FC<NotificationListProps> = ({
                         </span>
                       )}
                       {message.notificationType === "order_request_denied" && (
+                        <span className="font-semibold">
+                          {message.doctorName}
+                        </span>
+                      )}
+                      {message.notificationType === "order_created" && (
                         <span className="font-semibold">
                           {message.doctorName}
                         </span>
@@ -543,7 +587,11 @@ const NotificationList: React.FC<NotificationListProps> = ({
                     )}{" "}
                     {message.notificationType === "message_received" && (
                       <div>
-                        <span>{message.senderName}</span> has sent you a
+                        <span>
+                          {userType === "customer"
+                            ? formatNameWithPrefix(message.senderName, true)
+                            : message.senderName}
+                        </span> has sent you a
                         message.
                         <span className="font-semibold">
                           {" "}
@@ -572,6 +620,39 @@ const NotificationList: React.FC<NotificationListProps> = ({
                         Dr. {message.doctorName} has been rejected your order.
                       </div>
                     )}
+                    {message.notificationType === "order_created" && (
+                      <div>
+                        Dr. {message.doctorName} has created an order for you
+                        with
+                        {message.productNames &&
+                          message.productNames.length > 0 && (
+                            <span className="font-semibold">
+                              {" "}
+                              &quot;
+                              {message.productNames.map((product, idx) => (
+                                <span key={`${product}-${idx}`}>
+                                  {product}
+                                  {idx < message.productNames.length - 1
+                                    ? ", "
+                                    : ""}
+                                </span>
+                              ))}
+                              &quot;
+                            </span>
+                          )}
+                        .
+                      </div>
+                    )}
+                    {message.notificationType === "low_stock_alert" && (
+                      <div>
+                        <span className="font-semibold">
+                          {message.productNames.map((product, idx) => (
+                            <span key={`${product}-${idx}`}>{product}</span>
+                          ))}
+                        </span>{" "}
+                        is running low (10 or fewer items remaining).
+                      </div>
+                    )}
                   </h2>
 
                   <div
@@ -590,6 +671,7 @@ const NotificationList: React.FC<NotificationListProps> = ({
                     )}
                     {userType === "doctor" &&
                       message.notificationType !== "message_received" &&
+                      message.notificationType !== "low_stock_alert" &&
                       message.orderRequest?.status === "pending" && (
                         <>
                           <ThemeButton
@@ -641,7 +723,20 @@ const NotificationList: React.FC<NotificationListProps> = ({
                         </>
                       )}
                     {userType === "customer" &&
-                      message.notificationType == "message_received" && (
+                      message.notificationType === "order_created" && (
+                        <>
+                          <ThemeButton
+                            label="View Order"
+                            size="medium"
+                            variant="filled"
+                            className="w-fit"
+                            heightClass="h-9"
+                            onClick={() => router.push(`/orders`)}
+                          />
+                        </>
+                      )}
+                    {userType === "customer" &&
+                      message.notificationType === "message_received" && (
                         <>
                           <ThemeButton
                             label="Start Chat"

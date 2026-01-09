@@ -51,6 +51,7 @@ interface FetchOrderResponse {
     totalTax: number;
     patient: UserAttributes | null;
     orderItems: OrderItem[];
+    trackingNumber?: string | number;
   };
 }
 
@@ -509,7 +510,7 @@ const Page = () => {
                   Tracking Number:
                 </h2>
                 <h3 className="text-xs md:text-base text-gray-800">
-                  TRK123456789
+                  {order.trackingNumber || "In progress"}
                 </h3>
               </div>
             </div>

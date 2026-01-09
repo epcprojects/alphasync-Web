@@ -172,27 +172,31 @@ function LoginContext() {
           )}
         </div>
 
-        <div className="flex justify-between   aling-center">
-          <div className="flex items-center ">
-            <Checkbox
-              checked={formik.values.rememberMe}
-              onChange={(val) => formik.setFieldValue("rememberMe", val)}
-              className="group size-6 rounded-sm bg-white/10 p-1 ring-1 ring-lightGray ring-inset focus:not-data-focus:outline-none data-checked:bg-primary  data-checked:ring-primary data-focus:outline data-focus:outline-offset-2 data-focus:outline-white"
-            >
-              <span className="hidden h-4 w-4 items-center justify-center  group-data-checked:flex">
-                <TickIcon />
-              </span>
-            </Checkbox>
-            <label
-              htmlFor="default-checkbox"
-              className="text-xs select-none font-medium text-gray-700 ms-2 md:text-sm "
-            >
-              Remember for 30 days
-            </label>
-          </div>
+        <div className="flex justify-between items-center">
+          {loginType !== "Patient" && (
+            <div className="flex items-center ">
+              <Checkbox
+                checked={formik.values.rememberMe}
+                onChange={(val) => formik.setFieldValue("rememberMe", val)}
+                className="group size-6 rounded-sm bg-white/10 p-1 ring-1 ring-lightGray ring-inset focus:not-data-focus:outline-none data-checked:bg-primary  data-checked:ring-primary data-focus:outline data-focus:outline-offset-2 data-focus:outline-white"
+              >
+                <span className="hidden h-4 w-4 items-center justify-center  group-data-checked:flex">
+                  <TickIcon />
+                </span>
+              </Checkbox>
+              <label
+                htmlFor="default-checkbox"
+                className="text-xs select-none font-medium text-gray-700 ms-2 md:text-sm "
+              >
+                Remember for 30 days
+              </label>
+            </div>
+          )}
           <Link
             href={"/forgot"}
-            className="text-xs font-semibold text-decoration-none text-primary md:text-sm"
+            className={`text-xs font-semibold text-decoration-none text-primary md:text-sm ${
+              loginType === "Patient" ? "ml-auto" : ""
+            }`}
           >
             Forget Password?
           </Link>

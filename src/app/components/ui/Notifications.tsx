@@ -6,6 +6,7 @@ import {
   PackageIcon,
   ReorderIcon,
   TrashBinIcon,
+  AlertIcon,
 } from "@/icons";
 import {
   Popover,
@@ -94,6 +95,20 @@ export default function Notifications({ userType }: NotificationsProps) {
   }, [open, isMobile, fetchNotifications]);
 
   const handleViewDetails = (notification: NotificationData) => {
+    // Handle low stock alerts first (doctor notifications, no sender needed)
+    if (
+      currentUserType === "doctor" &&
+      notification.notificationType === "low_stock_alert"
+    ) {
+      if (notification.product?.id) {
+        router.push(`/inventory/${notification.product.id}`);
+      } else {
+        // Fallback to inventory page if product id is not available
+        router.push("/inventory");
+      }
+      return;
+    }
+
     if (currentUserType === "doctor" && notification.sender?.id) {
       // Determine which tab to open based on notification type
       let tab = "";
@@ -105,7 +120,9 @@ export default function Notifications({ userType }: NotificationsProps) {
       ) {
         tab = "?tab=requests";
       }
-      router.push(`/customers/${notification.sender.id}${tab}`);
+      if (notification.sender?.id) {
+        router.push(`/customers/${notification.sender.id}${tab}`);
+      }
     }
   };
 
@@ -226,6 +243,15 @@ export default function Notifications({ userType }: NotificationsProps) {
     }
   };
 
+  const formatNameWithPrefix = (name: string, isDoctor: boolean) => {
+    if (!name) return name;
+    // If sender is a doctor or receiver is a patient, add Dr. prefix
+    if (isDoctor || currentUserType === "customer") {
+      return name.startsWith("Dr. ") ? name : `Dr. ${name}`;
+    }
+    return name;
+  };
+
   const getNotificationTitle = (message: NotificationData) => {
     switch (message.notificationType) {
       case "order_request_created":
@@ -233,11 +259,20 @@ export default function Notifications({ userType }: NotificationsProps) {
       case "reorder_created":
         return "New reorder request";
       case "order_request_approved":
-        return `Dr. ${message.doctorName} has approved your order`;
+        return `Order request approved`;
       case "order_request_denied":
-        return `Dr. ${message.doctorName} has rejected your order`;
+        return `Order request denied`;
+      case "order_created":
+        return `Order created`;
+      case "low_stock_alert":
+        return "Low stock alert";
       case "message_received":
-        return `New message from ${message.senderName}`;
+        // If receiver is a patient, sender is likely a doctor
+        const senderName =
+          currentUserType === "customer"
+            ? formatNameWithPrefix(message.senderName, true)
+            : message.senderName;
+        return `New message from ${senderName}`;
       default:
         return "New notification";
     }
@@ -248,9 +283,12 @@ export default function Notifications({ userType }: NotificationsProps) {
       message.notificationType === "order_request_created" ||
       message.notificationType === "reorder_created"
     ) {
+      // For doctors viewing patient requests, sender is a patient (no Dr.)
+      // For patients viewing their own requests, this shouldn't happen, but if it does, no Dr.
+      const senderName = message.senderName;
       return (
         <div>
-          <span>{message.senderName} </span>has requested a new product
+          <span>{senderName} </span>has requested a new product
           <span className="font-semibold">
             {" "}
             &quot;
@@ -263,9 +301,14 @@ export default function Notifications({ userType }: NotificationsProps) {
         </div>
       );
     } else if (message.notificationType === "message_received") {
+      // If receiver is a patient, sender is likely a doctor
+      const senderName =
+        currentUserType === "customer"
+          ? formatNameWithPrefix(message.senderName, true)
+          : message.senderName;
       return (
         <div>
-          <span>{message.senderName}</span> has sent you a message.
+          <span>{senderName}</span> has sent you a message.
           <span className="font-semibold">
             {" "}
             &quot;
@@ -278,6 +321,34 @@ export default function Notifications({ userType }: NotificationsProps) {
       return <div>Dr. {message.doctorName} has approved your order</div>;
     } else if (message.notificationType === "order_request_denied") {
       return <div>Dr. {message.doctorName} has rejected your order.</div>;
+    } else if (message.notificationType === "order_created") {
+      return (
+        <div>
+          Dr. {message.doctorName} has created an order for you with
+          {message.productNames && message.productNames.length > 0 && (
+            <span className="font-semibold">
+              {" "}
+              &quot;
+              {message.productNames.map((product, idx) => (
+                <span key={`${product}-${idx}`}>{product}</span>
+              ))}
+              &quot;
+            </span>
+          )}
+          .
+        </div>
+      );
+    } else if (message.notificationType === "low_stock_alert") {
+      return (
+        <div>
+          <span className="font-semibold">
+            {message.productNames.map((product, idx) => (
+              <span key={`${product}-${idx}`}>{product}</span>
+            ))}
+          </span>{" "}
+          is running low (10 or fewer items remaining).
+        </div>
+      );
     }
     return null;
   };
@@ -327,10 +398,13 @@ export default function Notifications({ userType }: NotificationsProps) {
               <div className="flex items-start gap-2">
                 <div className="mt-1">
                   {n.notificationType === "reorder" ||
-                  n.notificationType === "reorder_request" ? (
+                  n.notificationType === "reorder_request" ||
+                  n.notificationType === "reorder_created" ? (
                     <ReorderIcon />
                   ) : n.notificationType === "message_received" ? (
                     <ChatIcon />
+                  ) : n.notificationType === "low_stock_alert" ? (
+                    <AlertIcon />
                   ) : (
                     <PackageIcon />
                   )}
@@ -361,6 +435,7 @@ export default function Notifications({ userType }: NotificationsProps) {
                         }}
                       />
                       {n.notificationType !== "message_received" &&
+                        n.notificationType !== "low_stock_alert" &&
                         n.orderRequest?.status === "pending" && (
                           <>
                             <ThemeButton
@@ -436,6 +511,26 @@ export default function Notifications({ userType }: NotificationsProps) {
                       </div>
                     )}
                   {currentUserType === "customer" &&
+                    n.notificationType === "order_created" && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <ThemeButton
+                          label="View Order"
+                          size={isMobile ? "small" : "small"}
+                          variant="filled"
+                          className="w-fit"
+                          heightClass={isMobile ? "h-8" : "h-9"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenState?.(false);
+                            closeDialog?.();
+                            setTimeout(() => {
+                              router.push(`/orders`);
+                            }, 0);
+                          }}
+                        />
+                      </div>
+                    )}
+                  {currentUserType === "customer" &&
                     n.notificationType === "message_received" && (
                       <div className="mt-2 flex items-center gap-2">
                         <ThemeButton
@@ -485,15 +580,23 @@ export default function Notifications({ userType }: NotificationsProps) {
         <>
           <button
             onClick={() => setOpen(!open)}
-            className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center relative"
+            className={`h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full flex items-center justify-center relative transition-all duration-300 ${
+              user?.unreadNotifications
+                ? "bg-[#10b981]"
+                : "bg-black/40 backdrop-blur-sm"
+            }`}
           >
-            <ReminderIcon
-              fill={user?.unreadNotifications ? "#10b981" : "white"}
-            />
+            <div
+              className={user?.unreadNotifications ? "animate-pulse-icon" : ""}
+            >
+              <ReminderIcon
+                fill={user?.unreadNotifications ? "white" : "white"}
+              />
+            </div>
             {user?.unreadNotifications && (
               <span
                 className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full 
-              bg-green-500 border-2 border-white"
+              bg-white border-1 border-[#1A407A]"
               ></span>
             )}
           </button>
@@ -572,15 +675,25 @@ export default function Notifications({ userType }: NotificationsProps) {
                     });
                   }
                 }}
-                className="h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 bg-black/40 backdrop-blur-sm flex items-center justify-center relative"
+                className={`h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 flex items-center justify-center relative transition-all duration-300 ${
+                  user?.unreadNotifications
+                    ? "bg-[#10b981]"
+                    : "bg-black/40 backdrop-blur-sm"
+                }`}
               >
-                <ReminderIcon
-                  fill={user?.unreadNotifications ? "#10b981" : "white"}
-                />
+                <div
+                  className={
+                    user?.unreadNotifications ? "animate-pulse-icon" : ""
+                  }
+                >
+                  <ReminderIcon
+                    fill={user?.unreadNotifications ? "white" : "white"}
+                  />
+                </div>
                 {user?.unreadNotifications && (
                   <span
                     className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full 
-              bg-green-500 border-2 border-white"
+              bg-white border-1 border-[#1A407A]"
                   ></span>
                 )}
               </PopoverButton>

@@ -136,6 +136,7 @@ export interface FetchProductResponse {
     shopifyId?: string;
     title: string;
     totalInventory?: number;
+    price?: number;
     vendor?: string;
     variants: {
       price: number;
