@@ -243,6 +243,15 @@ export default function Notifications({ userType }: NotificationsProps) {
     }
   };
 
+  const formatNameWithPrefix = (name: string, isDoctor: boolean) => {
+    if (!name) return name;
+    // If sender is a doctor or receiver is a patient, add Dr. prefix
+    if (isDoctor || currentUserType === "customer") {
+      return name.startsWith("Dr. ") ? name : `Dr. ${name}`;
+    }
+    return name;
+  };
+
   const getNotificationTitle = (message: NotificationData) => {
     switch (message.notificationType) {
       case "order_request_created":
@@ -258,7 +267,12 @@ export default function Notifications({ userType }: NotificationsProps) {
       case "low_stock_alert":
         return "Low stock alert";
       case "message_received":
-        return `New message from ${message.senderName}`;
+        // If receiver is a patient, sender is likely a doctor
+        const senderName =
+          currentUserType === "customer"
+            ? formatNameWithPrefix(message.senderName, true)
+            : message.senderName;
+        return `New message from ${senderName}`;
       default:
         return "New notification";
     }
@@ -269,9 +283,12 @@ export default function Notifications({ userType }: NotificationsProps) {
       message.notificationType === "order_request_created" ||
       message.notificationType === "reorder_created"
     ) {
+      // For doctors viewing patient requests, sender is a patient (no Dr.)
+      // For patients viewing their own requests, this shouldn't happen, but if it does, no Dr.
+      const senderName = message.senderName;
       return (
         <div>
-          <span>{message.senderName} </span>has requested a new product
+          <span>{senderName} </span>has requested a new product
           <span className="font-semibold">
             {" "}
             &quot;
@@ -284,9 +301,14 @@ export default function Notifications({ userType }: NotificationsProps) {
         </div>
       );
     } else if (message.notificationType === "message_received") {
+      // If receiver is a patient, sender is likely a doctor
+      const senderName =
+        currentUserType === "customer"
+          ? formatNameWithPrefix(message.senderName, true)
+          : message.senderName;
       return (
         <div>
-          <span>{message.senderName}</span> has sent you a message.
+          <span>{senderName}</span> has sent you a message.
           <span className="font-semibold">
             {" "}
             &quot;
@@ -560,7 +582,7 @@ export default function Notifications({ userType }: NotificationsProps) {
             onClick={() => setOpen(!open)}
             className={`h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full flex items-center justify-center relative transition-all duration-300 ${
               user?.unreadNotifications
-                ? "bg-[#3C85F5]"
+                ? "bg-[#10b981]"
                 : "bg-black/40 backdrop-blur-sm"
             }`}
           >
@@ -655,7 +677,7 @@ export default function Notifications({ userType }: NotificationsProps) {
                 }}
                 className={`h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full border-0 flex items-center justify-center relative transition-all duration-300 ${
                   user?.unreadNotifications
-                    ? "bg-[#3C85F5]"
+                    ? "bg-[#10b981]"
                     : "bg-black/40 backdrop-blur-sm"
                 }`}
               >

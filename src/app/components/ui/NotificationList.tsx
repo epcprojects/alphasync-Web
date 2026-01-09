@@ -164,6 +164,15 @@ const NotificationList: React.FC<NotificationListProps> = ({
     }
   };
 
+  const formatNameWithPrefix = (name: string, isDoctor: boolean) => {
+    if (!name) return name;
+    // If sender is a doctor or receiver is a patient, add Dr. prefix
+    if (isDoctor || userType === "customer") {
+      return name.startsWith("Dr. ") ? name : `Dr. ${name}`;
+    }
+    return name;
+  };
+
   const handleApproveClick = (message: NotificationData) => {
     const requestId = message.orderRequest?.id;
     if (!requestId) {
@@ -499,8 +508,12 @@ const NotificationList: React.FC<NotificationListProps> = ({
                             return <span>Low stock alert</span>;
 
                           case "message_received":
+                            // If receiver is a patient, sender is likely a doctor
+                            const titleSenderName = userType === "customer" 
+                              ? formatNameWithPrefix(message.senderName, true)
+                              : message.senderName;
                             return (
-                              <span>New message from {message.senderName}</span>
+                              <span>New message from {titleSenderName}</span>
                             );
 
                           default:
@@ -518,7 +531,9 @@ const NotificationList: React.FC<NotificationListProps> = ({
                         message.notificationType === "order_request_created" ||
                         message.notificationType === "reorder_created") && (
                         <span className="font-semibold">
-                          {message.senderName}
+                          {message.notificationType === "message_received" && userType === "customer"
+                            ? formatNameWithPrefix(message.senderName, true)
+                            : message.senderName}
                         </span>
                       )}
 
@@ -572,7 +587,11 @@ const NotificationList: React.FC<NotificationListProps> = ({
                     )}{" "}
                     {message.notificationType === "message_received" && (
                       <div>
-                        <span>{message.senderName}</span> has sent you a
+                        <span>
+                          {userType === "customer"
+                            ? formatNameWithPrefix(message.senderName, true)
+                            : message.senderName}
+                        </span> has sent you a
                         message.
                         <span className="font-semibold">
                           {" "}
