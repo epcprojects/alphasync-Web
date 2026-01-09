@@ -3,7 +3,7 @@
 import { ArrowDownIcon, PackageIcon, PlusIcon } from "@/icons";
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { EmptyState, Loader, ThemeButton } from "@/app/components";
+import { EmptyState, Loader, ThemeButton, Skeleton } from "@/app/components";
 import {
   Menu,
   MenuButton,
@@ -438,40 +438,47 @@ function OrderContent() {
                   </div>
                 </div>
 
-                {loading ? (
-                  <div className="flex justify-center items-center py-8">
-                    <Loader />
+                {error && (
+                  <div className="text-center">
+                    <p className="text-red-500 mb-4">{error.message}</p>
                   </div>
-                ) : error ? (
-                  <div className="flex justify-center items-center py-8">
-                    <div className="text-red-500">{error.message}</div>
+                )}
+
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
                   </div>
                 ) : (
-                  orders.map((order) => (
-                    <OrderListView
-                      onRowClick={() => router.push(`/orders/${order.id}`)}
-                      key={order.id}
-                      order={{
-                        id: parseInt(order.id),
-                        orderId: order.displayId || "---",
-                        displayId: order.displayId
-                          ? parseInt(order.displayId.toString())
-                          : parseInt(order.id),
-                        customer: order.patient?.fullName || "Unknown Customer",
-                        imageUrl: order.patient?.imageUrl,
-                        customerEmail: order.patient?.email,
-                        date: format(new Date(order.createdAt), "MM-dd-yy"),
-                        status: order.status,
-                        items: order.orderItems.length,
-                        total: order.totalPrice,
-                        netCost: order.netCost ?? 0,
-                        profit: order.profit ?? 0,
-                      }}
-                      onViewOrderDetail={() =>
-                        router.push(`/orders/${order.id}`)
-                      }
-                    />
-                  ))
+                  <>
+                    {orders.map((order) => (
+                      <OrderListView
+                        onRowClick={() => router.push(`/orders/${order.id}`)}
+                        key={order.id}
+                        order={{
+                          id: parseInt(order.id),
+                          orderId: order.displayId || "---",
+                          displayId: order.displayId
+                            ? parseInt(order.displayId.toString())
+                            : parseInt(order.id),
+                          customer: order.patient?.fullName || "Unknown Customer",
+                          imageUrl: order.patient?.imageUrl,
+                          customerEmail: order.patient?.email,
+                          date: format(new Date(order.createdAt), "MM-dd-yy"),
+                          status: order.status,
+                          items: order.orderItems.length,
+                          total: order.totalPrice,
+                          netCost: order.netCost ?? 0,
+                          profit: order.profit ?? 0,
+                        }}
+                        onViewOrderDetail={() =>
+                          router.push(`/orders/${order.id}`)
+                        }
+                      />
+                    ))}
+                  </>
                 )}
               </div>
               <div className="flex justify-center flex-col gap-2 md:gap-6 px-0 md:px-4 pb-4">
@@ -517,41 +524,48 @@ function OrderContent() {
                   </div>
                 </div>
 
-                {loading ? (
-                  <div className="flex justify-center items-center py-8">
-                    <Loader />
+                {error && (
+                  <div className="text-center">
+                    <p className="text-red-500 mb-4">{error.message}</p>
                   </div>
-                ) : error ? (
-                  <div className="flex justify-center items-center py-8">
-                    <div className="text-red-500">{error.message}</div>
+                )}
+
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
                   </div>
                 ) : (
-                  orders.map((order) => (
-                    <OrderListView
-                      onRowClick={() => router.push(`/orders/${order.id}`)}
-                      key={order.id}
-                      hideCustomer={true}
-                      showPayNow={true}
-                      onPayNow={() => handlePayNow(order)}
-                      order={{
-                        id: parseInt(order.id),
-                        orderId: order.displayId || "---",
-                        displayId: order.displayId
-                          ? parseInt(order.displayId.toString())
-                          : parseInt(order.id),
-                        customer: order.patient?.fullName || "Unknown Customer",
-                        imageUrl: order.patient?.imageUrl,
-                        customerEmail: order.patient?.email,
-                        date: format(new Date(order.createdAt), "MM-dd-yy"),
-                        status: order.status,
-                        items: order.orderItems.length,
-                        total: order.totalPrice,
-                        netCost: order.netCost ?? 0,
-                        profit: order.profit ?? 0,
-                      }}
-                      onViewOrderDetail={() => handleOrderClick(order)}
-                    />
-                  ))
+                  <>
+                    {orders.map((order) => (
+                      <OrderListView
+                        onRowClick={() => router.push(`/orders/${order.id}`)}
+                        key={order.id}
+                        hideCustomer={true}
+                        showPayNow={true}
+                        onPayNow={() => handlePayNow(order)}
+                        order={{
+                          id: parseInt(order.id),
+                          orderId: order.displayId || "---",
+                          displayId: order.displayId
+                            ? parseInt(order.displayId.toString())
+                            : parseInt(order.id),
+                          customer: order.patient?.fullName || "Unknown Customer",
+                          imageUrl: order.patient?.imageUrl,
+                          customerEmail: order.patient?.email,
+                          date: format(new Date(order.createdAt), "MM-dd-yy"),
+                          status: order.status,
+                          items: order.orderItems.length,
+                          total: order.totalPrice,
+                          netCost: order.netCost ?? 0,
+                          profit: order.profit ?? 0,
+                        }}
+                        onViewOrderDetail={() => handleOrderClick(order)}
+                      />
+                    ))}
+                  </>
                 )}
               </div>
               <div className="flex justify-center flex-col gap-2 md:gap-6 px-0 md:px-4 pb-4">
