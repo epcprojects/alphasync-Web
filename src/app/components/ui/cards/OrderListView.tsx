@@ -24,6 +24,7 @@ type OrderListViewProps = {
   onViewOrderDetail?: (id: number) => void;
   onRowClick?: () => void;
   hideCustomer?: boolean;
+  hideProfit?: boolean;
   onPayNow?: (id?: number) => void;
   showPayNow?: boolean;
 };
@@ -82,6 +83,7 @@ export default function OrderListView({
   onViewOrderDetail,
   onRowClick,
   hideCustomer = false,
+  hideProfit = false,
   onPayNow,
   showPayNow = false,
 }: OrderListViewProps) {
@@ -168,15 +170,17 @@ export default function OrderListView({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 w-fit">
-            <span className="text-black font-medium text-sm block">
-              Profit:
-            </span>
+          {!hideProfit && (
+            <div className="flex items-center gap-1.5 w-fit">
+              <span className="text-black font-medium text-sm block">
+                Profit:
+              </span>
 
-            <span className="text-green-600 text-sm font-normal block">
-              ${order.profit || 0}
-            </span>
-          </div>
+              <span className="text-green-600 text-sm font-normal block">
+                ${order.profit || 0}
+              </span>
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-1.5 w-full flex-nowrap">
             {showPayNow && order.status === "pending_payment" && onPayNow && (
@@ -204,7 +208,9 @@ export default function OrderListView({
       </div>
     );
   const gridCols = hideCustomer
-    ? "md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_1fr_6rem] lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr_7rem]"
+    ? hideProfit
+      ? "md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_6rem] lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_7rem]"
+      : "md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_1fr_6rem] lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr_7rem]"
     : "md:grid-cols-[4rem_8rem_4rem_8rem_1fr_1fr_1fr_1fr_6rem] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_7rem]";
 
   return (
@@ -269,9 +275,11 @@ export default function OrderListView({
         ${order.netCost}
       </div>
 
-      <div className="text-green-600 font-normal text-sm md:text-base">
-        ${order.profit}
-      </div>
+      {!hideProfit && (
+        <div className="text-green-600 font-normal text-sm md:text-base">
+          ${order.profit}
+        </div>
+      )}
 
       <div className="flex items-center justify-end gap-2 flex-nowrap">
         {showPayNow && order.status === "pending_payment" && onPayNow && (

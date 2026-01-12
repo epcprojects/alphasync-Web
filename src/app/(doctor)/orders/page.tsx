@@ -114,8 +114,8 @@ function OrderContent() {
 
   // Map tab indices to myClinic values
   const orderTabs = [
-    { label: "All Orders", myClinic: false },
-    { label: "My Clinics", myClinic: true },
+    { label: "Customer Orders", myClinic: false },
+    { label: "My Clinic", myClinic: true },
   ];
 
   // Get myClinic value from selected tab
@@ -367,7 +367,9 @@ function OrderContent() {
             </button>
 
             <ThemeButton
-              label={selectedTabIndex === 1 ? "Create New Clinic Order" : "New Order"}
+              label={
+                selectedTabIndex === 1 ? "Create New Clinic Order" : "New Order"
+              }
               className="w-full sm:w-fit"
               icon={
                 <PlusIcon
@@ -463,7 +465,8 @@ function OrderContent() {
                           displayId: order.displayId
                             ? parseInt(order.displayId.toString())
                             : parseInt(order.id),
-                          customer: order.patient?.fullName || "Unknown Customer",
+                          customer:
+                            order.patient?.fullName || "Unknown Customer",
                           imageUrl: order.patient?.imageUrl,
                           customerEmail: order.patient?.email,
                           date: format(new Date(order.createdAt), "MM-dd-yy"),
@@ -497,7 +500,7 @@ function OrderContent() {
             </TabPanel>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden md:grid md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_1fr_5rem]  lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr_6rem] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="hidden md:grid md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_5rem]  lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_6rem] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div>
                     <h2 className="whitespace-nowrap">Order ID</h2>
                   </div>
@@ -515,9 +518,6 @@ function OrderContent() {
                   </div>
                   <div>
                     <h2 className="whitespace-nowrap">Net Cost</h2>
-                  </div>
-                  <div>
-                    <h2>Profit</h2>
                   </div>
                   <div>
                     <h2 className="text-center">Actions</h2>
@@ -544,6 +544,7 @@ function OrderContent() {
                         onRowClick={() => router.push(`/orders/${order.id}`)}
                         key={order.id}
                         hideCustomer={true}
+                        hideProfit={true}
                         showPayNow={true}
                         onPayNow={() => handlePayNow(order)}
                         order={{
@@ -552,7 +553,8 @@ function OrderContent() {
                           displayId: order.displayId
                             ? parseInt(order.displayId.toString())
                             : parseInt(order.id),
-                          customer: order.patient?.fullName || "Unknown Customer",
+                          customer:
+                            order.patient?.fullName || "Unknown Customer",
                           imageUrl: order.patient?.imageUrl,
                           customerEmail: order.patient?.email,
                           date: format(new Date(order.createdAt), "MM-dd-yy"),
