@@ -43,7 +43,7 @@ const menuItems = [
   { label: "Inventory", href: "/inventory", icon: InventoryIcon },
   { label: "Customers", href: "/customers", icon: CustomerIcon },
   { label: "Orders", href: "/orders", icon: OrdersIcon },
-  { label: "My Clinic", href: "/clinic", icon: DeliveryBoxIcon },
+  // { label: "My Clinic", href: "/clinic", icon: DeliveryBoxIcon },
   {
     label: "Reminder",
     href: "/reminder",
