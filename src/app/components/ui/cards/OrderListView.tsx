@@ -281,7 +281,7 @@ export default function OrderListView({
                 e.stopPropagation();
                 onPayNow(order.displayId);
               }}
-              className="px-3 py-1.5 text-xs md:text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors whitespace-nowrap shrink-0"
+              className="px-3 py-1.5 text-xs md:text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               Pay Now
             </button>
