@@ -7,44 +7,60 @@ import { setUser } from "./slices/authSlice";
 import { useQuery } from "@apollo/client";
 import { FETCH_USER } from "@/lib/graphql/queries";
 import { Loader } from "@/components";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Cookies from "js-cookie";
 
 function AuthInitializer() {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const [isClient, setIsClient] = useState(false);
-  const [token, setToken] = useState<string | null | undefined>(null);
+  const previousTokenRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     setIsClient(true);
-    setToken(Cookies.get("auth_token"));
   }, []);
 
-  const shouldSkip = !isClient || !token || !!user;
+  // Check token directly from cookies to ensure it's always current
+  // This prevents queries from running after logout when cookies are cleared
+  const currentToken = isClient ? Cookies.get("auth_token") : null;
+  const shouldSkip = !isClient || !currentToken || !!user;
 
-  const { loading, data, error } = useQuery(FETCH_USER, {
+  const { loading, data, error, stopPolling } = useQuery(FETCH_USER, {
     skip: shouldSkip,
     fetchPolicy: "network-only",
+    errorPolicy: "ignore",
+    notifyOnNetworkStatusChange: false,
   });
 
+  // Watch for token removal (logout) and prevent query from processing results
   useEffect(() => {
-    if (data?.fetchUser?.user) {
+    const previousToken = previousTokenRef.current;
+    previousTokenRef.current = currentToken || undefined;
+
+    // If token was removed (logout happened), stop polling if active
+    if (previousToken && !currentToken && stopPolling) {
+      stopPolling();
+    }
+  }, [currentToken, stopPolling]);
+
+  useEffect(() => {
+    if (data?.fetchUser?.user && currentToken) {
       Cookies.set("user_data", JSON.stringify(data.fetchUser.user), {
         expires: 7,
       });
       dispatch(setUser(data.fetchUser.user));
     }
-  }, [data, dispatch]);
+  }, [data, dispatch, currentToken]);
 
   useEffect(() => {
-    if (error) {
-      console.log(error.message);
+    // Only log errors if we have a token (not during logout)
+    if (error && currentToken) {
+      console.log("Fetch user error:", error.message);
     }
-  }, [error]);
+  }, [error, currentToken]);
 
-  // Show loader when fetching user data
-  if (loading) {
+  // Show loader when fetching user data (only if we have a token)
+  if (loading && currentToken) {
     return <Loader />;
   }
 
