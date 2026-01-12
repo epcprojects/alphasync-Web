@@ -3,7 +3,7 @@
 import { ArrowDownIcon, PackageIcon, PlusIcon } from "@/icons";
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { EmptyState, Loader, ThemeButton } from "@/app/components";
+import { EmptyState, Loader, Skeleton, ThemeButton } from "@/app/components";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import OrderListView from "@/app/components/ui/cards/OrderListView";
 import Pagination from "@/app/components/ui/Pagination";
@@ -267,8 +267,11 @@ function OrderContent() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-8">
-            <Loader />
+          <div className="my-3 space-y-1">
+            <Skeleton className="w-full h-12 rounded-full" />
+            <Skeleton className="w-full h-12 rounded-full" />
+            <Skeleton className="w-full h-12 rounded-full" />
+            <Skeleton className="w-full h-12 rounded-full" />
           </div>
         ) : error ? (
           <div className="flex justify-center items-center py-8">

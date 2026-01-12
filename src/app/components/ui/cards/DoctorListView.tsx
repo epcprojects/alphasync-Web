@@ -140,7 +140,7 @@ export default function DoctorListView({
               Medical License:
             </span>
             <span className="text-gray-800 text-sm font-normal block">
-              {doctor.medicalLicense ?? "—"} {doctor.medicalLicense ?? "—"}
+              {doctor.medicalLicense ?? "—"}
             </span>
           </div>
           <div className="flex items-center justify-start gap-1">
