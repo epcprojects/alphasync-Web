@@ -54,11 +54,11 @@ export default function BrowserProductCard({
         />
       </div>
 
-      <div className="bg-gray-50 border border-gray-100 p-2 md:p-5 md:min-h-48 md:max-h-48 w-full rounded-lg">
+      <div className="bg-gray-50 border border-gray-100 p-2 md:p-4 md:min-h-48 h-full w-full rounded-lg">
         <div className="flex flex-col gap-2 h-full justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex justify-between flex-wrap gap-1 flex-col-reverse sm:flex-row items-start">
-              <h2 className="text-gray-800 font-semibold  overflow-hidden  text-lg md:text-xl line-clamp-1">
+              <h2 className="text-gray-800 font-semibold  overflow-hidden  text-lg md:text-xl ">
                 {product.title}
               </h2>
               {product.tags?.[0] && (
@@ -93,7 +93,7 @@ export default function BrowserProductCard({
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between w-full flex-1 gap-4">
               <ThemeButton
                 label="Request from Doctor"
                 icon={<ShopingCartIcon />}
@@ -107,7 +107,7 @@ export default function BrowserProductCard({
                 disabled={!product.stock}
               />
 
-              <h2 className="text-primary font-semibold text-sm md:text-xl min-w-16 text-end">
+              <h2 className="text-primary w-fit font-semibold text-sm md:text-xl  text-end">
                 {product.price}
               </h2>
             </div>
