@@ -55,6 +55,20 @@ function getStatusClasses(status?: string) {
   }
 }
 
+function formatDateOfBirth(dateString?: string): string {
+  if (!dateString) return "—";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "—";
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}-${day}-${year}`;
+  } catch {
+    return "—";
+  }
+}
+
 export default function CustomerDatabaseView({
   customer,
   patient,
@@ -67,9 +81,7 @@ export default function CustomerDatabaseView({
   const name = patient?.fullName || customer?.name;
   const contact = patient?.phoneNo || customer?.contact;
   const email = patient?.email || customer?.email;
-  const dateOfBirth = patient?.createdAt
-    ? new Date(patient.createdAt).toLocaleDateString()
-    : customer?.dateOfBirth;
+  const dateOfBirth = patient?.dateOfBirth;
   const lastOrder = patient?.lastSignInAt
     ? new Date(patient.lastSignInAt).toLocaleDateString()
     : customer?.lastOrder;
@@ -126,7 +138,7 @@ export default function CustomerDatabaseView({
               Date of Birth:
             </span>
             <span className="text-gray-800 text-sm font-normal block">
-              {dateOfBirth || "—"}
+              {formatDateOfBirth(dateOfBirth)}
             </span>
           </div>
 
@@ -207,7 +219,7 @@ export default function CustomerDatabaseView({
       </div>
 
       <div className="col-span-1 font-medium text-xs wrap-break-word md:text-sm text-gray-800">
-        {dateOfBirth || "—"}
+        {formatDateOfBirth(dateOfBirth)}
       </div>
 
       <div className="col-span-1 font-medium text-sm md:text-base text-gray-800">
