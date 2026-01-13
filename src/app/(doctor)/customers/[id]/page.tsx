@@ -1060,6 +1060,7 @@ export default function CustomerDetail() {
             email: customer.email,
           },
         ]}
+        patientId={params.id}
       />
 
       <AppModal

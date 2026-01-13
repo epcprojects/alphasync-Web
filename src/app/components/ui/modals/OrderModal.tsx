@@ -1,6 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import { AppModal, CustomerSelect } from "@/components";
+import { useLazyQuery } from "@apollo/client";
+import { FETCH_PRODUCT } from "@/lib/graphql/queries";
+import { FetchProductResponse } from "@/types/products";
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -11,6 +14,7 @@ interface OrderModalProps {
     productId?: string;
     shopifyVariantId?: string;
     customerId?: string;
+    useCustomPricing?: boolean;
   }) => void;
   productId?: string;
   shopifyVariantId?: string;
@@ -38,6 +42,41 @@ const OrderModal: React.FC<OrderModalProps> = ({
     email: string;
     id: string;
   } | null>(null);
+  const [basePrice, setBasePrice] = useState<number>(0); // Price that was automatically set (initial or from customer fetch)
+  const [isPriceManuallyChanged, setIsPriceManuallyChanged] =
+    useState<boolean>(false);
+
+  // Lazy query to fetch product with customer-specific pricing
+  // This query ONLY runs when a customer is selected, not automatically
+  // Using "no-cache" to prevent updating the shared cache that affects inventory page
+  const [fetchProduct, { loading: fetchingProduct }] =
+    useLazyQuery<FetchProductResponse>(FETCH_PRODUCT, {
+      fetchPolicy: "no-cache", // Don't read from or write to cache - only update modal state
+      notifyOnNetworkStatusChange: false, // Prevent triggering other queries
+      onCompleted: (data) => {
+        if (data?.fetchProduct) {
+          const product = data.fetchProduct;
+          // If customPrice is present, use it; otherwise use price field
+          const customerPrice =
+            product.customPrice != null && product.customPrice !== undefined
+              ? product.customPrice
+              : product.price != null
+              ? product.price
+              : originalPrice || 0;
+
+          if (customerPrice > 0) {
+            setPrice(customerPrice.toString());
+            // Update base price to the customer-specific price
+            setBasePrice(customerPrice);
+            // Reset manual change flag since this is an automatic update
+            setIsPriceManuallyChanged(false);
+          }
+        }
+      },
+      onError: (error) => {
+        console.error("Error fetching product with customer pricing:", error);
+      },
+    });
 
   // Calculate the correct price to display: customPrice if set (not null/undefined), otherwise originalPrice
   const calculatedPrice = React.useMemo(() => {
@@ -54,6 +93,10 @@ const OrderModal: React.FC<OrderModalProps> = ({
       // Always reset price when modal opens with the calculated price
       const priceToSet = calculatedPrice > 0 ? calculatedPrice.toString() : "";
       setPrice(priceToSet);
+      // Store the base price (initial price when modal opens)
+      setBasePrice(calculatedPrice);
+      // Reset manual change flag
+      setIsPriceManuallyChanged(false);
       // Reset other form fields when modal opens
       setSelectedUser("");
       setErrors({});
@@ -103,12 +146,18 @@ const OrderModal: React.FC<OrderModalProps> = ({
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
+      const currentPrice = Number(price);
+      // useCustomPricing is true only if user manually changed the price
+      // (not if it was automatically updated from customer selection)
+      const useCustomPricing = isPriceManuallyChanged;
+
       onConfirm({
         customer: selectedUser,
-        price: Number(price),
+        price: currentPrice,
         productId,
         shopifyVariantId,
         customerId: selectedCustomerData?.id,
+        useCustomPricing: useCustomPricing,
       });
       // Don't close modal here - let the parent handle it after successful mutation
     }
@@ -129,7 +178,8 @@ const OrderModal: React.FC<OrderModalProps> = ({
         !price ||
         Number(price) <= 0 ||
         (originalPrice != null && Number(price) < originalPrice) ||
-        isLoading
+        isLoading ||
+        fetchingProduct
       }
       scrollNeeded={false}
     >
@@ -151,6 +201,16 @@ const OrderModal: React.FC<OrderModalProps> = ({
             optionPaddingClasses="p-1"
             onCustomerChange={(customer) => {
               setSelectedCustomerData(customer);
+
+              // Fetch product with customer-specific pricing when customer is selected
+              if (customer?.id && productId) {
+                fetchProduct({
+                  variables: {
+                    id: productId,
+                    patientId: customer.id,
+                  },
+                });
+              }
             }}
           />
           {errors.user && (
@@ -180,9 +240,16 @@ const OrderModal: React.FC<OrderModalProps> = ({
                 const newPrice = e.target.value;
                 setPrice(newPrice);
 
-                // Validate price in real-time
+                // Check if user manually changed the price from the base price
                 const priceValue = Number(newPrice);
                 if (newPrice && !isNaN(priceValue)) {
+                  // Compare with base price (rounded to 2 decimals) to detect manual changes
+                  const isChanged =
+                    Math.round(priceValue * 100) !==
+                    Math.round(basePrice * 100);
+                  setIsPriceManuallyChanged(isChanged);
+
+                  // Validate price in real-time
                   if (priceValue <= 0) {
                     setErrors((prev) => ({
                       ...prev,
@@ -213,6 +280,8 @@ const OrderModal: React.FC<OrderModalProps> = ({
                     delete newErrors.price;
                     return newErrors;
                   });
+                  // Reset manual change flag if field is empty
+                  setIsPriceManuallyChanged(false);
                 }
               }}
               onKeyDown={(e) => {

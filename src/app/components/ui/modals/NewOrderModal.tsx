@@ -23,6 +23,8 @@ type DropdownItem = {
   productId?: string;
   variantId?: string;
   price?: number;
+  customPrice?: number;
+  originalPrice?: number;
   variants?: Array<{
     id?: string;
     shopifyVariantId?: string;
@@ -38,6 +40,7 @@ interface OrderItem {
   quantity: number;
   price: number;
   originalPrice: number;
+  initialPrice: number; // Track the initial displayed price when item was added
 }
 
 interface NewOrderModalProps {
@@ -45,6 +48,7 @@ interface NewOrderModalProps {
   onClose: () => void;
   currentCustomer?: DropdownItem;
   customers?: DropdownItem[];
+  patientId?: string;
   onCreateOrder?: (data: {
     customer: string;
     items: OrderItem[];
@@ -57,11 +61,12 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   onClose,
   currentCustomer,
   customers = [],
+  patientId: patientIdProp,
   onCreateOrder,
 }) => {
-  // Get patient ID from URL params
+  // Get patient ID from props or URL params
   const params = useParams();
-  const patientId = params.id as string;
+  const patientId = patientIdProp || (params.id as string);
   const [showItems, setShowItems] = useState(false);
   const isMobile = useIsMobile();
   // GraphQL mutation to create order
@@ -121,6 +126,11 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     // Original price is variants[0].price
     const originalPrice =
       selectedProductData?.variants?.[0]?.price ?? values.price;
+    const customPrice = selectedProductData?.customPrice;
+
+    // The displayed price is customPrice if present, otherwise originalPrice
+    // This is what the user sees initially
+    const initialPrice = customPrice ?? originalPrice;
 
     // Validate price is not less than original price
     if (values.price < originalPrice) {
@@ -139,6 +149,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       quantity: values.quantity,
       price: values.price,
       originalPrice: originalPrice,
+      initialPrice: initialPrice, // Store the displayed price (customPrice or originalPrice) when item is added
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -224,9 +235,11 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
         price: item.price,
       }));
 
-      // Check if any product price has been changed from original
+      // Check if any product price has been changed from initial displayed price
+      // If customPrice was present initially, compare with initialPrice
+      // If user changed the price from what was initially shown, useCustomPricing should be true
       const useCustomPricing = orderItems.some(
-        (item) => item.price !== item.originalPrice
+        (item) => item.price !== item.initialPrice
       );
 
       await createOrder({
@@ -385,6 +398,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         setFieldValue("price", priceToUse);
                       }
                     }}
+                    patientId={patientId}
                   />
 
                   <div

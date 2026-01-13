@@ -138,6 +138,7 @@ function InventoryContent() {
     productId?: string;
     shopifyVariantId?: string;
     customerId?: string;
+    useCustomPricing?: boolean;
   }) => {
     if (!selectedProduct || !data.productId || !data.shopifyVariantId) {
       showErrorToast("Product information is missing");
@@ -150,9 +151,8 @@ function InventoryContent() {
     }
 
     try {
-      // Check if price has been changed from original
-      const originalPrice = selectedProduct?.price || 0;
-      const useCustomPricing = data.price !== originalPrice;
+      // Use useCustomPricing from OrderModal, default to false if not provided
+      const useCustomPricing = data.useCustomPricing ?? false;
 
       // Create order with single item
       await createOrder({

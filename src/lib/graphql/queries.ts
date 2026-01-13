@@ -73,6 +73,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
     $inStockOnly: Boolean
     $category: String
     $favoriteProducts: Boolean
+    $patientId: ID
   ) {
     allProducts(
       search: $search
@@ -81,6 +82,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
       inStockOnly: $inStockOnly
       category: $category
       favoriteProducts: $favoriteProducts
+      patientId: $patientId
     ) {
       allData {
         customPrice
@@ -186,8 +188,8 @@ export const FETCH_ORDER = gql`
   }
 `;
 export const FETCH_PRODUCT = gql`
-  query FetchProduct($id: ID!) {
-    fetchProduct(id: $id) {
+  query FetchProduct($id: ID!, $patientId: ID) {
+    fetchProduct(id: $id, patientId: $patientId) {
       customPriceChangeHistory {
         customPrice
         id
