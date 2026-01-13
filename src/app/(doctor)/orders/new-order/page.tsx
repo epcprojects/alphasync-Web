@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { ArrowDownIcon, PlusIcon, TrashBinIcon } from "@/icons";
 import { ProductSelect, CustomerSelect } from "@/app/components";
 import { ThemeInput, ThemeButton } from "@/app/components";
@@ -11,6 +11,7 @@ import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { formatNumber } from "@/lib/helpers";
 import { useMutation } from "@apollo/client/react";
 import { CREATE_ORDER } from "@/lib/graphql/mutations";
+import type { ProductSelectRef } from "@/app/components/ui/inputs/ProductSelect";
 
 interface OrderItem {
   product: string;
@@ -19,6 +20,8 @@ interface OrderItem {
   quantity: number;
   price: number;
   originalPrice: number;
+  customPrice?: number;
+  initialPrice: number; // Track the initial price when item was added
 }
 
 const Page = () => {
@@ -75,6 +78,9 @@ const Page = () => {
     id: string;
   } | null>(null);
 
+  // Ref to ProductSelect to trigger refetch
+  const productSelectRef = useRef<ProductSelectRef>(null);
+
   // GraphQL mutation to create order
   const [
     createOrder,
@@ -93,6 +99,11 @@ const Page = () => {
     // Original price is variants[0].price
     const originalPrice =
       selectedProductData?.variants?.[0]?.price ?? values.price;
+    const customPrice = selectedProductData?.customPrice;
+
+    // The displayed price is customPrice if present, otherwise originalPrice
+    // This is what the user sees initially
+    const displayedPrice = customPrice ?? originalPrice;
 
     const newItem: OrderItem = {
       product: values.product,
@@ -101,6 +112,8 @@ const Page = () => {
       quantity: values.quantity,
       price: values.price,
       originalPrice: originalPrice,
+      customPrice: customPrice,
+      initialPrice: displayedPrice, // Store the displayed price (customPrice or originalPrice) when item is added
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -186,9 +199,12 @@ const Page = () => {
         price: item.price,
       }));
 
-      // Check if any product price has been changed from original
+      // Check if any product price has been manually changed from its initial value
+      // useCustomPricing is true only if user has manually changed the price
+      // Round to 2 decimal places to handle floating point precision issues
       const useCustomPricing = orderItems.some(
-        (item) => item.price !== item.originalPrice
+        (item) =>
+          Math.round(item.price * 100) !== Math.round(item.initialPrice * 100)
       );
 
       await createOrder({
@@ -205,6 +221,12 @@ const Page = () => {
       setOrderItems([]);
       setCustomerDraft("");
       setPriceErrors({});
+
+      // Refetch products to get latest prices for next order
+      if (productSelectRef.current) {
+        productSelectRef.current.refetch();
+      }
+
       showSuccessToast("Order created successfully");
     } catch (error) {
       console.error("Error creating order:", error);
@@ -272,11 +294,16 @@ const Page = () => {
                     optionPaddingClasses="p-1"
                     onCustomerChange={(customer) => {
                       setSelectedCustomerData(customer);
+                      // Refetch products when customer changes to get latest prices
+                      if (productSelectRef.current) {
+                        productSelectRef.current.refetch();
+                      }
                     }}
                   />
                 </div>
                 <div>
                   <ProductSelect
+                    ref={productSelectRef}
                     selectedProduct={values.product}
                     setSelectedProduct={(product) =>
                       setFieldValue("product", product)
@@ -296,6 +323,7 @@ const Page = () => {
                         setFieldValue("price", priceToUse);
                       }
                     }}
+                    patientId={selectedCustomerData?.id}
                   />
                 </div>
 

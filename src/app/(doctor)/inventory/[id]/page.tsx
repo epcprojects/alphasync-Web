@@ -153,6 +153,7 @@ export default function PostDetail() {
     productId?: string;
     shopifyVariantId?: string;
     customerId?: string;
+    useCustomPricing?: boolean;
   }) => {
     try {
       if (!product || !orderData.customerId) {
@@ -176,10 +177,8 @@ export default function PostDetail() {
         },
       ];
 
-      // Check if price has been changed from original
-      const originalPrice =
-        product.variants?.[0]?.price || product.customPrice || 0;
-      const useCustomPricing = orderData.price !== originalPrice;
+      // Use useCustomPricing from OrderModal, default to false if not provided
+      const useCustomPricing = orderData.useCustomPricing ?? false;
 
       await createOrder({
         variables: {
