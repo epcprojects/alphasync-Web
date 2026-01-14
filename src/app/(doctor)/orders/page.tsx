@@ -541,7 +541,7 @@ function OrderContent() {
                   <>
                     {orders.map((order) => (
                       <OrderListView
-                        onRowClick={() => router.push(`/orders/${order.id}`)}
+                        onRowClick={() => handleOrderClick(order)}
                         key={order.id}
                         hideCustomer={true}
                         hideProfit={true}
