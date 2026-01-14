@@ -371,6 +371,20 @@ const NotificationList: React.FC<NotificationListProps> = ({
       return;
     }
 
+    // For order_canceled, navigate to orders page for customers
+    if (
+      notification.notificationType === "order_canceled" &&
+      userType === "doctor"
+    ) {
+      if (notification.product?.id) {
+        router.push(`/orders/${notification.product.id}`);
+      } else {
+        // Fallback to inventory page if product id is not available
+        router.push("/orders");
+      }
+      return;
+    }
+
     // For other cases, try modal first (but this shouldn't happen for request notifications)
     const handledByModal = tryOpenProductDetails(notification);
     if (handledByModal) {
@@ -504,14 +518,18 @@ const NotificationList: React.FC<NotificationListProps> = ({
                           case "order_created":
                             return <span>Order request created</span>;
 
+                          case "order_canceled":
+                            return <span>Order canceled</span>;
+
                           case "low_stock_alert":
                             return <span>Low stock alert</span>;
 
                           case "message_received":
                             // If receiver is a patient, sender is likely a doctor
-                            const titleSenderName = userType === "customer" 
-                              ? formatNameWithPrefix(message.senderName, true)
-                              : message.senderName;
+                            const titleSenderName =
+                              userType === "customer"
+                                ? formatNameWithPrefix(message.senderName, true)
+                                : message.senderName;
                             return (
                               <span>New message from {titleSenderName}</span>
                             );
@@ -531,7 +549,8 @@ const NotificationList: React.FC<NotificationListProps> = ({
                         message.notificationType === "order_request_created" ||
                         message.notificationType === "reorder_created") && (
                         <span className="font-semibold">
-                          {message.notificationType === "message_received" && userType === "customer"
+                          {message.notificationType === "message_received" &&
+                          userType === "customer"
                             ? formatNameWithPrefix(message.senderName, true)
                             : message.senderName}
                         </span>
@@ -549,6 +568,11 @@ const NotificationList: React.FC<NotificationListProps> = ({
                         </span>
                       )}
                       {message.notificationType === "order_created" && (
+                        <span className="font-semibold">
+                          {message.doctorName}
+                        </span>
+                      )}
+                      {message.notificationType === "order_canceled" && (
                         <span className="font-semibold">
                           {message.doctorName}
                         </span>
@@ -591,8 +615,8 @@ const NotificationList: React.FC<NotificationListProps> = ({
                           {userType === "customer"
                             ? formatNameWithPrefix(message.senderName, true)
                             : message.senderName}
-                        </span> has sent you a
-                        message.
+                        </span>{" "}
+                        has sent you a message.
                         <span className="font-semibold">
                           {" "}
                           &quot;
@@ -624,6 +648,28 @@ const NotificationList: React.FC<NotificationListProps> = ({
                       <div>
                         Dr. {message.doctorName} has created an order for you
                         with
+                        {message.productNames &&
+                          message.productNames.length > 0 && (
+                            <span className="font-semibold">
+                              {" "}
+                              &quot;
+                              {message.productNames.map((product, idx) => (
+                                <span key={`${product}-${idx}`}>
+                                  {product}
+                                  {idx < message.productNames.length - 1
+                                    ? ", "
+                                    : ""}
+                                </span>
+                              ))}
+                              &quot;
+                            </span>
+                          )}
+                        .
+                      </div>
+                    )}
+                    {message.notificationType === "order_canceled" && (
+                      <div>
+                        Dr. {message.doctorName} has canceled your order for
                         {message.productNames &&
                           message.productNames.length > 0 && (
                             <span className="font-semibold">
