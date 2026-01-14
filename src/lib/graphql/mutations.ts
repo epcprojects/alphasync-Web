@@ -671,6 +671,7 @@ export const PROCESS_PAYMENT = gql`
     $opaqueData: OpaqueData!
     $amount: Float!
     $billingAddress: BillingAddress
+    $shippingAddress: ShippingAddress
   ) {
     processPayment(
       input: {
@@ -678,6 +679,7 @@ export const PROCESS_PAYMENT = gql`
         opaqueData: $opaqueData
         amount: $amount
         billingAddress: $billingAddress
+        shippingAddress: $shippingAddress
       }
     ) {
       success

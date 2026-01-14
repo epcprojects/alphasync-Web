@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Card from "../../../../../public/icons/Card";
 import ThemeInput from "../inputs/ThemeInput";
+import { GoogleAutocompleteInput } from "@/app/components";
 import { CardData } from "../../../../../public/data/CreditCard";
 import {
   Amex,
@@ -101,8 +102,23 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const [cvv, setCvv] = useState("");
   const [cardHolderName, setCardHolderName] = useState("");
   const [cardType, setCardType] = useState("Default");
-  const [zipCode, setZipCode] = useState("");
-  const [billingAddress, setBillingAddress] = useState("");
+  // Billing address - optimized
+  const [billingAddress, setBillingAddress] = useState({
+    street1: "",
+    street2: "",
+    city: "",
+    state: "",
+    postalCode: "",
+  });
+  // Shipping address - optimized
+  const [useDifferentShipping, setUseDifferentShipping] = useState(false);
+  const [shippingAddress, setShippingAddress] = useState({
+    street1: "",
+    street2: "",
+    city: "",
+    state: "",
+    postalCode: "",
+  });
   const [maxCardLength, setMaxCardLength] = useState(19);
   const [showForm, setShowForm] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -114,28 +130,36 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   useBodyScrollLock(isOpen);
   const [processPaymentMutation] = useMutation(PROCESS_PAYMENT);
 
+  // Helper function to truncate postal code to 5 digits
+  const truncatePostalCode = (code: string): string => {
+    const digitsOnly = code.replace(/\D/g, "");
+    return digitsOnly.slice(0, 5);
+  };
+
+
   // Set default values from user profile when modal opens
   useEffect(() => {
     if (isOpen && user) {
-      // Set ZIP Code from user's postal code
-      if (user.postalCode && !zipCode) {
-        setZipCode(user.postalCode);
+      // Set billing address fields from user's address fields
+      if (user.street1 && !billingAddress.street1) {
+        setBillingAddress({
+          street1: user.street1,
+          street2: user.street2 || "",
+          city: user.city || "",
+          state: user.state || "",
+          postalCode: user.postalCode ? truncatePostalCode(user.postalCode) : "",
+        });
       }
 
-      // Set billing address from user's address fields
-      if (!billingAddress) {
-        const addressParts = [
-          user.street1,
-          user.street2,
-          user.city,
-          user.state,
-        ].filter(Boolean);
-
-        if (addressParts.length > 0) {
-          setBillingAddress(addressParts.join(", "));
-        } else if (user.address) {
-          setBillingAddress(user.address);
-        }
+      // Set shipping address to same as billing by default
+      if (user.street1 && !shippingAddress.street1) {
+        setShippingAddress({
+          street1: user.street1,
+          street2: user.street2 || "",
+          city: user.city || "",
+          state: user.state || "",
+          postalCode: user.postalCode ? truncatePostalCode(user.postalCode) : "",
+        });
       }
 
       // Set cardholder name from user's full name
@@ -143,7 +167,31 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
         setCardHolderName(user.fullName);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user]);
+
+  // Sync shipping address with billing when checkbox is unchecked
+  useEffect(() => {
+    if (!useDifferentShipping) {
+      setShippingAddress(billingAddress);
+    }
+  }, [useDifferentShipping, billingAddress]);
+
+  // Handler for shipping address checkbox
+  const handleShippingAddressToggle = (checked: boolean) => {
+    setUseDifferentShipping(checked);
+    if (checked) {
+      // Reset shipping address fields when checkbox is checked
+      setShippingAddress({
+        street1: "",
+        street2: "",
+        city: "",
+        state: "",
+        postalCode: "",
+      });
+    }
+    // When unchecked, useEffect will sync with billing address
+  };
 
   useEffect(() => {
     const checkScreenSize = () => setIsMobile(window.innerWidth < 768); // md breakpoint
@@ -451,9 +499,21 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
 
     if (!cardHolderName || cardHolderName.trim() === "") return false;
 
-    if (!billingAddress || billingAddress.trim() === "") return false;
+    // Validate billing address
+    if (!billingAddress.street1 || billingAddress.street1.trim() === "") return false;
+    if (!billingAddress.city || billingAddress.city.trim() === "") return false;
+    if (!billingAddress.state || billingAddress.state.trim() === "") return false;
+    const truncatedBillingPostal = truncatePostalCode(billingAddress.postalCode);
+    if (!truncatedBillingPostal || truncatedBillingPostal.length !== 5) return false;
 
-    if (!zipCode || !/^[A-Za-z0-9\s]{1,10}$/.test(zipCode)) return false;
+    // Validate shipping address if different from billing
+    if (useDifferentShipping) {
+      if (!shippingAddress.street1 || shippingAddress.street1.trim() === "") return false;
+      if (!shippingAddress.city || shippingAddress.city.trim() === "") return false;
+      if (!shippingAddress.state || shippingAddress.state.trim() === "") return false;
+      const truncatedShippingPostal = truncatePostalCode(shippingAddress.postalCode);
+      if (!truncatedShippingPostal || truncatedShippingPostal.length !== 5) return false;
+    }
 
     return true;
   };
@@ -508,14 +568,45 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
           throw new Error("Invalid order amount");
         }
 
+        // Truncate postal codes to 5 digits
+        const truncatedBillingPostal = truncatePostalCode(billingAddress.postalCode);
+        const truncatedShippingPostal = useDifferentShipping
+          ? truncatePostalCode(shippingAddress.postalCode)
+          : truncatedBillingPostal;
+
+        // Format billing address
         const billingAddressInput =
-          cardHolderName || billingAddress || zipCode
+          cardHolderName ||
+          billingAddress.street1 ||
+          billingAddress.city ||
+          billingAddress.state ||
+          truncatedBillingPostal
             ? {
-                fullName: cardHolderName.trim(),
-                address: billingAddress.trim(),
-                zip: zipCode.trim(),
+                address1: billingAddress.street1.trim() || null,
+                address2: billingAddress.street2.trim() || null,
+                city: billingAddress.city.trim() || null,
+                state: billingAddress.state.trim() || null,
+                postalCode: truncatedBillingPostal || null,
+                country: null,
               }
             : null;
+
+        // Format shipping address
+        // If useDifferentShipping is false, use billing address as shipping address
+        const finalShippingStreet1 = useDifferentShipping ? shippingAddress.street1 : billingAddress.street1;
+        const finalShippingStreet2 = useDifferentShipping ? shippingAddress.street2 : billingAddress.street2;
+        const finalShippingCity = useDifferentShipping ? shippingAddress.city : billingAddress.city;
+        const finalShippingState = useDifferentShipping ? shippingAddress.state : billingAddress.state;
+        const finalShippingPostal = useDifferentShipping ? truncatedShippingPostal : truncatedBillingPostal;
+
+        const shippingAddressInput = {
+          address1: finalShippingStreet1.trim() || null,
+          address2: finalShippingStreet2.trim() || null,
+          city: finalShippingCity.trim() || null,
+          state: finalShippingState.trim() || null,
+          postalCode: finalShippingPostal || null,
+          country: null,
+        };
 
         const { data } = await processPaymentMutation({
           variables: {
@@ -526,6 +617,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
               dataValue: token.dataValue,
             },
             billingAddress: billingAddressInput,
+            shippingAddress: shippingAddressInput,
           },
         });
 
@@ -740,25 +832,170 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                 />
               </div>
             </div>
-            <ThemeInput
-              id="ZIP Code"
-              label="ZIP Code"
-              name="ZIP Code"
-              type="text"
-              placeholder="12345"
-              value={zipCode}
-              onChange={(e) => setZipCode(e.target.value)}
-              maxLength={5}
-            />
-            <ThemeInput
-              id="Billing Address"
-              label="Billing Address"
-              name="Billing Address"
-              type="text"
-              placeholder="Enter Billing address"
-              value={billingAddress}
-              onChange={(e) => setBillingAddress(e.target.value)}
-            />
+            <div className="border-b border-gray-200 pb-4">
+              <h3 className="text-base font-semibold text-gray-900 mb-4">
+                Billing Address
+              </h3>
+              <div className="space-y-4">
+                <GoogleAutocompleteInput
+                  name="street1"
+                  value={billingAddress.street1}
+                  onChange={(value) => {
+                    setBillingAddress((prev) => ({
+                      ...prev,
+                      street1: value,
+                    }));
+                  }}
+                  onAddressSelect={(address) => {
+                    const truncated = truncatePostalCode(address.postalCode);
+                    setBillingAddress({
+                      street1: address.street1,
+                      street2: billingAddress.street2,
+                      city: address.city,
+                      state: address.state,
+                      postalCode: truncated,
+                    });
+                  }}
+                  placeholder="Enter street address"
+                  label="Street Address"
+                />
+                <ThemeInput
+                  id="street2"
+                  label="Street Address 2 (Optional)"
+                  name="street2"
+                  type="text"
+                  placeholder="Apartment, suite, etc. (optional)"
+                  value={billingAddress.street2}
+                  onChange={(e) => setBillingAddress((prev) => ({ ...prev, street2: e.target.value }))}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <ThemeInput
+                    id="city"
+                    label="City"
+                    name="city"
+                    type="text"
+                    placeholder="Enter city"
+                    value={billingAddress.city}
+                    onChange={(e) => setBillingAddress((prev) => ({ ...prev, city: e.target.value }))}
+                  />
+                  <ThemeInput
+                    id="state"
+                    label="State"
+                    name="state"
+                    type="text"
+                    placeholder="Enter state"
+                    value={billingAddress.state}
+                    onChange={(e) => setBillingAddress((prev) => ({ ...prev, state: e.target.value }))}
+                  />
+                </div>
+                <ThemeInput
+                  id="postalCode"
+                  label="Postal Code"
+                  name="postalCode"
+                  type="text"
+                  placeholder="Enter postal code"
+                  value={billingAddress.postalCode}
+                  onChange={(e) => {
+                    const truncated = truncatePostalCode(e.target.value);
+                    setBillingAddress((prev) => ({ ...prev, postalCode: truncated }));
+                  }}
+                  maxLength={5}
+                />
+              </div>
+            </div>
+
+            {/* Shipping Address Section */}
+            <div className="">
+              <div className="flex items-center gap-2 mb-4">
+                <input
+                  type="checkbox"
+                  id="useDifferentShipping"
+                  checked={useDifferentShipping}
+                  onChange={(e) => handleShippingAddressToggle(e.target.checked)}
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+                <label
+                  htmlFor="useDifferentShipping"
+                  className="text-sm font-medium text-gray-900 cursor-pointer"
+                >
+                  Ship to a different address
+                </label>
+              </div>
+
+              {useDifferentShipping && (
+                <div className="space-y-4">
+                  <h3 className="text-base font-semibold text-gray-900">
+                    Shipping Address
+                  </h3>
+                  <div className="space-y-4">
+                    <GoogleAutocompleteInput
+                      name="shippingStreet1"
+                      value={shippingAddress.street1}
+                      onChange={(value) => {
+                        setShippingAddress((prev) => ({
+                          ...prev,
+                          street1: value,
+                        }));
+                      }}
+                      onAddressSelect={(address) => {
+                        const truncated = truncatePostalCode(address.postalCode);
+                        setShippingAddress({
+                          street1: address.street1,
+                          street2: shippingAddress.street2,
+                          city: address.city,
+                          state: address.state,
+                          postalCode: truncated,
+                        });
+                      }}
+                      placeholder="Enter street address"
+                      label="Street Address"
+                    />
+                    <ThemeInput
+                      id="shippingStreet2"
+                      label="Street Address 2 (Optional)"
+                      name="shippingStreet2"
+                      type="text"
+                      placeholder="Apartment, suite, etc. (optional)"
+                      value={shippingAddress.street2}
+                      onChange={(e) => setShippingAddress((prev) => ({ ...prev, street2: e.target.value }))}
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <ThemeInput
+                        id="shippingCity"
+                        label="City"
+                        name="shippingCity"
+                        type="text"
+                        placeholder="Enter city"
+                        value={shippingAddress.city}
+                        onChange={(e) => setShippingAddress((prev) => ({ ...prev, city: e.target.value }))}
+                      />
+                      <ThemeInput
+                        id="shippingState"
+                        label="State"
+                        name="shippingState"
+                        type="text"
+                        placeholder="Enter state"
+                        value={shippingAddress.state}
+                        onChange={(e) => setShippingAddress((prev) => ({ ...prev, state: e.target.value }))}
+                      />
+                    </div>
+                    <ThemeInput
+                      id="shippingPostalCode"
+                      label="Postal Code"
+                      name="shippingPostalCode"
+                      type="text"
+                      placeholder="Enter postal code"
+                      value={shippingAddress.postalCode}
+                      onChange={(e) => {
+                        const truncated = truncatePostalCode(e.target.value);
+                        setShippingAddress((prev) => ({ ...prev, postalCode: truncated }));
+                      }}
+                      maxLength={5}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </form>
         </div>
       )}
