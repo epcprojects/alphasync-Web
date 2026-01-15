@@ -296,6 +296,8 @@ export const PATIENT_ORDERS = gql`
         createdAt
         totalPrice
         hasAnotherReorder
+        totalTax
+        subtotalPrice
         patient {
           address
         }

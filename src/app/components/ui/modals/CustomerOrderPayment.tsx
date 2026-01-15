@@ -40,8 +40,10 @@ type order = {
   orderedOn: string;
   shippingAddress?: string;
   isDueToday?: string;
-  totalPrice: string | number;
+  totalPrice: number;
   orderItems: OrderItem[];
+  subtotalPrice?: number | null;
+  totalTax?: number | null;
 };
 
 export type requestProps = {
@@ -147,7 +149,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
           street2: user.street2 || "",
           city: user.city || "",
           state: user.state || "",
-          postalCode: user.postalCode ? truncatePostalCode(user.postalCode) : "",
+          postalCode: user.postalCode
+            ? truncatePostalCode(user.postalCode)
+            : "",
         });
       }
 
@@ -158,7 +162,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
           street2: user.street2 || "",
           city: user.city || "",
           state: user.state || "",
-          postalCode: user.postalCode ? truncatePostalCode(user.postalCode) : "",
+          postalCode: user.postalCode
+            ? truncatePostalCode(user.postalCode)
+            : "",
         });
       }
 
@@ -185,15 +191,24 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       // Priority: user shipping data > billing address > empty
       const hasShippingData = user?.shippingStreet1 || user?.shippingCity;
       const wasSameAsBilling = user?.sameAsBillingAddress ?? true;
-      
-      const shippingStreet1 = user?.shippingStreet1 || (wasSameAsBilling && !hasShippingData ? billingAddress.street1 : "");
-      const shippingStreet2 = user?.shippingStreet2 || (wasSameAsBilling && !hasShippingData ? billingAddress.street2 : "");
-      const shippingCity = user?.shippingCity || (wasSameAsBilling && !hasShippingData ? billingAddress.city : "");
-      const shippingState = user?.shippingState || (wasSameAsBilling && !hasShippingData ? billingAddress.state : "");
-      const shippingPostalCode = user?.shippingPostalCode 
+      const shippingStreet1 =
+        user?.shippingStreet1 ||
+        (wasSameAsBilling && !hasShippingData ? billingAddress.street1 : "");
+      const shippingStreet2 =
+        user?.shippingStreet2 ||
+        (wasSameAsBilling && !hasShippingData ? billingAddress.street2 : "");
+      const shippingCity =
+        user?.shippingCity ||
+        (wasSameAsBilling && !hasShippingData ? billingAddress.city : "");
+      const shippingState =
+        user?.shippingState ||
+        (wasSameAsBilling && !hasShippingData ? billingAddress.state : "");
+      const shippingPostalCode = user?.shippingPostalCode
         ? truncatePostalCode(user.shippingPostalCode)
-        : (wasSameAsBilling && !hasShippingData ? billingAddress.postalCode : "");
-      
+        : wasSameAsBilling && !hasShippingData
+        ? billingAddress.postalCode
+        : "";
+
       setShippingAddress({
         street1: shippingStreet1,
         street2: shippingStreet2,
@@ -234,7 +249,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
 
   const taxAmount = subTotal * 0.08;
   const tax = taxAmount.toFixed(2);
-  const total = (subTotal + parseFloat(tax)).toFixed(2);
+  const total = order?.totalPrice;
 
   const detectCardType = (number: string): void => {
     if (!number) {
@@ -512,19 +527,30 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     if (!cardHolderName || cardHolderName.trim() === "") return false;
 
     // Validate billing address
-    if (!billingAddress.street1 || billingAddress.street1.trim() === "") return false;
+    if (!billingAddress.street1 || billingAddress.street1.trim() === "")
+      return false;
     if (!billingAddress.city || billingAddress.city.trim() === "") return false;
-    if (!billingAddress.state || billingAddress.state.trim() === "") return false;
-    const truncatedBillingPostal = truncatePostalCode(billingAddress.postalCode);
-    if (!truncatedBillingPostal || truncatedBillingPostal.length !== 5) return false;
+    if (!billingAddress.state || billingAddress.state.trim() === "")
+      return false;
+    const truncatedBillingPostal = truncatePostalCode(
+      billingAddress.postalCode
+    );
+    if (!truncatedBillingPostal || truncatedBillingPostal.length !== 5)
+      return false;
 
     // Validate shipping address if different from billing
     if (useDifferentShipping) {
-      if (!shippingAddress.street1 || shippingAddress.street1.trim() === "") return false;
-      if (!shippingAddress.city || shippingAddress.city.trim() === "") return false;
-      if (!shippingAddress.state || shippingAddress.state.trim() === "") return false;
-      const truncatedShippingPostal = truncatePostalCode(shippingAddress.postalCode);
-      if (!truncatedShippingPostal || truncatedShippingPostal.length !== 5) return false;
+      if (!shippingAddress.street1 || shippingAddress.street1.trim() === "")
+        return false;
+      if (!shippingAddress.city || shippingAddress.city.trim() === "")
+        return false;
+      if (!shippingAddress.state || shippingAddress.state.trim() === "")
+        return false;
+      const truncatedShippingPostal = truncatePostalCode(
+        shippingAddress.postalCode
+      );
+      if (!truncatedShippingPostal || truncatedShippingPostal.length !== 5)
+        return false;
     }
 
     return true;
@@ -574,14 +600,19 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
         cvv,
       });
       if (order?.id) {
-        const amountValue = parseFloat(total);
+        const amountValue = total;
 
-        if (!Number.isFinite(amountValue) || amountValue <= 0) {
+        if (
+          !Number.isFinite(amountValue) ||
+          (amountValue && amountValue <= 0)
+        ) {
           throw new Error("Invalid order amount");
         }
 
         // Truncate postal codes to 5 digits
-        const truncatedBillingPostal = truncatePostalCode(billingAddress.postalCode);
+        const truncatedBillingPostal = truncatePostalCode(
+          billingAddress.postalCode
+        );
         const truncatedShippingPostal = useDifferentShipping
           ? truncatePostalCode(shippingAddress.postalCode)
           : truncatedBillingPostal;
@@ -605,11 +636,21 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
 
         // Format shipping address
         // If useDifferentShipping is false, use billing address as shipping address
-        const finalShippingStreet1 = useDifferentShipping ? shippingAddress.street1 : billingAddress.street1;
-        const finalShippingStreet2 = useDifferentShipping ? shippingAddress.street2 : billingAddress.street2;
-        const finalShippingCity = useDifferentShipping ? shippingAddress.city : billingAddress.city;
-        const finalShippingState = useDifferentShipping ? shippingAddress.state : billingAddress.state;
-        const finalShippingPostal = useDifferentShipping ? truncatedShippingPostal : truncatedBillingPostal;
+        const finalShippingStreet1 = useDifferentShipping
+          ? shippingAddress.street1
+          : billingAddress.street1;
+        const finalShippingStreet2 = useDifferentShipping
+          ? shippingAddress.street2
+          : billingAddress.street2;
+        const finalShippingCity = useDifferentShipping
+          ? shippingAddress.city
+          : billingAddress.city;
+        const finalShippingState = useDifferentShipping
+          ? shippingAddress.state
+          : billingAddress.state;
+        const finalShippingPostal = useDifferentShipping
+          ? truncatedShippingPostal
+          : truncatedBillingPostal;
 
         const shippingAddressInput = {
           address1: finalShippingStreet1.trim() || null,
@@ -742,15 +783,13 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     Sub total
                   </span>
                   <span className="text-sm font-medium text-gray-800">
-                    ${subTotal.toFixed(2)}
+                    ${order?.subtotalPrice?.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-normal text-gray-800">
-                    Tax (8%)
-                  </span>
+                  <span className="text-sm font-normal text-gray-800">Tax</span>
                   <span className="text-sm font-medium text-gray-800">
-                    ${tax}
+                    ${order?.totalTax?.toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -759,7 +798,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   Total
                 </span>
                 <span className="text-base font-semibold text-primary">
-                  ${total}
+                  ${order?.totalPrice}
                 </span>
               </div>
             </div>
@@ -878,7 +917,12 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   type="text"
                   placeholder="Apartment, suite, etc. (optional)"
                   value={billingAddress.street2}
-                  onChange={(e) => setBillingAddress((prev) => ({ ...prev, street2: e.target.value }))}
+                  onChange={(e) =>
+                    setBillingAddress((prev) => ({
+                      ...prev,
+                      street2: e.target.value,
+                    }))
+                  }
                 />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <ThemeInput
@@ -888,7 +932,12 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     type="text"
                     placeholder="Enter city"
                     value={billingAddress.city}
-                    onChange={(e) => setBillingAddress((prev) => ({ ...prev, city: e.target.value }))}
+                    onChange={(e) =>
+                      setBillingAddress((prev) => ({
+                        ...prev,
+                        city: e.target.value,
+                      }))
+                    }
                   />
                   <ThemeInput
                     id="state"
@@ -897,7 +946,12 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     type="text"
                     placeholder="Enter state"
                     value={billingAddress.state}
-                    onChange={(e) => setBillingAddress((prev) => ({ ...prev, state: e.target.value }))}
+                    onChange={(e) =>
+                      setBillingAddress((prev) => ({
+                        ...prev,
+                        state: e.target.value,
+                      }))
+                    }
                   />
                 </div>
                 <ThemeInput
@@ -909,13 +963,15 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   value={billingAddress.postalCode}
                   onChange={(e) => {
                     const truncated = truncatePostalCode(e.target.value);
-                    setBillingAddress((prev) => ({ ...prev, postalCode: truncated }));
+                    setBillingAddress((prev) => ({
+                      ...prev,
+                      postalCode: truncated,
+                    }));
                   }}
                   maxLength={5}
                 />
               </div>
             </div>
-
             {/* Shipping Address Section */}
             <div className="">
               <div className="flex items-center gap-2 mb-4">
@@ -923,7 +979,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   type="checkbox"
                   id="useDifferentShipping"
                   checked={useDifferentShipping}
-                  onChange={(e) => handleShippingAddressToggle(e.target.checked)}
+                  onChange={(e) =>
+                    handleShippingAddressToggle(e.target.checked)
+                  }
                   className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                 />
                 <label
@@ -950,7 +1008,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                         }));
                       }}
                       onAddressSelect={(address) => {
-                        const truncated = truncatePostalCode(address.postalCode);
+                        const truncated = truncatePostalCode(
+                          address.postalCode
+                        );
                         setShippingAddress({
                           street1: address.street1,
                           street2: shippingAddress.street2,
@@ -969,7 +1029,12 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                       type="text"
                       placeholder="Apartment, suite, etc. (optional)"
                       value={shippingAddress.street2}
-                      onChange={(e) => setShippingAddress((prev) => ({ ...prev, street2: e.target.value }))}
+                      onChange={(e) =>
+                        setShippingAddress((prev) => ({
+                          ...prev,
+                          street2: e.target.value,
+                        }))
+                      }
                     />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <ThemeInput
@@ -979,7 +1044,12 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                         type="text"
                         placeholder="Enter city"
                         value={shippingAddress.city}
-                        onChange={(e) => setShippingAddress((prev) => ({ ...prev, city: e.target.value }))}
+                        onChange={(e) =>
+                          setShippingAddress((prev) => ({
+                            ...prev,
+                            city: e.target.value,
+                          }))
+                        }
                       />
                       <ThemeInput
                         id="shippingState"
@@ -988,7 +1058,12 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                         type="text"
                         placeholder="Enter state"
                         value={shippingAddress.state}
-                        onChange={(e) => setShippingAddress((prev) => ({ ...prev, state: e.target.value }))}
+                        onChange={(e) =>
+                          setShippingAddress((prev) => ({
+                            ...prev,
+                            state: e.target.value,
+                          }))
+                        }
                       />
                     </div>
                     <ThemeInput
@@ -1000,7 +1075,10 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                       value={shippingAddress.postalCode}
                       onChange={(e) => {
                         const truncated = truncatePostalCode(e.target.value);
-                        setShippingAddress((prev) => ({ ...prev, postalCode: truncated }));
+                        setShippingAddress((prev) => ({
+                          ...prev,
+                          postalCode: truncated,
+                        }));
                       }}
                       maxLength={5}
                     />

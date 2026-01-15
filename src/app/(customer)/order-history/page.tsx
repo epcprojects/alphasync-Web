@@ -27,6 +27,8 @@ interface PatientOrderItemData {
   quantity?: number | null;
   price?: number | null;
   totalPrice?: number | null;
+  totalTax?: number | null;
+  subtotalPrice?: number | null;
   product?: {
     title?: string | null;
     description?: string | null;
@@ -47,6 +49,8 @@ interface PatientOrderData {
   status?: string | null;
   createdAt: string;
   totalPrice?: number | null;
+  totalTax?: number | null;
+  subtotalPrice?: number | null;
   hasAnotherReorder?: boolean | null;
   doctor?: {
     fullName?: string | null;

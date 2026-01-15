@@ -26,6 +26,8 @@ export interface PrescriptionOrder {
   orderItems: OrderItem[];
   orderedOn: string;
   totalPrice: number;
+  totalTax?: number | null;
+  subtotalPrice?: number | null;
   isDueToday?: string;
   status?: string;
   shippingAddress?: string;
