@@ -89,7 +89,7 @@ export default function ProductListView({
 
       <div className="ol-span-1 md:col-span-2 lg:col-span-1 flex items-center justify-end md:justify-center gap-2">
         <Tooltip
-          content={product.isFavourite ? "Remove Favourite" : "Mark Favourite"}
+          content={product.isFavourite ? "Remove Favorite" : "Mark Favorite"}
         >
           <button
             onClick={(e) => {

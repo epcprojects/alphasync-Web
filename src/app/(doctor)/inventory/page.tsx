@@ -241,7 +241,7 @@ function InventoryContent() {
             </div>
 
             <div className="sm:p-0 flex items-center gap-1 md:gap-2 rounded-full bg-white sm:bg-transparent p-1 shadow-table sm:shadow-none">
-              <Tooltip content="Favourite Products">
+              <Tooltip content="Favorite Products">
                 <button
                   onClick={() => setShowFavourites((prev) => !prev)}
                   className={`w-8 h-8 shrink-0 md:h-11 md:w-11 ${
