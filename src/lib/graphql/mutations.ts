@@ -235,6 +235,13 @@ export const UPDATE_DOCTOR = gql`
     $state: String
     $postalCode: String
     $address: String
+    $sameAsBillingAddress: Boolean
+    $shippingCountry: String
+    $shippingPostalCode: String
+    $shippingState:String
+    $shippingCity: String
+    $shippingStreet2: String
+    $shippingStreet1:String
   ) {
     updateUser(
       input: {
@@ -254,6 +261,13 @@ export const UPDATE_DOCTOR = gql`
           state: $state
           postalCode: $postalCode
           address: $address
+          sameAsBillingAddress: $sameAsBillingAddress
+          shippingCountry: $shippingCountry
+          shippingPostalCode: $shippingPostalCode
+          shippingState: $shippingState
+          shippingCity: $shippingCity
+          shippingStreet2: $shippingStreet2
+          shippingStreet1: $shippingStreet1
         }
       }
     ) {
@@ -407,6 +421,13 @@ export const UPDATE_CUSTOMER_PROFILE = gql`
     $state: String
     $postalCode: String
     $country: String
+    $sameAsBillingAddress: Boolean
+    $shippingCountry: String
+    $shippingPostalCode: String
+    $shippingState:String
+    $shippingCity: String
+    $shippingStreet2: String
+    $shippingStreet1:String
   ) {
     updateUser(
       input: {
@@ -431,6 +452,13 @@ export const UPDATE_CUSTOMER_PROFILE = gql`
           state: $state
           postalCode: $postalCode
           country: $country
+          sameAsBillingAddress: $sameAsBillingAddress
+          shippingCountry: $shippingCountry
+          shippingPostalCode: $shippingPostalCode
+          shippingState: $shippingState
+          shippingCity: $shippingCity
+          shippingStreet2: $shippingStreet2
+          shippingStreet1: $shippingStreet1
         }
       }
     ) {

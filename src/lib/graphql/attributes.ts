@@ -35,6 +35,13 @@ export const userpayload = `
             street1
             street2
             postalCode
+            sameAsBillingAddress
+            shippingCountry
+            shippingPostalCode
+            shippingState
+            shippingCity
+            shippingStreet2
+            shippingStreet1
        
 `;
 
@@ -74,6 +81,13 @@ export interface UserAttributes {
   street1?: string;
   street2?: string;
   postalCode?: string;
+  sameAsBillingAddress?: boolean;
+  shippingStreet1?: string;
+  shippingStreet2?: string;
+  shippingCity?: string;
+  shippingState?: string;
+  shippingPostalCode?: string;
+  shippingCountry?: string;
   unreadNotifications?: boolean;
 }
 
