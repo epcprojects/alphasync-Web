@@ -593,7 +593,7 @@ const Page = () => {
                   }}
                   enableReinitialize
                 >
-                  {({ handleChange, values, setFieldValue }) => (
+                  {({ handleChange, values, setFieldValue, initialValues }) => (
                     <Form>
                       <div className="grid grid-cols-12 gap-1.5 lg:gap-8 py-3 md:py-5 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">

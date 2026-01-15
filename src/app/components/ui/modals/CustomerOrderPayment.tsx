@@ -181,13 +181,25 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const handleShippingAddressToggle = (checked: boolean) => {
     setUseDifferentShipping(checked);
     if (checked) {
-      // Reset shipping address fields when checkbox is checked
+      // Prefill shipping address from user object when checkbox is checked
+      // Priority: user shipping data > billing address > empty
+      const hasShippingData = user?.shippingStreet1 || user?.shippingCity;
+      const wasSameAsBilling = user?.sameAsBillingAddress ?? true;
+      
+      const shippingStreet1 = user?.shippingStreet1 || (wasSameAsBilling && !hasShippingData ? billingAddress.street1 : "");
+      const shippingStreet2 = user?.shippingStreet2 || (wasSameAsBilling && !hasShippingData ? billingAddress.street2 : "");
+      const shippingCity = user?.shippingCity || (wasSameAsBilling && !hasShippingData ? billingAddress.city : "");
+      const shippingState = user?.shippingState || (wasSameAsBilling && !hasShippingData ? billingAddress.state : "");
+      const shippingPostalCode = user?.shippingPostalCode 
+        ? truncatePostalCode(user.shippingPostalCode)
+        : (wasSameAsBilling && !hasShippingData ? billingAddress.postalCode : "");
+      
       setShippingAddress({
-        street1: "",
-        street2: "",
-        city: "",
-        state: "",
-        postalCode: "",
+        street1: shippingStreet1,
+        street2: shippingStreet2,
+        city: shippingCity,
+        state: shippingState,
+        postalCode: shippingPostalCode,
       });
     }
     // When unchecked, useEffect will sync with billing address
