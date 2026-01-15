@@ -63,33 +63,49 @@ const ProductSelect = forwardRef<ProductSelectRef, ProductSelectProps>(
       fetchPolicy: "no-cache",
       variables: {
         perPage: 200,
-        patientId: patientId,
+        // patientId: patientId,
       },
-      skip: !patientId,
+      // skip: !patientId,
       notifyOnNetworkStatusChange: true,
     });
 
     // Expose refetch function via ref
+    // useImperativeHandle(ref, () => ({
+    //   refetch: () => {
+    //     if (patientId && refetch) {
+    //       refetch({
+    //         perPage: 200,
+    //         // patientId: patientId,
+    //       });
+    //     }
+    //   },
+    // }));
     useImperativeHandle(ref, () => ({
       refetch: () => {
-        if (patientId && refetch) {
+        if (refetch) {
           refetch({
             perPage: 200,
-            patientId: patientId,
           });
         }
       },
     }));
 
     // Refetch products when patientId changes to ensure fresh data
+    // useEffect(() => {
+    //   if (patientId && refetch) {
+    //     refetch({
+    //       perPage: 200,
+    //       // patientId: patientId,
+    //     });
+    //   }
+    // }, [patientId, refetch]);
     useEffect(() => {
-      if (patientId && refetch) {
+      if (refetch) {
         refetch({
           perPage: 200,
-          patientId: patientId,
         });
       }
-    }, [patientId, refetch]);
+    }, [refetch]);
 
     // Transform GraphQL product data to match dropdown format
     const products =
