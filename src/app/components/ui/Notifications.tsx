@@ -122,8 +122,8 @@ export default function Notifications({ userType }: NotificationsProps) {
       notification.notificationType === "order_canceled" &&
       currentUserType === "doctor"
     ) {
-      if (notification.product?.id) {
-        router.push(`/orders/${notification.product.id}`);
+      if (notification?.notifiableId) {
+        router.push(`/orders/${notification?.notifiableId}`);
       } else {
         // Fallback to inventory page if product id is not available
         router.push("/orders");
@@ -365,18 +365,37 @@ export default function Notifications({ userType }: NotificationsProps) {
     } else if (message.notificationType === "order_canceled") {
       return (
         <div>
-          Dr. {message.doctorName} has canceled your order for
-          {message.productNames && message.productNames.length > 0 && (
-            <span className="font-semibold">
-              {" "}
-              &quot;
-              {message.productNames.map((product, idx) => (
-                <span key={`${product}-${idx}`}>{product}</span>
-              ))}
-              &quot;
-            </span>
+          {currentUserType === "doctor" ? (
+            <>
+              {message.senderName} has canceled their order for
+              {message.productNames && message.productNames.length > 0 && (
+                <span className="font-semibold">
+                  {" "}
+                  &quot;
+                  {message.productNames.map((product, idx) => (
+                    <span key={`${product}-${idx}`}>{product}</span>
+                  ))}
+                  &quot;
+                </span>
+              )}
+              .
+            </>
+          ) : (
+            <>
+              Dr. {message.doctorName} has canceled your order for
+              {message.productNames && message.productNames.length > 0 && (
+                <span className="font-semibold">
+                  {" "}
+                  &quot;
+                  {message.productNames.map((product, idx) => (
+                    <span key={`${product}-${idx}`}>{product}</span>
+                  ))}
+                  &quot;
+                </span>
+              )}
+              .
+            </>
           )}
-          .
         </div>
       );
     } else if (message.notificationType === "low_stock_alert") {

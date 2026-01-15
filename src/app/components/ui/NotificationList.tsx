@@ -77,6 +77,7 @@ export interface NotificationData {
   };
   date: string;
   id: string;
+  notifiableId: string;
   notificationType: string;
   senderName: string;
   read: boolean;
@@ -376,8 +377,8 @@ const NotificationList: React.FC<NotificationListProps> = ({
       notification.notificationType === "order_canceled" &&
       userType === "doctor"
     ) {
-      if (notification.product?.id) {
-        router.push(`/orders/${notification.product.id}`);
+      if (notification?.notifiableId) {
+        router.push(`/orders/${notification?.notifiableId}`);
       } else {
         // Fallback to inventory page if product id is not available
         router.push("/orders");
@@ -669,24 +670,49 @@ const NotificationList: React.FC<NotificationListProps> = ({
                     )}
                     {message.notificationType === "order_canceled" && (
                       <div>
-                        Dr. {message.doctorName} has canceled your order for
-                        {message.productNames &&
-                          message.productNames.length > 0 && (
-                            <span className="font-semibold">
-                              {" "}
-                              &quot;
-                              {message.productNames.map((product, idx) => (
-                                <span key={`${product}-${idx}`}>
-                                  {product}
-                                  {idx < message.productNames.length - 1
-                                    ? ", "
-                                    : ""}
+                        {userType === "doctor" ? (
+                          <>
+                            {message.senderName} has canceled their order for
+                            {message.productNames &&
+                              message.productNames.length > 0 && (
+                                <span className="font-semibold">
+                                  {" "}
+                                  &quot;
+                                  {message.productNames.map((product, idx) => (
+                                    <span key={`${product}-${idx}`}>
+                                      {product}
+                                      {idx < message.productNames.length - 1
+                                        ? ", "
+                                        : ""}
+                                    </span>
+                                  ))}
+                                  &quot;
                                 </span>
-                              ))}
-                              &quot;
-                            </span>
-                          )}
-                        .
+                              )}
+                            .
+                          </>
+                        ) : (
+                          <>
+                            Dr. {message.doctorName} has canceled your order for
+                            {message.productNames &&
+                              message.productNames.length > 0 && (
+                                <span className="font-semibold">
+                                  {" "}
+                                  &quot;
+                                  {message.productNames.map((product, idx) => (
+                                    <span key={`${product}-${idx}`}>
+                                      {product}
+                                      {idx < message.productNames.length - 1
+                                        ? ", "
+                                        : ""}
+                                    </span>
+                                  ))}
+                                  &quot;
+                                </span>
+                              )}
+                            .
+                          </>
+                        )}
                       </div>
                     )}
                     {message.notificationType === "low_stock_alert" && (
