@@ -426,6 +426,7 @@ export const ALL_NOTIFICATIONS = gql`
         doctorName
         id
         notificationType
+        notifiableId
         senderName
         productNames
         product {

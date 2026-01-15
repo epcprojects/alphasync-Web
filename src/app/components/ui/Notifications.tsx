@@ -109,6 +109,28 @@ export default function Notifications({ userType }: NotificationsProps) {
       return;
     }
 
+    // For order_created, navigate to orders page for customers
+    if (
+      notification.notificationType === "order_created" &&
+      currentUserType === "customer"
+    ) {
+      router.push("/orders");
+      return;
+    }
+
+    if (
+      notification.notificationType === "order_canceled" &&
+      currentUserType === "doctor"
+    ) {
+      if (notification?.notifiableId) {
+        router.push(`/orders/${notification?.notifiableId}`);
+      } else {
+        // Fallback to inventory page if product id is not available
+        router.push("/orders");
+      }
+      return;
+    }
+
     if (currentUserType === "doctor" && notification.sender?.id) {
       // Determine which tab to open based on notification type
       let tab = "";
@@ -264,6 +286,8 @@ export default function Notifications({ userType }: NotificationsProps) {
         return `Order request denied`;
       case "order_created":
         return `Order created`;
+      case "order_canceled":
+        return `Order canceled`;
       case "low_stock_alert":
         return "Low stock alert";
       case "message_received":
@@ -336,6 +360,42 @@ export default function Notifications({ userType }: NotificationsProps) {
             </span>
           )}
           .
+        </div>
+      );
+    } else if (message.notificationType === "order_canceled") {
+      return (
+        <div>
+          {currentUserType === "doctor" ? (
+            <>
+              {message.senderName} has canceled their order for
+              {message.productNames && message.productNames.length > 0 && (
+                <span className="font-semibold">
+                  {" "}
+                  &quot;
+                  {message.productNames.map((product, idx) => (
+                    <span key={`${product}-${idx}`}>{product}</span>
+                  ))}
+                  &quot;
+                </span>
+              )}
+              .
+            </>
+          ) : (
+            <>
+              Dr. {message.doctorName} has canceled your order for
+              {message.productNames && message.productNames.length > 0 && (
+                <span className="font-semibold">
+                  {" "}
+                  &quot;
+                  {message.productNames.map((product, idx) => (
+                    <span key={`${product}-${idx}`}>{product}</span>
+                  ))}
+                  &quot;
+                </span>
+              )}
+              .
+            </>
+          )}
         </div>
       );
     } else if (message.notificationType === "low_stock_alert") {
