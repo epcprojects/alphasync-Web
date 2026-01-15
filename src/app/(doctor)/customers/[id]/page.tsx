@@ -64,6 +64,8 @@ interface PatientOrdersResponse {
       status: string;
       createdAt: string;
       totalPrice: number;
+      totalTax?: number;
+      subtotalPrice?: number;
     }[];
     count: number;
     nextPage: number | null;

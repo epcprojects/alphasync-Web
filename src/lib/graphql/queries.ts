@@ -137,6 +137,7 @@ export const DOCTOR_ORDERS = gql`
         profit
         netCost
         subtotalPrice
+        totalTax
       }
       count
       nextPage
@@ -296,6 +297,8 @@ export const PATIENT_ORDERS = gql`
         createdAt
         totalPrice
         hasAnotherReorder
+        totalTax
+        subtotalPrice
         patient {
           address
         }

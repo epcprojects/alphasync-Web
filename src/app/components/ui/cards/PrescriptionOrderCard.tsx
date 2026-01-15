@@ -26,6 +26,8 @@ export interface PrescriptionOrder {
   orderItems: OrderItem[];
   orderedOn: string;
   totalPrice: number;
+  totalTax?: number | null;
+  subtotalPrice?: number | null;
   isDueToday?: string;
   status?: string;
   shippingAddress?: string;
@@ -195,6 +197,9 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                   icon={type === "order" && <Reload />}
                 />
               )}
+              {order?.totalTax && <span className="text-base text-gray-800 text-left sm:text-right">
+                Tax: ${order.totalTax?.toFixed(2)}
+              </span>}
               <span className="text-xl font-semibold text-primary text-left sm:text-right">
                 ${order.totalPrice.toFixed(2)}
               </span>

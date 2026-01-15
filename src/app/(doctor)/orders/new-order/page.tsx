@@ -294,10 +294,10 @@ const Page = () => {
                     optionPaddingClasses="p-1"
                     onCustomerChange={(customer) => {
                       setSelectedCustomerData(customer);
-                      // Refetch products when customer changes to get latest prices
-                      if (productSelectRef.current) {
-                        productSelectRef.current.refetch();
-                      }
+                      // // Refetch products when customer changes to get latest prices
+                      // if (productSelectRef.current) {
+                      //   productSelectRef.current.refetch();
+                      // }
                     }}
                   />
                 </div>

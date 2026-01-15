@@ -34,6 +34,8 @@ interface PatientOrderItemData {
   quantity?: number | null;
   price?: number | null;
   totalPrice?: number | null;
+  totalTax?: number | null;
+  subtotalPrice?: number | null;
   product?: {
     title?: string | null;
     description?: string | null;
@@ -53,6 +55,8 @@ interface PatientOrderData {
   status?: string | null;
   createdAt: string;
   totalPrice?: number | null;
+  totalTax?: number | null;
+  subtotalPrice?: number | null;
   orderItems?: PatientOrderItemData[] | null;
   doctor?: {
     fullName?: string | null;
@@ -220,6 +224,8 @@ function PendingPayments() {
       displayId: String(order.displayId ?? order.id),
       doctorName: order.doctor?.fullName || "Unknown Doctor",
       orderItems,
+      totalTax: order?.totalTax ?? 0,
+      subtotalPrice: order?.subtotalPrice ?? 0,
       orderedOn: orderDate ? orderDate.toLocaleDateString("en-US") : "--",
       totalPrice: order.totalPrice ?? 0,
       isDueToday: orderDate ? getDueLabel(orderDate, today) : undefined,
