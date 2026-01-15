@@ -137,6 +137,7 @@ export const DOCTOR_ORDERS = gql`
         profit
         netCost
         subtotalPrice
+        totalTax
       }
       count
       nextPage

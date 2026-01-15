@@ -58,6 +58,7 @@ interface DoctorOrdersResponse {
       }[];
       totalPrice: number;
       subtotalPrice: number;
+      totalTax: number;
       netCost: number | null;
       profit: number | null;
     }[];
@@ -81,6 +82,8 @@ function OrderContent() {
     doctorName: string;
     orderedOn: string;
     totalPrice: number;
+    subtotalPrice: number;
+    totalTax: number;
     orderItems: {
       id: string;
       medicineName: string;
@@ -226,6 +229,8 @@ function OrderContent() {
       doctorName: order.patient?.fullName || "Clinic Order",
       orderedOn: format(new Date(order.createdAt), "MM/dd/yyyy"),
       totalPrice: order.totalPrice,
+      subtotalPrice: order.subtotalPrice,
+      totalTax: order.totalTax,
       status: order.status,
       doctorAddress: doctorAddress || undefined,
       orderItems: order.orderItems.map((item) => ({
@@ -257,6 +262,8 @@ function OrderContent() {
       orderedOn: format(new Date(order.createdAt), "MM/dd/yyyy"),
       totalPrice: order.totalPrice,
       status: order.status,
+      subtotalPrice: order.subtotalPrice,
+      totalTax: order.totalTax,
       doctorAddress: doctorAddress || undefined,
       orderItems: order.orderItems.map((item) => ({
         id: item.id,
@@ -638,6 +645,8 @@ function OrderContent() {
             doctorName: selectedOrder.doctorName,
             orderedOn: selectedOrder.orderedOn,
             totalPrice: selectedOrder.totalPrice,
+            subtotalPrice: selectedOrder.subtotalPrice,
+            totalTax: selectedOrder.totalTax,
             orderItems: selectedOrder.orderItems.map((item) => ({
               id: item.id,
               medicineName: item.medicineName,

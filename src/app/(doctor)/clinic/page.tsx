@@ -45,6 +45,8 @@ interface DoctorOrderData {
   status?: string | null;
   createdAt: string;
   totalPrice?: number | null;
+  subtotalPrice?: number | null;
+  totalTax?: number | null;
   orderItems?: DoctorOrderItemData[] | null;
   patient?: {
     fullName?: string | null;
@@ -161,6 +163,8 @@ function ClinicContent() {
       orderItems,
       orderedOn: orderDate ? orderDate.toLocaleDateString("en-US") : "--",
       totalPrice: order.totalPrice ?? 0,
+      subtotalPrice: order.subtotalPrice ?? 0,
+      totalTax: order.totalTax ?? 0,
       status: order.status ?? undefined,
       doctorAddress: doctorAddress || undefined,
     };

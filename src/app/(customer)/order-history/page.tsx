@@ -179,7 +179,9 @@ function History() {
 
         return {
           id: item.id ?? `${order.id}-${index}`,
-
+          subtotalPrice: order.subtotalPrice ?? 0,
+          totalPrice: order.totalPrice ?? 0,
+          totalTax: order.totalTax ?? 0,
           medicineName: item.product?.title || "Unknown Product",
           quantity,
           price: unitPrice,
@@ -201,6 +203,8 @@ function History() {
         ? new Date(order.createdAt).toLocaleDateString()
         : "--",
       totalPrice: order.totalPrice ?? 0,
+      totalTax: order.totalTax ?? 0,
+      subtotalPrice: order.subtotalPrice ?? 0,
       status: order.status ?? undefined,
       hasAnotherReorder: order.hasAnotherReorder ?? false,
       patient: order.patient

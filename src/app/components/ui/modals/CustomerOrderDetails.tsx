@@ -20,6 +20,8 @@ type order = {
   shippingAddress?: string;
   isDueToday?: string;
   totalPrice: string | number;
+  subtotalPrice?: number | null;
+  totalTax?: number | null;
   orderItems: OrderItem[];
   status?: string;
   patient?: {
@@ -86,6 +88,14 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
           ))}
 
           <div className="flex flex-col gap-4 px-2.5 md:px-0 border-b border-gray-200 pb-4 ">
+            {order?.totalTax && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-normal text-gray-800">Tax</span>
+                <span className="text-sm font-medium text-gray-800">
+                  ${order?.totalTax?.toFixed(2)}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">Status</span>
               <div className="flex items-center justify-between">
