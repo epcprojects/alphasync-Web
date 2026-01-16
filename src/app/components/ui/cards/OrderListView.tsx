@@ -210,8 +210,8 @@ export default function OrderListView({
   const gridCols = hideCustomer
     ? hideProfit
       ? "md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_6rem] lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_7rem]"
-      : "md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_1fr_6rem] lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr_7rem]"
-    : "md:grid-cols-[4rem_8rem_4rem_8rem_1fr_1fr_1fr_1fr_6rem] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_7rem]";
+      : "grid-cols-[4fr_4fr_4fr_2fr_4fr_4fr_4fr]"
+    : " grid-cols-[1.5fr_2.5fr_1fr_2fr_1fr_1fr_1fr_1fr_1fr]";
 
   return (
     <div
@@ -256,7 +256,7 @@ export default function OrderListView({
           order.status
         )}`}
       >
-        <span className="lg:whitespace-nowrap">
+        <span className="lg:whitespace-nowrap capitalize">
           {formatStatusDisplay(order.status)}
         </span>
       </div>
