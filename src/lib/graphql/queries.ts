@@ -74,6 +74,8 @@ export const ALL_PRODUCTS_INVENTORY = gql`
     $category: String
     $favoriteProducts: Boolean
     $patientId: ID
+    $markedUp: Boolean
+    $notMarkedUp: Boolean
   ) {
     allProducts(
       search: $search
@@ -83,6 +85,8 @@ export const ALL_PRODUCTS_INVENTORY = gql`
       category: $category
       favoriteProducts: $favoriteProducts
       patientId: $patientId
+      markedUp: $markedUp
+      notMarkedUp: $notMarkedUp
     ) {
       allData {
         customPrice

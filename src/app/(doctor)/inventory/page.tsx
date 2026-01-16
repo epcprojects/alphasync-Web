@@ -17,6 +17,8 @@ import {
   ListViewIcon,
   SearchIcon,
   PackageOutlineIcon,
+  MarkedUpIcon,
+  NotMarkedUpIcon,
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
@@ -39,6 +41,8 @@ function InventoryContent() {
   const [showGridView, setShowGridView] = useState(true);
   const [showOutOfStock, setShowOutOfStock] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [showMarkedUp, setShowMarkedUp] = useState(false);
+  const [showNotMarkedUp, setShowNotMarkedUp] = useState(false);
   const [isBlanketMarkupModalOpen, setIsBlanketMarkupModalOpen] =
     useState(false);
   const [isRefetchingFavorites, setIsRefetchingFavorites] = useState(false);
@@ -76,6 +80,11 @@ function InventoryContent() {
     setCurrentPage(1);
   }, [showFavourites]);
 
+  // Reset to first page when marked up filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [showMarkedUp, showNotMarkedUp]);
+
   const {
     data: productsData,
     loading: productsLoading,
@@ -88,6 +97,8 @@ function InventoryContent() {
       perPage: itemsPerPage,
       inStockOnly: showOutOfStock ? false : undefined,
       favoriteProducts: showFavourites ? true : undefined,
+      markedUp: showMarkedUp ? true : undefined,
+      notMarkedUp: showNotMarkedUp ? true : undefined,
     },
     fetchPolicy: "network-only",
     notifyOnNetworkStatusChange: true,
@@ -241,6 +252,51 @@ function InventoryContent() {
             </div>
 
             <div className="sm:p-0 flex items-center gap-1 md:gap-2 rounded-full bg-white sm:bg-transparent p-1 shadow-table sm:shadow-none">
+              <Tooltip content="Marked Up">
+                <button
+                  onClick={() => {
+                    if (showMarkedUp) {
+                      setShowMarkedUp(false);
+                    } else {
+                      setShowMarkedUp(true);
+                      setShowNotMarkedUp(false);
+                    }
+                  }}
+                  className={`w-8 h-8 shrink-0 md:h-11 md:w-11 ${
+                    showMarkedUp &&
+                    "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+                  }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+                >
+                  <MarkedUpIcon
+                    height={isMobile ? "15" : "22"}
+                    width={isMobile ? "15" : "22"}
+                    color={showMarkedUp ? "white" : "black"}
+                  />
+                </button>
+              </Tooltip>
+
+              <Tooltip content="Not Marked Up">
+                <button
+                  onClick={() => {
+                    if (showNotMarkedUp) {
+                      setShowNotMarkedUp(false);
+                    } else {
+                      setShowNotMarkedUp(true);
+                      setShowMarkedUp(false);
+                    }
+                  }}
+                  className={`w-8 h-8 shrink-0 md:h-11 md:w-11 ${
+                    showNotMarkedUp &&
+                    "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
+                  }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+                >
+                  <NotMarkedUpIcon
+                    height={isMobile ? "15" : "22"}
+                    width={isMobile ? "15" : "22"}
+                    color={showNotMarkedUp ? "white" : "black"}
+                  />
+                </button>
+              </Tooltip>
               <Tooltip content="Favorite Products">
                 <button
                   onClick={() => setShowFavourites((prev) => !prev)}
