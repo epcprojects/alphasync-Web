@@ -378,6 +378,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     </div>
                   )}
                   <ProductSelect
+                    fetchMarkedUpProductsOnly={true}
                     selectedProduct={values.product}
                     setSelectedProduct={(product) =>
                       setFieldValue("product", product)
@@ -398,7 +399,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         setFieldValue("price", priceToUse);
                       }
                     }}
-                    patientId={patientId}
                   />
 
                   <div

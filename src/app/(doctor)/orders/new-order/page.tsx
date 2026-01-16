@@ -303,6 +303,7 @@ const Page = () => {
                 </div>
                 <div>
                   <ProductSelect
+                    fetchMarkedUpProductsOnly={true}
                     ref={productSelectRef}
                     selectedProduct={values.product}
                     setSelectedProduct={(product) =>
@@ -323,7 +324,6 @@ const Page = () => {
                         setFieldValue("price", priceToUse);
                       }
                     }}
-                    patientId={selectedCustomerData?.id}
                   />
                 </div>
 

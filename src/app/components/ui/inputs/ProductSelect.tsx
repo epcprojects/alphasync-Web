@@ -26,7 +26,7 @@ interface ProductSelectProps {
   showLabel?: boolean;
   paddingClasses?: string;
   optionPaddingClasses?: string;
-  patientId?: string | null;
+  fetchMarkedUpProductsOnly?: boolean;
 }
 
 export interface ProductSelectRef {
@@ -47,7 +47,7 @@ const ProductSelect = forwardRef<ProductSelectRef, ProductSelectProps>(
       showLabel = true,
       paddingClasses = "py-2.5 h-11 px-2",
       optionPaddingClasses = "p-1",
-      patientId,
+      fetchMarkedUpProductsOnly = false,
     },
     ref
   ) => {
@@ -63,7 +63,9 @@ const ProductSelect = forwardRef<ProductSelectRef, ProductSelectProps>(
       fetchPolicy: "no-cache",
       variables: {
         perPage: 200,
-        // patientId: patientId,
+        markedUp: fetchMarkedUpProductsOnly
+          ? fetchMarkedUpProductsOnly
+          : undefined,
       },
       // skip: !patientId,
       notifyOnNetworkStatusChange: true,
