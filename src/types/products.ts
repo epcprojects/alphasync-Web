@@ -54,6 +54,7 @@ export interface Product {
   primaryImage?: string;
   tags?: string[];
   variants?: ProductVariant[];
+  basePrice?: string; // Base price (priceRange) before markup
 }
 
 // Product select dropdown item interface
@@ -111,6 +112,34 @@ export const transformGraphQLProduct = (
       price: variant.price,
       sku: variant.sku,
     })),
+    basePrice: (() => {
+      // Use priceRange if available, otherwise use variant price
+      if (product.priceRange) {
+        // If priceRange is already formatted with $, use it as is
+        // Otherwise, extract the first price from range format or format it
+        const priceRangeStr = product.priceRange.trim();
+        if (priceRangeStr.startsWith('$')) {
+          // Extract the first price from range (e.g., "$10.00 - $20.00" -> "$10.00")
+          const firstPrice = priceRangeStr.split(' - ')[0];
+          return firstPrice || priceRangeStr;
+        } else {
+          // If no $, try to parse as number and format
+          const match = priceRangeStr.match(/[\d.]+/);
+          if (match) {
+            const price = parseFloat(match[0]);
+            if (!isNaN(price)) {
+              return `$${price.toFixed(2)}`;
+            }
+          }
+          return `$${priceRangeStr}`;
+        }
+      }
+      // Fallback to variant price with dollar sign
+      if (firstVariant?.price) {
+        return `$${firstVariant.price.toFixed(2)}`;
+      }
+      return undefined;
+    })(),
   };
 };
 

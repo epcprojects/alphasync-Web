@@ -413,13 +413,14 @@ function InventoryContent() {
           ) : (
             <div className="space-y-1">
               <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium bg-white rounded-xl text-black shadow-table">
-                <div className="col-span-5 md:col-span-4 lg:col-span-5">
+                <div className="col-span-4 md:col-span-4 lg:col-span-4">
                   Product
                 </div>
-                <div className="col-span-3">Category</div>
-                <div className="col-span-2">Stock</div>
-                <div className="col-span-1">Price</div>
-                <div className="col-span-1 md:col-span-2 lg:col-span-1 text-center">
+                <div className="col-span-2 md:col-span-2">Category</div>
+                <div className="col-span-1">Stock</div>
+                <div className="col-span-2">Latest Marked up Price</div>
+                <div className="col-span-1">Base Price</div>
+                <div className="col-span-1 md:col-span-2 lg:col-span-2 text-center">
                   Actions
                 </div>
               </div>
