@@ -198,6 +198,7 @@ export const FETCH_PRODUCT = gql`
       customPriceChangeHistory {
         customPrice
         id
+        createdAt
       }
       markupPercentage
       customPrice

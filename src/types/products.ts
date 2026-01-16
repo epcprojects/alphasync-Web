@@ -121,6 +121,7 @@ export interface FetchProductResponse {
     customPriceChangeHistory?: {
       customPrice: number;
       id: string;
+      createdAt?: string;
     }[];
     markupPercentage?: number;
     description?: string;
