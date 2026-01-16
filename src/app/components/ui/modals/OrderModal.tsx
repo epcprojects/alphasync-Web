@@ -203,14 +203,14 @@ const OrderModal: React.FC<OrderModalProps> = ({
               setSelectedCustomerData(customer);
 
               // Fetch product with customer-specific pricing when customer is selected
-              if (customer?.id && productId) {
-                fetchProduct({
-                  variables: {
-                    id: productId,
-                    patientId: customer.id,
-                  },
-                });
-              }
+              // if (customer?.id && productId) {
+              //   fetchProduct({
+              //     variables: {
+              //       id: productId,
+              //       patientId: customer.id,
+              //     },
+              //   });
+              // }
             }}
           />
           {errors.user && (
