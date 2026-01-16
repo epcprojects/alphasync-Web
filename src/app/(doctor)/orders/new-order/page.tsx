@@ -9,8 +9,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { formatNumber } from "@/lib/helpers";
-import { useMutation } from "@apollo/client/react";
+import { useMutation, useLazyQuery } from "@apollo/client/react";
 import { CREATE_ORDER } from "@/lib/graphql/mutations";
+import { FETCH_PRODUCT } from "@/lib/graphql/queries";
+import { FetchProductResponse } from "@/types/products";
 import type { ProductSelectRef } from "@/app/components/ui/inputs/ProductSelect";
 
 interface OrderItem {
@@ -77,6 +79,10 @@ const Page = () => {
     email: string;
     id: string;
   } | null>(null);
+  const [productBasePrice, setProductBasePrice] = useState<number | null>(null);
+  const [latestMarkedUpPrice, setLatestMarkedUpPrice] = useState<number | null>(
+    null
+  );
 
   // Ref to ProductSelect to trigger refetch
   const productSelectRef = useRef<ProductSelectRef>(null);
@@ -86,6 +92,45 @@ const Page = () => {
     createOrder,
     { loading: createOrderLoading, error: createOrderError },
   ] = useMutation(CREATE_ORDER);
+
+  // Lazy query to fetch full product data with pricing history
+  const [fetchProduct, { loading: fetchingProduct }] =
+    useLazyQuery<FetchProductResponse>(FETCH_PRODUCT, {
+      fetchPolicy: "no-cache",
+      notifyOnNetworkStatusChange: false,
+      onCompleted: (data) => {
+        if (data?.fetchProduct) {
+          const product = data.fetchProduct;
+
+          // Set base price (original price before markup)
+          const basePriceValue =
+            product.price || product.variants?.[0]?.price || 0;
+          setProductBasePrice(basePriceValue);
+
+          // Get latest marked up price from history (most recent entry)
+          const priceHistory = product.customPriceChangeHistory;
+          if (priceHistory && priceHistory.length > 0) {
+            // Sort by createdAt descending to get the latest
+            const sortedHistory = [...priceHistory].sort((a, b) => {
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateB - dateA;
+            });
+            const latestHistory = sortedHistory[0];
+            if (latestHistory?.customPrice != null) {
+              setLatestMarkedUpPrice(Number(latestHistory.customPrice));
+            }
+          } else {
+            setLatestMarkedUpPrice(null);
+          }
+        }
+      },
+      onError: (error) => {
+        console.error("Error fetching product pricing history:", error);
+        setProductBasePrice(null);
+        setLatestMarkedUpPrice(null);
+      },
+    });
 
   const handleAddItem = (values: {
     customer: string;
@@ -221,6 +266,8 @@ const Page = () => {
       setOrderItems([]);
       setCustomerDraft("");
       setPriceErrors({});
+      setProductBasePrice(null);
+      setLatestMarkedUpPrice(null);
 
       // Refetch products to get latest prices for next order
       if (productSelectRef.current) {
@@ -313,6 +360,18 @@ const Page = () => {
                     touched={touched.product}
                     onProductChange={(selectedProduct) => {
                       setSelectedProductData(selectedProduct);
+
+                      // Fetch full product data to get pricing history
+                      if (selectedProduct?.productId) {
+                        fetchProduct({
+                          variables: { id: selectedProduct.productId },
+                        });
+                      } else {
+                        // Reset pricing info if no product selected
+                        setProductBasePrice(null);
+                        setLatestMarkedUpPrice(null);
+                      }
+
                       // Auto-populate price when product is selected
                       // Use customPrice if present, otherwise use originalPrice
                       if (selectedProduct) {
@@ -326,6 +385,38 @@ const Page = () => {
                     }}
                   />
                 </div>
+
+                {/* Pricing Information Display */}
+                {(productBasePrice !== null ||
+                  latestMarkedUpPrice !== null) && (
+                  <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
+                    <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-2">
+                      Pricing Information
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                      {productBasePrice !== null && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600 text-xs md:text-sm">
+                            Base Price
+                          </span>
+                          <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                            ${productBasePrice.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                      {latestMarkedUpPrice !== null && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600 text-xs md:text-sm">
+                            Latest Marked Up Price
+                          </span>
+                          <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                            ${latestMarkedUpPrice.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className={`flex gap-4 flex-row`}>
                   <div className="w-full">

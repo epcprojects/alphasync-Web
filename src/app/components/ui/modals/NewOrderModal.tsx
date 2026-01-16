@@ -10,8 +10,10 @@ import * as Yup from "yup";
 import Image from "next/image";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { formatNumber } from "@/lib/helpers";
-import { useMutation } from "@apollo/client/react";
+import { useMutation, useLazyQuery } from "@apollo/client/react";
 import { CREATE_ORDER } from "@/lib/graphql/mutations";
+import { FETCH_PRODUCT } from "@/lib/graphql/queries";
+import { FetchProductResponse } from "@/types/products";
 import { useParams } from "next/navigation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
@@ -84,6 +86,49 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   const [priceErrors, setPriceErrors] = useState<{ [index: number]: string }>(
     {}
   );
+  const [productBasePrice, setProductBasePrice] = useState<number | null>(null);
+  const [latestMarkedUpPrice, setLatestMarkedUpPrice] = useState<number | null>(
+    null
+  );
+
+  // Lazy query to fetch full product data with pricing history
+  const [fetchProduct, { loading: fetchingProduct }] =
+    useLazyQuery<FetchProductResponse>(FETCH_PRODUCT, {
+      fetchPolicy: "no-cache",
+      notifyOnNetworkStatusChange: false,
+      onCompleted: (data) => {
+        if (data?.fetchProduct) {
+          const product = data.fetchProduct;
+
+          // Set base price (original price before markup)
+          const basePriceValue =
+            product.price || product.variants?.[0]?.price || 0;
+          setProductBasePrice(basePriceValue);
+
+          // Get latest marked up price from history (most recent entry)
+          const priceHistory = product.customPriceChangeHistory;
+          if (priceHistory && priceHistory.length > 0) {
+            // Sort by createdAt descending to get the latest
+            const sortedHistory = [...priceHistory].sort((a, b) => {
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateB - dateA;
+            });
+            const latestHistory = sortedHistory[0];
+            if (latestHistory?.customPrice != null) {
+              setLatestMarkedUpPrice(Number(latestHistory.customPrice));
+            }
+          } else {
+            setLatestMarkedUpPrice(null);
+          }
+        }
+      },
+      onError: (error) => {
+        console.error("Error fetching product pricing history:", error);
+        setProductBasePrice(null);
+        setLatestMarkedUpPrice(null);
+      },
+    });
 
   // Create OrderSchema inside component to access selectedProductData
   const OrderSchema = React.useMemo(() => {
@@ -264,6 +309,8 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       setOrderItems([]);
       setCustomerDraft("");
       setPriceErrors({});
+      setProductBasePrice(null);
+      setLatestMarkedUpPrice(null);
       if (!currentCustomer) {
         setLockedCustomer(null);
       }
@@ -284,6 +331,9 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
         if (showItems) {
           setShowItems(false);
         } else {
+          // Reset pricing info when closing
+          setProductBasePrice(null);
+          setLatestMarkedUpPrice(null);
           onClose();
         }
       }}
@@ -387,6 +437,18 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     touched={touched.product}
                     onProductChange={(selectedProduct) => {
                       setSelectedProductData(selectedProduct);
+
+                      // Fetch full product data to get pricing history
+                      if (selectedProduct?.productId) {
+                        fetchProduct({
+                          variables: { id: selectedProduct.productId },
+                        });
+                      } else {
+                        // Reset pricing info if no product selected
+                        setProductBasePrice(null);
+                        setLatestMarkedUpPrice(null);
+                      }
+
                       // Auto-populate price when product is selected
                       // Use customPrice if present, otherwise use originalPrice or variants[0].price
                       if (selectedProduct) {
@@ -467,6 +529,37 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                       )}
                     </div>
                     <div className="w-full">
+                      {/* Pricing Information Display */}
+                      {(productBasePrice !== null ||
+                        latestMarkedUpPrice !== null) && (
+                        <div className="bg-gray-50 rounded-lg p-2 mb-2 border border-gray-200">
+                          <h3 className="text-gray-700 font-medium text-xs mb-1.5">
+                            Pricing Information
+                          </h3>
+                          <div className="flex flex-col gap-1.5">
+                            {productBasePrice !== null && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600 text-xs">
+                                  Base Price
+                                </span>
+                                <span className="text-gray-800 font-semibold text-xs">
+                                  ${productBasePrice.toFixed(2)}
+                                </span>
+                              </div>
+                            )}
+                            {latestMarkedUpPrice !== null && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600 text-xs">
+                                  Latest Marked Up Price
+                                </span>
+                                <span className="text-gray-800 font-semibold text-xs">
+                                  ${latestMarkedUpPrice.toFixed(2)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       <Field
                         as={ThemeInput}
                         label="Price ($)"

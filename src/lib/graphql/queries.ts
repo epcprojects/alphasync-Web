@@ -193,8 +193,8 @@ export const FETCH_ORDER = gql`
   }
 `;
 export const FETCH_PRODUCT = gql`
-  query FetchProduct($id: ID!, $patientId: ID) {
-    fetchProduct(id: $id, patientId: $patientId) {
+  query FetchProduct($id: ID!) {
+    fetchProduct(id: $id) {
       customPriceChangeHistory {
         customPrice
         id
