@@ -417,7 +417,7 @@ function OrderContent() {
           <TabPanels>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden md:grid md:grid-cols-[4rem_10rem_4rem_6rem_1fr_1fr_1fr_1fr_3rem]  lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_1fr_4rem] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="hidden md:grid md:grid-cols-[4fr_4fr_4fr_2fr_4fr_4fr_4fr] lg:grid-cols-[1.5fr_2.5fr_1fr_2fr_1fr_1fr_1fr_1fr_1fr] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div>
                     <h2 className="whitespace-nowrap">Order ID</h2>
                   </div>
@@ -443,7 +443,7 @@ function OrderContent() {
                     <h2>Profit</h2>
                   </div>
                   <div>
-                    <h2 className="text-center">Actions</h2>
+                    <h2 className="text-end">Actions</h2>
                   </div>
                 </div>
 
