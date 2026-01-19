@@ -21,6 +21,7 @@ type ProductListViewProps = {
   onToggleFavourite?: (id: number) => void;
   onAddToCart?: (id: number) => void;
   onRowClick?: () => void;
+  customPrice?: number | null;
 };
 
 export default function ProductListView({
@@ -28,6 +29,7 @@ export default function ProductListView({
   onToggleFavourite,
   onAddToCart,
   onRowClick,
+  customPrice,
 }: ProductListViewProps) {
   return (
     <div
@@ -120,7 +122,8 @@ export default function ProductListView({
               e.stopPropagation();
               onAddToCart?.(product.id);
             }}
-            className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary"
+            disabled={customPrice === null || customPrice === undefined}
+            className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ShopingCartIcon width={16} height={16} />
           </button>

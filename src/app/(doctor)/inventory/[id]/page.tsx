@@ -579,6 +579,10 @@ export default function PostDetail() {
                 onClick={() => setIsOrderModalOpen(true)}
                 className="w-full sm:w-fit sm:min-w-40"
                 heightClass="h-11"
+                disabled={
+                  product.customPrice === null ||
+                  product.customPrice === undefined
+                }
               />
             </div>
 

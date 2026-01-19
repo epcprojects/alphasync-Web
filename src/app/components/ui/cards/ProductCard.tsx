@@ -22,6 +22,7 @@ interface ProductCardProps {
   onAddToCart?: (id: number) => void;
   onCardClick?: () => void;
   onToggleFavourite?: (id: number) => void;
+  customPrice?: number | null;
 }
 
 export default function ProductCard({
@@ -29,6 +30,7 @@ export default function ProductCard({
   onAddToCart,
   onCardClick,
   onToggleFavourite,
+  customPrice,
 }: ProductCardProps) {
   return (
     <div
@@ -102,6 +104,7 @@ export default function ProductCard({
                   variant="outline"
                   className="flex-1"
                   heightClass="h-10 md:h-11"
+                  disabled={customPrice === null || customPrice === undefined}
                 />
 
                 <h2 className="text-gray-950 font-semibold text-sm md:text-lg lg:text-xl min-w-16 text-end">
