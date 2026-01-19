@@ -90,6 +90,11 @@ export const ALL_PRODUCTS_INVENTORY = gql`
     ) {
       allData {
         customPrice
+        customPriceChangeHistory {
+          customPrice
+          id
+          createdAt
+        }
         description
         handle
         id

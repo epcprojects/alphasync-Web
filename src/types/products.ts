@@ -5,6 +5,11 @@ export interface AllProductsResponse {
       id: string;
       title: string;
       customPrice?: number;
+      customPriceChangeHistory?: {
+        customPrice: number;
+        id: string;
+        createdAt?: string;
+      }[];
       description?: string;
       handle?: string;
       images?: string[];
@@ -67,6 +72,11 @@ export interface ProductDropdownItem {
   customPrice?: number;
   originalPrice?: number;
   variants?: ProductVariant[];
+  customPriceChangeHistory?: {
+    customPrice: number;
+    id: string;
+    createdAt?: string;
+  }[];
 }
 
 // Helper function to transform GraphQL product data to UI format
@@ -118,9 +128,9 @@ export const transformGraphQLProduct = (
         // If priceRange is already formatted with $, use it as is
         // Otherwise, extract the first price from range format or format it
         const priceRangeStr = product.priceRange.trim();
-        if (priceRangeStr.startsWith('$')) {
+        if (priceRangeStr.startsWith("$")) {
           // Extract the first price from range (e.g., "$10.00 - $20.00" -> "$10.00")
-          const firstPrice = priceRangeStr.split(' - ')[0];
+          const firstPrice = priceRangeStr.split(" - ")[0];
           return firstPrice || priceRangeStr;
         } else {
           // If no $, try to parse as number and format
@@ -193,6 +203,7 @@ export const transformToDropdownItem = (
     price: price,
     customPrice: product.customPrice,
     originalPrice: originalPrice,
+    customPriceChangeHistory: product.customPriceChangeHistory,
     variants: product.variants?.map((variant) => ({
       id: variant.id,
       shopifyVariantId: variant.shopifyVariantId,
