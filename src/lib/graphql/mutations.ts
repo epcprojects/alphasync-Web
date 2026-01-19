@@ -698,6 +698,7 @@ export const PROCESS_PAYMENT = gql`
     $orderId: ID!
     $opaqueData: OpaqueData!
     $amount: Float!
+    $taxAmount: Float!
     $billingAddress: BillingAddress
     $shippingAddress: ShippingAddress
   ) {
@@ -706,6 +707,7 @@ export const PROCESS_PAYMENT = gql`
         orderId: $orderId
         opaqueData: $opaqueData
         amount: $amount
+        taxAmount: $taxAmount
         billingAddress: $billingAddress
         shippingAddress: $shippingAddress
       }
@@ -746,6 +748,27 @@ export const BLANKET_MARKUP_PRODUCTS = gql`
   mutation BlanketMarkupProducts($markupPercentage: Float!) {
     blanketMarkupProducts(input: { markupPercentage: $markupPercentage }) {
       success
+    }
+  }
+`;
+
+export const CALCULATE_TAX = gql`
+  mutation CalculateTax(
+    $clientMutationId: String
+    $subtotalPrice: Float!
+    $postalCode: String!
+  ) {
+    calculateTax(
+      input: {
+        clientMutationId: $clientMutationId
+        subtotalPrice: $subtotalPrice
+        postalCode: $postalCode
+      }
+    ) {
+      clientMutationId
+      success
+      taxAmount
+      totalPrice
     }
   }
 `;
