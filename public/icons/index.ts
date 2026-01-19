@@ -97,8 +97,6 @@ import FolderIcon from "./FolderIcon";
 import DashboardIcon from "./DashboardIcon";
 import AdminIcon from "./AdminIcon";
 import AdminFilledIcon from "./AdminFilledIcon";
-import MarkedUpIcon from "./MarkedUpIcon";
-import NotMarkedUpIcon from "./NotMarkedUp";
 
 export {
   AdminFilledIcon,
@@ -200,6 +198,4 @@ export {
   RejectIcon,
   EyeIcon,
   UserRejectIcon,
-  MarkedUpIcon,
-  NotMarkedUpIcon,
 };
