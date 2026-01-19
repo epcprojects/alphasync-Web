@@ -62,7 +62,7 @@ function Content() {
   // Determine redirect path based on user type
   const getLoginRedirect = () => {
     if (isAdmin) {
-      return "/login?admin=admin";
+      return "/admin/login";
     }
     // If doctor=false, redirect with type=patient to set Patient tab as default
     if (doctorParam === "false" || urlString.includes("doctor=false")) {

@@ -97,6 +97,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
 
       // Navigate to login page
       router.push("/login");
+      localStorage.removeItem("dataForOtp");
 
       // Force a page reload to ensure clean state
       setTimeout(() => {

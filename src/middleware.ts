@@ -28,15 +28,23 @@ export function middleware(request: NextRequest) {
   // Public routes (accessible without login)
   const publicRoutes = [
     "/login",
+    "/admin/login",
     "/otp",
     "/new-password",
     "/accept-invitation",
     "/forgot",
   ];
-  const isPublicRoute = publicRoutes.includes(pathname);
+  const isPublicRoute =
+    publicRoutes.includes(pathname) || pathname.startsWith("/admin/login");
 
   // Role-based route definitions
-  const adminRoutes = ["/admin"];
+  const adminRoutes = [
+    "/admin/doctors",
+    "/admin/admins",
+    "/admin/products",
+    "/admin/settings",
+    "/admin/dashboard",
+  ];
   const doctorRoutes = [
     "/inventory",
     "/customers",
@@ -147,6 +155,7 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/login",
+    "/admin/login",
     "/otp",
     "/forgot",
     "/new-password",
