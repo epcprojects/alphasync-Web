@@ -552,36 +552,37 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     </div>
                     <div className="w-full">
                       {/* Pricing Information Display */}
-                      {(productBasePrice !== null ||
-                        latestMarkedUpPrice !== null) && (
-                        <div className="bg-gray-50 rounded-lg p-2 mb-2 border border-gray-200">
-                          <h3 className="text-gray-700 font-medium text-xs mb-1.5">
-                            Pricing Information
-                          </h3>
-                          <div className="flex flex-col gap-1.5">
-                            {productBasePrice !== null && (
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-600 text-xs">
-                                  Base Price
-                                </span>
-                                <span className="text-gray-800 font-semibold text-xs">
-                                  ${productBasePrice.toFixed(2)}
-                                </span>
-                              </div>
-                            )}
-                            {latestMarkedUpPrice !== null && (
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-600 text-xs">
-                                  Latest Marked Up Price
-                                </span>
-                                <span className="text-gray-800 font-semibold text-xs">
-                                  ${latestMarkedUpPrice.toFixed(2)}
-                                </span>
-                              </div>
-                            )}
+                      {values?.product &&
+                        (productBasePrice !== null ||
+                          latestMarkedUpPrice !== null) && (
+                          <div className="bg-gray-50 rounded-lg p-2 mb-2 border border-gray-200">
+                            <h3 className="text-gray-700 font-medium text-xs mb-1.5">
+                              Pricing Information
+                            </h3>
+                            <div className="flex flex-col gap-1.5">
+                              {productBasePrice !== null && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600 text-xs">
+                                    Base Price
+                                  </span>
+                                  <span className="text-gray-800 font-semibold text-xs">
+                                    ${productBasePrice.toFixed(2)}
+                                  </span>
+                                </div>
+                              )}
+                              {latestMarkedUpPrice !== null && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600 text-xs">
+                                    Latest Marked Up Price
+                                  </span>
+                                  <span className="text-gray-800 font-semibold text-xs">
+                                    ${latestMarkedUpPrice.toFixed(2)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                       <Field
                         as={ThemeInput}
                         label="Price ($)"

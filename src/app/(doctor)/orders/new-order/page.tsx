@@ -427,36 +427,37 @@ const Page = () => {
                 </div>
 
                 {/* Pricing Information Display */}
-                {(productBasePrice !== null ||
-                  latestMarkedUpPrice !== null) && (
-                  <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
-                    <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-2">
-                      Pricing Information
-                    </h3>
-                    <div className="flex flex-col gap-2">
-                      {productBasePrice !== null && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-600 text-xs md:text-sm">
-                            Base Price
-                          </span>
-                          <span className="text-gray-800 font-semibold text-xs md:text-sm">
-                            ${productBasePrice.toFixed(2)}
-                          </span>
-                        </div>
-                      )}
-                      {latestMarkedUpPrice !== null && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-600 text-xs md:text-sm">
-                            Latest Marked Up Price
-                          </span>
-                          <span className="text-gray-800 font-semibold text-xs md:text-sm">
-                            ${latestMarkedUpPrice.toFixed(2)}
-                          </span>
-                        </div>
-                      )}
+                {preservedProduct &&
+                  (productBasePrice !== null ||
+                    latestMarkedUpPrice !== null) && (
+                    <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
+                      <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-2">
+                        Pricing Information
+                      </h3>
+                      <div className="flex flex-col gap-2">
+                        {productBasePrice !== null && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600 text-xs md:text-sm">
+                              Base Price
+                            </span>
+                            <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                              ${productBasePrice.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        {latestMarkedUpPrice !== null && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600 text-xs md:text-sm">
+                              Latest Marked Up Price
+                            </span>
+                            <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                              ${latestMarkedUpPrice.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 <div className={`flex gap-4 flex-row`}>
                   <div className="w-full">
