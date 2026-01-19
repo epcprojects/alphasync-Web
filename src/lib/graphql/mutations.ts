@@ -698,7 +698,7 @@ export const PROCESS_PAYMENT = gql`
     $orderId: ID!
     $opaqueData: OpaqueData!
     $amount: Float!
-    $taxAmount: Float!
+    $totalTax: Float!
     $billingAddress: BillingAddress
     $shippingAddress: ShippingAddress
   ) {
@@ -707,7 +707,7 @@ export const PROCESS_PAYMENT = gql`
         orderId: $orderId
         opaqueData: $opaqueData
         amount: $amount
-        taxAmount: $taxAmount
+        totalTax: $totalTax
         billingAddress: $billingAddress
         shippingAddress: $shippingAddress
       }

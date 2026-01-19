@@ -764,7 +764,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
           variables: {
             orderId: String(order.id),
             amount: amountValue,
-            taxAmount: taxAmount,
+            totalTax: taxAmount,
             opaqueData: {
               dataDescriptor: token.dataDescriptor,
               dataValue: token.dataValue,
