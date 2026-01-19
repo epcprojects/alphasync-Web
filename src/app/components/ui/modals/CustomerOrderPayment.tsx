@@ -22,7 +22,7 @@ import OrderItemCard, { OrderItemProps } from "../cards/OrderItemCards";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { getToken, AcceptOpaqueData } from "@/lib/authorizeNet";
 import { useMutation } from "@apollo/client";
-import { PROCESS_PAYMENT } from "@/lib/graphql/mutations";
+import { PROCESS_PAYMENT, CALCULATE_TAX } from "@/lib/graphql/mutations";
 import { useAppSelector } from "@/lib/store/hooks";
 
 type OrderItem = {
@@ -128,9 +128,14 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const [cardNumberError, setCardNumberError] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [calculatedTax, setCalculatedTax] = useState<number | null>(null);
+  const [calculatedTotal, setCalculatedTotal] = useState<number | null>(null);
+  const [isCalculatingTax, setIsCalculatingTax] = useState(false);
+  const [taxError, setTaxError] = useState("");
 
   useBodyScrollLock(isOpen);
   const [processPaymentMutation] = useMutation(PROCESS_PAYMENT);
+  const [calculateTaxMutation] = useMutation(CALCULATE_TAX);
 
   // Helper function to truncate postal code to 5 digits
   const truncatePostalCode = (code: string): string => {
@@ -138,6 +143,70 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     return digitsOnly.slice(0, 5);
   };
 
+  // Function to calculate tax with retry logic
+  const calculateTaxWithRetry = async (
+    postalCode: string,
+    subtotalPrice: number,
+    retries = 2
+  ): Promise<void> => {
+    if (!postalCode || postalCode.length !== 5) {
+      return;
+    }
+
+    setIsCalculatingTax(true);
+    setTaxError("");
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const { data } = await calculateTaxMutation({
+          variables: {
+            clientMutationId: user?.id ? String(user.id) : null,
+            subtotalPrice: subtotalPrice,
+            postalCode: postalCode,
+          },
+        });
+
+        if (data?.calculateTax?.success) {
+          setCalculatedTax(data.calculateTax.taxAmount);
+          setCalculatedTotal(data.calculateTax.totalPrice);
+          setTaxError("");
+          setIsCalculatingTax(false);
+          return;
+        } else {
+          throw new Error("Tax calculation failed");
+        }
+      } catch (error) {
+        if (attempt === retries) {
+          // Last attempt failed
+          setTaxError(
+            typeof error === "string"
+              ? error
+              : error instanceof Error
+              ? error.message
+              : "Failed to calculate tax. Please try again."
+          );
+          setIsCalculatingTax(false);
+          // Reset to original values on error
+          setCalculatedTax(null);
+          setCalculatedTotal(null);
+        } else {
+          // Wait before retrying (exponential backoff)
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * (attempt + 1))
+          );
+        }
+      }
+    }
+  };
+
+  // Reset calculated tax values when modal closes or order changes
+  useEffect(() => {
+    if (!isOpen) {
+      setCalculatedTax(null);
+      setCalculatedTotal(null);
+      setTaxError("");
+    }
+  }, [isOpen]);
 
   // Set default values from user profile when modal opens
   useEffect(() => {
@@ -233,6 +302,31 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     }
   }, [request]);
 
+  // Watch for billing postal code changes and calculate tax
+  useEffect(() => {
+    if (!order || !isOpen) return; // Only calculate tax for orders, not requests
+
+    const postalCode = billingAddress.postalCode;
+    const truncatedPostal = truncatePostalCode(postalCode);
+
+    if (truncatedPostal.length === 5) {
+      const subtotal =
+        order?.subtotalPrice ??
+        order?.orderItems?.reduce(
+          (acc, item) => acc + item.price * item.quantity,
+          0
+        ) ??
+        0;
+      void calculateTaxWithRetry(truncatedPostal, subtotal);
+    } else {
+      // Reset calculated values if postal code is not 5 digits
+      setCalculatedTax(null);
+      setCalculatedTotal(null);
+      setTaxError("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [billingAddress.postalCode, order, isOpen]);
+
   const handleContinue = () => {
     setShowForm(true);
   };
@@ -247,9 +341,14 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     request?.price ??
     0;
 
-  const taxAmount = subTotal * 0.08;
+  // Use calculated tax/total if available, otherwise fall back to defaults
+  const taxAmount =
+    calculatedTax !== null ? calculatedTax : order?.totalTax ?? 0;
   const tax = taxAmount.toFixed(2);
-  const total = order?.totalPrice;
+  const total =
+    calculatedTotal !== null
+      ? calculatedTotal
+      : order?.totalPrice ?? subTotal + taxAmount;
 
   const detectCardType = (number: string): void => {
     if (!number) {
@@ -665,6 +764,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
           variables: {
             orderId: String(order.id),
             amount: amountValue,
+            totalTax: taxAmount,
             opaqueData: {
               dataDescriptor: token.dataDescriptor,
               dataValue: token.dataValue,
@@ -719,18 +819,19 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       confimBtnDisable={
         ((showForm || !isMobile) &&
           (!isAnyFieldValid() || cardType === "Default")) ||
-        isProcessing
+        isProcessing ||
+        (order && !!taxError)
       }
       confirmLabel={
         isProcessing
           ? "Processing..."
           : isMobile && !request
           ? showForm
-            ? `Pay $${total}`
+            ? `Pay $${typeof total === "number" ? total.toFixed(2) : total}`
             : "Continue"
           : request || isMobile
           ? "Pay Now"
-          : `Pay $${total}`
+          : `Pay $${typeof total === "number" ? total.toFixed(2) : total}`
       }
       btnFullWidth={true}
     >
@@ -783,22 +884,37 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     Sub total
                   </span>
                   <span className="text-sm font-medium text-gray-800">
-                    ${order?.subtotalPrice?.toFixed(2)}
+                    ${order?.subtotalPrice?.toFixed(2) ?? subTotal.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-normal text-gray-800">Tax</span>
+                  <span className="text-sm font-normal text-gray-800">
+                    Tax
+                    {isCalculatingTax && (
+                      <span className="text-xs text-gray-500 ml-2">
+                        (calculating...)
+                      </span>
+                    )}
+                  </span>
                   <span className="text-sm font-medium text-gray-800">
-                    ${order?.totalTax?.toFixed(2)}
+                    ${taxAmount.toFixed(2)}
                   </span>
                 </div>
+                {taxError && (
+                  <div className="text-xs text-red-600 mt-1">
+                    {taxError}
+                    <span className="block mt-1">
+                      Please try changing the billing postal code and try again.
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex justify-between items-center border-b border-gray-200 py-3 md:py-4">
                 <span className="text-base font-medium text-gray-800">
                   Total
                 </span>
                 <span className="text-base font-semibold text-primary">
-                  ${order?.totalPrice}
+                  ${typeof total === "number" ? total.toFixed(2) : total}
                 </span>
               </div>
             </div>
