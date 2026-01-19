@@ -45,9 +45,12 @@ const OrderModal: React.FC<OrderModalProps> = ({
   const [basePrice, setBasePrice] = useState<number>(0); // Price that was automatically set (initial or from customer fetch)
   const [isPriceManuallyChanged, setIsPriceManuallyChanged] =
     useState<boolean>(false);
+  const [productBasePrice, setProductBasePrice] = useState<number | null>(null); // Original base price before markup
+  const [latestMarkedUpPrice, setLatestMarkedUpPrice] = useState<number | null>(
+    null
+  ); // Latest marked up price
 
   // Lazy query to fetch product with customer-specific pricing
-  // This query ONLY runs when a customer is selected, not automatically
   // Using "no-cache" to prevent updating the shared cache that affects inventory page
   const [fetchProduct, { loading: fetchingProduct }] =
     useLazyQuery<FetchProductResponse>(FETCH_PRODUCT, {
@@ -56,6 +59,27 @@ const OrderModal: React.FC<OrderModalProps> = ({
       onCompleted: (data) => {
         if (data?.fetchProduct) {
           const product = data.fetchProduct;
+
+          // Set base price (original price before markup)
+          const basePriceValue =
+            product.price || product.variants?.[0]?.price || originalPrice || 0;
+          setProductBasePrice(basePriceValue);
+
+          // Get latest marked up price from history (most recent entry)
+          const priceHistory = product.customPriceChangeHistory;
+          if (priceHistory && priceHistory.length > 0) {
+            // Sort by createdAt descending to get the latest
+            const sortedHistory = [...priceHistory].sort((a, b) => {
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateB - dateA;
+            });
+            const latestHistory = sortedHistory[0];
+            if (latestHistory?.customPrice != null) {
+              setLatestMarkedUpPrice(Number(latestHistory.customPrice));
+            }
+          }
+
           // If customPrice is present, use it; otherwise use price field
           const customerPrice =
             product.customPrice != null && product.customPrice !== undefined
@@ -89,6 +113,16 @@ const OrderModal: React.FC<OrderModalProps> = ({
 
   // Reset and populate price when modal opens or product changes
   React.useEffect(() => {
+    if (isOpen && productId) {
+      // Fetch product data to get pricing history
+      fetchProduct({
+        variables: { id: productId },
+      });
+    }
+  }, [isOpen, productId, fetchProduct]);
+
+  // Reset and populate price when modal opens or product changes
+  React.useEffect(() => {
     if (isOpen) {
       // Always reset price when modal opens with the calculated price
       const priceToSet = calculatedPrice > 0 ? calculatedPrice.toString() : "";
@@ -101,6 +135,9 @@ const OrderModal: React.FC<OrderModalProps> = ({
       setSelectedUser("");
       setErrors({});
       setSelectedCustomerData(null);
+      // Reset pricing history display
+      setProductBasePrice(null);
+      setLatestMarkedUpPrice(null);
     }
   }, [isOpen, calculatedPrice, productId]);
 
@@ -138,6 +175,13 @@ const OrderModal: React.FC<OrderModalProps> = ({
       } else if (originalPrice != null && priceValue < originalPrice) {
         // Original price is variants[0].price
         newErrors.price = `You cannot put price less than original price ($${originalPrice.toFixed(
+          2
+        )})`;
+      } else if (
+        latestMarkedUpPrice !== null &&
+        priceValue > latestMarkedUpPrice
+      ) {
+        newErrors.price = `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
           2
         )})`;
       }
@@ -178,6 +222,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
         !price ||
         Number(price) <= 0 ||
         (originalPrice != null && Number(price) < originalPrice) ||
+        (latestMarkedUpPrice !== null && Number(price) > latestMarkedUpPrice) ||
         isLoading ||
         fetchingProduct
       }
@@ -201,22 +246,41 @@ const OrderModal: React.FC<OrderModalProps> = ({
             optionPaddingClasses="p-1"
             onCustomerChange={(customer) => {
               setSelectedCustomerData(customer);
-
-              // Fetch product with customer-specific pricing when customer is selected
-              if (customer?.id && productId) {
-                fetchProduct({
-                  variables: {
-                    id: productId,
-                    patientId: customer.id,
-                  },
-                });
-              }
             }}
           />
           {errors.user && (
             <p className="text-red-500 text-xs mt-1">{errors.user}</p>
           )}
         </div>
+
+        {/* Pricing Information Display */}
+        {(productBasePrice !== null || latestMarkedUpPrice !== null) && (
+          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <h3 className="text-gray-700 font-medium text-xs mb-2">
+              Pricing Information
+            </h3>
+            <div className="flex flex-col gap-2">
+              {productBasePrice !== null && (
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 text-xs">Base Price</span>
+                  <span className="text-gray-800 font-semibold text-xs">
+                    ${productBasePrice.toFixed(2)}
+                  </span>
+                </div>
+              )}
+              {latestMarkedUpPrice !== null && (
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 text-xs">
+                    Latest Marked Up Price
+                  </span>
+                  <span className="text-gray-800 font-semibold text-xs">
+                    ${latestMarkedUpPrice.toFixed(2)}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Price Input */}
         <div>
@@ -262,6 +326,16 @@ const OrderModal: React.FC<OrderModalProps> = ({
                     setErrors((prev) => ({
                       ...prev,
                       price: `You cannot put price less than original price ($${originalPrice.toFixed(
+                        2
+                      )})`,
+                    }));
+                  } else if (
+                    latestMarkedUpPrice !== null &&
+                    priceValue > latestMarkedUpPrice
+                  ) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      price: `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
                         2
                       )})`,
                     }));

@@ -191,6 +191,7 @@ const ClinicOrderModal: React.FC<ClinicOrderModalProps> = ({
               {({ values, setFieldValue, errors, touched }) => (
                 <Form className="flex flex-col gap-5">
                   <ProductSelect
+                    fetchMarkedUpProductsOnly={false}
                     selectedProduct={values.product}
                     setSelectedProduct={(product) =>
                       setFieldValue("product", product)

@@ -431,72 +431,96 @@ export default function PostDetail() {
             </div>
 
             {/* Price History and Markup Section */}
-            {((product.markupPercentage !== undefined &&
-              product.markupPercentage !== null) ||
-              (product.customPriceChangeHistory &&
-                product.customPriceChangeHistory.length > 0)) && (
-              <div className="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200">
-                <h2 className="text-black font-medium text-sm md:text-base mb-3 md:mb-4">
-                  Pricing Information
-                </h2>
-                <div className="flex flex-col gap-3 md:gap-4">
-                  {product.markupPercentage !== undefined &&
-                    product.markupPercentage !== null && (
-                      <div className="bg-white rounded-lg p-2.5 md:p-3 border border-gray-200">
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-600 text-sm md:text-base font-normal">
-                            Markup Percentage
-                          </span>
-                          <span className="text-primary font-semibold text-sm md:text-base">
-                            {Number(product.markupPercentage || 0).toFixed(2)}%
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                  {product.customPriceChangeHistory &&
-                    product.customPriceChangeHistory.length > 0 && (
-                      <div className="bg-white rounded-lg p-2.5 md:p-3 border border-gray-200">
-                        <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-2 md:mb-3">
-                          Price Change History
-                        </h3>
-                        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-                          <div className="flex items-center justify-between py-1.5 px-2 bg-gray-50 rounded-md border border-gray-100">
-                            <span className="text-gray-600 text-xs md:text-sm">
-                              Base Price
+            {product.customPriceChangeHistory &&
+              product.customPriceChangeHistory.length > 0 && (
+                <div className="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200">
+                  <h2 className="text-black font-medium text-sm md:text-base mb-3 md:mb-4">
+                    Pricing Information
+                  </h2>
+                  <div className="flex flex-col gap-3 md:gap-4">
+                    {product.markupPercentage !== undefined &&
+                      product.markupPercentage !== null && (
+                        <div className="bg-white rounded-lg p-2.5 md:p-3 border border-gray-200">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600 text-sm md:text-base font-normal">
+                              Markup Percentage
                             </span>
-                            <span className="text-gray-800 font-semibold text-xs md:text-sm">
-                              ${product?.price?.toFixed(2)}
+                            <span className="text-primary font-semibold text-sm md:text-base">
+                              {Number(product.markupPercentage || 0).toFixed(2)}
+                              %
                             </span>
                           </div>
-                          {product.customPriceChangeHistory.map(
-                            (history, index) => {
-                              const priceValue =
-                                history.customPrice !== null &&
-                                history.customPrice !== undefined
-                                  ? Number(history.customPrice)
-                                  : 0;
-                              return (
-                                <div
-                                  key={history.id || index}
-                                  className="flex items-center justify-between py-1.5 px-2 bg-gray-50 rounded-md border border-gray-100"
-                                >
-                                  <span className="text-gray-600 text-xs md:text-sm">
-                                    Mark-up Price #{index + 1}
-                                  </span>
-                                  <span className="text-gray-800 font-semibold text-xs md:text-sm">
-                                    ${priceValue.toFixed(2)}
-                                  </span>
-                                </div>
-                              );
-                            }
-                          )}
                         </div>
+                      )}
+
+                    <div className="bg-white rounded-lg p-2.5 md:p-3 border border-gray-200">
+                      <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-2 md:mb-3">
+                        Price History
+                      </h3>
+                      <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                        <div className="flex items-center justify-between py-1.5 px-2 bg-gray-50 rounded-md border border-gray-100">
+                          <span className="text-gray-600 text-xs md:text-sm">
+                            Base Price
+                          </span>
+                          <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                            $
+                            {(
+                              product?.price ||
+                              product?.variants?.[0]?.price ||
+                              0
+                            ).toFixed(2)}
+                          </span>
+                        </div>
+                        {product.customPriceChangeHistory.map(
+                          (history, index) => {
+                            const priceValue =
+                              history.customPrice !== null &&
+                              history.customPrice !== undefined
+                                ? Number(history.customPrice)
+                                : 0;
+
+                            // Format date if available
+                            const formatDate = (dateString?: string) => {
+                              if (!dateString) return "";
+                              try {
+                                const date = new Date(dateString);
+                                return date.toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                });
+                              } catch {
+                                return "";
+                              }
+                            };
+
+                            return (
+                              <div
+                                key={history.id || index}
+                                className="flex items-center justify-between py-1.5 px-2 bg-gray-50 rounded-md border border-gray-100"
+                              >
+                                <div className="flex flex-col">
+                                  <span className="text-gray-600 text-xs md:text-sm">
+                                    Marked Up Price #{index + 1}
+                                  </span>
+                                  {history.createdAt && (
+                                    <span className="text-gray-500 text-xs mt-0.5">
+                                      {formatDate(history.createdAt)}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                                  ${priceValue.toFixed(2)}
+                                </span>
+                              </div>
+                            );
+                          }
+                        )}
                       </div>
-                    )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             <div className="grid grid-cols-1 gap-2 md:gap-4 md:grid-cols-4">
               <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">

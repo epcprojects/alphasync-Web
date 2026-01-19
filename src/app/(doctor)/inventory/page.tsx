@@ -8,6 +8,7 @@ import {
   ProductCard,
   ProductListView,
   Pagination,
+  ThemeButton,
 } from "@/components";
 import {
   DeliveryBoxIcon,
@@ -17,6 +18,7 @@ import {
   ListViewIcon,
   SearchIcon,
   PackageOutlineIcon,
+  ArrowDownIcon,
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
@@ -26,6 +28,7 @@ import Tooltip from "@/app/components/ui/tooltip";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import { CREATE_ORDER, TOGGLE_FAVOURITE } from "@/lib/graphql/mutations";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import {
   AllProductsResponse,
   Product,
@@ -39,6 +42,7 @@ function InventoryContent() {
   const [showGridView, setShowGridView] = useState(true);
   const [showOutOfStock, setShowOutOfStock] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [markupFilter, setMarkupFilter] = useState<string>("All");
   const [isBlanketMarkupModalOpen, setIsBlanketMarkupModalOpen] =
     useState(false);
   const [isRefetchingFavorites, setIsRefetchingFavorites] = useState(false);
@@ -54,6 +58,17 @@ function InventoryContent() {
   const isMobile = useIsMobile();
   const itemsPerPage = 9;
   const [currentPage, setCurrentPage] = useState(1);
+
+  const markupFilterOptions = [
+    { label: "All", value: "All" },
+    { label: "Marked Up", value: "Marked Up" },
+    { label: "Not Marked Up", value: "Not Marked Up" },
+  ];
+
+  const handleMarkupFilterChange = (filter: string) => {
+    setMarkupFilter(filter);
+    setCurrentPage(1);
+  };
 
   // Debounce search input to avoid too many API calls
   useEffect(() => {
@@ -76,6 +91,11 @@ function InventoryContent() {
     setCurrentPage(1);
   }, [showFavourites]);
 
+  // Reset to first page when markup filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [markupFilter]);
+
   const {
     data: productsData,
     loading: productsLoading,
@@ -88,6 +108,13 @@ function InventoryContent() {
       perPage: itemsPerPage,
       inStockOnly: showOutOfStock ? false : undefined,
       favoriteProducts: showFavourites ? true : undefined,
+      markedUp:
+        markupFilter === "Marked Up"
+          ? true
+          : markupFilter === "Not Marked Up"
+          ? false
+          : undefined,
+      notMarkedUp: markupFilter === "Not Marked Up" ? true : undefined,
     },
     fetchPolicy: "network-only",
     notifyOnNetworkStatusChange: true,
@@ -213,17 +240,17 @@ function InventoryContent() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap justify-center">
-          <button
+        <div className="flex items-center gap-2 flex-wrap md:justify-end justify-center">
+          <ThemeButton
+            label="Apply Markup"
             onClick={() => setIsBlanketMarkupModalOpen(true)}
-            className="px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white text-sm md:text-base font-medium rounded-full hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer"
-          >
-            <PackageOutlineIcon
-              height={isMobile ? "16" : "18"}
-              width={isMobile ? "16" : "18"}
-            />
-            <span className="">Apply Markup</span>
-          </button>
+            icon={
+              <PackageOutlineIcon
+                height={isMobile ? "16" : "18"}
+                width={isMobile ? "16" : "18"}
+              />
+            }
+          />
           <div className="sm:bg-white rounded-full flex-col sm:flex-row w-full flex items-center gap-1 md:gap-2 p-0 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
             <div className="flex items-center relative w-full p-1 sm:p-0 rounded-full bg-white sm:bg-transparent shadow-table sm:shadow-none">
               <span className="absolute left-3">
@@ -236,11 +263,34 @@ function InventoryContent() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search"
-                className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
+                className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full md:min-w-56 outline-none focus:ring focus:ring-gray-200 rounded-full"
               />
             </div>
 
-            <div className="sm:p-0 flex items-center gap-1 md:gap-2 rounded-full bg-white sm:bg-transparent p-1 shadow-table sm:shadow-none">
+            <div className="sm:py-[2px] sm:px-0 flex items-center gap-1 md:gap-2 rounded-full bg-white sm:bg-transparent p-1 shadow-table sm:shadow-none">
+              <Menu>
+                <MenuButton className="w-full sm:w-fit flex whitespace-nowrap justify-between py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm/6 font-medium shadow-inner focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+                  {markupFilter} <ArrowDownIcon fill="#717680" />
+                </MenuButton>
+
+                <MenuItems
+                  transition
+                  anchor="bottom end"
+                  className={`min-w-44 z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+                >
+                  {markupFilterOptions.map((option) => (
+                    <MenuItem key={option.value}>
+                      <button
+                        onClick={() => handleMarkupFilterChange(option.value)}
+                        className="flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full"
+                      >
+                        {option.label}
+                      </button>
+                    </MenuItem>
+                  ))}
+                </MenuItems>
+              </Menu>
+
               <Tooltip content="Favorite Products">
                 <button
                   onClick={() => setShowFavourites((prev) => !prev)}
@@ -357,13 +407,14 @@ function InventoryContent() {
           ) : (
             <div className="space-y-1">
               <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium bg-white rounded-xl text-black shadow-table">
-                <div className="col-span-5 md:col-span-4 lg:col-span-5">
+                <div className="col-span-4 md:col-span-4 lg:col-span-4">
                   Product
                 </div>
-                <div className="col-span-3">Category</div>
-                <div className="col-span-2">Stock</div>
-                <div className="col-span-1">Price</div>
-                <div className="col-span-1 md:col-span-2 lg:col-span-1 text-center">
+                <div className="col-span-2 md:col-span-2">Category</div>
+                <div className="col-span-1">Stock</div>
+                <div className="col-span-2">Latest Marked up Price</div>
+                <div className="col-span-1">Base Price</div>
+                <div className="col-span-1 md:col-span-2 lg:col-span-2 text-center">
                   Actions
                 </div>
               </div>

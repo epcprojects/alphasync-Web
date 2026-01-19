@@ -25,6 +25,11 @@ type DropdownItem = {
   price?: number;
   customPrice?: number;
   originalPrice?: number;
+  customPriceChangeHistory?: Array<{
+    customPrice: number;
+    id: string;
+    createdAt?: string;
+  }>;
   variants?: Array<{
     id?: string;
     shopifyVariantId?: string;
@@ -84,6 +89,42 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   const [priceErrors, setPriceErrors] = useState<{ [index: number]: string }>(
     {}
   );
+  const [productBasePrice, setProductBasePrice] = useState<number | null>(null);
+  const [latestMarkedUpPrice, setLatestMarkedUpPrice] = useState<number | null>(
+    null
+  );
+
+  // Extract pricing information from selected product data
+  const updatePricingInfo = (product: DropdownItem | null) => {
+    if (!product) {
+      setProductBasePrice(null);
+      setLatestMarkedUpPrice(null);
+      return;
+    }
+
+    // Set base price (original price before markup)
+    const basePriceValue = product.variants?.[0]?.price ?? 0;
+    setProductBasePrice(basePriceValue);
+
+    // Get latest marked up price from history (most recent entry)
+    const priceHistory = product.customPriceChangeHistory;
+    if (priceHistory && priceHistory.length > 0) {
+      // Sort by createdAt descending to get the latest
+      const sortedHistory = [...priceHistory].sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+      const latestHistory = sortedHistory[0];
+      if (latestHistory?.customPrice != null) {
+        setLatestMarkedUpPrice(Number(latestHistory.customPrice));
+      } else {
+        setLatestMarkedUpPrice(null);
+      }
+    } else {
+      setLatestMarkedUpPrice(null);
+    }
+  };
 
   // Create OrderSchema inside component to access selectedProductData
   const OrderSchema = React.useMemo(() => {
@@ -110,9 +151,20 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
             });
           }
           return true;
+        })
+        .test("less-than-latest-markup", function (value) {
+          if (!value || latestMarkedUpPrice === null) return true;
+          if (value > latestMarkedUpPrice) {
+            return this.createError({
+              message: `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
+                2
+              )})`,
+            });
+          }
+          return true;
         }),
     });
-  }, [currentCustomer, selectedProductData]);
+  }, [currentCustomer, selectedProductData, latestMarkedUpPrice]);
 
   const handleAddItem = (values: {
     customer: string;
@@ -136,6 +188,16 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     if (values.price < originalPrice) {
       showErrorToast(
         `Price must be greater than or equal to original price ($${originalPrice.toFixed(
+          2
+        )})`
+      );
+      return;
+    }
+
+    // Validate price is not greater than latest marked up price
+    if (latestMarkedUpPrice !== null && values.price > latestMarkedUpPrice) {
+      showErrorToast(
+        `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
           2
         )})`
       );
@@ -264,6 +326,8 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       setOrderItems([]);
       setCustomerDraft("");
       setPriceErrors({});
+      setProductBasePrice(null);
+      setLatestMarkedUpPrice(null);
       if (!currentCustomer) {
         setLockedCustomer(null);
       }
@@ -284,6 +348,9 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
         if (showItems) {
           setShowItems(false);
         } else {
+          // Reset pricing info when closing
+          setProductBasePrice(null);
+          setLatestMarkedUpPrice(null);
           onClose();
         }
       }}
@@ -339,7 +406,14 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                 });
               }}
             >
-              {({ values, setFieldValue, errors, touched }) => (
+              {({
+                values,
+                setFieldValue,
+                setFieldTouched,
+                setFieldError,
+                errors,
+                touched,
+              }) => (
                 <Form className="flex flex-col gap-5">
                   {!currentCustomer && (
                     <div>
@@ -378,6 +452,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     </div>
                   )}
                   <ProductSelect
+                    fetchMarkedUpProductsOnly={true}
                     selectedProduct={values.product}
                     setSelectedProduct={(product) =>
                       setFieldValue("product", product)
@@ -386,6 +461,16 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     touched={touched.product}
                     onProductChange={(selectedProduct) => {
                       setSelectedProductData(selectedProduct);
+
+                      // Update pricing information from the product data (already fetched in ProductSelect)
+                      updatePricingInfo(selectedProduct);
+
+                      // Reset validation errors when product changes
+                      setFieldTouched("product", false);
+                      setFieldTouched("price", false);
+                      setFieldError("product", undefined);
+                      setFieldError("price", undefined);
+
                       // Auto-populate price when product is selected
                       // Use customPrice if present, otherwise use originalPrice or variants[0].price
                       if (selectedProduct) {
@@ -398,7 +483,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         setFieldValue("price", priceToUse);
                       }
                     }}
-                    patientId={patientId}
                   />
 
                   <div
@@ -467,6 +551,37 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                       )}
                     </div>
                     <div className="w-full">
+                      {/* Pricing Information Display */}
+                      {(productBasePrice !== null ||
+                        latestMarkedUpPrice !== null) && (
+                        <div className="bg-gray-50 rounded-lg p-2 mb-2 border border-gray-200">
+                          <h3 className="text-gray-700 font-medium text-xs mb-1.5">
+                            Pricing Information
+                          </h3>
+                          <div className="flex flex-col gap-1.5">
+                            {productBasePrice !== null && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600 text-xs">
+                                  Base Price
+                                </span>
+                                <span className="text-gray-800 font-semibold text-xs">
+                                  ${productBasePrice.toFixed(2)}
+                                </span>
+                              </div>
+                            )}
+                            {latestMarkedUpPrice !== null && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600 text-xs">
+                                  Latest Marked Up Price
+                                </span>
+                                <span className="text-gray-800 font-semibold text-xs">
+                                  ${latestMarkedUpPrice.toFixed(2)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       <Field
                         as={ThemeInput}
                         label="Price ($)"

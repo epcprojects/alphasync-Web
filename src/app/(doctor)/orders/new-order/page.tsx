@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { ArrowDownIcon, PlusIcon, TrashBinIcon } from "@/icons";
 import { ProductSelect, CustomerSelect } from "@/app/components";
 import { ThemeInput, ThemeButton } from "@/app/components";
@@ -26,36 +26,6 @@ interface OrderItem {
 
 const Page = () => {
   const router = useRouter();
-  const OrderSchema = Yup.object().shape({
-    customer: Yup.string().required("Customer is required"),
-    product: Yup.string().required("Product is required"),
-    quantity: Yup.number()
-      .min(1, "Minimum 1")
-      .positive("Quantity must be positive")
-      .required("Quantity is required"),
-    price: Yup.number()
-      .min(0.01, "Must be greater than 0")
-      .required("Price is required")
-      .test("greater-than-original", function (value) {
-        if (!value || !selectedProductData) return true;
-        // Original price is variants[0].price
-        const originalPrice = selectedProductData.variants?.[0]?.price ?? 0;
-        if (value < originalPrice) {
-          return this.createError({
-            message: `Price must be greater than or equal to original price ($${originalPrice.toFixed(
-              2
-            )})`,
-          });
-        }
-        return true;
-      }),
-  });
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [customerDraft, setCustomerDraft] = useState("");
-  const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
-  const [priceErrors, setPriceErrors] = useState<{ [index: number]: string }>(
-    {}
-  );
   const [selectedProductData, setSelectedProductData] = useState<{
     name: string;
     displayName: string;
@@ -64,6 +34,11 @@ const Page = () => {
     price?: number;
     customPrice?: number;
     originalPrice?: number;
+    customPriceChangeHistory?: Array<{
+      customPrice: number;
+      id: string;
+      createdAt?: string;
+    }>;
     variants?: Array<{
       id?: string;
       shopifyVariantId?: string;
@@ -71,6 +46,56 @@ const Page = () => {
       sku?: string;
     }>;
   } | null>(null);
+  const [productBasePrice, setProductBasePrice] = useState<number | null>(null);
+  const [latestMarkedUpPrice, setLatestMarkedUpPrice] = useState<number | null>(
+    null
+  );
+
+  // Make OrderSchema dynamic to access latestMarkedUpPrice
+  const OrderSchema = useMemo(() => {
+    return Yup.object().shape({
+      customer: Yup.string().required("Customer is required"),
+      product: Yup.string().required("Product is required"),
+      quantity: Yup.number()
+        .min(1, "Minimum 1")
+        .positive("Quantity must be positive")
+        .required("Quantity is required"),
+      price: Yup.number()
+        .min(0.01, "Must be greater than 0")
+        .required("Price is required")
+        .test("greater-than-original", function (value) {
+          if (!value || !selectedProductData) return true;
+          // Original price is variants[0].price
+          const originalPrice = selectedProductData.variants?.[0]?.price ?? 0;
+          if (value < originalPrice) {
+            return this.createError({
+              message: `Price must be greater than or equal to original price ($${originalPrice.toFixed(
+                2
+              )})`,
+            });
+          }
+          return true;
+        })
+        .test("less-than-latest-markup", function (value) {
+          if (!value || latestMarkedUpPrice === null) return true;
+          if (value > latestMarkedUpPrice) {
+            return this.createError({
+              message: `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
+                2
+              )})`,
+            });
+          }
+          return true;
+        }),
+    });
+  }, [selectedProductData, latestMarkedUpPrice]);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [customerDraft, setCustomerDraft] = useState("");
+  const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
+  const [preservedProduct, setPreservedProduct] = useState("");
+  const [priceErrors, setPriceErrors] = useState<{ [index: number]: string }>(
+    {}
+  );
   const [selectedCustomerData, setSelectedCustomerData] = useState<{
     name: string;
     displayName: string;
@@ -86,6 +111,38 @@ const Page = () => {
     createOrder,
     { loading: createOrderLoading, error: createOrderError },
   ] = useMutation(CREATE_ORDER);
+
+  // Extract pricing information from selected product data
+  const updatePricingInfo = (product: typeof selectedProductData) => {
+    if (!product) {
+      setProductBasePrice(null);
+      setLatestMarkedUpPrice(null);
+      return;
+    }
+
+    // Set base price (original price before markup)
+    const basePriceValue = product.variants?.[0]?.price ?? 0;
+    setProductBasePrice(basePriceValue);
+
+    // Get latest marked up price from history (most recent entry)
+    const priceHistory = product.customPriceChangeHistory;
+    if (priceHistory && priceHistory.length > 0) {
+      // Sort by createdAt descending to get the latest
+      const sortedHistory = [...priceHistory].sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+      const latestHistory = sortedHistory[0];
+      if (latestHistory?.customPrice != null) {
+        setLatestMarkedUpPrice(Number(latestHistory.customPrice));
+      } else {
+        setLatestMarkedUpPrice(null);
+      }
+    } else {
+      setLatestMarkedUpPrice(null);
+    }
+  };
 
   const handleAddItem = (values: {
     customer: string;
@@ -104,6 +161,16 @@ const Page = () => {
     // The displayed price is customPrice if present, otherwise originalPrice
     // This is what the user sees initially
     const displayedPrice = customPrice ?? originalPrice;
+
+    // Validate price is not greater than latest marked up price
+    if (latestMarkedUpPrice !== null && values.price > latestMarkedUpPrice) {
+      showErrorToast(
+        `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
+          2
+        )})`
+      );
+      return;
+    }
 
     const newItem: OrderItem = {
       product: values.product,
@@ -221,6 +288,8 @@ const Page = () => {
       setOrderItems([]);
       setCustomerDraft("");
       setPriceErrors({});
+      setProductBasePrice(null);
+      setLatestMarkedUpPrice(null);
 
       // Refetch products to get latest prices for next order
       if (productSelectRef.current) {
@@ -254,7 +323,7 @@ const Page = () => {
           <Formik
             initialValues={{
               customer: customerDraft,
-              product: "",
+              product: preservedProduct,
               quantity: 1,
               price: 0,
             }}
@@ -262,6 +331,7 @@ const Page = () => {
             enableReinitialize
             onSubmit={(values, { resetForm }) => {
               handleAddItem(values);
+              setPreservedProduct(""); // Clear preserved product when item is added
               resetForm({
                 values: {
                   customer: values.customer,
@@ -272,13 +342,22 @@ const Page = () => {
               });
             }}
           >
-            {({ values, setFieldValue, errors, touched }) => (
+            {({
+              values,
+              setFieldValue,
+              setFieldTouched,
+              setFieldError,
+              errors,
+              touched,
+            }) => (
               <Form className="flex flex-col gap-4 md:gap-5">
                 <div>
                   <CustomerSelect
                     selectedCustomer={values.customer}
                     setSelectedCustomer={(val: string) => {
                       if (lockedCustomer) return; // prevent changing after first item
+                      // Preserve current product value when customer changes
+                      setPreservedProduct(values.product);
                       setFieldValue("customer", val);
                       setCustomerDraft(val);
                     }}
@@ -303,15 +382,27 @@ const Page = () => {
                 </div>
                 <div>
                   <ProductSelect
+                    fetchMarkedUpProductsOnly={true}
                     ref={productSelectRef}
                     selectedProduct={values.product}
-                    setSelectedProduct={(product) =>
-                      setFieldValue("product", product)
-                    }
+                    setSelectedProduct={(product) => {
+                      setFieldValue("product", product);
+                      setPreservedProduct(product);
+                    }}
                     errors={errors.product || ""}
                     touched={touched.product}
                     onProductChange={(selectedProduct) => {
                       setSelectedProductData(selectedProduct);
+
+                      // Update pricing information from the product data (already fetched in ProductSelect)
+                      updatePricingInfo(selectedProduct);
+
+                      // Reset validation errors when product changes
+                      setFieldTouched("product", false);
+                      setFieldTouched("price", false);
+                      setFieldError("product", undefined);
+                      setFieldError("price", undefined);
+
                       // Auto-populate price when product is selected
                       // Use customPrice if present, otherwise use originalPrice
                       if (selectedProduct) {
@@ -321,11 +412,44 @@ const Page = () => {
                           selectedProduct.price ??
                           0;
                         setFieldValue("price", priceToUse);
+                        // Preserve product name for form reinitialization
+                        setPreservedProduct(selectedProduct.name);
                       }
                     }}
-                    patientId={selectedCustomerData?.id}
                   />
                 </div>
+
+                {/* Pricing Information Display */}
+                {(productBasePrice !== null ||
+                  latestMarkedUpPrice !== null) && (
+                  <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
+                    <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-2">
+                      Pricing Information
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                      {productBasePrice !== null && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600 text-xs md:text-sm">
+                            Base Price
+                          </span>
+                          <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                            ${productBasePrice.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                      {latestMarkedUpPrice !== null && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600 text-xs md:text-sm">
+                            Latest Marked Up Price
+                          </span>
+                          <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                            ${latestMarkedUpPrice.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className={`flex gap-4 flex-row`}>
                   <div className="w-full">
