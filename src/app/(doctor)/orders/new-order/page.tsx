@@ -92,6 +92,7 @@ const Page = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [customerDraft, setCustomerDraft] = useState("");
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
+  const [preservedProduct, setPreservedProduct] = useState("");
   const [priceErrors, setPriceErrors] = useState<{ [index: number]: string }>(
     {}
   );
@@ -322,7 +323,7 @@ const Page = () => {
           <Formik
             initialValues={{
               customer: customerDraft,
-              product: "",
+              product: preservedProduct,
               quantity: 1,
               price: 0,
             }}
@@ -330,6 +331,7 @@ const Page = () => {
             enableReinitialize
             onSubmit={(values, { resetForm }) => {
               handleAddItem(values);
+              setPreservedProduct(""); // Clear preserved product when item is added
               resetForm({
                 values: {
                   customer: values.customer,
@@ -354,6 +356,8 @@ const Page = () => {
                     selectedCustomer={values.customer}
                     setSelectedCustomer={(val: string) => {
                       if (lockedCustomer) return; // prevent changing after first item
+                      // Preserve current product value when customer changes
+                      setPreservedProduct(values.product);
                       setFieldValue("customer", val);
                       setCustomerDraft(val);
                     }}
@@ -381,9 +385,10 @@ const Page = () => {
                     fetchMarkedUpProductsOnly={true}
                     ref={productSelectRef}
                     selectedProduct={values.product}
-                    setSelectedProduct={(product) =>
-                      setFieldValue("product", product)
-                    }
+                    setSelectedProduct={(product) => {
+                      setFieldValue("product", product);
+                      setPreservedProduct(product);
+                    }}
                     errors={errors.product || ""}
                     touched={touched.product}
                     onProductChange={(selectedProduct) => {
@@ -407,6 +412,8 @@ const Page = () => {
                           selectedProduct.price ??
                           0;
                         setFieldValue("price", priceToUse);
+                        // Preserve product name for form reinitialization
+                        setPreservedProduct(selectedProduct.name);
                       }
                     }}
                   />
