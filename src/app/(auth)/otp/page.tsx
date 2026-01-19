@@ -34,11 +34,34 @@ function OTPContent() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const data = JSON.parse(localStorage.getItem("dataForOtp") || "{}");
-      setStoredData(data);
+    if (typeof window === "undefined") return;
+
+    const redirectToLogin = () => {
+      const isAdmin = window.location.pathname.includes("/admin");
+      router.push(isAdmin ? "/admin/login" : "/login");
+    };
+
+    const dataString = localStorage.getItem("dataForOtp");
+
+    if (!dataString) {
+      showErrorToast("Session expired. Please login again.");
+      redirectToLogin();
+      return;
     }
-  }, []);
+
+    try {
+      const data = JSON.parse(dataString);
+      setStoredData(data);
+
+      if (data.userType === "ADMIN" && !data.email) {
+        showErrorToast("Invalid session data. Please login again.");
+        router.push("/admin/login");
+      }
+    } catch (error) {
+      showErrorToast("Invalid session data. Please login again.");
+      redirectToLogin();
+    }
+  }, [router]);
 
   // Timer effect
   useEffect(() => {
@@ -79,13 +102,19 @@ function OTPContent() {
             window.location.href = "/verify-info";
           }
         } else if (storedData?.userType === "ADMIN") {
-          router.push(`/admin/dashboard`);
+          window.location.href = "/admin/doctors";
         } else {
           router.push("/login");
         }
       },
       onError: (error) => {
-        showErrorToast(error.message);
+        console.error("Login with OTP error:", error);
+        console.log("Stored data userType:", storedData?.userType);
+        console.log("Stored data:", storedData);
+        setError(true);
+        showErrorToast(
+          error.message || "OTP verification failed. Please try again."
+        );
       },
     });
 
@@ -103,16 +132,35 @@ function OTPContent() {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!storedData?.email) {
+      showErrorToast("Email not found. Please login again.");
+      router.push("/admin/login");
+      return;
+    }
+
+    if (otp.length < 6) {
+      setError(true);
+      showErrorToast("Please enter a valid 6-digit OTP");
+      return;
+    }
+
     try {
+      console.log("Calling loginWithOtp with:", {
+        email: storedData.email,
+        otp: otp,
+        rememberMe: storedData.rememberMe,
+        userType: storedData.userType,
+      });
       await loginWithOtp({
         variables: {
-          email: storedData?.email,
+          email: storedData.email,
           otp: otp,
-          rememberMe: storedData?.rememberMe,
+          rememberMe: storedData.rememberMe || false,
         },
       });
     } catch (error) {
       console.error("OTP verification error:", error);
+      setError(true);
     }
   };
 
