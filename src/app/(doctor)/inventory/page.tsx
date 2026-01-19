@@ -380,6 +380,7 @@ function InventoryContent() {
                   <ProductCard
                     key={product.originalId}
                     product={product}
+                    customPrice={originalProduct?.customPrice}
                     onAddToCart={() => {
                       if (originalProduct) {
                         setSelectedProduct({
@@ -431,6 +432,7 @@ function InventoryContent() {
                       router.push(`/inventory/${product.originalId}`)
                     }
                     product={product}
+                    customPrice={originalProduct?.customPrice}
                     onToggleFavourite={() => {
                       handleToggleFavorite(product.originalId);
                     }}
