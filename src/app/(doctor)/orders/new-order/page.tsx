@@ -93,6 +93,7 @@ const Page = () => {
   const [customerDraft, setCustomerDraft] = useState("");
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
   const [preservedProduct, setPreservedProduct] = useState("");
+  const [preservedPrice, setPreservedPrice] = useState<number>(0);
   const [priceErrors, setPriceErrors] = useState<{ [index: number]: string }>(
     {}
   );
@@ -325,13 +326,14 @@ const Page = () => {
               customer: customerDraft,
               product: preservedProduct,
               quantity: 1,
-              price: 0,
+              price: preservedPrice,
             }}
             validationSchema={OrderSchema}
             enableReinitialize
             onSubmit={(values, { resetForm }) => {
               handleAddItem(values);
               setPreservedProduct(""); // Clear preserved product when item is added
+              setPreservedPrice(0);
               resetForm({
                 values: {
                   customer: values.customer,
@@ -404,16 +406,21 @@ const Page = () => {
                       setFieldError("price", undefined);
 
                       // Auto-populate price when product is selected
-                      // Use customPrice if present, otherwise use originalPrice
+                      // Use customPrice if present, otherwise use originalPrice or variants[0].price
                       if (selectedProduct) {
                         const priceToUse =
                           selectedProduct.customPrice ??
                           selectedProduct.originalPrice ??
+                          selectedProduct.variants?.[0]?.price ??
                           selectedProduct.price ??
                           0;
-                        setFieldValue("price", priceToUse);
-                        // Preserve product name for form reinitialization
+                        setPreservedPrice(priceToUse);
                         setPreservedProduct(selectedProduct.name);
+                        setFieldValue("price", priceToUse);
+                      } else {
+                        // Reset price if no product selected
+                        setPreservedPrice(0);
+                        setFieldValue("price", 0);
                       }
                     }}
                   />
