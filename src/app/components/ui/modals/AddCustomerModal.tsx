@@ -78,17 +78,19 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
         )
         .test("valid-date", "Please enter a valid date", (value) => {
           if (!value) return false;
-          const date = new Date(value);
-          return date instanceof Date && !isNaN(date.getTime());
+          const date = parseDate(value);
+          return date !== null;
         })
         .test(
           "not-future",
           "Date of Birth cannot be in the future",
           (value) => {
             if (!value) return false;
-            const date = new Date(value);
+            const date = parseDate(value);
+            if (!date) return false;
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+            date.setHours(0, 0, 0, 0);
             return date <= today;
           }
         ),
@@ -147,6 +149,34 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       2,
       4
     )}-${limitedNumbers.slice(4)}`;
+  };
+
+  // Parse MM-DD-YYYY format to Date object (browser-safe)
+  const parseDate = (value: string): Date | null => {
+    if (!value) return null;
+    const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (!match) return null;
+
+    const month = parseInt(match[1], 10) - 1; // Month is 0-indexed
+    const day = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
+
+    // Validate month and day ranges
+    if (month < 0 || month > 11) return null;
+    if (day < 1 || day > 31) return null;
+
+    const date = new Date(year, month, day);
+
+    // Verify the date is valid (handles invalid dates like Feb 30)
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() !== month ||
+      date.getDate() !== day
+    ) {
+      return null;
+    }
+
+    return date;
   };
 
   const handleChange = (field: string, value: string | Date | null) => {
@@ -222,7 +252,10 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               email: formData.email,
               phoneNo: formData.phoneNo,
               dateOfBirth: formData.dateOfBirth
-                ? new Date(formData.dateOfBirth).toISOString()
+                ? (() => {
+                    const parsedDate = parseDate(formData.dateOfBirth);
+                    return parsedDate ? parsedDate.toISOString() : null;
+                  })()
                 : null,
               address: formData.address || null,
               street1: formData.street1 || null,
