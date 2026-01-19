@@ -155,9 +155,20 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
             });
           }
           return true;
+        })
+        .test("less-than-latest-markup", function (value) {
+          if (!value || latestMarkedUpPrice === null) return true;
+          if (value > latestMarkedUpPrice) {
+            return this.createError({
+              message: `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
+                2
+              )})`,
+            });
+          }
+          return true;
         }),
     });
-  }, [currentCustomer, selectedProductData]);
+  }, [currentCustomer, selectedProductData, latestMarkedUpPrice]);
 
   const handleAddItem = (values: {
     customer: string;
@@ -181,6 +192,16 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     if (values.price < originalPrice) {
       showErrorToast(
         `Price must be greater than or equal to original price ($${originalPrice.toFixed(
+          2
+        )})`
+      );
+      return;
+    }
+
+    // Validate price is not greater than latest marked up price
+    if (latestMarkedUpPrice !== null && values.price > latestMarkedUpPrice) {
+      showErrorToast(
+        `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
           2
         )})`
       );

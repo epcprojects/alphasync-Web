@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { ArrowDownIcon, PlusIcon, TrashBinIcon } from "@/icons";
 import { ProductSelect, CustomerSelect } from "@/app/components";
 import { ThemeInput, ThemeButton } from "@/app/components";
@@ -28,36 +28,6 @@ interface OrderItem {
 
 const Page = () => {
   const router = useRouter();
-  const OrderSchema = Yup.object().shape({
-    customer: Yup.string().required("Customer is required"),
-    product: Yup.string().required("Product is required"),
-    quantity: Yup.number()
-      .min(1, "Minimum 1")
-      .positive("Quantity must be positive")
-      .required("Quantity is required"),
-    price: Yup.number()
-      .min(0.01, "Must be greater than 0")
-      .required("Price is required")
-      .test("greater-than-original", function (value) {
-        if (!value || !selectedProductData) return true;
-        // Original price is variants[0].price
-        const originalPrice = selectedProductData.variants?.[0]?.price ?? 0;
-        if (value < originalPrice) {
-          return this.createError({
-            message: `Price must be greater than or equal to original price ($${originalPrice.toFixed(
-              2
-            )})`,
-          });
-        }
-        return true;
-      }),
-  });
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [customerDraft, setCustomerDraft] = useState("");
-  const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
-  const [priceErrors, setPriceErrors] = useState<{ [index: number]: string }>(
-    {}
-  );
   const [selectedProductData, setSelectedProductData] = useState<{
     name: string;
     displayName: string;
@@ -73,16 +43,61 @@ const Page = () => {
       sku?: string;
     }>;
   } | null>(null);
+  const [productBasePrice, setProductBasePrice] = useState<number | null>(null);
+  const [latestMarkedUpPrice, setLatestMarkedUpPrice] = useState<number | null>(
+    null
+  );
+
+  // Make OrderSchema dynamic to access latestMarkedUpPrice
+  const OrderSchema = useMemo(() => {
+    return Yup.object().shape({
+      customer: Yup.string().required("Customer is required"),
+      product: Yup.string().required("Product is required"),
+      quantity: Yup.number()
+        .min(1, "Minimum 1")
+        .positive("Quantity must be positive")
+        .required("Quantity is required"),
+      price: Yup.number()
+        .min(0.01, "Must be greater than 0")
+        .required("Price is required")
+        .test("greater-than-original", function (value) {
+          if (!value || !selectedProductData) return true;
+          // Original price is variants[0].price
+          const originalPrice = selectedProductData.variants?.[0]?.price ?? 0;
+          if (value < originalPrice) {
+            return this.createError({
+              message: `Price must be greater than or equal to original price ($${originalPrice.toFixed(
+                2
+              )})`,
+            });
+          }
+          return true;
+        })
+        .test("less-than-latest-markup", function (value) {
+          if (!value || latestMarkedUpPrice === null) return true;
+          if (value > latestMarkedUpPrice) {
+            return this.createError({
+              message: `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
+                2
+              )})`,
+            });
+          }
+          return true;
+        }),
+    });
+  }, [selectedProductData, latestMarkedUpPrice]);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [customerDraft, setCustomerDraft] = useState("");
+  const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
+  const [priceErrors, setPriceErrors] = useState<{ [index: number]: string }>(
+    {}
+  );
   const [selectedCustomerData, setSelectedCustomerData] = useState<{
     name: string;
     displayName: string;
     email: string;
     id: string;
   } | null>(null);
-  const [productBasePrice, setProductBasePrice] = useState<number | null>(null);
-  const [latestMarkedUpPrice, setLatestMarkedUpPrice] = useState<number | null>(
-    null
-  );
 
   // Ref to ProductSelect to trigger refetch
   const productSelectRef = useRef<ProductSelectRef>(null);
@@ -149,6 +164,16 @@ const Page = () => {
     // The displayed price is customPrice if present, otherwise originalPrice
     // This is what the user sees initially
     const displayedPrice = customPrice ?? originalPrice;
+
+    // Validate price is not greater than latest marked up price
+    if (latestMarkedUpPrice !== null && values.price > latestMarkedUpPrice) {
+      showErrorToast(
+        `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
+          2
+        )})`
+      );
+      return;
+    }
 
     const newItem: OrderItem = {
       product: values.product,

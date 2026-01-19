@@ -177,6 +177,13 @@ const OrderModal: React.FC<OrderModalProps> = ({
         newErrors.price = `You cannot put price less than original price ($${originalPrice.toFixed(
           2
         )})`;
+      } else if (
+        latestMarkedUpPrice !== null &&
+        priceValue > latestMarkedUpPrice
+      ) {
+        newErrors.price = `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
+          2
+        )})`;
       }
     }
 
@@ -215,6 +222,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
         !price ||
         Number(price) <= 0 ||
         (originalPrice != null && Number(price) < originalPrice) ||
+        (latestMarkedUpPrice !== null && Number(price) > latestMarkedUpPrice) ||
         isLoading ||
         fetchingProduct
       }
@@ -318,6 +326,16 @@ const OrderModal: React.FC<OrderModalProps> = ({
                     setErrors((prev) => ({
                       ...prev,
                       price: `You cannot put price less than original price ($${originalPrice.toFixed(
+                        2
+                      )})`,
+                    }));
+                  } else if (
+                    latestMarkedUpPrice !== null &&
+                    priceValue > latestMarkedUpPrice
+                  ) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      price: `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
                         2
                       )})`,
                     }));
