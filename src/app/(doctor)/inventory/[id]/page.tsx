@@ -94,10 +94,10 @@ export default function PostDetail() {
     // Get the original price from the product variant
     const originalPrice = product.variants?.[0]?.price || 0;
 
-    // Prevent setting price lower than the original price
-    if (priceValue < originalPrice) {
+    // Prevent setting price less than or equal to the original price
+    if (priceValue <= originalPrice) {
       showErrorToast(
-        `Price cannot be less than the original price ($${originalPrice.toFixed(
+        `Price must be greater than the original price ($${originalPrice.toFixed(
           2
         )})`
       );
@@ -153,6 +153,7 @@ export default function PostDetail() {
     productId?: string;
     shopifyVariantId?: string;
     customerId?: string;
+    useCustomPricing?: boolean;
   }) => {
     try {
       if (!product || !orderData.customerId) {
@@ -176,10 +177,8 @@ export default function PostDetail() {
         },
       ];
 
-      // Check if price has been changed from original
-      const originalPrice =
-        product.variants?.[0]?.price || product.customPrice || 0;
-      const useCustomPricing = orderData.price !== originalPrice;
+      // Use useCustomPricing from OrderModal, default to false if not provided
+      const useCustomPricing = orderData.useCustomPricing ?? false;
 
       await createOrder({
         variables: {
@@ -351,24 +350,43 @@ export default function PostDetail() {
                   onChange={(e) => {
                     const newPrice = e.target.value;
                     setPrice(newPrice);
-                    setPriceError("");
 
                     // Validate in real-time
                     const priceValue = parseFloat(newPrice);
-                    if (newPrice && !isNaN(priceValue)) {
+                    if (!newPrice || newPrice.trim() === "") {
+                      // If empty, clear error but button will still be disabled if price is required
+                      setPriceError("");
+                    } else if (isNaN(priceValue) || priceValue <= 0) {
+                      setPriceError("Please enter a valid price");
+                    } else {
                       const originalPrice = product?.variants?.[0]?.price || 0;
-                      if (priceValue < originalPrice) {
+                      if (priceValue <= originalPrice) {
                         setPriceError(
-                          `Minimum price: $${originalPrice.toFixed(2)}`
+                          `Price must be greater than original price ($${originalPrice.toFixed(
+                            2
+                          )})`
                         );
+                      } else {
+                        setPriceError("");
                       }
                     }
                   }}
                   onBlur={() => {
-                    // Clear error on blur if user leaves the field
+                    // Re-validate on blur
                     const priceValue = parseFloat(price);
                     if (!price || isNaN(priceValue)) {
                       setPriceError("");
+                    } else {
+                      const originalPrice = product?.variants?.[0]?.price || 0;
+                      if (priceValue <= originalPrice) {
+                        setPriceError(
+                          `Price must be greater than original price ($${originalPrice.toFixed(
+                            2
+                          )})`
+                        );
+                      } else {
+                        setPriceError("");
+                      }
                     }
                   }}
                   className={`border ${
@@ -380,7 +398,15 @@ export default function PostDetail() {
                 />
                 <button
                   onClick={handleSavePrice}
-                  disabled={updatePriceLoading || !!priceError}
+                  disabled={
+                    updatePriceLoading ||
+                    !!priceError ||
+                    !price ||
+                    isNaN(parseFloat(price)) ||
+                    parseFloat(price) <= 0 ||
+                    (product?.variants?.[0]?.price != null &&
+                      parseFloat(price) <= product.variants[0].price)
+                  }
                   className="rounded-md py-1.5 cursor-pointer text-primary font-semibold hover:bg-gray-300 px-3 absolute bg-porcelan text-xs end-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {updatePriceLoading ? "Saving..." : "Save"}
@@ -405,64 +431,96 @@ export default function PostDetail() {
             </div>
 
             {/* Price History and Markup Section */}
-            {((product.markupPercentage !== undefined &&
-              product.markupPercentage !== null) ||
-              (product.customPriceChangeHistory &&
-                product.customPriceChangeHistory.length > 0)) && (
-              <div className="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200">
-                <h2 className="text-black font-medium text-sm md:text-base mb-3 md:mb-4">
-                  Pricing Information
-                </h2>
-                <div className="flex flex-col gap-3 md:gap-4">
-                  {product.markupPercentage !== undefined &&
-                    product.markupPercentage !== null && (
-                      <div className="bg-white rounded-lg p-2.5 md:p-3 border border-gray-200">
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-600 text-sm md:text-base font-normal">
-                            Markup Percentage
-                          </span>
-                          <span className="text-primary font-semibold text-sm md:text-base">
-                            {Number(product.markupPercentage || 0).toFixed(2)}%
-                          </span>
+            {product.customPriceChangeHistory &&
+              product.customPriceChangeHistory.length > 0 && (
+                <div className="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200">
+                  <h2 className="text-black font-medium text-sm md:text-base mb-3 md:mb-4">
+                    Pricing Information
+                  </h2>
+                  <div className="flex flex-col gap-3 md:gap-4">
+                    {product.markupPercentage !== undefined &&
+                      product.markupPercentage !== null && (
+                        <div className="bg-white rounded-lg p-2.5 md:p-3 border border-gray-200">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600 text-sm md:text-base font-normal">
+                              Markup Percentage
+                            </span>
+                            <span className="text-primary font-semibold text-sm md:text-base">
+                              {Number(product.markupPercentage || 0).toFixed(2)}
+                              %
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                  {product.customPriceChangeHistory &&
-                    product.customPriceChangeHistory.length > 0 && (
-                      <div className="bg-white rounded-lg p-2.5 md:p-3 border border-gray-200">
-                        <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-2 md:mb-3">
-                          Price Change History
-                        </h3>
-                        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-                          {product.customPriceChangeHistory.map(
-                            (history, index) => {
-                              const priceValue =
-                                history.customPrice !== null &&
-                                history.customPrice !== undefined
-                                  ? Number(history.customPrice)
-                                  : 0;
-                              return (
-                                <div
-                                  key={history.id || index}
-                                  className="flex items-center justify-between py-1.5 px-2 bg-gray-50 rounded-md border border-gray-100"
-                                >
-                                  <span className="text-gray-600 text-xs md:text-sm">
-                                    Previous Price #{index + 1}
-                                  </span>
-                                  <span className="text-gray-800 font-semibold text-xs md:text-sm">
-                                    ${priceValue.toFixed(2)}
-                                  </span>
-                                </div>
-                              );
-                            }
-                          )}
+                    <div className="bg-white rounded-lg p-2.5 md:p-3 border border-gray-200">
+                      <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-2 md:mb-3">
+                        Price History
+                      </h3>
+                      <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                        <div className="flex items-center justify-between py-1.5 px-2 bg-gray-50 rounded-md border border-gray-100">
+                          <span className="text-gray-600 text-xs md:text-sm">
+                            Base Price
+                          </span>
+                          <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                            $
+                            {(
+                              product?.price ||
+                              product?.variants?.[0]?.price ||
+                              0
+                            ).toFixed(2)}
+                          </span>
                         </div>
+                        {product.customPriceChangeHistory.map(
+                          (history, index) => {
+                            const priceValue =
+                              history.customPrice !== null &&
+                              history.customPrice !== undefined
+                                ? Number(history.customPrice)
+                                : 0;
+
+                            // Format date if available
+                            const formatDate = (dateString?: string) => {
+                              if (!dateString) return "";
+                              try {
+                                const date = new Date(dateString);
+                                return date.toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                });
+                              } catch {
+                                return "";
+                              }
+                            };
+
+                            return (
+                              <div
+                                key={history.id || index}
+                                className="flex items-center justify-between py-1.5 px-2 bg-gray-50 rounded-md border border-gray-100"
+                              >
+                                <div className="flex flex-col">
+                                  <span className="text-gray-600 text-xs md:text-sm">
+                                    Marked Up Price #{index + 1}
+                                  </span>
+                                  {history.createdAt && (
+                                    <span className="text-gray-500 text-xs mt-0.5">
+                                      {formatDate(history.createdAt)}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                                  ${priceValue.toFixed(2)}
+                                </span>
+                              </div>
+                            );
+                          }
+                        )}
                       </div>
-                    )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             <div className="grid grid-cols-1 gap-2 md:gap-4 md:grid-cols-4">
               <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
@@ -521,6 +579,10 @@ export default function PostDetail() {
                 onClick={() => setIsOrderModalOpen(true)}
                 className="w-full sm:w-fit sm:min-w-40"
                 heightClass="h-11"
+                disabled={
+                  product.customPrice === null ||
+                  product.customPrice === undefined
+                }
               />
             </div>
 

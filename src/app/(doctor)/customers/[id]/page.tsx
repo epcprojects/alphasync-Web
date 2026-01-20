@@ -64,6 +64,8 @@ interface PatientOrdersResponse {
       status: string;
       createdAt: string;
       totalPrice: number;
+      totalTax?: number;
+      subtotalPrice?: number;
     }[];
     count: number;
     nextPage: number | null;
@@ -240,14 +242,6 @@ export default function CustomerDetail() {
       };
 
       const firstItem = request.requestedItems?.[0];
-      const totalAmount =
-        request.requestedItems?.reduce((sum, item) => {
-          const price =
-            typeof item.price === "string"
-              ? parseFloat(item.price)
-              : (item.price as number) || 0;
-          return sum + price;
-        }, 0) || 0;
 
       return {
         id: String(request.id),
@@ -268,13 +262,13 @@ export default function CustomerDetail() {
             ? new Date().toLocaleDateString()
             : undefined,
         doctorName: request.doctor?.fullName || "Dr. Unknown",
-        price: `$${totalAmount.toFixed(2)}`,
         customerReason: request.reason || "",
         physicianNotes: request.doctorMessage,
         denialReason: request.reason, // Show reason for all statuses
         category: firstItem?.product?.productType || "General",
         imageSrc: "/images/fallbackImages/medicine-syrup.svg",
         requestedItems: request.requestedItems,
+        requestCustomPrice: request.requestCustomPrice,
       };
     }) || [];
 
@@ -1068,6 +1062,7 @@ export default function CustomerDetail() {
             email: customer.email,
           },
         ]}
+        patientId={params.id}
       />
 
       <AppModal

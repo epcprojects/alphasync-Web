@@ -73,6 +73,9 @@ export const ALL_PRODUCTS_INVENTORY = gql`
     $inStockOnly: Boolean
     $category: String
     $favoriteProducts: Boolean
+    $patientId: ID
+    $markedUp: Boolean
+    $notMarkedUp: Boolean
   ) {
     allProducts(
       search: $search
@@ -81,9 +84,17 @@ export const ALL_PRODUCTS_INVENTORY = gql`
       inStockOnly: $inStockOnly
       category: $category
       favoriteProducts: $favoriteProducts
+      patientId: $patientId
+      markedUp: $markedUp
+      notMarkedUp: $notMarkedUp
     ) {
       allData {
         customPrice
+        customPriceChangeHistory {
+          customPrice
+          id
+          createdAt
+        }
         description
         handle
         id
@@ -135,6 +146,7 @@ export const DOCTOR_ORDERS = gql`
         profit
         netCost
         subtotalPrice
+        totalTax
       }
       count
       nextPage
@@ -162,6 +174,7 @@ export const FETCH_ORDER = gql`
       status
       subtotalPrice
       totalPrice
+      trackingNumber
       totalTax
       patient {
         ${userpayload}
@@ -190,6 +203,7 @@ export const FETCH_PRODUCT = gql`
       customPriceChangeHistory {
         customPrice
         id
+        createdAt
       }
       markupPercentage
       customPrice
@@ -206,6 +220,7 @@ export const FETCH_PRODUCT = gql`
       title
       totalInventory
       vendor
+      price
       tags
       variants {
         price
@@ -217,11 +232,12 @@ export const FETCH_PRODUCT = gql`
   }
 `;
 export const FETCH_ALL_MESSAGES = gql`
-query FetchAllMessages($chatId: ID!) {
-    fetchAllMessages(chatId: $chatId) {
+query FetchAllMessages($chatId: ID! $page: Int, $perPage: Int) {
+    fetchAllMessages(chatId: $chatId, page: $page, perPage: $perPage) {
         allData {
             content
             id
+            createdAt
             chat {
             id
             otherParticipant {
@@ -232,6 +248,10 @@ query FetchAllMessages($chatId: ID!) {
                 ${userpayload}
             }
         }
+        count
+        nextPage
+        prevPage
+        totalPages
     }
 }
 `;
@@ -287,6 +307,8 @@ export const PATIENT_ORDERS = gql`
         createdAt
         totalPrice
         hasAnotherReorder
+        totalTax
+        subtotalPrice
         patient {
           address
         }
@@ -340,6 +362,7 @@ export const ALL_ORDER_REQUESTS = gql`
         displayId
         orderPaid
         id
+        requestCustomPrice
         status
         doctorMessage
         reason
@@ -365,7 +388,7 @@ export const ALL_ORDER_REQUESTS = gql`
           title
           price
           product {
-          customPrice
+            customPrice
             id
             title
             description
@@ -416,8 +439,13 @@ export const ALL_NOTIFICATIONS = gql`
         doctorName
         id
         notificationType
+        notifiableId
         senderName
         productNames
+        product {
+          id
+          name
+        }
         read
         sender {
           id

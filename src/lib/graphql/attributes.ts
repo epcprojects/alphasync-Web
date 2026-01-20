@@ -6,6 +6,7 @@ export const userpayload = `
         firstName
         lastName
         specialty
+        clinic
         id
         imageUrl
         lastSignInAt
@@ -34,6 +35,13 @@ export const userpayload = `
             street1
             street2
             postalCode
+            sameAsBillingAddress
+            shippingCountry
+            shippingPostalCode
+            shippingState
+            shippingCity
+            shippingStreet2
+            shippingStreet1
        
 `;
 
@@ -47,6 +55,7 @@ export interface UserAttributes {
   firstName?: string;
   lastName?: string;
   specialty?: string;
+  clinic?: string;
   lastSignInAt?: string;
   medicalLicense?: string;
   phoneNo?: string;
@@ -72,6 +81,13 @@ export interface UserAttributes {
   street1?: string;
   street2?: string;
   postalCode?: string;
+  sameAsBillingAddress?: boolean;
+  shippingStreet1?: string;
+  shippingStreet2?: string;
+  shippingCity?: string;
+  shippingState?: string;
+  shippingPostalCode?: string;
+  shippingCountry?: string;
   unreadNotifications?: boolean;
 }
 
@@ -106,6 +122,7 @@ export interface OrderRequestAttributes {
   doctorMessage?: string;
   reason?: string;
   customPrice?: string | number;
+  requestCustomPrice?: string | number;
   doctor?: UserAttributes;
   patient?: UserAttributes;
   requestedItems?: RequestedItem[];

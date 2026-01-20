@@ -7,7 +7,7 @@ import {
   GoogleAutocompleteInput,
 } from "@/app/components";
 import { InfoIcon, UserIcon } from "@/icons";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels, Switch } from "@headlessui/react";
 import React, { useState, useEffect } from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
@@ -31,7 +31,12 @@ interface ProfileFormValues {
   city: string;
   state: string;
   postalCode: string;
-
+  sameAsShippingAddress: boolean;
+  shippingStreet1: string;
+  shippingStreet2: string;
+  shippingCity: string;
+  shippingState: string;
+  shippingPostalCode: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
 }
@@ -92,6 +97,28 @@ const Page = () => {
     city: Yup.string().required("City is required"),
     state: Yup.string().required("State is required"),
     postalCode: Yup.string().required("Postal code is required"),
+    sameAsShippingAddress: Yup.boolean(),
+    shippingStreet1: Yup.string().when("sameAsShippingAddress", {
+      is: false,
+      then: (schema) => schema.required("Shipping street address is required"),
+      otherwise: (schema) => schema.optional(),
+    }),
+    shippingStreet2: Yup.string().optional(),
+    shippingCity: Yup.string().when("sameAsShippingAddress", {
+      is: false,
+      then: (schema) => schema.required("Shipping city is required"),
+      otherwise: (schema) => schema.optional(),
+    }),
+    shippingState: Yup.string().when("sameAsShippingAddress", {
+      is: false,
+      then: (schema) => schema.required("Shipping state is required"),
+      otherwise: (schema) => schema.optional(),
+    }),
+    shippingPostalCode: Yup.string().when("sameAsShippingAddress", {
+      is: false,
+      then: (schema) => schema.required("Shipping postal code is required"),
+      otherwise: (schema) => schema.optional(),
+    }),
   });
 
   const informationSchema = Yup.object().shape({
@@ -220,6 +247,7 @@ const Page = () => {
 
   const handleProfileSubmit = async (values: ProfileFormValues) => {
     try {
+      const isSameAsShipping = values.sameAsShippingAddress;
       const variables = {
         fullName: `${values.firstName} ${values.lastName}`.trim(),
         firstName: values.firstName,
@@ -242,7 +270,22 @@ const Page = () => {
         city: values.city || undefined,
         state: values.state || undefined,
         postalCode: values.postalCode || undefined,
-
+        sameAsBillingAddress: isSameAsShipping,
+        shippingStreet1: isSameAsShipping
+          ? values.street1 || undefined
+          : values.shippingStreet1 || undefined,
+        shippingStreet2: isSameAsShipping
+          ? values.street2 || undefined
+          : values.shippingStreet2 || undefined,
+        shippingCity: isSameAsShipping
+          ? values.city || undefined
+          : values.shippingCity || undefined,
+        shippingState: isSameAsShipping
+          ? values.state || undefined
+          : values.shippingState || undefined,
+        shippingPostalCode: isSameAsShipping
+          ? values.postalCode || undefined
+          : values.shippingPostalCode || undefined,
         emergencyContactName: values.emergencyContactName,
         emergencyContactPhone: values.emergencyContactPhone,
         image: selectedImage,
@@ -287,7 +330,12 @@ const Page = () => {
         city: "",
         state: "",
         postalCode: "",
-
+        sameAsShippingAddress: true,
+        shippingStreet1: "",
+        shippingStreet2: "",
+        shippingCity: "",
+        shippingState: "",
+        shippingPostalCode: "",
         emergencyContactName: "",
         emergencyContactPhone: "",
         medicalHistory: "",
@@ -322,7 +370,12 @@ const Page = () => {
       city: user.city || "",
       state: user.state || "",
       postalCode: user.postalCode || "",
-
+      sameAsShippingAddress: user.sameAsBillingAddress ?? true,
+      shippingStreet1: user.shippingStreet1 || "",
+      shippingStreet2: user.shippingStreet2 || "",
+      shippingCity: user.shippingCity || "",
+      shippingState: user.shippingState || "",
+      shippingPostalCode: user.shippingPostalCode || "",
       emergencyContactName: user.emergencyContactName || "",
       emergencyContactPhone: user.emergencyContactPhone || "",
       medicalHistory: user.medicalHistory || "",
@@ -413,7 +466,7 @@ const Page = () => {
                   onSubmit={handleProfileSubmit}
                   enableReinitialize={true}
                 >
-                  {({ handleChange, values, setFieldValue }) => (
+                  {({ handleChange, values, setFieldValue, initialValues }) => (
                     <Form>
                       <div className="grid grid-cols-12 py-3 md:py-5 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">
@@ -665,6 +718,179 @@ const Page = () => {
                           />
                         </div>
                       </div>
+
+                      <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Shipping Address Same as Billing
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <Switch
+                            checked={values.sameAsShippingAddress}
+                            onChange={(checked) => {
+                              setFieldValue("sameAsShippingAddress", checked);
+                              if (checked) {
+                                // Clear shipping fields when toggled to true
+                                setFieldValue("shippingStreet1", "");
+                                setFieldValue("shippingStreet2", "");
+                                setFieldValue("shippingCity", "");
+                                setFieldValue("shippingState", "");
+                                setFieldValue("shippingPostalCode", "");
+                              }
+                            }}
+                            className="group inline-flex cursor-pointer h-6 w-11 items-center rounded-full bg-gray-200 transition data-checked:bg-gradient-to-r data-checked:from-[#3C85F5] data-checked:to-[#1A407A]"
+                          >
+                            <span className="size-4 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-6" />
+                          </Switch>
+                        </div>
+                      </div>
+
+                      {!values.sameAsShippingAddress && (
+                        <>
+                          <div className="grid grid-cols-12 items-start py-3 md:py-6 border-b border-b-gray-200">
+                            <div className="col-span-12 md:col-span-4 lg:col-span-3 pt-3">
+                              <label
+                                htmlFor=""
+                                className="text-xs md:text-sm text-gray-700 font-semibold"
+                              >
+                                Shipping Street Address
+                              </label>
+                            </div>
+                            <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                              <GoogleAutocompleteInput
+                                name="shippingStreet1"
+                                value={values.shippingStreet1}
+                                onChange={(value) =>
+                                  setFieldValue("shippingStreet1", value)
+                                }
+                                onAddressSelect={(address) => {
+                                  setFieldValue(
+                                    "shippingStreet1",
+                                    address.street1
+                                  );
+                                  setFieldValue("shippingCity", address.city);
+                                  setFieldValue("shippingState", address.state);
+                                  setFieldValue(
+                                    "shippingPostalCode",
+                                    address.postalCode
+                                  );
+                                }}
+                                placeholder="Enter shipping street address"
+                                label=""
+                              />
+                              <ErrorMessage
+                                name="shippingStreet1"
+                                component="div"
+                                className="text-red-500 text-xs"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                            <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                              <label
+                                htmlFor=""
+                                className="text-xs md:text-sm text-gray-700 font-semibold"
+                              >
+                                Shipping Street Address 2 (Optional)
+                              </label>
+                            </div>
+                            <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                              <ThemeInput
+                                type="text"
+                                name="shippingStreet2"
+                                value={values.shippingStreet2}
+                                onChange={handleChange}
+                                placeholder="Apartment, suite, etc. (optional)"
+                              />
+                              <ErrorMessage
+                                name="shippingStreet2"
+                                component="div"
+                                className="text-red-500 text-xs"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                            <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                              <label
+                                htmlFor=""
+                                className="text-xs md:text-sm text-gray-700 font-semibold"
+                              >
+                                Shipping City
+                              </label>
+                            </div>
+                            <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                              <ThemeInput
+                                type="text"
+                                name="shippingCity"
+                                value={values.shippingCity}
+                                onChange={handleChange}
+                                placeholder="Enter shipping city"
+                              />
+                              <ErrorMessage
+                                name="shippingCity"
+                                component="div"
+                                className="text-red-500 text-xs"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                            <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                              <label
+                                htmlFor=""
+                                className="text-xs md:text-sm text-gray-700 font-semibold"
+                              >
+                                Shipping State
+                              </label>
+                            </div>
+                            <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                              <ThemeInput
+                                type="text"
+                                name="shippingState"
+                                value={values.shippingState}
+                                onChange={handleChange}
+                                placeholder="Enter shipping state"
+                              />
+                              <ErrorMessage
+                                name="shippingState"
+                                component="div"
+                                className="text-red-500 text-xs"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
+                            <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                              <label
+                                htmlFor=""
+                                className="text-xs md:text-sm text-gray-700 font-semibold"
+                              >
+                                Shipping Postal Code
+                              </label>
+                            </div>
+                            <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                              <ThemeInput
+                                type="text"
+                                name="shippingPostalCode"
+                                value={values.shippingPostalCode}
+                                onChange={handleChange}
+                                placeholder="Enter shipping postal code"
+                              />
+                              <ErrorMessage
+                                name="shippingPostalCode"
+                                component="div"
+                                className="text-red-500 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      )}
 
                       <div className="grid grid-cols-12 items-center py-3 md:py-6 border-b border-b-gray-200">
                         <div className="col-span-12 md:col-span-4 lg:col-span-3">

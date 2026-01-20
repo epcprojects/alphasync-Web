@@ -28,6 +28,26 @@ const PROFILE_SCHEMA = Yup.object().shape({
 
 const INITIAL_AVATAR = "/images/arinaProfile.png";
 
+// Format phone number to (XXX) XXX-XXXX format
+const formatPhoneNumber = (value: string): string => {
+  // Remove all non-digit characters
+  const numbers = value.replace(/\D/g, "");
+
+  // Limit to 10 digits
+  const limitedNumbers = numbers.slice(0, 10);
+
+  // Format based on length
+  if (limitedNumbers.length === 0) return "";
+  if (limitedNumbers.length <= 3) return `(${limitedNumbers}`;
+  if (limitedNumbers.length <= 6) {
+    return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(3)}`;
+  }
+  return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(
+    3,
+    6
+  )}-${limitedNumbers.slice(6)}`;
+};
+
 // Types
 interface FormValues {
   fullName: string;
@@ -187,7 +207,7 @@ const AdminProfilePage: React.FC = () => {
           onSubmit={handleSubmit}
           enableReinitialize
         >
-          {({ handleChange, values }) => (
+          {({ handleChange, values, setFieldValue }) => (
             <Form className="space-y-0">
               <FormField
                 label="Full Name"
@@ -202,13 +222,28 @@ const AdminProfilePage: React.FC = () => {
                 value={values.email}
                 onChange={handleChange}
               />
-              <FormField
-                label="Phone Number"
-                name="phoneNo"
-                type="phone"
-                value={values.phoneNo}
-                onChange={handleChange}
-              />
+              <div className="grid grid-cols-12 items-center py-3 md:py-5 border-b border-gray-200">
+                <label className="col-span-12 sm:col-span-3  text-sm font-medium text-gray-700">
+                  Phone Number
+                </label>
+                <div className="col-span-12 sm:col-span-6">
+                  <ThemeInput
+                    type="tel"
+                    name="phoneNo"
+                    placeholder="(316) 555-0116"
+                    value={values.phoneNo}
+                    onChange={(e) => {
+                      const formatted = formatPhoneNumber(e.target.value);
+                      setFieldValue("phoneNo", formatted);
+                    }}
+                  />
+                  <ErrorMessage
+                    name="phoneNo"
+                    component="div"
+                    className="text-red-500 text-xs"
+                  />
+                </div>
+              </div>
               <FormField
                 label="Current Password"
                 name="currentPassword"

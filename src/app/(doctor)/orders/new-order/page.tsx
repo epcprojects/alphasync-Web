@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { ArrowDownIcon, PlusIcon, TrashBinIcon } from "@/icons";
 import { ProductSelect, CustomerSelect } from "@/app/components";
 import { ThemeInput, ThemeButton } from "@/app/components";
@@ -11,6 +11,7 @@ import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { formatNumber } from "@/lib/helpers";
 import { useMutation } from "@apollo/client/react";
 import { CREATE_ORDER } from "@/lib/graphql/mutations";
+import type { ProductSelectRef } from "@/app/components/ui/inputs/ProductSelect";
 
 interface OrderItem {
   product: string;
@@ -19,24 +20,12 @@ interface OrderItem {
   quantity: number;
   price: number;
   originalPrice: number;
+  customPrice?: number;
+  initialPrice: number; // Track the initial price when item was added
 }
 
 const Page = () => {
   const router = useRouter();
-  const OrderSchema = Yup.object().shape({
-    customer: Yup.string().required("Customer is required"),
-    product: Yup.string().required("Product is required"),
-    quantity: Yup.number()
-      .min(1, "Minimum 1")
-      .positive("Quantity must be positive")
-      .required("Quantity is required"),
-    price: Yup.number()
-      .min(0.01, "Must be greater than 0")
-      .required("Price is required"),
-  });
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [customerDraft, setCustomerDraft] = useState("");
-  const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
   const [selectedProductData, setSelectedProductData] = useState<{
     name: string;
     displayName: string;
@@ -45,7 +34,69 @@ const Page = () => {
     price?: number;
     customPrice?: number;
     originalPrice?: number;
+    customPriceChangeHistory?: Array<{
+      customPrice: number;
+      id: string;
+      createdAt?: string;
+    }>;
+    variants?: Array<{
+      id?: string;
+      shopifyVariantId?: string;
+      price?: number;
+      sku?: string;
+    }>;
   } | null>(null);
+  const [productBasePrice, setProductBasePrice] = useState<number | null>(null);
+  const [latestMarkedUpPrice, setLatestMarkedUpPrice] = useState<number | null>(
+    null
+  );
+
+  // Make OrderSchema dynamic to access latestMarkedUpPrice
+  const OrderSchema = useMemo(() => {
+    return Yup.object().shape({
+      customer: Yup.string().required("Customer is required"),
+      product: Yup.string().required("Product is required"),
+      quantity: Yup.number()
+        .min(1, "Minimum 1")
+        .positive("Quantity must be positive")
+        .required("Quantity is required"),
+      price: Yup.number()
+        .min(0.01, "Must be greater than 0")
+        .required("Price is required")
+        .test("greater-than-original", function (value) {
+          if (!value || !selectedProductData) return true;
+          // Original price is variants[0].price
+          const originalPrice = selectedProductData.variants?.[0]?.price ?? 0;
+          if (value < originalPrice) {
+            return this.createError({
+              message: `Price must be greater than or equal to original price ($${originalPrice.toFixed(
+                2
+              )})`,
+            });
+          }
+          return true;
+        })
+        .test("less-than-latest-markup", function (value) {
+          if (!value || latestMarkedUpPrice === null) return true;
+          if (value > latestMarkedUpPrice) {
+            return this.createError({
+              message: `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
+                2
+              )})`,
+            });
+          }
+          return true;
+        }),
+    });
+  }, [selectedProductData, latestMarkedUpPrice]);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [customerDraft, setCustomerDraft] = useState("");
+  const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
+  const [preservedProduct, setPreservedProduct] = useState("");
+  const [preservedPrice, setPreservedPrice] = useState<number>(0);
+  const [priceErrors, setPriceErrors] = useState<{ [index: number]: string }>(
+    {}
+  );
   const [selectedCustomerData, setSelectedCustomerData] = useState<{
     name: string;
     displayName: string;
@@ -53,11 +104,46 @@ const Page = () => {
     id: string;
   } | null>(null);
 
+  // Ref to ProductSelect to trigger refetch
+  const productSelectRef = useRef<ProductSelectRef>(null);
+
   // GraphQL mutation to create order
   const [
     createOrder,
     { loading: createOrderLoading, error: createOrderError },
   ] = useMutation(CREATE_ORDER);
+
+  // Extract pricing information from selected product data
+  const updatePricingInfo = (product: typeof selectedProductData) => {
+    if (!product) {
+      setProductBasePrice(null);
+      setLatestMarkedUpPrice(null);
+      return;
+    }
+
+    // Set base price (original price before markup)
+    const basePriceValue = product.variants?.[0]?.price ?? 0;
+    setProductBasePrice(basePriceValue);
+
+    // Get latest marked up price from history (most recent entry)
+    const priceHistory = product.customPriceChangeHistory;
+    if (priceHistory && priceHistory.length > 0) {
+      // Sort by createdAt descending to get the latest
+      const sortedHistory = [...priceHistory].sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+      const latestHistory = sortedHistory[0];
+      if (latestHistory?.customPrice != null) {
+        setLatestMarkedUpPrice(Number(latestHistory.customPrice));
+      } else {
+        setLatestMarkedUpPrice(null);
+      }
+    } else {
+      setLatestMarkedUpPrice(null);
+    }
+  };
 
   const handleAddItem = (values: {
     customer: string;
@@ -68,12 +154,24 @@ const Page = () => {
     // lock on first item
     if (!lockedCustomer) setLockedCustomer(values.customer);
 
-    // Use customPrice if present, otherwise use originalPrice, fallback to entered price
+    // Original price is variants[0].price
     const originalPrice =
-      selectedProductData?.customPrice ??
-      selectedProductData?.originalPrice ??
-      selectedProductData?.price ??
-      values.price;
+      selectedProductData?.variants?.[0]?.price ?? values.price;
+    const customPrice = selectedProductData?.customPrice;
+
+    // The displayed price is customPrice if present, otherwise originalPrice
+    // This is what the user sees initially
+    const displayedPrice = customPrice ?? originalPrice;
+
+    // Validate price is not greater than latest marked up price
+    if (latestMarkedUpPrice !== null && values.price > latestMarkedUpPrice) {
+      showErrorToast(
+        `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
+          2
+        )})`
+      );
+      return;
+    }
 
     const newItem: OrderItem = {
       product: values.product,
@@ -82,6 +180,8 @@ const Page = () => {
       quantity: values.quantity,
       price: values.price,
       originalPrice: originalPrice,
+      customPrice: customPrice,
+      initialPrice: displayedPrice, // Store the displayed price (customPrice or originalPrice) when item is added
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -95,10 +195,31 @@ const Page = () => {
     const updated = [...orderItems];
     updated[index] = { ...updated[index], [field]: value };
     setOrderItems(updated);
+    // Clear error for this item when price is updated
+    if (field === "price") {
+      setPriceErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[index];
+        return newErrors;
+      });
+    }
   };
 
   const handleDeleteItem = (index: number) => {
     setOrderItems((prev) => prev.filter((_, i) => i !== index));
+    // Clear error for deleted item and reindex remaining errors
+    setPriceErrors((prev) => {
+      const newErrors: { [index: number]: string } = {};
+      Object.keys(prev).forEach((key) => {
+        const errorIndex = parseInt(key);
+        if (errorIndex < index) {
+          newErrors[errorIndex] = prev[errorIndex];
+        } else if (errorIndex > index) {
+          newErrors[errorIndex - 1] = prev[errorIndex];
+        }
+      });
+      return newErrors;
+    });
   };
 
   const totalAmount = orderItems.reduce(
@@ -108,6 +229,28 @@ const Page = () => {
 
   const handleCreateOrder = async () => {
     if (orderItems.length === 0) return;
+
+    // Validate all order items before creating order
+    const errors: { [index: number]: string } = {};
+    orderItems.forEach((item, index) => {
+      if (item.price < item.originalPrice) {
+        errors[
+          index
+        ] = `Price must be greater than or equal to original price ($${item.originalPrice.toFixed(
+          2
+        )})`;
+      }
+    });
+
+    // If there are validation errors, show them and prevent order creation
+    if (Object.keys(errors).length > 0) {
+      setPriceErrors(errors);
+      showErrorToast("Please fix price errors before creating the order");
+      return;
+    }
+
+    // Clear any previous errors
+    setPriceErrors({});
 
     try {
       // Use the selected customer data
@@ -124,9 +267,12 @@ const Page = () => {
         price: item.price,
       }));
 
-      // Check if any product price has been changed from original
+      // Check if any product price has been manually changed from its initial value
+      // useCustomPricing is true only if user has manually changed the price
+      // Round to 2 decimal places to handle floating point precision issues
       const useCustomPricing = orderItems.some(
-        (item) => item.price !== item.originalPrice
+        (item) =>
+          Math.round(item.price * 100) !== Math.round(item.initialPrice * 100)
       );
 
       await createOrder({
@@ -142,6 +288,15 @@ const Page = () => {
       setLockedCustomer(null);
       setOrderItems([]);
       setCustomerDraft("");
+      setPriceErrors({});
+      setProductBasePrice(null);
+      setLatestMarkedUpPrice(null);
+
+      // Refetch products to get latest prices for next order
+      if (productSelectRef.current) {
+        productSelectRef.current.refetch();
+      }
+
       showSuccessToast("Order created successfully");
     } catch (error) {
       console.error("Error creating order:", error);
@@ -169,14 +324,16 @@ const Page = () => {
           <Formik
             initialValues={{
               customer: customerDraft,
-              product: "",
+              product: preservedProduct,
               quantity: 1,
-              price: 0,
+              price: preservedPrice,
             }}
             validationSchema={OrderSchema}
             enableReinitialize
             onSubmit={(values, { resetForm }) => {
               handleAddItem(values);
+              setPreservedProduct(""); // Clear preserved product when item is added
+              setPreservedPrice(0);
               resetForm({
                 values: {
                   customer: values.customer,
@@ -187,13 +344,22 @@ const Page = () => {
               });
             }}
           >
-            {({ values, setFieldValue, errors, touched }) => (
+            {({
+              values,
+              setFieldValue,
+              setFieldTouched,
+              setFieldError,
+              errors,
+              touched,
+            }) => (
               <Form className="flex flex-col gap-4 md:gap-5">
                 <div>
                   <CustomerSelect
                     selectedCustomer={values.customer}
                     setSelectedCustomer={(val: string) => {
                       if (lockedCustomer) return; // prevent changing after first item
+                      // Preserve current product value when customer changes
+                      setPreservedProduct(values.product);
                       setFieldValue("customer", val);
                       setCustomerDraft(val);
                     }}
@@ -209,32 +375,89 @@ const Page = () => {
                     optionPaddingClasses="p-1"
                     onCustomerChange={(customer) => {
                       setSelectedCustomerData(customer);
+                      // // Refetch products when customer changes to get latest prices
+                      // if (productSelectRef.current) {
+                      //   productSelectRef.current.refetch();
+                      // }
                     }}
                   />
                 </div>
                 <div>
                   <ProductSelect
+                    fetchMarkedUpProductsOnly={true}
+                    ref={productSelectRef}
                     selectedProduct={values.product}
-                    setSelectedProduct={(product) =>
-                      setFieldValue("product", product)
-                    }
+                    setSelectedProduct={(product) => {
+                      setFieldValue("product", product);
+                      setPreservedProduct(product);
+                    }}
                     errors={errors.product || ""}
                     touched={touched.product}
                     onProductChange={(selectedProduct) => {
                       setSelectedProductData(selectedProduct);
+
+                      // Update pricing information from the product data (already fetched in ProductSelect)
+                      updatePricingInfo(selectedProduct);
+
+                      // Reset validation errors when product changes
+                      setFieldTouched("product", false);
+                      setFieldTouched("price", false);
+                      setFieldError("product", undefined);
+                      setFieldError("price", undefined);
+
                       // Auto-populate price when product is selected
-                      // Use customPrice if present, otherwise use originalPrice
+                      // Use customPrice if present, otherwise use originalPrice or variants[0].price
                       if (selectedProduct) {
                         const priceToUse =
                           selectedProduct.customPrice ??
                           selectedProduct.originalPrice ??
+                          selectedProduct.variants?.[0]?.price ??
                           selectedProduct.price ??
                           0;
+                        setPreservedPrice(priceToUse);
+                        setPreservedProduct(selectedProduct.name);
                         setFieldValue("price", priceToUse);
+                      } else {
+                        // Reset price if no product selected
+                        setPreservedPrice(0);
+                        setFieldValue("price", 0);
                       }
                     }}
                   />
                 </div>
+
+                {/* Pricing Information Display */}
+                {preservedProduct &&
+                  (productBasePrice !== null ||
+                    latestMarkedUpPrice !== null) && (
+                    <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
+                      <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-2">
+                        Pricing Information
+                      </h3>
+                      <div className="flex flex-col gap-2">
+                        {productBasePrice !== null && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600 text-xs md:text-sm">
+                              Base Price
+                            </span>
+                            <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                              ${productBasePrice.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        {latestMarkedUpPrice !== null && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600 text-xs md:text-sm">
+                              Latest Marked Up Price
+                            </span>
+                            <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                              ${latestMarkedUpPrice.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                 <div className={`flex gap-4 flex-row`}>
                   <div className="w-full">
@@ -301,7 +524,8 @@ const Page = () => {
                       type="number"
                       id="price"
                       required={true}
-                      disabled={true}
+                      min="0.01"
+                      step="0.01"
                     />
                     {errors.price && touched.price && (
                       <p className="text-red-500 text-xs">{errors.price}</p>
@@ -408,19 +632,28 @@ const Page = () => {
                     </div>
 
                     <div className="col-span-2 sm:col-auto">
-                      <input
-                        type="number"
-                        disabled={true}
-                        value={item.price}
-                        onChange={(e) =>
-                          handleUpdateItem(
-                            index,
-                            "price",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs"
-                      />
+                      <div className="flex flex-col">
+                        <input
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          value={item.price}
+                          onChange={(e) => {
+                            const newPrice = Number(e.target.value);
+                            if (!isNaN(newPrice) && newPrice > 0) {
+                              handleUpdateItem(index, "price", newPrice);
+                            }
+                          }}
+                          className={`rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs ${
+                            priceErrors[index] ? "border-red-500" : ""
+                          }`}
+                        />
+                        {priceErrors[index] && (
+                          <p className="text-red-500 text-[12px] mt-0.5 me-2">
+                            {priceErrors[index]}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
                     <div className="text-xs md:text-sm whitespace-nowrap">

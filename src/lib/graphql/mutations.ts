@@ -57,6 +57,7 @@ export const CREATE_INVITATION = gql`
     $state: String
     $postalCode: String
     $address: String
+    $clinic: String
   ) {
     createInvitation(
       input: {
@@ -76,6 +77,7 @@ export const CREATE_INVITATION = gql`
           state: $state
           postalCode: $postalCode
           address: $address
+          clinic: $clinic
         }
       }
     ) {
@@ -111,6 +113,7 @@ export const UPDATE_USER = gql`
     $medicalLicense: String
     $status: UserStatusEnum
     $specialty: String
+    $clinic: String
     $image: Upload
     $addressVerified: Boolean
     $street1: String
@@ -126,6 +129,7 @@ export const UPDATE_USER = gql`
         userAttributes: {
           email: $email
           specialty: $specialty
+          clinic: $clinic
           fullName: $fullName
           firstName: $firstName
           lastName: $lastName
@@ -224,12 +228,20 @@ export const UPDATE_DOCTOR = gql`
     $image: Upload
     $medicalLicense: String
     $specialty: String
+    $clinic: String
     $street1: String
     $street2: String
     $city: String
     $state: String
     $postalCode: String
     $address: String
+    $sameAsBillingAddress: Boolean
+    $shippingCountry: String
+    $shippingPostalCode: String
+    $shippingState:String
+    $shippingCity: String
+    $shippingStreet2: String
+    $shippingStreet1:String
   ) {
     updateUser(
       input: {
@@ -242,12 +254,20 @@ export const UPDATE_DOCTOR = gql`
           image: $image
           medicalLicense: $medicalLicense
           specialty: $specialty
+          clinic: $clinic
           street1: $street1
           street2: $street2
           city: $city
           state: $state
           postalCode: $postalCode
           address: $address
+          sameAsBillingAddress: $sameAsBillingAddress
+          shippingCountry: $shippingCountry
+          shippingPostalCode: $shippingPostalCode
+          shippingState: $shippingState
+          shippingCity: $shippingCity
+          shippingStreet2: $shippingStreet2
+          shippingStreet1: $shippingStreet1
         }
       }
     ) {
@@ -401,6 +421,13 @@ export const UPDATE_CUSTOMER_PROFILE = gql`
     $state: String
     $postalCode: String
     $country: String
+    $sameAsBillingAddress: Boolean
+    $shippingCountry: String
+    $shippingPostalCode: String
+    $shippingState:String
+    $shippingCity: String
+    $shippingStreet2: String
+    $shippingStreet1:String
   ) {
     updateUser(
       input: {
@@ -425,6 +452,13 @@ export const UPDATE_CUSTOMER_PROFILE = gql`
           state: $state
           postalCode: $postalCode
           country: $country
+          sameAsBillingAddress: $sameAsBillingAddress
+          shippingCountry: $shippingCountry
+          shippingPostalCode: $shippingPostalCode
+          shippingState: $shippingState
+          shippingCity: $shippingCity
+          shippingStreet2: $shippingStreet2
+          shippingStreet1: $shippingStreet1
         }
       }
     ) {
@@ -664,14 +698,18 @@ export const PROCESS_PAYMENT = gql`
     $orderId: ID!
     $opaqueData: OpaqueData!
     $amount: Float!
+    $totalTax: Float!
     $billingAddress: BillingAddress
+    $shippingAddress: ShippingAddress
   ) {
     processPayment(
       input: {
         orderId: $orderId
         opaqueData: $opaqueData
         amount: $amount
+        totalTax: $totalTax
         billingAddress: $billingAddress
+        shippingAddress: $shippingAddress
       }
     ) {
       success
@@ -702,6 +740,35 @@ export const MARK_NOTIFICATION_AS_READ = gql`
   mutation MarkNotificationAsRead($notificationId: ID!) {
     markNotificationAsRead(input: { notificationId: $notificationId }) {
       success
+    }
+  }
+`;
+
+export const BLANKET_MARKUP_PRODUCTS = gql`
+  mutation BlanketMarkupProducts($markupPercentage: Float!) {
+    blanketMarkupProducts(input: { markupPercentage: $markupPercentage }) {
+      success
+    }
+  }
+`;
+
+export const CALCULATE_TAX = gql`
+  mutation CalculateTax(
+    $clientMutationId: String
+    $subtotalPrice: Float!
+    $postalCode: String!
+  ) {
+    calculateTax(
+      input: {
+        clientMutationId: $clientMutationId
+        subtotalPrice: $subtotalPrice
+        postalCode: $postalCode
+      }
+    ) {
+      clientMutationId
+      success
+      taxAmount
+      totalPrice
     }
   }
 `;

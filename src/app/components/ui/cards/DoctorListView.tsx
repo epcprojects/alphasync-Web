@@ -104,6 +104,11 @@ export default function DoctorListView({
               <h2 className="text-gray-800 text-sm md:text-sm font-normal">
                 {doctor.email}
               </h2>
+              {doctor.clinic && (
+                <h2 className="text-gray-800 text-sm md:text-sm font-normal">
+                  Clinic: {doctor.clinic}
+                </h2>
+              )}
             </div>
           </div>
 
@@ -135,7 +140,7 @@ export default function DoctorListView({
               Medical License:
             </span>
             <span className="text-gray-800 text-sm font-normal block">
-              {doctor.medicalLicense ?? "—"} {doctor.medicalLicense ?? "—"}
+              {doctor.medicalLicense ?? "—"}
             </span>
           </div>
           <div className="flex items-center justify-start gap-1">
@@ -190,7 +195,7 @@ export default function DoctorListView({
     <div
       // onClick={onRowClick}
       key={doctor.id}
-      className="grid  grid-cols-[2fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr] gap-2 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
+      className="grid  grid-cols-[2.5fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr] xl:grid-cols-[2.5fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr]  items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div className="flex items-center gap-2">
         <ProfileImage
@@ -210,7 +215,10 @@ export default function DoctorListView({
       </div>
 
       <div className="text-sm md:text-base font-normal text-gray-800">
-        {doctor.specialty ?? "—"}
+        {doctor.specialty ? doctor.specialty.replace(/_/g, " ") : "—"}
+      </div>
+      <div className="text-sm md:text-base font-normal text-gray-800">
+        {doctor.clinic ?? "—"}
       </div>
       <div className="text-sm md:text-base font-normal text-gray-800">
         {doctor.phoneNo ?? "—"}
@@ -219,7 +227,7 @@ export default function DoctorListView({
         {doctor.medicalLicense ?? "—"}
       </div>
 
-      <div className="font-medium text-sm md:text-base text-gray-800">
+      <div className="font-medium xl:flex hidden text-sm md:text-base text-gray-800">
         <span
           className={`inline-block rounded-full capitalize px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             displayStatus

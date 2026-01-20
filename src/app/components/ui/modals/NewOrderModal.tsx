@@ -23,6 +23,19 @@ type DropdownItem = {
   productId?: string;
   variantId?: string;
   price?: number;
+  customPrice?: number;
+  originalPrice?: number;
+  customPriceChangeHistory?: Array<{
+    customPrice: number;
+    id: string;
+    createdAt?: string;
+  }>;
+  variants?: Array<{
+    id?: string;
+    shopifyVariantId?: string;
+    price?: number;
+    sku?: string;
+  }>;
 };
 
 interface OrderItem {
@@ -32,6 +45,7 @@ interface OrderItem {
   quantity: number;
   price: number;
   originalPrice: number;
+  initialPrice: number; // Track the initial displayed price when item was added
 }
 
 interface NewOrderModalProps {
@@ -39,6 +53,7 @@ interface NewOrderModalProps {
   onClose: () => void;
   currentCustomer?: DropdownItem;
   customers?: DropdownItem[];
+  patientId?: string;
   onCreateOrder?: (data: {
     customer: string;
     items: OrderItem[];
@@ -51,11 +66,12 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   onClose,
   currentCustomer,
   customers = [],
+  patientId: patientIdProp,
   onCreateOrder,
 }) => {
-  // Get patient ID from URL params
+  // Get patient ID from props or URL params
   const params = useParams();
-  const patientId = params.id as string;
+  const patientId = patientIdProp || (params.id as string);
   const [showItems, setShowItems] = useState(false);
   const isMobile = useIsMobile();
   // GraphQL mutation to create order
@@ -63,16 +79,6 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     createOrder,
     { loading: createOrderLoading, error: createOrderError },
   ] = useMutation(CREATE_ORDER);
-  const OrderSchema = Yup.object().shape({
-    customer: currentCustomer
-      ? Yup.string().optional() // if parent already provides customer
-      : Yup.string().required("Customer is required"),
-    product: Yup.string().required("Product is required"),
-    quantity: Yup.number().min(1, "Minimum 1").required("Quantity is required"),
-    price: Yup.number()
-      .min(0.01, "Must be greater than 0")
-      .required("Price is required"),
-  });
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [customerDraft, setCustomerDraft] = useState("");
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(
@@ -80,6 +86,85 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
   );
   const [selectedProductData, setSelectedProductData] =
     useState<DropdownItem | null>(null);
+  const [priceErrors, setPriceErrors] = useState<{ [index: number]: string }>(
+    {}
+  );
+  const [productBasePrice, setProductBasePrice] = useState<number | null>(null);
+  const [latestMarkedUpPrice, setLatestMarkedUpPrice] = useState<number | null>(
+    null
+  );
+
+  // Extract pricing information from selected product data
+  const updatePricingInfo = (product: DropdownItem | null) => {
+    if (!product) {
+      setProductBasePrice(null);
+      setLatestMarkedUpPrice(null);
+      return;
+    }
+
+    // Set base price (original price before markup)
+    const basePriceValue = product.variants?.[0]?.price ?? 0;
+    setProductBasePrice(basePriceValue);
+
+    // Get latest marked up price from history (most recent entry)
+    const priceHistory = product.customPriceChangeHistory;
+    if (priceHistory && priceHistory.length > 0) {
+      // Sort by createdAt descending to get the latest
+      const sortedHistory = [...priceHistory].sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+      const latestHistory = sortedHistory[0];
+      if (latestHistory?.customPrice != null) {
+        setLatestMarkedUpPrice(Number(latestHistory.customPrice));
+      } else {
+        setLatestMarkedUpPrice(null);
+      }
+    } else {
+      setLatestMarkedUpPrice(null);
+    }
+  };
+
+  // Create OrderSchema inside component to access selectedProductData
+  const OrderSchema = React.useMemo(() => {
+    return Yup.object().shape({
+      customer: currentCustomer
+        ? Yup.string().optional() // if parent already provides customer
+        : Yup.string().required("Customer is required"),
+      product: Yup.string().required("Product is required"),
+      quantity: Yup.number()
+        .min(1, "Minimum 1")
+        .required("Quantity is required"),
+      price: Yup.number()
+        .min(0.01, "Must be greater than 0")
+        .required("Price is required")
+        .test("greater-than-original", function (value) {
+          if (!value || !selectedProductData) return true;
+          // Original price is variants[0].price
+          const originalPrice = selectedProductData.variants?.[0]?.price ?? 0;
+          if (value < originalPrice) {
+            return this.createError({
+              message: `Price must be greater than or equal to original price ($${originalPrice.toFixed(
+                2
+              )})`,
+            });
+          }
+          return true;
+        })
+        .test("less-than-latest-markup", function (value) {
+          if (!value || latestMarkedUpPrice === null) return true;
+          if (value > latestMarkedUpPrice) {
+            return this.createError({
+              message: `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
+                2
+              )})`,
+            });
+          }
+          return true;
+        }),
+    });
+  }, [currentCustomer, selectedProductData, latestMarkedUpPrice]);
 
   const handleAddItem = (values: {
     customer: string;
@@ -90,7 +175,34 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     // lock on first item
     if (!lockedCustomer) setLockedCustomer(values.customer);
 
-    const originalPrice = selectedProductData?.price || values.price;
+    // Original price is variants[0].price
+    const originalPrice =
+      selectedProductData?.variants?.[0]?.price ?? values.price;
+    const customPrice = selectedProductData?.customPrice;
+
+    // The displayed price is customPrice if present, otherwise originalPrice
+    // This is what the user sees initially
+    const initialPrice = customPrice ?? originalPrice;
+
+    // Validate price is not less than original price
+    if (values.price < originalPrice) {
+      showErrorToast(
+        `Price must be greater than or equal to original price ($${originalPrice.toFixed(
+          2
+        )})`
+      );
+      return;
+    }
+
+    // Validate price is not greater than latest marked up price
+    if (latestMarkedUpPrice !== null && values.price > latestMarkedUpPrice) {
+      showErrorToast(
+        `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
+          2
+        )})`
+      );
+      return;
+    }
 
     const newItem: OrderItem = {
       product: values.product,
@@ -99,6 +211,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       quantity: values.quantity,
       price: values.price,
       originalPrice: originalPrice,
+      initialPrice: initialPrice, // Store the displayed price (customPrice or originalPrice) when item is added
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -113,10 +226,31 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
     const updated = [...orderItems];
     updated[index] = { ...updated[index], [field]: value };
     setOrderItems(updated);
+    // Clear error for this item when price is updated
+    if (field === "price") {
+      setPriceErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[index];
+        return newErrors;
+      });
+    }
   };
 
   const handleDeleteItem = (index: number) => {
     setOrderItems((prev) => prev.filter((_, i) => i !== index));
+    // Clear error for deleted item and reindex remaining errors
+    setPriceErrors((prev) => {
+      const newErrors: { [index: number]: string } = {};
+      Object.keys(prev).forEach((key) => {
+        const errorIndex = parseInt(key);
+        if (errorIndex < index) {
+          newErrors[errorIndex] = prev[errorIndex];
+        } else if (errorIndex > index) {
+          newErrors[errorIndex - 1] = prev[errorIndex];
+        }
+      });
+      return newErrors;
+    });
   };
 
   const totalAmount = orderItems.reduce(
@@ -130,6 +264,28 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       return;
     }
 
+    // Validate all order items before creating order
+    const errors: { [index: number]: string } = {};
+    orderItems.forEach((item, index) => {
+      if (item.price < item.originalPrice) {
+        errors[
+          index
+        ] = `Price must be greater than or equal to original price ($${item.originalPrice.toFixed(
+          2
+        )})`;
+      }
+    });
+
+    // If there are validation errors, show them and prevent order creation
+    if (Object.keys(errors).length > 0) {
+      setPriceErrors(errors);
+      showErrorToast("Please fix price errors before creating the order");
+      return;
+    }
+
+    // Clear any previous errors
+    setPriceErrors({});
+
     try {
       // Validate that patientId exists
 
@@ -141,9 +297,11 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
         price: item.price,
       }));
 
-      // Check if any product price has been changed from original
+      // Check if any product price has been changed from initial displayed price
+      // If customPrice was present initially, compare with initialPrice
+      // If user changed the price from what was initially shown, useCustomPricing should be true
       const useCustomPricing = orderItems.some(
-        (item) => item.price !== item.originalPrice
+        (item) => item.price !== item.initialPrice
       );
 
       await createOrder({
@@ -167,6 +325,9 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
       // Reset state for the next order
       setOrderItems([]);
       setCustomerDraft("");
+      setPriceErrors({});
+      setProductBasePrice(null);
+      setLatestMarkedUpPrice(null);
       if (!currentCustomer) {
         setLockedCustomer(null);
       }
@@ -187,6 +348,9 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
         if (showItems) {
           setShowItems(false);
         } else {
+          // Reset pricing info when closing
+          setProductBasePrice(null);
+          setLatestMarkedUpPrice(null);
           onClose();
         }
       }}
@@ -242,7 +406,14 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                 });
               }}
             >
-              {({ values, setFieldValue, errors, touched }) => (
+              {({
+                values,
+                setFieldValue,
+                setFieldTouched,
+                setFieldError,
+                errors,
+                touched,
+              }) => (
                 <Form className="flex flex-col gap-5">
                   {!currentCustomer && (
                     <div>
@@ -281,6 +452,7 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     </div>
                   )}
                   <ProductSelect
+                    fetchMarkedUpProductsOnly={true}
                     selectedProduct={values.product}
                     setSelectedProduct={(product) =>
                       setFieldValue("product", product)
@@ -289,9 +461,26 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     touched={touched.product}
                     onProductChange={(selectedProduct) => {
                       setSelectedProductData(selectedProduct);
+
+                      // Update pricing information from the product data (already fetched in ProductSelect)
+                      updatePricingInfo(selectedProduct);
+
+                      // Reset validation errors when product changes
+                      setFieldTouched("product", false);
+                      setFieldTouched("price", false);
+                      setFieldError("product", undefined);
+                      setFieldError("price", undefined);
+
                       // Auto-populate price when product is selected
-                      if (selectedProduct && selectedProduct.price) {
-                        setFieldValue("price", selectedProduct.price);
+                      // Use customPrice if present, otherwise use originalPrice or variants[0].price
+                      if (selectedProduct) {
+                        const priceToUse =
+                          selectedProduct.customPrice ??
+                          selectedProduct.originalPrice ??
+                          selectedProduct.variants?.[0]?.price ??
+                          selectedProduct.price ??
+                          0;
+                        setFieldValue("price", priceToUse);
                       }
                     }}
                   />
@@ -362,6 +551,38 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                       )}
                     </div>
                     <div className="w-full">
+                      {/* Pricing Information Display */}
+                      {values?.product &&
+                        (productBasePrice !== null ||
+                          latestMarkedUpPrice !== null) && (
+                          <div className="bg-gray-50 rounded-lg p-2 mb-2 border border-gray-200">
+                            <h3 className="text-gray-700 font-medium text-xs mb-1.5">
+                              Pricing Information
+                            </h3>
+                            <div className="flex flex-col gap-1.5">
+                              {productBasePrice !== null && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600 text-xs">
+                                    Base Price
+                                  </span>
+                                  <span className="text-gray-800 font-semibold text-xs">
+                                    ${productBasePrice.toFixed(2)}
+                                  </span>
+                                </div>
+                              )}
+                              {latestMarkedUpPrice !== null && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600 text-xs">
+                                    Latest Marked Up Price
+                                  </span>
+                                  <span className="text-gray-800 font-semibold text-xs">
+                                    ${latestMarkedUpPrice.toFixed(2)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       <Field
                         as={ThemeInput}
                         label="Price ($)"
@@ -370,7 +591,15 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                         type="number"
                         id="price"
                         required={true}
-                        disabled={true}
+                        min="0.01"
+                        step="0.01"
+                        onKeyDown={(
+                          e: React.KeyboardEvent<HTMLInputElement>
+                        ) => {
+                          if (["e", "E", "+", "-"].includes(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
                       />
                       {errors.price && touched.price && (
                         <p className="text-red-500 text-xs">{errors.price}</p>
@@ -479,12 +708,50 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({
                       </div>
 
                       <div className="col-span-2 sm:col-auto">
-                        <input
-                          type="number"
-                          value={item.price}
-                          disabled={true}
-                          className="rounded-md border bg-gray-100 border-gray-200 w-full max-w-14 py-0.5 h-7 px-2 outline-none text-xs cursor-not-allowed opacity-60"
-                        />
+                        <div className="flex flex-col">
+                          <input
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            value={item.price}
+                            onChange={(e) => {
+                              const newPrice = Number(e.target.value);
+                              if (!isNaN(newPrice) && newPrice > 0) {
+                                handleUpdateItem(index, "price", newPrice);
+
+                                // Validate in real-time
+                                const originalPrice = item.originalPrice;
+                                if (newPrice < originalPrice) {
+                                  setPriceErrors((prev) => ({
+                                    ...prev,
+                                    [index]: `Price must be greater than or equal to original price ($${originalPrice.toFixed(
+                                      2
+                                    )})`,
+                                  }));
+                                } else {
+                                  setPriceErrors((prev) => {
+                                    const newErrors = { ...prev };
+                                    delete newErrors[index];
+                                    return newErrors;
+                                  });
+                                }
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (["e", "E", "+", "-"].includes(e.key)) {
+                                e.preventDefault();
+                              }
+                            }}
+                            className={`rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs ${
+                              priceErrors[index] ? "border-red-500" : ""
+                            }`}
+                          />
+                          {priceErrors[index] && (
+                            <p className="text-red-500 text-[12px] mt-0.5 me-2">
+                              {priceErrors[index]}
+                            </p>
+                          )}
+                        </div>
                       </div>
 
                       <div className="text-xs md:text-sm whitespace-nowrap">

@@ -51,6 +51,7 @@ interface FetchOrderResponse {
     totalTax: number;
     patient: UserAttributes | null;
     orderItems: OrderItem[];
+    trackingNumber?: string | number;
   };
 }
 
@@ -483,6 +484,14 @@ const Page = () => {
                 </div>
               ))}
 
+              <div className="grid grid-cols-4 bg-gray-50 p-1.5 md:py-2 md:px-3 rounded-lg md:rounded-xl">
+                <div className="col-span-3 text-gray-800 text-base md:text-md">
+                  Tax
+                </div>
+                <div className="text-base md:text-lg text-black">
+                  ${order.totalTax.toFixed(2)}
+                </div>
+              </div>
               <div className="grid grid-cols-4 bg-sky-50 p-1.5 md:py-2 md:px-3 rounded-lg md:rounded-xl">
                 <div className="col-span-3 text-gray-800 font-semibold text-base md:text-lg">
                   Order Total
@@ -509,7 +518,7 @@ const Page = () => {
                   Tracking Number:
                 </h2>
                 <h3 className="text-xs md:text-base text-gray-800">
-                  TRK123456789
+                  {order.trackingNumber || "In progress"}
                 </h3>
               </div>
             </div>

@@ -36,6 +36,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     medicalLicense: "",
     specialty: "",
     status: "Active",
+    clinic: "",
     street1: "",
     street2: "",
     city: "",
@@ -219,6 +220,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
               : initialData.status === "INACTIVE"
               ? "Inactive"
               : "Active",
+          clinic: initialData.clinic || "",
           street1: initialData.street1 || "",
           street2: initialData.street2 || "",
           city: initialData.city || "",
@@ -236,6 +238,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           medicalLicense: "",
           specialty: "",
           status: "Active",
+          clinic: "",
           street1: "",
           street2: "",
           city: "",
@@ -510,6 +513,18 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
             )}
           </div>
         </div>
+
+        <ThemeInput
+          label="Clinic"
+          placeholder="Enter clinic name"
+          name="clinic"
+          error={!!errors.clinic}
+          errorMessage={errors.clinic}
+          id="clinic"
+          onChange={(e) => handleChange("clinic", e.target.value)}
+          type="text"
+          value={formData.clinic}
+        />
 
         <div>
           <label

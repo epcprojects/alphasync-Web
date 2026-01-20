@@ -27,6 +27,8 @@ interface PatientOrderItemData {
   quantity?: number | null;
   price?: number | null;
   totalPrice?: number | null;
+  totalTax?: number | null;
+  subtotalPrice?: number | null;
   product?: {
     title?: string | null;
     description?: string | null;
@@ -47,6 +49,8 @@ interface PatientOrderData {
   status?: string | null;
   createdAt: string;
   totalPrice?: number | null;
+  totalTax?: number | null;
+  subtotalPrice?: number | null;
   hasAnotherReorder?: boolean | null;
   doctor?: {
     fullName?: string | null;
@@ -175,7 +179,9 @@ function History() {
 
         return {
           id: item.id ?? `${order.id}-${index}`,
-
+          subtotalPrice: order.subtotalPrice ?? 0,
+          totalPrice: order.totalPrice ?? 0,
+          totalTax: order.totalTax ?? 0,
           medicineName: item.product?.title || "Unknown Product",
           quantity,
           price: unitPrice,
@@ -197,6 +203,8 @@ function History() {
         ? new Date(order.createdAt).toLocaleDateString()
         : "--",
       totalPrice: order.totalPrice ?? 0,
+      totalTax: order.totalTax ?? 0,
+      subtotalPrice: order.subtotalPrice ?? 0,
       status: order.status ?? undefined,
       hasAnotherReorder: order.hasAnotherReorder ?? false,
       patient: order.patient

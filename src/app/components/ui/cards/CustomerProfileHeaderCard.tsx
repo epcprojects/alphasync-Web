@@ -34,6 +34,20 @@ function getColorPair(seed: number | string | undefined) {
   return colorPairs[index] || colorPairs[0];
 }
 
+function formatDateOfBirth(dateString?: string): string {
+  if (!dateString) return "—";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "—";
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}-${day}-${year}`;
+  } catch {
+    return "—";
+  }
+}
+
 const CustomerProfileHeaderCard: React.FC<CustomerProfileHeaderCardProps> = ({
   name,
   email,
@@ -100,7 +114,9 @@ const CustomerProfileHeaderCard: React.FC<CustomerProfileHeaderCardProps> = ({
         <div className="flex items-center gap-2 justify-between">
           <div className="flex items-start gap-2">
             <h2 className="text-sm font-medium text-black ">Date of Birth:</h2>
-            <h3 className="text-sm text-gray-800 font-normal">{dob}</h3>
+            <h3 className="text-sm text-gray-800 font-normal">
+              {formatDateOfBirth(dob)}
+            </h3>
           </div>
 
           <div className="flex items-center gap-1">
@@ -170,7 +186,7 @@ const CustomerProfileHeaderCard: React.FC<CustomerProfileHeaderCardProps> = ({
                   Date of Birth:
                 </h2>
                 <h3 className="text-xs md:text-base line-clamp-1 text-gray-800 font-medium">
-                  {dob}
+                  {formatDateOfBirth(dob)}
                 </h3>
               </div>
 

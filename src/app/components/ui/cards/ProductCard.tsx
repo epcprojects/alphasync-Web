@@ -14,6 +14,7 @@ type Product = {
   image: string;
   isFavourite: boolean;
   tags?: string[];
+  basePrice?: string;
 };
 
 interface ProductCardProps {
@@ -21,6 +22,7 @@ interface ProductCardProps {
   onAddToCart?: (id: number) => void;
   onCardClick?: () => void;
   onToggleFavourite?: (id: number) => void;
+  customPrice?: number | null;
 }
 
 export default function ProductCard({
@@ -28,6 +30,7 @@ export default function ProductCard({
   onAddToCart,
   onCardClick,
   onToggleFavourite,
+  customPrice,
 }: ProductCardProps) {
   return (
     <div
@@ -56,7 +59,7 @@ export default function ProductCard({
         />
       </div>
 
-      <div className="bg-gray-50 border border-gray-100 p-2 md:p-4 md:min-h-56 md:max-h-56 w-full rounded-lg">
+      <div className="bg-gray-50 border border-gray-100 p-2 md:p-4 md:min-h-64 md:max-h-64 w-full rounded-lg">
         <div className="flex flex-col gap-2 h-full justify-between">
           <div className="flex flex-col gap-1">
             <h2 className="text-gray-900 font-semibold line-clamp-2 text-lg md:text-xl">
@@ -79,22 +82,35 @@ export default function ProductCard({
               </span>
             </div>
 
-            <div className="flex items-center justify-between gap-4">
-              <ThemeButton
-                label="Order"
-                icon={<ShopingCartIcon />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddToCart?.(product.id);
-                }}
-                variant="outline"
-                className="flex-1"
-                heightClass="h-10 md:h-11"
-              />
+            <div className="flex flex-col gap-2">
+              {product.basePrice && (
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 text-xs md:text-sm">
+                    Base Price:
+                  </span>
+                  <span className="text-gray-700 font-medium text-xs md:text-sm">
+                    {product.basePrice}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-4">
+                <ThemeButton
+                  label="Order"
+                  icon={<ShopingCartIcon />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddToCart?.(product.id);
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                  heightClass="h-10 md:h-11"
+                  disabled={customPrice === null || customPrice === undefined}
+                />
 
-              <h2 className="text-gray-950 font-semibold text-sm md:text-lg lg:text-xl min-w-16 text-end">
-                {product.price}
-              </h2>
+                <h2 className="text-gray-950 font-semibold text-sm md:text-lg lg:text-xl min-w-16 text-end">
+                  {product.price}
+                </h2>
+              </div>
             </div>
           </div>
         </div>

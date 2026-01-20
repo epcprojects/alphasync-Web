@@ -10,7 +10,7 @@ import {
   NoteIcon,
   CreditCardOutlineIcon,
 } from "@/icons";
-import type { NoteAttributes } from "@/lib/graphql/attributes";
+import type { NoteAttributes, RequestedItem } from "@/lib/graphql/attributes";
 import InfoGrid from "./InfoGrid";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
@@ -40,6 +40,8 @@ interface PrescriptionRequestCardProps {
   cardVarient?: cardVariantType;
   orderPaid?: boolean;
   orderStatus?: string | null;
+  requestCustomPrice?: string | number;
+  requestedItems?: RequestedItem[];
 }
 
 const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
@@ -65,6 +67,8 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   onPayment,
   orderPaid,
   orderStatus,
+  requestCustomPrice,
+  requestedItems,
 }) => {
   function getStatusClasses(status: string) {
     switch (status) {
@@ -85,6 +89,34 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
     }
     return "bg-gray-50 border border-gray-200 text-gray-700";
   }
+
+  // Calculate price with fallback logic for Doctor variant
+  const calculatedPrice = React.useMemo<string>(() => {
+    if (cardVarient === "Doctor") {
+      // Priority: requestCustomPrice -> customPrice -> price
+      if (requestCustomPrice !== undefined && requestCustomPrice !== null) {
+        const priceValue =
+          typeof requestCustomPrice === "string"
+            ? parseFloat(requestCustomPrice)
+            : (requestCustomPrice as number) || 0;
+        return `$${priceValue.toFixed(2)}`;
+      }
+      // Fallback to calculating from items
+      if (requestedItems && requestedItems.length > 0) {
+        const totalAmount = requestedItems.reduce((sum, item) => {
+          const priceToUse = item.product?.customPrice || item.price;
+          const itemPrice =
+            typeof priceToUse === "string"
+              ? parseFloat(priceToUse)
+              : (priceToUse as number) || 0;
+          return sum + itemPrice;
+        }, 0);
+        return `$${totalAmount.toFixed(2)}`;
+      }
+    }
+    // For Customer variant or when no calculation data, use passed price
+    return price || "$0.00";
+  }, [cardVarient, requestCustomPrice, requestedItems, price]);
 
   const baseClasses =
     " flex-col flex items-start py-4 gap-1.5 md:gap-3  bg-white p-2 lg:p-4";
@@ -156,7 +188,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
                 requestedDate={requestedDate}
                 reviewedDate={reviewedDate}
                 doctorName={doctorName}
-                price={price}
+                price={calculatedPrice}
               />
             )}
           </div>
@@ -167,7 +199,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
             requestedDate={requestedDate}
             reviewedDate={reviewedDate}
             doctorName={doctorName}
-            price={price}
+            price={calculatedPrice}
           />
         )}
       </div>
