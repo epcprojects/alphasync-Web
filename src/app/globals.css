@@ -241,7 +241,7 @@ width: 16px !important;
 }
 
 .react-datepicker__day-names {
-  padding: 12px 12px 0px 12px !important;
+  padding: 12px 12px 12px 12px !important;
 }
 .react-datepicker__day-name ,  .react-datepicker__day {
   margin: 0.266rem !important;
@@ -284,4 +284,19 @@ width: 16px !important;
   .react-datepicker__day--outside-month {
     @apply text-gray-400;
   }
+/* 
+  .rdrEndEdge {
+    border-top-right-radius: 1.042em;
+    border-bottom-right-radius: 1.042em;
+    right: 2px;
+    height: 100%;
+} 
+.rdrInRange , .rdrDayNumber , .rdrStartEdge {
+    height: 100%;
+} */
+
+
+
 }
+
+

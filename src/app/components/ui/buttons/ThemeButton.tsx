@@ -7,7 +7,8 @@ export type buttonVariant =
   | "outline"
   | "success"
   | "primaryOutline"
-  | "danger";
+  | "danger"
+  | "gray";
 interface ThemeButtonProps {
   label: string;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
@@ -53,6 +54,7 @@ const ThemeButton: React.FC<ThemeButtonProps> = ({
       "text-primary border border-white bg-white group-hover:bg-primary group-hover:text-white group-hover:border-primary",
     danger:
       "text-white bg-red-500 border border-red-500 group-hover:bg-red-700 group-hover:border-red-700",
+    gray: "text-gray-700 font-normal bg-gray-100 ",
   };
 
   return (
@@ -75,6 +77,8 @@ const ThemeButton: React.FC<ThemeButtonProps> = ({
             ? "border border-red-500 !p-0"
             : variant === "success"
             ? "border border-green-200 !p-0"
+            : variant === "gray"
+            ? "border border-gray-100 !p-0"
             : "bg-green-50 border border-green-200 group-hover:bg-green-200"
         }`}
       >
