@@ -4,6 +4,7 @@ import { ArrowDownIcon, PlusIcon, TrashBinIcon } from "@/icons";
 import { ProductSelect, CustomerSelect } from "@/app/components";
 import { ThemeInput, ThemeButton } from "@/app/components";
 import { Formik, Form, Field } from "formik";
+import { Switch } from "@headlessui/react";
 import * as Yup from "yup";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -50,11 +51,14 @@ const Page = () => {
   const [latestMarkedUpPrice, setLatestMarkedUpPrice] = useState<number | null>(
     null
   );
+  const [isClinicOrder, setIsClinicOrder] = useState(false);
 
-  // Make OrderSchema dynamic to access latestMarkedUpPrice
+  // Make OrderSchema dynamic to access latestMarkedUpPrice and isClinicOrder
   const OrderSchema = useMemo(() => {
     return Yup.object().shape({
-      customer: Yup.string().required("Customer is required"),
+      customer: isClinicOrder
+        ? Yup.string()
+        : Yup.string().required("Customer is required"),
       product: Yup.string().required("Product is required"),
       quantity: Yup.number()
         .min(1, "Minimum 1")
@@ -88,7 +92,7 @@ const Page = () => {
           return true;
         }),
     });
-  }, [selectedProductData, latestMarkedUpPrice]);
+  }, [selectedProductData, latestMarkedUpPrice, isClinicOrder]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [customerDraft, setCustomerDraft] = useState("");
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
@@ -151,8 +155,8 @@ const Page = () => {
     quantity: number;
     price: number;
   }) => {
-    // lock on first item
-    if (!lockedCustomer) setLockedCustomer(values.customer);
+    // lock on first item (only for customer orders)
+    if (!isClinicOrder && !lockedCustomer) setLockedCustomer(values.customer);
 
     // Original price is variants[0].price
     const originalPrice =
@@ -253,12 +257,6 @@ const Page = () => {
     setPriceErrors({});
 
     try {
-      // Use the selected customer data
-      if (!selectedCustomerData) {
-        showErrorToast("Customer not found");
-        return;
-      }
-
       // Transform order items to match the expected GraphQL input format
       const orderItemsInput = orderItems.map((item) => ({
         productId: item.productId,
@@ -267,22 +265,36 @@ const Page = () => {
         price: item.price,
       }));
 
-      // Check if any product price has been manually changed from its initial value
-      // useCustomPricing is true only if user has manually changed the price
-      // Round to 2 decimal places to handle floating point precision issues
-      const useCustomPricing = orderItems.some(
-        (item) =>
-          Math.round(item.price * 100) !== Math.round(item.initialPrice * 100)
-      );
-
-      await createOrder({
-        variables: {
-          orderItems: orderItemsInput,
-          totalPrice: totalAmount,
-          patientId: selectedCustomerData.id,
-          useCustomPricing: useCustomPricing,
-        },
-      });
+      if (isClinicOrder) {
+        // Clinic order: no patient, no custom pricing (same as ClinicOrderModal)
+        await createOrder({
+          variables: {
+            orderItems: orderItemsInput,
+            totalPrice: totalAmount,
+            patientId: null,
+            useCustomPricing: false,
+          },
+        });
+      } else {
+        // Customer order: require selected customer
+        if (!selectedCustomerData) {
+          showErrorToast("Customer not found");
+          return;
+        }
+        // Check if any product price has been manually changed from its initial value
+        const useCustomPricing = orderItems.some(
+          (item) =>
+            Math.round(item.price * 100) !== Math.round(item.initialPrice * 100)
+        );
+        await createOrder({
+          variables: {
+            orderItems: orderItemsInput,
+            totalPrice: totalAmount,
+            patientId: selectedCustomerData.id,
+            useCustomPricing,
+          },
+        });
+      }
 
       // Reset form state
       setLockedCustomer(null);
@@ -353,6 +365,32 @@ const Page = () => {
               touched,
             }) => (
               <Form className="flex flex-col gap-4 md:gap-5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-gray-700 text-sm font-medium">
+                    My clinic&apos;s order
+                  </span>
+                  <Switch
+                    checked={isClinicOrder}
+                    disabled={orderItems.length > 0}
+                    onChange={(checked) => {
+                      setIsClinicOrder(checked);
+                      if (checked) {
+                        setLockedCustomer(null);
+                        setSelectedCustomerData(null);
+                        setCustomerDraft("");
+                        setFieldValue("customer", "");
+                      }
+                    }}
+                    className={`group inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition data-checked:bg-gradient-to-r data-checked:from-[#3C85F5] data-checked:to-[#1A407A] ${
+                      orderItems.length > 0
+                        ? "cursor-not-allowed opacity-60"
+                        : "cursor-pointer"
+                    }`}
+                  >
+                    <span className="size-4 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-6" />
+                  </Switch>
+                </div>
+                {!isClinicOrder && (
                 <div>
                   <CustomerSelect
                     selectedCustomer={values.customer}
@@ -382,6 +420,7 @@ const Page = () => {
                     }}
                   />
                 </div>
+                )}
                 <div>
                   <ProductSelect
                     fetchMarkedUpProductsOnly={true}
