@@ -32,6 +32,12 @@ type SelectGroupDropdownProps = {
   showLabel?: boolean;
   disabled?: boolean;
   showIcon?: boolean;
+  /** When true, show spinner in list area while loading (e.g. server-side search). Dropdown stays open. */
+  isSearching?: boolean;
+  /** When true, always show search input. When false, search is shown only when groups.length > 5. */
+  alwaysShowSearch?: boolean;
+  /** When false, do not filter groups by searchTerm (parent handles search, e.g. server-side). Default true. */
+  clientSideSearch?: boolean;
 };
 
 const getGroupKey = (group: GroupOption) =>
@@ -60,6 +66,9 @@ const SelectGroupDropdown = ({
   showLabel = true,
   disabled = false,
   showIcon,
+  isSearching = false,
+  alwaysShowSearch = false,
+  clientSideSearch = true,
 }: SelectGroupDropdownProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -103,13 +112,14 @@ const SelectGroupDropdown = ({
 
   const safeGroups = groups ?? [];
 
-  const filteredGroups = safeGroups.filter((group) =>
-    getGroupLabel(group).toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredGroups =
+    clientSideSearch === false
+      ? safeGroups
+      : safeGroups.filter((group) =>
+          getGroupLabel(group).toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
-  // const filteredGroups = groups.filter((group) =>
-  //   getGroupLabel(group).toLowerCase().includes(searchTerm.toLowerCase())
-  // );
+  const showSearchInput = alwaysShowSearch || safeGroups.length > 5;
 
   const handleSelect = (group: GroupOption) => {
     const key = getGroupKey(group);
@@ -148,11 +158,16 @@ const SelectGroupDropdown = ({
           getGroupKey(g).toLowerCase() ===
           (selectedGroup as string)?.toLowerCase()
       );
-      return selected
-        ? getGroupEmail(selected)
+      if (selected) {
+        return getGroupEmail(selected)
           ? `${getGroupLabel(selected)} - ${getGroupEmail(selected)}`
-          : getGroupLabel(selected)
-        : placeholder || "Select group...";
+          : getGroupLabel(selected);
+      }
+      // Selected not in current groups (e.g. list was refetched with different results) — keep showing the selected value
+      if (selectedGroup) {
+        return selectedGroup as string;
+      }
+      return placeholder || "Select group...";
     }
   };
 
@@ -221,7 +236,7 @@ const SelectGroupDropdown = ({
             }}
             className="mt-1 bg-white border border-gray-200 rounded-md shadow-lg"
           >
-            {safeGroups.length > 5 && (
+            {showSearchInput && (
               <div className="p-2 border-b border-gray-200">
                 <div className="relative">
                   <span className="absolute left-2 top-1/2 -translate-y-1/2">
@@ -240,12 +255,16 @@ const SelectGroupDropdown = ({
             )}
             <div
               className={cn(
-                " space-y-1 max-h-32 md:max-h-36 overflow-y-auto",
+                "space-y-1 min-h-32 md:min-h-36 max-h-32 md:max-h-36 overflow-y-auto",
                 optionPaddingClasses
               )}
             >
-              {filteredGroups.length === 0 ? (
-                <div className="px-3 py-4 text-sm text-gray-500 text-center">
+              {isSearching ? (
+                <div className="flex items-center justify-center min-h-32 md:min-h-36">
+                  <span className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : filteredGroups.length === 0 ? (
+                <div className="flex items-center justify-center min-h-32 md:min-h-36 px-3 py-4 text-sm text-gray-500 text-center">
                   No results found
                 </div>
               ) : (
