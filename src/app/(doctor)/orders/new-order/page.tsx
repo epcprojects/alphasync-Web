@@ -81,7 +81,8 @@ const Page = () => {
           return true;
         })
         .test("less-than-latest-markup", function (value) {
-          if (!value || latestMarkedUpPrice === null) return true;
+          if (isClinicOrder || !value || latestMarkedUpPrice === null)
+            return true;
           if (value > latestMarkedUpPrice) {
             return this.createError({
               message: `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
@@ -164,11 +165,17 @@ const Page = () => {
     const customPrice = selectedProductData?.customPrice;
 
     // The displayed price is customPrice if present, otherwise originalPrice
-    // This is what the user sees initially
-    const displayedPrice = customPrice ?? originalPrice;
+    // For clinic orders, use base price (originalPrice) instead of marked up
+    const displayedPrice = isClinicOrder
+      ? originalPrice
+      : (customPrice ?? originalPrice);
 
-    // Validate price is not greater than latest marked up price
-    if (latestMarkedUpPrice !== null && values.price > latestMarkedUpPrice) {
+    // Validate price is not greater than latest marked up price (skip for clinic orders)
+    if (
+      !isClinicOrder &&
+      latestMarkedUpPrice !== null &&
+      values.price > latestMarkedUpPrice
+    ) {
       showErrorToast(
         `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
           2
@@ -379,6 +386,34 @@ const Page = () => {
                         setSelectedCustomerData(null);
                         setCustomerDraft("");
                         setFieldValue("customer", "");
+                        // Clinic order: show base price in the price input
+                        if (
+                          selectedProductData &&
+                          productBasePrice !== null
+                        ) {
+                          setFieldValue("price", productBasePrice);
+                          setPreservedPrice(productBasePrice);
+                        }
+                      } else {
+                        // Non‑clinic (customer order): only marked-up products allowed
+                        const isMarkedUp =
+                          (selectedProductData?.customPriceChangeHistory
+                            ?.length ?? 0) > 0;
+                        if (selectedProductData && !isMarkedUp) {
+                          // Selected product is not marked up; clear it (cannot use for customer orders)
+                          setFieldValue("product", "");
+                          setPreservedProduct("");
+                          setSelectedProductData(null);
+                          setFieldValue("price", 0);
+                          setPreservedPrice(0);
+                          updatePricingInfo(null);
+                        } else if (selectedProductData) {
+                          // Product is marked up: show latest marked up price in the price input
+                          const priceToUse =
+                            latestMarkedUpPrice ?? productBasePrice ?? 0;
+                          setFieldValue("price", priceToUse);
+                          setPreservedPrice(priceToUse);
+                        }
                       }
                     }}
                     className={`group inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition data-checked:bg-gradient-to-r data-checked:from-[#3C85F5] data-checked:to-[#1A407A] ${
@@ -423,7 +458,7 @@ const Page = () => {
                 )}
                 <div>
                   <ProductSelect
-                    fetchMarkedUpProductsOnly={true}
+                    fetchMarkedUpProductsOnly={!isClinicOrder}
                     ref={productSelectRef}
                     selectedProduct={values.product}
                     setSelectedProduct={(product) => {
@@ -445,14 +480,34 @@ const Page = () => {
                       setFieldError("price", undefined);
 
                       // Auto-populate price when product is selected
-                      // Use customPrice if present, otherwise use originalPrice or variants[0].price
+                      // Clinic: base price. Non‑clinic: latest marked up price.
                       if (selectedProduct) {
-                        const priceToUse =
+                        const basePrice =
+                          selectedProduct.variants?.[0]?.price ??
+                          selectedProduct.originalPrice ??
+                          selectedProduct.price ??
+                          0;
+                        let latestMarkedUp: number | null = null;
+                        const ph = selectedProduct.customPriceChangeHistory;
+                        if (ph?.length) {
+                          const sorted = [...ph].sort(
+                            (a, b) =>
+                              (new Date(b.createdAt ?? 0).getTime()) -
+                              (new Date(a.createdAt ?? 0).getTime())
+                          );
+                          if (sorted[0]?.customPrice != null)
+                            latestMarkedUp = Number(sorted[0].customPrice);
+                        }
+                        const latestMarkedUpValue =
+                          latestMarkedUp ??
                           selectedProduct.customPrice ??
                           selectedProduct.originalPrice ??
                           selectedProduct.variants?.[0]?.price ??
                           selectedProduct.price ??
                           0;
+                        const priceToUse = isClinicOrder
+                          ? basePrice
+                          : latestMarkedUpValue;
                         setPreservedPrice(priceToUse);
                         setPreservedProduct(selectedProduct.name);
                         setFieldValue("price", priceToUse);
@@ -466,7 +521,7 @@ const Page = () => {
                 </div>
 
                 {/* Pricing Information Display */}
-                {preservedProduct &&
+                {!isClinicOrder && preservedProduct &&
                   (productBasePrice !== null ||
                     latestMarkedUpPrice !== null) && (
                     <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
