@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
 import { useQuery } from "@apollo/client/react";
 import { ALL_PATIENTS } from "@/lib/graphql/queries";
@@ -51,20 +51,28 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({
   optionPaddingClasses = "p-1",
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // GraphQL query to fetch customers
+  // Debounce search to avoid too many API calls while typing
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // GraphQL query: server-side search, 10 per page
   const {
     data: customersData,
     loading: customersLoading,
     error: customersError,
   } = useQuery<AllPatientsResponse>(ALL_PATIENTS, {
     variables: {
-      search: "",
+      search: debouncedSearch || undefined,
       status: null, // Only fetch active customers
       page: 1,
-      perPage: 200, // Fetch more customers for dropdown
+      perPage: 10,
     },
     fetchPolicy: "network-only",
+    notifyOnNetworkStatusChange: true,
   });
 
   // Transform GraphQL customer data to match dropdown format
@@ -112,13 +120,16 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({
         placeholder={placeholder || defaultPlaceholder}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        isShowDrop={!customersLoading && !disabled}
+        isShowDrop={!disabled}
+        isSearching={customersLoading}
+        alwaysShowSearch={true}
+        clientSideSearch={false}
         required={required}
         paddingClasses={paddingClasses}
         optionPaddingClasses={optionPaddingClasses}
         showLabel={showLabel}
         showIcon={false}
-        disabled={disabled || customersLoading}
+        disabled={disabled}
       />
       {errors && touched && <p className="text-red-500 text-xs">{errors}</p>}
     </div>

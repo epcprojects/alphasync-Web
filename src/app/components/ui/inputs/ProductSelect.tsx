@@ -1,10 +1,5 @@
 "use client";
-import React, {
-  useState,
-  useEffect,
-  useImperativeHandle,
-  forwardRef,
-} from "react";
+import React, { useState, useEffect, forwardRef } from "react";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
 import { useQuery } from "@apollo/client/react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
@@ -52,8 +47,15 @@ const ProductSelect = forwardRef<ProductSelectRef, ProductSelectProps>(
     ref
   ) => {
     const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
 
-    // GraphQL query to fetch products
+    // Debounce search to avoid too many API calls while typing
+    useEffect(() => {
+      const timer = setTimeout(() => setDebouncedSearch(searchTerm), 400);
+      return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    // GraphQL query to fetch products (perPage 10; search is server-side)
     const {
       data: productsData,
       loading: productsLoading,
@@ -62,12 +64,12 @@ const ProductSelect = forwardRef<ProductSelectRef, ProductSelectProps>(
     } = useQuery<AllProductsResponse>(ALL_PRODUCTS_INVENTORY, {
       fetchPolicy: "no-cache",
       variables: {
-        perPage: 200,
+        perPage: 10,
+        search: debouncedSearch || undefined,
         markedUp: fetchMarkedUpProductsOnly
           ? fetchMarkedUpProductsOnly
           : undefined,
       },
-      // skip: !patientId,
       notifyOnNetworkStatusChange: true,
     });
 
@@ -149,13 +151,16 @@ const ProductSelect = forwardRef<ProductSelectRef, ProductSelectProps>(
           placeholder={placeholder || defaultPlaceholder}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          isShowDrop={!productsLoading && !disabled}
+          isShowDrop={!disabled}
+          isSearching={productsLoading}
+          alwaysShowSearch={true}
+          clientSideSearch={false}
           required={required}
           paddingClasses={paddingClasses}
           optionPaddingClasses={optionPaddingClasses}
           showLabel={showLabel}
           showIcon={false}
-          disabled={disabled || productsLoading}
+          disabled={disabled}
         />
         {errors && touched && <p className="text-red-500 text-xs">{errors}</p>}
       </div>

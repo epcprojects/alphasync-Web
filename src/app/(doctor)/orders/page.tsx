@@ -404,9 +404,7 @@ function OrderContent() {
             </button>
 
             <ThemeButton
-              label={
-                selectedTabIndex === 1 ? "Create New Clinic Order" : "New Order"
-              }
+              label="New Order"
               className="w-full sm:w-fit"
               icon={
                 <PlusIcon
@@ -415,11 +413,7 @@ function OrderContent() {
                 />
               }
               onClick={() => {
-                if (selectedTabIndex === 1) {
-                  setIsClinicOrderModalOpen(true);
-                } else {
-                  router.push("/orders/new-order");
-                }
+                router.push("/orders/new-order");
               }}
               heightClass={isMobile ? "h-9" : "h-10"}
             />
