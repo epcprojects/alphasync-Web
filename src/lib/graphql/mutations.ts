@@ -736,6 +736,21 @@ export const UPDATE_PRODUCT_PRICE = gql`
   }
 `;
 
+/**
+ * Marks a product not for sale: reverts to base price, clears customPrice,
+ * and removes it from customer inventory until marked up again.
+ */
+export const MARK_PRODUCT_NOT_FOR_SALE = gql`
+  mutation MarkProductNotForSale($productId: ID!) {
+    markProductNotForSale(input: { productId: $productId }) {
+      clientMutationId
+      deletedCount
+      message
+      success
+    }
+  }
+`;
+
 export const MARK_NOTIFICATION_AS_READ = gql`
   mutation MarkNotificationAsRead($notificationId: ID!) {
     markNotificationAsRead(input: { notificationId: $notificationId }) {

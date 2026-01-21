@@ -16,6 +16,7 @@ import {
   CREATE_ORDER,
   TOGGLE_FAVOURITE,
   UPDATE_PRODUCT_PRICE,
+  MARK_PRODUCT_NOT_FOR_SALE,
 } from "@/lib/graphql/mutations";
 import { FetchProductResponse } from "@/types/products";
 import { showErrorToast } from "@/lib/toast";
@@ -51,6 +52,10 @@ export default function PostDetail() {
   // GraphQL mutation to update product price
   const [updateProductPrice, { loading: updatePriceLoading }] =
     useMutation(UPDATE_PRODUCT_PRICE);
+
+  // GraphQL mutation to mark product not for sale (revert to base, remove from customer catalog)
+  const [markProductNotForSale, { loading: removeFromSaleLoading }] =
+    useMutation(MARK_PRODUCT_NOT_FOR_SALE);
 
   const product = data?.fetchProduct;
 
@@ -118,6 +123,23 @@ export default function PostDetail() {
     } catch (error) {
       console.error("Error updating price:", error);
       showErrorToast("Failed to update price. Please try again.");
+    }
+  };
+
+  const handleRemoveFromSale = async () => {
+    if (!product?.id) return;
+
+    try {
+      await markProductNotForSale({
+        variables: { productId: product.id },
+      });
+      await refetch();
+      setPrice((product.variants?.[0]?.price || 0).toString());
+      setPriceError("");
+      showSuccessToast("Product removed from sale. It’s back to base price and no longer available for customers to purchase.");
+    } catch (error) {
+      console.error("Error removing product from sale:", error);
+      showErrorToast("Failed to remove from sale. Please try again.");
     }
   };
 
@@ -573,17 +595,29 @@ export default function PostDetail() {
                 </h2>
               </div>
 
-              <ThemeButton
-                label="Order"
-                icon={<ShopingCartIcon fill="white" height={20} width={20} />}
-                onClick={() => setIsOrderModalOpen(true)}
-                className="w-full sm:w-fit sm:min-w-40"
-                heightClass="h-11"
-                disabled={
-                  product.customPrice === null ||
-                  product.customPrice === undefined
-                }
-              />
+              <div className="flex flex-col sm:flex-row gap-2">
+                {product.customPrice != null && product.customPrice !== undefined && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveFromSale}
+                    disabled={removeFromSaleLoading}
+                    className="inline-flex items-center justify-center px-4 py-2.5 h-11 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {removeFromSaleLoading ? "Removing…" : "Remove from Sale"}
+                  </button>
+                )}
+                <ThemeButton
+                  label="Order"
+                  icon={<ShopingCartIcon fill="white" height={20} width={20} />}
+                  onClick={() => setIsOrderModalOpen(true)}
+                  className="w-full sm:w-fit sm:min-w-40"
+                  heightClass="h-11"
+                  disabled={
+                    product.customPrice === null ||
+                    product.customPrice === undefined
+                  }
+                />
+              </div>
             </div>
 
             <div className="bg-gray-50 rounded-xl">
