@@ -1,10 +1,11 @@
 "use client";
-import { HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon } from "@/icons";
+import { HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon, RejectIcon } from "@/icons";
 import Tooltip from "../tooltip";
 import ProductImage from "@/app/components/ui/ProductImage";
 
 type Product = {
   id: number;
+  originalId?: string;
   title: string;
   description: string;
   category: string;
@@ -21,6 +22,7 @@ type ProductListViewProps = {
   onToggleFavourite?: (id: number) => void;
   onAddToCart?: (id: number) => void;
   onRowClick?: () => void;
+  onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
 };
 
@@ -29,8 +31,11 @@ export default function ProductListView({
   onToggleFavourite,
   onAddToCart,
   onRowClick,
+  onRemoveFromSale,
   customPrice,
 }: ProductListViewProps) {
+  const productId = product.originalId || String(product.id);
+  const isMarkedUp = customPrice != null && customPrice !== undefined;
   return (
     <div
       onClick={onRowClick}
@@ -115,6 +120,20 @@ export default function ProductListView({
             )}
           </button>
         </Tooltip>
+
+        {isMarkedUp && onRemoveFromSale && (
+          <Tooltip content="Remove from Sale">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveFromSale?.(productId);
+              }}
+              className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-gray-300 text-gray-600 hover:bg-gray-50 [&_svg]:w-4 [&_svg]:h-4 md:[&_svg]:w-5 md:[&_svg]:h-5"
+            >
+              <RejectIcon />
+            </button>
+          </Tooltip>
+        )}
 
         <Tooltip content="Order Now">
           <button

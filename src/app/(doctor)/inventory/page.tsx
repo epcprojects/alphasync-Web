@@ -27,7 +27,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
-import { CREATE_ORDER, TOGGLE_FAVOURITE } from "@/lib/graphql/mutations";
+import { CREATE_ORDER, TOGGLE_FAVOURITE, MARK_PRODUCT_NOT_FOR_SALE } from "@/lib/graphql/mutations";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import {
   AllProductsResponse,
@@ -127,6 +127,9 @@ function InventoryContent() {
   // GraphQL mutation to toggle favorite
   const [toggleFavorite] = useMutation(TOGGLE_FAVOURITE);
 
+  // GraphQL mutation to mark product not for sale (revert to base, remove from customer catalog)
+  const [markProductNotForSale] = useMutation(MARK_PRODUCT_NOT_FOR_SALE);
+
   // Transform GraphQL product data to match the expected format
   const products: Product[] =
     productsData?.allProducts.allData?.map(transformGraphQLProduct) || [];
@@ -156,6 +159,19 @@ function InventoryContent() {
       showErrorToast("Failed to update favorite status. Please try again.");
     } finally {
       setIsRefetchingFavorites(false);
+    }
+  };
+
+  const handleRemoveFromSale = async (productId: string) => {
+    try {
+      await markProductNotForSale({
+        variables: { productId },
+      });
+      await refetch();
+      showSuccessToast("Product removed from sale. It’s back to base price and no longer available for customers to purchase.");
+    } catch (error) {
+      console.error("Error removing product from sale:", error);
+      showErrorToast("Failed to remove from sale. Please try again.");
     }
   };
 
@@ -398,6 +414,7 @@ function InventoryContent() {
                     onToggleFavourite={() => {
                       handleToggleFavorite(product.originalId);
                     }}
+                    onRemoveFromSale={handleRemoveFromSale}
                     onCardClick={() =>
                       router.push(`/inventory/${product.originalId}`)
                     }
@@ -450,6 +467,7 @@ function InventoryContent() {
                         setIsOrderModalOpen(true);
                       }
                     }}
+                    onRemoveFromSale={handleRemoveFromSale}
                   />
                 );
               })}

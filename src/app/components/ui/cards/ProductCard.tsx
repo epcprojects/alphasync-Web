@@ -1,11 +1,13 @@
 "use client";
 
-import { HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon } from "@/icons"; // adjust import based on your project
+import { HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon, CrossIcon } from "@/icons";
 import ThemeButton from "../buttons/ThemeButton";
 import ProductImage from "@/app/components/ui/ProductImage";
+import Tooltip from "../tooltip";
 
 type Product = {
   id: number;
+  originalId?: string;
   title: string;
   description: string;
   category: string;
@@ -22,6 +24,7 @@ interface ProductCardProps {
   onAddToCart?: (id: number) => void;
   onCardClick?: () => void;
   onToggleFavourite?: (id: number) => void;
+  onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
 }
 
@@ -30,8 +33,11 @@ export default function ProductCard({
   onAddToCart,
   onCardClick,
   onToggleFavourite,
+  onRemoveFromSale,
   customPrice,
 }: ProductCardProps) {
+  const productId = product.originalId || String(product.id);
+  const isMarkedUp = customPrice != null && customPrice !== undefined;
   return (
     <div
       onClick={onCardClick}
@@ -93,7 +99,21 @@ export default function ProductCard({
                   </span>
                 </div>
               )}
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-2">
+                {isMarkedUp && onRemoveFromSale && (
+                  <Tooltip content="Remove from Sale">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveFromSale(productId);
+                      }}
+                      className="shrink-0 flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                    >
+                      <CrossIcon width="16" height="16" fill="#6B7280" />
+                    </button>
+                  </Tooltip>
+                )}
                 <ThemeButton
                   label="Order"
                   icon={<ShopingCartIcon />}
