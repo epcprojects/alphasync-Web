@@ -14,6 +14,14 @@ type Order = {
   profit: number;
   imageUrl?: string | null;
   customerEmail?: string | null;
+  orderItems?: {
+    id: string;
+    quantity: number;
+    price: number;
+    product: {
+      title: string;
+    };
+  }[];
 };
 
 type PeptideOrderListViewProps = {
@@ -135,7 +143,9 @@ export default function PeptideOrderListView({
               Peptide:
             </span>
             <span className="text-gray-800 text-sm whitespace-nowrap font-normal block">
-              Thymosin Alpha-1
+              {order.orderItems && order.orderItems.length > 0
+                ? order.orderItems[0].product.title
+                : "N/A"}
             </span>
           </div>
         </div>
@@ -227,7 +237,9 @@ export default function PeptideOrderListView({
         {order.date}
       </div>
       <div className="text-sm md:text-base font-normal text-gray-600 ">
-        Thymosin Alpha-1
+        {order.orderItems && order.orderItems.length > 0
+          ? order.orderItems[0].product.title
+          : "N/A"}
       </div>
       <div className="flex items-center gap-2 md:gap-3">
         <h2 className="text-gray-800 text-sm md:text-base font-medium">

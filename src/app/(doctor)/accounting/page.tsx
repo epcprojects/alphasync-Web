@@ -625,6 +625,7 @@ const Page = () => {
                 total: order.totalPrice,
                 netCost: order.netCost ?? 0,
                 profit: order.profit ?? 0,
+                orderItems: order.orderItems,
               }}
               onViewOrderDetail={() => router.push(`/orders/${order.id}`)}
             />
