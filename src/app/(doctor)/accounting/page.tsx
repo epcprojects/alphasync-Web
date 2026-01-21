@@ -561,7 +561,7 @@ const Page = () => {
       </div>
 
       <div className="space-y-1">
-        <div className="hidden md:grid md:grid-cols-[5rem_5rem_1fr_1fr_3rem_3rem_3rem_1fr] lg:grid-cols-[8rem_6rem_1fr_1fr_1fr_1fr_1fr_1fr_5rem_7rem] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+        <div className="hidden md:grid md:grid-cols-[5rem_5rem_1fr_1fr_3rem_3rem_1fr_1fr] lg:grid-cols-[8rem_5rem_2fr_2fr_1fr_1fr_1fr_1fr_5rem_9rem] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
           <div>
             <h2 className="whitespace-nowrap">Order #</h2>
           </div>
@@ -579,9 +579,6 @@ const Page = () => {
           </div>
           <div className="hidden lg:block">
             <h2>Base Price</h2>
-          </div>
-          <div className="hidden lg:block">
-            <h2 className="whitespace-nowrap">Mark-up</h2>
           </div>
           <div>
             <h2>Net Profit</h2>

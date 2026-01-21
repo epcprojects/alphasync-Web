@@ -119,7 +119,7 @@ export default function PeptideOrderListView({
               Order #:
             </span>
             <span className="text-gray-800 text-sm font-normal block">
-              {order.id}
+            {order.orderId}
             </span>
           </div>
 
@@ -134,38 +134,30 @@ export default function PeptideOrderListView({
           <div className="flex items-center gap-1.5 w-full">
             <span className="text-black font-medium text-sm block">Qty:</span>
             <span className="text-gray-800 text-sm font-normal block">
-              {order.total}
+              {order.items}
             </span>
           </div>
 
-          <div className="flex items-center justify-end gap-1.5 w-full">
+          
+        </div>
+        <div className="flex items-center justify-end gap-1.5 w-full">
             <span className="text-black font-medium text-sm block">
               Peptide:
             </span>
-            <span className="text-gray-800 text-sm whitespace-nowrap font-normal block">
+            <span className="text-gray-800 text-sm font-normal block break-words">
               {order.orderItems && order.orderItems.length > 0
                 ? order.orderItems[0].product.title
                 : "N/A"}
             </span>
           </div>
-        </div>
 
         <div className="flex items-center gap-1 w-full">
           <div className="flex items-center gap-1.5 w-full">
             <span className="text-black font-medium text-sm block">
-              Mark-up:
-            </span>
-            <span className="text-gray-800 text-sm font-normal block">
-              {order.total}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-end gap-1.5 w-full">
-            <span className="text-black font-medium text-sm block">
               Net Profit:
             </span>
             <span className="text-green-600 text-sm font-normal block">
-              {order.profit}
+              ${order.profit}
             </span>
           </div>
         </div>
@@ -176,14 +168,14 @@ export default function PeptideOrderListView({
               Base Price:
             </span>
             <span className="text-gray-800 text-sm font-normal block">
-              {order.total}
+              ${order.netCost}
             </span>
           </div>
 
           <div className="flex items-center justify-end gap-1.5 w-full">
             <span className="text-black font-medium text-sm block">Total:</span>
             <span className="text-gray-800 text-sm font-normal block">
-              {order.profit}
+              ${order.total}
             </span>
           </div>
         </div>
@@ -226,7 +218,7 @@ export default function PeptideOrderListView({
     <div
       onClick={onRowClick}
       key={order.id}
-      className="hidden sm:grid hover:bg-gray-100 group  md:grid md:grid-cols-[5rem_5rem_1fr_1fr_3rem_3rem_3rem_1fr] lg:grid-cols-[8rem_5rem_2fr_2fr_1fr_1fr_1fr_1fr_5rem_9rem] gap-2 lg:gap-4 items-center rounded-xl bg-white p-3 shadow-table cursor-pointer"
+      className="hidden sm:grid hover:bg-gray-100 group  md:grid md:grid-cols-[5rem_5rem_1fr_1fr_3rem_3rem_1fr_1fr] lg:grid-cols-[8rem_5rem_2fr_2fr_1fr_1fr_1fr_1fr_5rem_9rem] gap-2 lg:gap-4 items-center rounded-xl bg-white p-3 shadow-table cursor-pointer"
     >
       <div className="sm:block hidden">
         <h2 className="text-gray-800 text-sm md:text-base font-normal">
@@ -236,7 +228,7 @@ export default function PeptideOrderListView({
       <div className="text-sm md:text-base font-normal text-gray-600 ">
         {order.date}
       </div>
-      <div className="text-sm md:text-base font-normal text-gray-600 ">
+      <div className="text-sm md:text-base font-normal text-gray-600 break-words">
         {order.orderItems && order.orderItems.length > 0
           ? order.orderItems[0].product.title
           : "N/A"}
@@ -250,10 +242,6 @@ export default function PeptideOrderListView({
         <span className="inline-block rounded-full px-2 py-0.5 text-xs  font-medium text-gray-700 bg-gray-50 border border-gray-200">
           {order.items}
         </span>
-      </div>
-
-      <div className="text-gray-800 font-normal text-sm lg:block hidden md:text-base">
-        ${order.netCost}
       </div>
 
       <div className="text-gray-800 font-normal text-sm lg:block hidden md:text-base">
