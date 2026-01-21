@@ -1,33 +1,23 @@
 "use client";
-import { EmptyState, Loader, ThemeButton } from "@/app/components";
+import { EmptyState, ThemeButton, Skeleton } from "@/app/components";
 import HorizontalBarChart from "@/app/components/charts/HorizontalBarChart";
 import RevenueChart from "@/app/components/charts/RevenueChart";
 import DateRangeSelector from "@/app/components/DateRangePicker";
-import OrderListView from "@/app/components/ui/cards/OrderListView";
 import { useQuery } from "@apollo/client/react";
-import { DOCTOR_ORDERS } from "@/lib/graphql/queries";
+import { DOCTOR_ORDERS, PEPTIDE_ACCOUNTING_CHARTS } from "@/lib/graphql/queries";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   AccountFilledIcon,
   ArrowDownIcon,
-  Calendar,
-  CalendarDotsIcon,
-  CalendarIcon,
   PackageIcon,
-  SearchIcon,
 } from "@/icons";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Pagination from "@/app/components/ui/Pagination";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import PeptideOrderListView from "@/app/components/ui/cards/PeptideOrderListView";
 
-type Selection = {
-  startDate: Date;
-  endDate: Date;
-  key: "selection";
-};
 interface DoctorOrdersResponse {
   doctorOrders: {
     allData: {
@@ -60,33 +50,118 @@ interface DoctorOrdersResponse {
   };
 }
 
+interface PeptideAccountingChartsResponse {
+  peptideAccountingCharts: {
+    revenueProfitTrends: {
+      date: string;
+      label: string;
+      profit: number;
+      revenue: number;
+    }[];
+    topPeptidesByProfit: {
+      productId: string;
+      productName: string;
+      profit: number;
+    }[];
+  };
+}
+
 type DateFilter = "today" | "thisMonth" | "last3Months" | "thisYear" | "custom";
 
 const Page = () => {
   const isMobile = useIsMobile();
   const router = useRouter();
-  const [activeFilter, setActiveFilter] = useState<DateFilter>("today");
+  const [activeFilter, setActiveFilter] = useState<DateFilter>("last3Months");
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("All Status");
   const [currentPage, setCurrentPage] = useState(0);
+  const [range, setRange] = useState({
+    startDate: new Date(),
+    endDate: new Date(),
+    key: "selection" as const,
+  });
 
   const itemsPerPage = 10;
+
+  // Map DateFilter to TimeRangeEnum
+  const getTimeRangeEnum = (filter: DateFilter): string => {
+    switch (filter) {
+      case "today":
+        return "today";
+      case "thisMonth":
+        return "this_month";
+      case "last3Months":
+        return "last_3_months";
+      case "thisYear":
+        return "this_year";
+      case "custom":
+        return "custom";
+      default:
+        return "today";
+    }
+  };
+
+  // Memoize orders query variables to prevent unnecessary refetches
+  const ordersVariables = useMemo(
+    () => ({
+      status: selectedStatus === "All Status" ? undefined : selectedStatus,
+      page: currentPage + 1, // GraphQL pagination is 1-based
+      perPage: itemsPerPage,
+      myClinic: false,
+    }),
+    [selectedStatus, currentPage, itemsPerPage]
+  );
 
   const { data, loading, error, refetch } = useQuery<DoctorOrdersResponse>(
     DOCTOR_ORDERS,
     {
-      variables: {
-        status: selectedStatus === "All Status" ? undefined : selectedStatus,
-        page: currentPage + 1, // GraphQL pagination is 1-based
-        perPage: itemsPerPage,
-        myClinic: false,
-      },
+      variables: ordersVariables,
       fetchPolicy: "network-only",
     }
   );
 
-  const orders = data?.doctorOrders.allData || [];
+  // Memoize query variables to prevent unnecessary refetches
+  const chartVariables = useMemo(
+    () => ({
+      timeRange: getTimeRangeEnum(activeFilter),
+      startDate:
+        activeFilter === "custom"
+          ? range.startDate.toISOString()
+          : undefined,
+      endDate:
+        activeFilter === "custom" ? range.endDate.toISOString() : undefined,
+    }),
+    [activeFilter, range.startDate, range.endDate]
+  );
+
+  const {
+    data: chartsData,
+    loading: chartsLoading,
+    error: chartsError,
+  } = useQuery<PeptideAccountingChartsResponse>(PEPTIDE_ACCOUNTING_CHARTS, {
+    variables: chartVariables,
+    fetchPolicy: "network-only",
+  });
+
   const pageCount = data?.doctorOrders.totalPages;
+
+  // Filter orders by search term (client-side filtering)
+  const orders = useMemo(() => {
+    const allOrders = data?.doctorOrders.allData || [];
+    if (!search.trim()) {
+      return allOrders;
+    }
+    const searchLower = search.toLowerCase();
+    return allOrders.filter(
+      (order) =>
+        order.displayId?.toString().toLowerCase().includes(searchLower) ||
+        order.patient?.fullName?.toLowerCase().includes(searchLower) ||
+        order.patient?.email?.toLowerCase().includes(searchLower) ||
+        order.orderItems.some((item) =>
+          item.product?.title?.toLowerCase().includes(searchLower)
+        )
+    );
+  }, [data?.doctorOrders.allData, search]);
 
   const orderStatuses = [
     { label: "Delivered", color: "before:bg-green-500" },
@@ -98,11 +173,11 @@ const Page = () => {
 
   const isFiltered = selectedStatus !== "All Status";
 
-  const [range, setRange] = useState({
-    startDate: new Date(),
-    endDate: new Date(),
-    key: "selection" as const,
-  });
+  // Refetch orders when status or page changes
+  useEffect(() => {
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatus, currentPage]);
 
   const today = () => {
     const d = new Date();
@@ -157,7 +232,6 @@ const Page = () => {
 
   const handlePageChange = (selected: number) => {
     setCurrentPage(selected);
-    refetch();
   };
 
   return (
@@ -300,34 +374,58 @@ const Page = () => {
             </div>
           </div>
 
-          <RevenueChart
-            categories={[
-              "Oct 26",
-              "Nov 2",
-              "Nov 9",
-              "Nov 16",
-              "Nov 23",
-              "Nov 30",
-              "Dec 7",
-              "Dec 14",
-              "Dec 21",
-              "Dec 28",
-            ]}
-            series={[
-              {
-                name: "Revenue",
-                data: [
-                  6800, 7100, 7400, 7700, 8200, 7600, 8600, 8800, 8500, 9200,
-                ],
-              },
-              {
-                name: "Profit",
-                data: [
-                  4500, 4700, 4900, 5100, 5400, 5000, 5500, 5600, 5400, 6000,
-                ],
-              },
-            ]}
-          />
+          {chartsError ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="text-red-500 text-sm">
+                {chartsError.message}
+              </div>
+            </div>
+          ) : chartsLoading ? (
+            <div className="px-5 pb-5">
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+            </div>
+          ) : chartsData?.peptideAccountingCharts ? (
+            <RevenueChart
+              categories={
+                chartsData.peptideAccountingCharts.revenueProfitTrends.map(
+                  (item) => item.label
+                )
+              }
+              series={[
+                {
+                  name: "Revenue",
+                  data: chartsData.peptideAccountingCharts.revenueProfitTrends.map(
+                    (item) => item.revenue
+                  ),
+                },
+                {
+                  name: "Profit",
+                  data: chartsData.peptideAccountingCharts.revenueProfitTrends.map(
+                    (item) => item.profit
+                  ),
+                },
+              ]}
+            />
+          ) : (
+            <RevenueChart
+              categories={[]}
+              series={[
+                { name: "Revenue", data: [] },
+                { name: "Profit", data: [] },
+              ]}
+            />
+          )}
         </div>
 
         <div className="bg-white rounded-2xl">
@@ -337,18 +435,41 @@ const Page = () => {
             </h2>
           </div>
           <div className="px-5">
-            <HorizontalBarChart
-              categories={[
-                "AOD-9604",
-                "Epithalon",
-                "GHRP-6",
-                "Sermorelin",
-                "Thymosin Alpha-1s",
-                "GHK-Cu",
-              ]}
-              data={[3900, 3600, 3250, 2700, 2200, 1800]}
-              height={320}
-            />
+            {chartsError ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="text-red-500 text-sm">
+                  {chartsError.message}
+                </div>
+              </div>
+            ) : chartsLoading ? (
+             
+              <>
+               <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              <Skeleton className="w-full h-[20px] rounded-lg mb-2" />
+              </>
+            ) : chartsData?.peptideAccountingCharts ? (
+              <HorizontalBarChart
+                categories={chartsData.peptideAccountingCharts.topPeptidesByProfit.map(
+                  (item) => item.productName
+                )}
+                data={chartsData.peptideAccountingCharts.topPeptidesByProfit.map(
+                  (item) => item.profit
+                )}
+                height={320}
+              />
+            ) : (
+              <HorizontalBarChart categories={[]} data={[]} height={320} />
+            )}
           </div>
         </div>
       </div>
@@ -368,7 +489,7 @@ const Page = () => {
         </div>
 
         <div className="bg-white rounded-full flex flex-row w-full items-center gap-2 p-1 md:p-2  shadow-table sm:w-fit">
-          <div className="flex items-center relative w-full md:shadow-none rounded-full">
+          {/* <div className="flex items-center relative w-full md:shadow-none rounded-full">
             <span className="absolute left-3">
               <SearchIcon
                 height={isMobile ? "16" : "20"}
@@ -381,7 +502,7 @@ const Page = () => {
               placeholder="Search"
               className="ps-8 md:ps-10 pe-3 md:pe-4 h-full py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
-          </div>
+          </div> */}
           <div className="flex items-center  gap-1 md:gap-2 md:bg-transparent md:shadow-none rounded-full">
             <Menu>
               <MenuButton className="inline-flex whitespace-nowrap py-1.5 md:w-fit w-full md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline justify-between data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
@@ -398,7 +519,6 @@ const Page = () => {
                     onClick={() => {
                       setSelectedStatus("All Status");
                       setCurrentPage(0);
-                      refetch();
                     }}
                     className="text-gray-500 hover:bg-gray-100 w-full py-2 px-2.5 rounded-md text-xs md:text-sm text-start"
                   >
@@ -411,7 +531,6 @@ const Page = () => {
                       onClick={() => {
                         setSelectedStatus(status.label);
                         setCurrentPage(0);
-                        refetch();
                       }}
                       className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${status.color}`}
                     >
@@ -432,7 +551,6 @@ const Page = () => {
                   key: "selection",
                 });
                 setCurrentPage(0);
-                // refetch();
               }}
               className="bg-gray-100 hover:bg-gray-300 rounded-full hidden sm:flex h-9 md:h-10 px-3 text-xs md:text-sm py-2.5 text-gray-700 md:leading-5 cursor-pointer disabled:text-gray-400 disabled:cursor-not-allowed disabled:bg-gray-200"
             >
@@ -476,13 +594,16 @@ const Page = () => {
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center py-8">
-            <Loader />
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="flex justify-center items-center py-8">
             <div className="text-red-500">{error.message}</div>
+          </div>
+        ) : loading ? (
+          <div className="my-3 space-y-1">
+            <Skeleton className="w-full h-12 rounded-full" />
+            <Skeleton className="w-full h-12 rounded-full" />
+            <Skeleton className="w-full h-12 rounded-full" />
+            <Skeleton className="w-full h-12 rounded-full" />
           </div>
         ) : (
           orders.map((order) => (

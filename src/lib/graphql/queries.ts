@@ -594,3 +594,20 @@ export const REVENUE_GRAPH = gql`
     }
   }
 `;
+export const PEPTIDE_ACCOUNTING_CHARTS = gql`
+  query PeptideAccountingCharts($timeRange: TimeRangeEnum!, $startDate: ISO8601DateTime, $endDate: ISO8601DateTime) {
+    peptideAccountingCharts(timeRange: $timeRange, startDate: $startDate, endDate: $endDate) {
+      revenueProfitTrends {
+          date
+          label
+          profit
+          revenue
+      }
+      topPeptidesByProfit {
+          productId
+          productName
+          profit
+      }
+    }
+  }
+`;
