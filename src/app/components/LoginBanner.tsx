@@ -33,6 +33,10 @@ const LoginBanner: React.FC<LoginBannerProps> = ({ backgroundImage }) => {
                 alt=""
                 src={Images.layout.logoWhite}
                 className="h-16 md:h-18  xl:h-24 w-full"
+                width={240}
+                height={48}
+                style={{ width: "auto" }}
+                unoptimized
               />
             </div>
           </div>

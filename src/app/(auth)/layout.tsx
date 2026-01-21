@@ -2,6 +2,7 @@
 import React, { ReactNode } from "react";
 import { LoginBanner } from "../components";
 import { Images } from "../ui/images";
+import Image from "next/image";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -13,18 +14,24 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       <div className="grid xs:grid-cols-1 md:grid-cols-2 md:gap-4 sm:ps-4 xs:px-8">
         {children}
         <div className="hidden md:block">
-          <LoginBanner
-            backgroundImage="/images/loginBanner.png"
-            image={Images.auth.reviewImage1}
-            alt="Trevor Kruder profile"
-            quote="My core belief is to increase patient access to quality, affordable, peptides."
-            author="Trevor Kruder | Founder, CEO & Chairman"
-            stats={[
-              { value: "40+", label: "Peptide Formulas" },
-              { value: "100+", label: "Partners" },
-              { value: "1M+", label: "Vials Produced" },
-            ]}
-          />
+          <div className="w-full h-dvh py-2 pe-2 sm:py-2 sm:pe-2 md:py-3 md:pe-3 lg:py-6 lg:pe-6">
+            <div
+              className="flex items-center justify-center rounded-3xl w-full h-full bg-no-repeat bg-cover bg-center md:p-4  lg:p-8"
+              style={{ backgroundImage: `url(/images/loginBanner.png)` }}
+            >
+              <div className="p-5 sm:p-8 xl:min-w-[384px] min-w-48 min-h-48 xl:min-h-[324px] flex items-center justify-center rounded-4xl bg-black/30 border border-white/30 backdrop-blur">
+                <Image
+                  alt=""
+                  src={Images.layout.logoWhite}
+                  className="h-16 md:h-18  xl:h-24 w-full"
+                  width={240}
+                  height={48}
+                  style={{ width: "auto" }}
+                  unoptimized
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

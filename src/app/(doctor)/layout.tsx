@@ -11,6 +11,12 @@ import {
   RequestIcon,
   SettingsIcon,
   DeliveryBoxIcon,
+  RevenueIcon,
+  ProfitIcon,
+  ShoppingCartIcon,
+  ShoppingCardDualIcon,
+  PercentIcon,
+  DashboardIcon,
 } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
@@ -41,9 +47,11 @@ const poppins_init = Poppins({
 
 const menuItems = [
   { label: "Inventory", href: "/inventory", icon: InventoryIcon },
+  { label: "Accounting", href: "/accounting", icon: DashboardIcon },
   { label: "Customers", href: "/customers", icon: CustomerIcon },
   { label: "Orders", href: "/orders", icon: OrdersIcon },
   // { label: "My Clinic", href: "/clinic", icon: DeliveryBoxIcon },
+ 
   {
     label: "Reminder",
     href: "/reminder",
@@ -62,6 +70,7 @@ const headings: Record<string, string> = {
   "/request": "Patient Requests",
   "/settings": "Settings",
   "/notifications": "Notifications",
+  "/accounting": "Peptide Accounting",
 };
 
 const subHeadings: Record<string, string> = {
@@ -78,7 +87,12 @@ const noStatsRoutes = [
   "/notifications",
 ];
 
-const showSubHeading = ["/reminder", "/requests", "/notifications"];
+const showSubHeading = [
+  "/reminder",
+  "/requests",
+  "/notifications",
+  "/accounting",
+];
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -131,6 +145,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   if (dashboardError) {
     console.error("Failed to load doctor dashboard stats:", dashboardError);
   }
+
+  const hasMyClinic = menuItems.some((item) => item.href.includes("clinic"));
 
   const stats = [
     {
@@ -187,6 +203,61 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     },
   ];
 
+  const accountStats = [
+    {
+      label: "Total Revenue",
+      value: dashboardLoading
+        ? "..."
+        : formatCurrency(dashboardData?.doctorDashboard?.totalSales),
+      icon: (
+        <RevenueIcon
+          height={isMobile ? "20" : "32"}
+          width={isMobile ? "20" : "32"}
+        />
+      ),
+      bgColor: "bg-purple-500",
+    },
+    {
+      label: "Net Profit",
+      value: dashboardLoading
+        ? "..."
+        : formatCurrency(dashboardData?.doctorDashboard?.totalProfit),
+      icon: (
+        <ProfitIcon
+          height={isMobile ? "20" : "32"}
+          width={isMobile ? "20" : "32"}
+        />
+      ),
+      bgColor: "bg-emerald-400",
+    },
+    {
+      label: "Total Orders",
+      value: dashboardLoading
+        ? "..."
+        : formatCurrency(dashboardData?.doctorDashboard?.averageOrderValue),
+      icon: (
+        <ShoppingCardDualIcon
+          height={isMobile ? "20" : "32"}
+          width={isMobile ? "20" : "32"}
+        />
+      ),
+      bgColor: "bg-pink-400",
+    },
+    {
+      label: "Avg. Markup",
+      value: dashboardLoading
+        ? "..."
+        : formatNumber(dashboardData?.doctorDashboard?.ordersCount),
+      icon: (
+        <PercentIcon
+          height={isMobile ? "20" : "32"}
+          width={isMobile ? "20" : "32"}
+        />
+      ),
+      bgColor: "bg-orange-400",
+    },
+  ];
+
   return (
     <DoctorRoute>
       <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
@@ -198,7 +269,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
               showUserName={pathname.startsWith("/orders") ? false : true}
               username={user?.fullName || "noname"}
               heading={heading}
-              stats={stats}
+              stats={hasMyClinic ? accountStats : stats}
             />
           )}
           {hideStats && (

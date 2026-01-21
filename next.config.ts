@@ -27,6 +27,16 @@ const nextConfig: NextConfig = {
         destination: "/admin/login",
         permanent: false,
       },
+      {
+        source: "/web-app-manifest-192x192.png",
+        destination: "/images/favicon/web-app-manifest-192x192.png",
+        permanent: true,
+      },
+      {
+        source: "/web-app-manifest-512x512.png",
+        destination: "/images/favicon/web-app-manifest-512x512.png",
+        permanent: true,
+      },
     ];
   },
 };
