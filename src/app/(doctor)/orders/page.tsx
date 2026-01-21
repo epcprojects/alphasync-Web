@@ -23,11 +23,12 @@ import CustomerOrderDetails from "@/app/components/ui/modals/CustomerOrderDetail
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { DOCTOR_ORDERS } from "@/lib/graphql/queries";
-import { CREATE_ORDER } from "@/lib/graphql/mutations";
+import { CREATE_ORDER, CANCEL_ORDER } from "@/lib/graphql/mutations";
 import { format } from "date-fns";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/store/hooks";
 import ClinicOrderModal from "@/app/components/ui/modals/ClinicOrderModal";
+import AppModal from "@/app/components/ui/modals/AppModal";
 
 type Selection = {
   startDate: Date;
@@ -139,6 +140,14 @@ function OrderContent() {
   );
 
   const [createOrderMutation] = useMutation(CREATE_ORDER);
+  const [cancelOrderMutation, { loading: cancellingOrder }] =
+    useMutation(CANCEL_ORDER);
+
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState<{
+    id: string;
+    displayId: string | number;
+  } | null>(null);
 
   const orders = data?.doctorOrders.allData || [];
   const pageCount = data?.doctorOrders.totalPages;
@@ -274,6 +283,27 @@ function OrderContent() {
       })),
     });
     setIsPaymentModalOpen(true);
+  };
+
+  const handleCancelClick = (order: (typeof orders)[0]) => {
+    setOrderToCancel({ id: order.id, displayId: order.displayId || order.id });
+    setIsCancelModalOpen(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!orderToCancel) return;
+    try {
+      await cancelOrderMutation({
+        variables: { orderId: orderToCancel.id },
+      });
+      await refetch();
+      setIsCancelModalOpen(false);
+      setOrderToCancel(null);
+      showSuccessToast("Order cancelled successfully");
+    } catch (err) {
+      console.error("Failed to cancel order", err);
+      showErrorToast("Failed to cancel order. Please try again.");
+    }
   };
 
   const isMobile = useIsMobile();
@@ -507,7 +537,7 @@ function OrderContent() {
             </TabPanel>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden md:grid md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_5rem]  lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_6rem] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="hidden md:grid md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_5rem]  lg:grid-cols-[1fr_1fr_1.5fr_1fr_1fr_1fr_1.5fr] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div>
                     <h2 className="whitespace-nowrap">Order ID</h2>
                   </div>
@@ -554,6 +584,9 @@ function OrderContent() {
                         hideProfit={true}
                         showPayNow={true}
                         onPayNow={() => handlePayNow(order)}
+                        onCancelOrder={
+                          !order.patient ? () => handleCancelClick(order) : undefined
+                        }
                         order={{
                           id: parseInt(order.id),
                           orderId: order.displayId || "---",
@@ -570,6 +603,7 @@ function OrderContent() {
                           total: order.totalPrice,
                           netCost: order.netCost ?? 0,
                           profit: order.profit ?? 0,
+                          isClinicOrder: !order.patient,
                         }}
                         onViewOrderDetail={() => handleOrderClick(order)}
                       />
@@ -620,6 +654,28 @@ function OrderContent() {
         onClose={() => setIsClinicOrderModalOpen(false)}
         onCreateOrder={handleCreateClinicOrder}
       />
+      <AppModal
+        isOpen={isCancelModalOpen}
+        onClose={() => {
+          setIsCancelModalOpen(false);
+          setOrderToCancel(null);
+        }}
+        title="Cancel Order"
+        subtitle=""
+        onConfirm={handleConfirmCancel}
+        confirmLabel={cancellingOrder ? "Cancelling..." : "Confirm Cancel"}
+        confirmBtnVarient="danger"
+        cancelLabel="Keep Order"
+        confimBtnDisable={cancellingOrder}
+        bodyPaddingClasses="p-4 md:p-6"
+      >
+        <div className="flex flex-col gap-3">
+          <p className="text-sm md:text-base text-gray-700">
+            Are you sure you want to cancel order{" "}
+            {orderToCancel?.displayId ?? ""}?
+          </p>
+        </div>
+      </AppModal>
       {selectedOrder && (
         <CustomerOrderDetails
           isOpen={isDetailModalOpen}

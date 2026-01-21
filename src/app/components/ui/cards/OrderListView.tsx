@@ -1,6 +1,6 @@
 "use client";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { ArrowLeftIcon } from "@/icons";
+import { ArrowLeftIcon, TrashBinIcon } from "@/icons";
 import Tooltip from "../tooltip";
 import ProfileImage from "@/app/components/ui/ProfileImage";
 
@@ -17,6 +17,7 @@ type Order = {
   profit: number;
   imageUrl?: string | null;
   customerEmail?: string | null;
+  isClinicOrder?: boolean;
 };
 
 type OrderListViewProps = {
@@ -27,6 +28,7 @@ type OrderListViewProps = {
   hideProfit?: boolean;
   onPayNow?: (id?: number) => void;
   showPayNow?: boolean;
+  onCancelOrder?: () => void;
 };
 
 const colorPairs = [
@@ -86,6 +88,7 @@ export default function OrderListView({
   hideProfit = false,
   onPayNow,
   showPayNow = false,
+  onCancelOrder,
 }: OrderListViewProps) {
   const { bg, text } = getColorPair(order.id) || colorPairs[0];
 
@@ -181,7 +184,6 @@ export default function OrderListView({
               </span>
             </div>
           )}
-
           <div className="flex items-center justify-end gap-1.5 w-full flex-nowrap">
             {showPayNow && order.status === "pending_payment" && onPayNow && (
               <button
@@ -194,6 +196,56 @@ export default function OrderListView({
                 Pay Now
               </button>
             )}
+            {order.isClinicOrder &&
+              order.status === "pending_payment" &&
+              onCancelOrder && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCancelOrder();
+                  }}
+                  className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600 shrink-0 cursor-pointer"
+                  aria-label="Cancel order"
+                >
+                  <TrashBinIcon width="14" height="14" />
+                </button>
+              )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewOrderDetail?.(order.displayId);
+              }}
+              className="flex rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:bg-gradient-to-r group-hover:text-white from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary shrink-0"
+            >
+              <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
+            </button>
+          </div>
+          <div className="flex items-center justify-end gap-1.5 w-full flex-nowrap">
+            {showPayNow && order.status === "pending_payment" && onPayNow && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPayNow(order.displayId);
+                }}
+                className="px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors whitespace-nowrap shrink-0"
+              >
+                Pay Now
+              </button>
+            )}
+            {order.isClinicOrder &&
+              order.status === "pending_payment" &&
+              onCancelOrder && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCancelOrder();
+                  }}
+                  className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600 shrink-0 cursor-pointer"
+                  aria-label="Cancel order"
+                >
+                  <TrashBinIcon width="14" height="14" />
+                </button>
+              )}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -209,7 +261,7 @@ export default function OrderListView({
     );
   const gridCols = hideCustomer
     ? hideProfit
-      ? "md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_6rem] lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_7rem]"
+      ? "md:grid-cols-[4rem_4rem_6rem_1fr_1fr_1fr_6rem] lg:grid-cols-[1fr_1fr_1.5fr_1fr_1fr_1fr_1.5fr]"
       : "grid-cols-[4fr_4fr_4fr_2fr_4fr_4fr_4fr]"
     : " grid-cols-[1.5fr_2.5fr_1fr_2fr_1fr_1fr_1fr_1fr_1fr]";
 
@@ -295,6 +347,22 @@ export default function OrderListView({
             </button>
           </Tooltip>
         )}
+        {order.isClinicOrder &&
+          order.status === "pending_payment" &&
+          onCancelOrder && (
+            <Tooltip content="Cancel Order">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCancelOrder();
+                }}
+                className="flex md:h-8 md:w-8 h-7 w-7 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600 shrink-0 cursor-pointer"
+                aria-label="Cancel order"
+              >
+                <TrashBinIcon width="14" height="14" />
+              </button>
+            </Tooltip>
+          )}
         <Tooltip content="View Order">
           <button
             onClick={(e) => {
