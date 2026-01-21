@@ -160,6 +160,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                 priority={true}
                 width={240}
                 height={48}
+                style={{ width: "auto" }}
                 unoptimized
               />
 
@@ -170,6 +171,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                 priority={true}
                 width={208}
                 height={32}
+                style={{ width: "auto" }}
                 unoptimized
               />
             </Link>

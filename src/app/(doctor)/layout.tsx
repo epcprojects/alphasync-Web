@@ -16,6 +16,7 @@ import {
   ShoppingCartIcon,
   ShoppingCardDualIcon,
   PercentIcon,
+  DashboardIcon,
 } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
@@ -46,9 +47,11 @@ const poppins_init = Poppins({
 
 const menuItems = [
   { label: "Inventory", href: "/inventory", icon: InventoryIcon },
+  { label: "Accounting", href: "/accounting", icon: DashboardIcon },
   { label: "Customers", href: "/customers", icon: CustomerIcon },
   { label: "Orders", href: "/orders", icon: OrdersIcon },
   // { label: "My Clinic", href: "/clinic", icon: DeliveryBoxIcon },
+ 
   {
     label: "Reminder",
     href: "/reminder",
