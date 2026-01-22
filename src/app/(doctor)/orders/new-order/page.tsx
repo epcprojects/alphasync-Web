@@ -26,6 +26,7 @@ interface OrderItem {
   customPrice?: number;
   initialPrice: number; // Track the initial price when item was added
   hasTierPricing?: boolean; // Track if product has tiered pricing
+  latestMarkedUpPrice?: number | null; // Store latest marked up price for validation
 }
 
 const Page = () => {
@@ -372,8 +373,9 @@ const Page = () => {
       price: values.price,
       originalPrice: originalPrice,
       customPrice: customPrice,
-      initialPrice: displayedPrice, // Store the displayed price (customPrice or originalPrice) when item is added
+      initialPrice: displayedPrice, // Store the displayed price (customPrice or originalPrice) when item was added
       hasTierPricing: isClinicOrder && (selectedProductData?.tierPricing?.length ?? 0) > 0,
+      latestMarkedUpPrice: latestMarkedUpPrice, // Store latest marked up price for validation
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -417,13 +419,44 @@ const Page = () => {
     
     setOrderItems(updated);
     
-    // Clear error for this item when price is updated
+    // Validate price for non-clinic orders when price is updated
     if (field === "price") {
-      setPriceErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[index];
-        return newErrors;
-      });
+      if (!isClinicOrder) {
+        // Validate price against original price and latest marked up price for non-clinic orders
+        const updatedItem = updated[index];
+        let errorMessage: string | null = null;
+        
+        if (updatedItem.price < updatedItem.originalPrice) {
+          errorMessage = `Price must be greater than or equal to original price ($${updatedItem.originalPrice.toFixed(2)})`;
+        } else if (
+          updatedItem.latestMarkedUpPrice !== null &&
+          updatedItem.latestMarkedUpPrice !== undefined &&
+          updatedItem.price > updatedItem.latestMarkedUpPrice
+        ) {
+          errorMessage = `Price cannot exceed the latest marked up price ($${updatedItem.latestMarkedUpPrice.toFixed(2)})`;
+        }
+        
+        if (errorMessage) {
+          setPriceErrors((prev) => ({
+            ...prev,
+            [index]: errorMessage!,
+          }));
+        } else {
+          // Clear error if price is valid
+          setPriceErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors[index];
+            return newErrors;
+          });
+        }
+      } else {
+        // For clinic orders, just clear any existing errors
+        setPriceErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[index];
+          return newErrors;
+        });
+      }
     }
   };
 
@@ -452,23 +485,35 @@ const Page = () => {
   const handleCreateOrder = async () => {
     if (orderItems.length === 0) return;
 
-    // Validate all order items before creating order
-    const errors: { [index: number]: string } = {};
-    orderItems.forEach((item, index) => {
-      if (item.price < item.originalPrice) {
-        errors[
-          index
-        ] = `Price must be greater than or equal to original price ($${item.originalPrice.toFixed(
-          2
-        )})`;
-      }
-    });
+    // Validate all order items before creating order (only for non-clinic orders)
+    if (!isClinicOrder) {
+      const errors: { [index: number]: string } = {};
+      orderItems.forEach((item, index) => {
+        if (item.price < item.originalPrice) {
+          errors[
+            index
+          ] = `Price must be greater than or equal to original price ($${item.originalPrice.toFixed(
+            2
+          )})`;
+        } else if (
+          item.latestMarkedUpPrice !== null &&
+          item.latestMarkedUpPrice !== undefined &&
+          item.price > item.latestMarkedUpPrice
+        ) {
+          errors[
+            index
+          ] = `Price cannot exceed the latest marked up price ($${item.latestMarkedUpPrice.toFixed(
+            2
+          )})`;
+        }
+      });
 
-    // If there are validation errors, show them and prevent order creation
-    if (Object.keys(errors).length > 0) {
-      setPriceErrors(errors);
-      showErrorToast("Please fix price errors before creating the order");
-      return;
+      // If there are validation errors, show them and prevent order creation
+      if (Object.keys(errors).length > 0) {
+        setPriceErrors(errors);
+        showErrorToast("Please fix price errors before creating the order");
+        return;
+      }
     }
 
     // Clear any previous errors
@@ -1018,10 +1063,10 @@ const Page = () => {
                             }
                           }}
                           className={`rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs ${
-                            priceErrors[index] ? "border-red-500" : ""
+                            !isClinicOrder && priceErrors[index] ? "border-red-500" : ""
                           }`}
                         />
-                        {priceErrors[index] && (
+                        {!isClinicOrder && priceErrors[index] && (
                           <p className="text-red-500 text-[12px] mt-0.5 me-2">
                             {priceErrors[index]}
                           </p>
