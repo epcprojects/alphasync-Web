@@ -859,3 +859,23 @@ export const EXPORT_ORDER_REQUESTS = gql`
     }
   }
 `;
+
+export const EXPORT_ORDERS = gql`
+  mutation ExportOrders(
+    $status: String
+    $patientId: ID
+    $myClinic: Boolean
+  ) {
+    exportOrders(
+      input: {
+        status: $status
+        patientId: $patientId
+        myClinic: $myClinic
+      }
+    ) {
+      clientMutationId
+      csvData
+      fileName
+    }
+  }
+`;
