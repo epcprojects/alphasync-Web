@@ -148,7 +148,7 @@ const Page = () => {
   );
 
   // Lazy query for tier pricing with debouncing
-  const [fetchTierPricing, { data: tierPricingData }] = useLazyQuery(FETCH_TIER_PRICING, {
+  const [fetchTierPricing, { data: tierPricingData, loading: tierPricingLoading }] = useLazyQuery(FETCH_TIER_PRICING, {
     fetchPolicy: "network-only",
   });
 
@@ -997,6 +997,7 @@ const Page = () => {
                   type="submit"
                   icon={<PlusIcon />}
                   variant="primaryOutline"
+                    disabled={tierPricingLoading}
                 />
               </Form>
             );
@@ -1157,7 +1158,7 @@ const Page = () => {
                       icon={<PlusIcon height="18" width="18" />}
                       heightClass="h-10"
                       className="w-full sm:w-fit"
-                      disabled={createOrderLoading || orderItems.length === 0}
+                      disabled={createOrderLoading || tierPricingLoading || orderItems.length === 0}
                     />
                   </div>
                 </div>
