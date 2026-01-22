@@ -879,3 +879,22 @@ export const EXPORT_ORDERS = gql`
     }
   }
 `;
+
+export const EXPORT_DOCTORS = gql`
+  mutation ExportDoctors($status: UserStatusEnum, $pendingInvites: Boolean, $search: String) {
+    exportDoctors(input: { status: $status, pendingInvites: $pendingInvites, search: $search }) {
+      csvData
+      fileName
+    }
+  }
+`;
+
+
+export const EXPORT_ADMINS = gql`
+  mutation ExportAdmins($status: UserStatusEnum, $pendingInvites: Boolean, $search: String) {
+    exportAdmins(input: { status: $status, pendingInvites: $pendingInvites, search: $search }) {
+      csvData
+      fileName
+    }
+  }
+`;

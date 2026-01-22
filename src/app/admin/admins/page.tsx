@@ -28,7 +28,7 @@ import ResendInvitationModal from "@/app/components/ui/modals/ResendInvitationMo
 import AppModal from "@/app/components/ui/modals/AppModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ALL_ADMINS } from "@/lib/graphql/queries";
-import { MODIFY_ACCESSS_USER } from "@/lib/graphql/mutations";
+import { MODIFY_ACCESSS_USER, EXPORT_ADMINS } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
@@ -95,6 +95,9 @@ function AdminsContent() {
   const [modifyAccessUser, { loading: modifyLoading }] =
     useMutation(MODIFY_ACCESSS_USER);
 
+  // GraphQL mutation for exporting admins
+  const [exportAdmins, { loading: exportLoading }] = useMutation(EXPORT_ADMINS);
+
   // Transform GraphQL data to match Admin interface
   const admins = data?.allAdmins?.allData ?? [];
 
@@ -151,6 +154,52 @@ function AdminsContent() {
         status: admin.status,
       });
       setIsResendModalOpen(true);
+    }
+  };
+
+  const handleExportAdmins = async () => {
+    try {
+      const { data } = await exportAdmins({
+        variables: {
+          status:
+            selectedStatus === "All Status"
+              ? undefined
+              : selectedStatus.toUpperCase(),
+          pendingInvites: selectedTabIndex === 1,
+          search: search || undefined,
+        },
+      });
+
+      if (data?.exportAdmins?.csvData && data?.exportAdmins?.fileName) {
+        // Try to decode base64 CSV data, fallback to plain text if it fails
+        let csvContent: string;
+        try {
+          csvContent = atob(data.exportAdmins.csvData);
+        } catch (e) {
+          // If decoding fails, assume it's already plain text
+          csvContent = data.exportAdmins.csvData;
+        }
+        
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", data.exportAdmins.fileName);
+        link.style.visibility = "hidden";
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        URL.revokeObjectURL(url);
+        showSuccessToast("Admins exported successfully");
+      } else {
+        showErrorToast("Failed to export admins. No data received.");
+      }
+    } catch (error) {
+      console.error("Error exporting admins:", error);
+      showErrorToast("Failed to export admins. Please try again.");
     }
   };
 
@@ -211,6 +260,14 @@ function AdminsContent() {
                 ))}
               </MenuItems>
             </Menu>
+
+            <ThemeButton
+              label="Export"
+              size={isMobile ? "small" : "medium"}
+              onClick={handleExportAdmins}
+              heightClass="h-9 sm:h-auto"
+              disabled={exportLoading}
+            />
 
             <ThemeButton
               icon={<PlusIcon />}
