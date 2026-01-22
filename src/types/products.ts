@@ -28,6 +28,12 @@ export interface AllProductsResponse {
         price: number;
         sku?: string;
       }[];
+      tierPricing?: {
+        endCount: number | null;
+        startCount: number;
+        tieredPrice: number;
+        id: string;
+      }[];
     }[];
     count: number;
     nextPage: number | null;
@@ -76,6 +82,12 @@ export interface ProductDropdownItem {
     customPrice: number;
     id: string;
     createdAt?: string;
+  }[];
+  tierPricing?: {
+    endCount: number | null;
+    startCount: number;
+    tieredPrice: number;
+    id: string;
   }[];
 }
 
@@ -178,6 +190,12 @@ export interface FetchProductResponse {
     totalInventory?: number;
     price?: number;
     vendor?: string;
+    tierPricing?: {
+      endCount: number | null;
+      startCount: number;
+      tieredPrice: number;
+      id: string;
+    }[];
     variants: {
       price: number;
       id: string;
@@ -204,6 +222,7 @@ export const transformToDropdownItem = (
     customPrice: product.customPrice,
     originalPrice: originalPrice,
     customPriceChangeHistory: product.customPriceChangeHistory,
+    tierPricing: product.tierPricing,
     variants: product.variants?.map((variant) => ({
       id: variant.id,
       shopifyVariantId: variant.shopifyVariantId,
