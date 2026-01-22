@@ -869,33 +869,39 @@ const Page = () => {
                   )}
 
                 {/* Tiered Pricing Display for Clinic Orders */}
-                {isClinicOrder && preservedProduct && selectedProductData?.tierPricing && selectedProductData.tierPricing.length > 0 && (
+                {isClinicOrder && preservedProduct && selectedProductData && (
                   <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
                     <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-3">
                       Tiered Pricing
                     </h3>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs md:text-sm">
-                        <thead>
-                          <tr className="border-b border-gray-200">
-                            <th className="text-left py-2 px-2 text-gray-600 font-medium">Quantity Range</th>
-                            <th className="text-right py-2 px-2 text-gray-600 font-medium">Price per Unit</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedProductData.tierPricing.map((tier, index) => (
-                            <tr key={tier.id || index} className="border-b border-gray-100">
-                              <td className="py-2 px-2 text-gray-700">
-                                {tier.startCount}+
-                              </td>
-                              <td className="py-2 px-2 text-right text-gray-800 font-semibold">
-                                ${tier.tieredPrice.toFixed(2)}
-                              </td>
+                    {selectedProductData.tierPricing && selectedProductData.tierPricing.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs md:text-sm">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left py-2 px-2 text-gray-600 font-medium">Quantity Range</th>
+                              <th className="text-right py-2 px-2 text-gray-600 font-medium">Price per Unit</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody>
+                            {selectedProductData.tierPricing.map((tier, index) => (
+                              <tr key={tier.id || index} className="border-b border-gray-100">
+                                <td className="py-2 px-2 text-gray-700">
+                                  {tier.startCount}+
+                                </td>
+                                <td className="py-2 px-2 text-right text-gray-800 font-semibold">
+                                  ${tier.tieredPrice.toFixed(2)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-gray-600 text-xs md:text-sm">
+                        No tier pricing for this product
+                      </p>
+                    )}
                   </div>
                 )}
 
