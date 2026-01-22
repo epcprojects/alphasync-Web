@@ -862,7 +862,7 @@ export const EXPORT_ORDER_REQUESTS = gql`
 
 export const EXPORT_ORDERS = gql`
   mutation ExportOrders(
-    $status: String
+    $status: OrderStatusEnum
     $patientId: ID
     $myClinic: Boolean
   ) {
