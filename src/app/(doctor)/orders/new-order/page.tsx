@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import { ArrowDownIcon, PlusIcon, TrashBinIcon } from "@/icons";
 import { ProductSelect, CustomerSelect } from "@/app/components";
 import { ThemeInput, ThemeButton } from "@/app/components";
@@ -7,12 +7,14 @@ import { Formik, Form, Field } from "formik";
 import { Switch } from "@headlessui/react";
 import * as Yup from "yup";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { formatNumber } from "@/lib/helpers";
-import { useMutation } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { CREATE_ORDER } from "@/lib/graphql/mutations";
+import { FETCH_PRODUCT } from "@/lib/graphql/queries";
 import type { ProductSelectRef } from "@/app/components/ui/inputs/ProductSelect";
+import { FetchProductResponse } from "@/types/products";
 
 interface OrderItem {
   product: string;
@@ -27,6 +29,9 @@ interface OrderItem {
 
 const Page = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const productIdFromUrl = searchParams.get("productId");
+  
   const [selectedProductData, setSelectedProductData] = useState<{
     name: string;
     displayName: string;
@@ -111,12 +116,109 @@ const Page = () => {
 
   // Ref to ProductSelect to trigger refetch
   const productSelectRef = useRef<ProductSelectRef>(null);
+  
+  // Ref to store Formik's setFieldValue function
+  const formikSetFieldValueRef = useRef<((field: string, value: string | number) => void) | null>(null);
 
   // GraphQL mutation to create order
   const [
     createOrder,
     { loading: createOrderLoading, error: createOrderError },
   ] = useMutation(CREATE_ORDER);
+
+  // Fetch product by ID from URL
+  const { data: fetchedProductData } = useQuery<FetchProductResponse>(
+    FETCH_PRODUCT,
+    {
+      variables: { id: productIdFromUrl },
+      skip: !productIdFromUrl,
+      fetchPolicy: "network-only",
+    }
+  );
+
+  // Prefill product when fetched from URL
+  useEffect(() => {
+    if (fetchedProductData?.fetchProduct && productIdFromUrl) {
+      const product = fetchedProductData.fetchProduct;
+      const firstVariant = product.variants?.[0];
+      const originalPrice = firstVariant?.price;
+      const price = product.customPrice ?? originalPrice;
+      
+      // Check if product is marked up
+      const isMarkedUp = (product.customPriceChangeHistory?.length ?? 0) > 0;
+      
+      // For non-clinic orders, only marked-up products are allowed
+      // If product is not marked up and it's not a clinic order, switch to clinic order mode
+      if (!isClinicOrder && !isMarkedUp) {
+        setIsClinicOrder(true);
+      }
+      
+      // Transform to ProductDropdownItem format
+      const productDropdownItem = {
+        name: product.title,
+        displayName: product.title,
+        productId: product.id,
+        variantId: firstVariant?.shopifyVariantId,
+        price: price,
+        customPrice: product.customPrice,
+        originalPrice: originalPrice,
+        customPriceChangeHistory: product.customPriceChangeHistory,
+        variants: product.variants?.map((variant) => ({
+          id: variant.id,
+          shopifyVariantId: variant.shopifyVariantId,
+          price: variant.price,
+          sku: variant.sku,
+        })),
+      };
+
+      // Set the product data
+      setSelectedProductData(productDropdownItem);
+      
+      // Update pricing info
+      updatePricingInfo(productDropdownItem);
+      
+      // Set preserved product name for form
+      setPreservedProduct(product.title);
+      
+      // Calculate price to use (clinic: base price, non-clinic: latest marked up price)
+      const basePrice = originalPrice ?? 0;
+      let latestMarkedUp: number | null = null;
+      const ph = product.customPriceChangeHistory;
+      if (ph?.length) {
+        const sorted = [...ph].sort(
+          (a, b) =>
+            (new Date(b.createdAt ?? 0).getTime()) -
+            (new Date(a.createdAt ?? 0).getTime())
+        );
+        if (sorted[0]?.customPrice != null)
+          latestMarkedUp = Number(sorted[0].customPrice);
+      }
+      const latestMarkedUpValue =
+        latestMarkedUp ??
+        product.customPrice ??
+        originalPrice ??
+        0;
+      // Use clinic order mode if product is not marked up, otherwise respect current mode
+      const shouldUseClinicOrder = !isMarkedUp || isClinicOrder;
+      const priceToUse = shouldUseClinicOrder ? basePrice : latestMarkedUpValue;
+      setPreservedPrice(priceToUse);
+      
+      // Update form field values if form is available
+      if (formikSetFieldValueRef.current) {
+        formikSetFieldValueRef.current("product", product.title);
+        formikSetFieldValueRef.current("price", priceToUse);
+      }
+      
+      // Remove productId from URL after prefilling
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.delete("productId");
+      const newUrl = newSearchParams.toString()
+        ? `${window.location.pathname}?${newSearchParams.toString()}`
+        : window.location.pathname;
+      router.replace(newUrl, { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchedProductData, productIdFromUrl, searchParams, router]);
 
   // Extract pricing information from selected product data
   const updatePricingInfo = (product: typeof selectedProductData) => {
@@ -370,7 +472,11 @@ const Page = () => {
               setFieldError,
               errors,
               touched,
-            }) => (
+            }) => {
+              // Store setFieldValue in ref for use in useEffect
+              formikSetFieldValueRef.current = setFieldValue;
+              
+              return (
               <Form className="flex flex-col gap-4 md:gap-5">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-700 text-sm font-medium">
@@ -634,7 +740,8 @@ const Page = () => {
                   variant="primaryOutline"
                 />
               </Form>
-            )}
+            );
+            }}
           </Formik>
         </div>
 

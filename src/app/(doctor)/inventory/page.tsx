@@ -399,16 +399,7 @@ function InventoryContent() {
                     customPrice={originalProduct?.customPrice}
                     onAddToCart={() => {
                       if (originalProduct) {
-                        setSelectedProduct({
-                          id: originalProduct.id,
-                          shopifyVariantId:
-                            originalProduct.variants?.[0]?.shopifyVariantId ||
-                            "",
-                          title: originalProduct.title,
-                          price: originalProduct.variants?.[0]?.price,
-                          customPrice: originalProduct.customPrice,
-                        });
-                        setIsOrderModalOpen(true);
+                        router.push(`/orders/new-order?productId=${originalProduct.id}`);
                       }
                     }}
                     onToggleFavourite={() => {
@@ -455,16 +446,7 @@ function InventoryContent() {
                     }}
                     onAddToCart={() => {
                       if (originalProduct) {
-                        setSelectedProduct({
-                          id: originalProduct.id,
-                          shopifyVariantId:
-                            originalProduct.variants?.[0]?.shopifyVariantId ||
-                            "",
-                          title: originalProduct.title,
-                          price: originalProduct.variants?.[0]?.price,
-                          customPrice: originalProduct.customPrice,
-                        });
-                        setIsOrderModalOpen(true);
+                        router.push(`/orders/new-order?productId=${originalProduct.id}`);
                       }
                     }}
                     onRemoveFromSale={handleRemoveFromSale}

@@ -1,6 +1,5 @@
 "use client";
 import { ProductSwiper, ThemeButton, Loader } from "@/app/components";
-import OrderModal from "@/app/components/ui/modals/OrderModal";
 import {
   ArrowDownIcon,
   HeartFilledIcon,
@@ -13,7 +12,6 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { FETCH_PRODUCT } from "@/lib/graphql/queries";
 import {
-  CREATE_ORDER,
   TOGGLE_FAVOURITE,
   UPDATE_PRODUCT_PRICE,
   MARK_PRODUCT_NOT_FOR_SALE,
@@ -25,7 +23,6 @@ export default function PostDetail() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
 
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [price, setPrice] = useState<string>("");
   const [priceError, setPriceError] = useState<string>("");
 
@@ -40,10 +37,6 @@ export default function PostDetail() {
       fetchPolicy: "network-only",
     }
   );
-
-  // GraphQL mutation to create order
-  const [createOrder, { loading: createOrderLoading }] =
-    useMutation(CREATE_ORDER);
 
   // GraphQL mutation to toggle favorite
   const [toggleFavorite, { loading: toggleFavoriteLoading }] =
@@ -168,56 +161,6 @@ export default function PostDetail() {
       },
     ];
   })();
-
-  const handleConfirmOrder = async (orderData: {
-    customer: string;
-    price: number;
-    productId?: string;
-    shopifyVariantId?: string;
-    customerId?: string;
-    useCustomPricing?: boolean;
-  }) => {
-    try {
-      if (!product || !orderData.customerId) {
-        showErrorToast("Missing required order information");
-        return;
-      }
-
-      const variantId =
-        orderData.shopifyVariantId || product.variants?.[0]?.shopifyVariantId;
-      if (!variantId) {
-        showErrorToast("Product variant information is missing");
-        return;
-      }
-
-      const orderItems = [
-        {
-          productId: orderData.productId || product.id,
-          variantId: variantId,
-          quantity: 1,
-          price: orderData.price,
-        },
-      ];
-
-      // Use useCustomPricing from OrderModal, default to false if not provided
-      const useCustomPricing = orderData.useCustomPricing ?? false;
-
-      await createOrder({
-        variables: {
-          orderItems,
-          totalPrice: orderData.price,
-          patientId: orderData.customerId,
-          useCustomPricing: useCustomPricing,
-        },
-      });
-
-      setIsOrderModalOpen(false);
-      showSuccessToast("Order created successfully!");
-    } catch (error) {
-      console.error("Error creating order:", error);
-      showErrorToast("Failed to create order. Please try again.");
-    }
-  };
 
   // Show loading state
   if (loading) {
@@ -597,19 +540,19 @@ export default function PostDetail() {
 
               <div className="flex flex-col sm:flex-row gap-2">
                 {product.customPrice != null && product.customPrice !== undefined && (
-                  <button
-                    type="button"
+                  <ThemeButton
                     onClick={handleRemoveFromSale}
+                    variant="outline"
+                    className="flex-1"
+                    heightClass="h-10 md:h-11"
                     disabled={removeFromSaleLoading}
-                    className="inline-flex items-center justify-center px-4 py-2.5 h-11 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {removeFromSaleLoading ? "Removing…" : "Remove from Sale"}
-                  </button>
+                    label={removeFromSaleLoading ? "Removing…" : "Remove from Sale"}
+                  />
                 )}
                 <ThemeButton
                   label="Order"
                   icon={<ShopingCartIcon fill="white" height={20} width={20} />}
-                  onClick={() => setIsOrderModalOpen(true)}
+                  onClick={() => router.push(`/orders/new-order?productId=${product.id}`)}
                   className="w-full sm:w-fit sm:min-w-40"
                   heightClass="h-11"
                   disabled={
@@ -636,16 +579,6 @@ export default function PostDetail() {
           </div>
         </div>
       </div>
-      <OrderModal
-        isOpen={isOrderModalOpen}
-        onConfirm={handleConfirmOrder}
-        productId={product.id}
-        shopifyVariantId={product.variants?.[0]?.shopifyVariantId}
-        customPrice={product.customPrice}
-        price={product.variants?.[0]?.price}
-        isLoading={createOrderLoading}
-        onClose={() => setIsOrderModalOpen(false)}
-      />
     </div>
   );
 }
