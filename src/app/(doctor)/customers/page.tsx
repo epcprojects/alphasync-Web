@@ -166,7 +166,7 @@ function CustomerContent() {
           status:
             selectedStatus === "All Status"
               ? undefined
-              : (selectedStatus.toUpperCase() as any),
+              : selectedStatus.toUpperCase(),
           search: search || null,
           pendingInvites: selectedTabIndex === 1 ? true : undefined,
         },
