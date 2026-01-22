@@ -837,3 +837,25 @@ export const EXPORT_PATIENTS = gql`
     }
   }
 `;
+
+export const EXPORT_ORDER_REQUESTS = gql`
+  mutation ExportOrderRequests(
+    $status: String
+    $patientId: ID
+    $search: String
+    $reorder: Boolean
+  ) {
+    exportOrderRequests(
+      input: {
+        status: $status
+        patientId: $patientId
+        search: $search
+        reorder: $reorder
+      }
+    ) {
+      clientMutationId
+      csvData
+      fileName
+    }
+  }
+`;
