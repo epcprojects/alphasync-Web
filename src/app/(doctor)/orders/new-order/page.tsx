@@ -14,7 +14,7 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { CREATE_ORDER } from "@/lib/graphql/mutations";
 import { FETCH_PRODUCT } from "@/lib/graphql/queries";
 import type { ProductSelectRef } from "@/app/components/ui/inputs/ProductSelect";
-import { transformToDropdownItem, FetchProductResponse } from "@/types/products";
+import { FetchProductResponse } from "@/types/products";
 
 interface OrderItem {
   product: string;
@@ -118,7 +118,7 @@ const Page = () => {
   const productSelectRef = useRef<ProductSelectRef>(null);
   
   // Ref to store Formik's setFieldValue function
-  const formikSetFieldValueRef = useRef<((field: string, value: any) => void) | null>(null);
+  const formikSetFieldValueRef = useRef<((field: string, value: string | number) => void) | null>(null);
 
   // GraphQL mutation to create order
   const [
@@ -127,7 +127,7 @@ const Page = () => {
   ] = useMutation(CREATE_ORDER);
 
   // Fetch product by ID from URL
-  const { data: fetchedProductData, loading: fetchingProduct } = useQuery<FetchProductResponse>(
+  const { data: fetchedProductData } = useQuery<FetchProductResponse>(
     FETCH_PRODUCT,
     {
       variables: { id: productIdFromUrl },
