@@ -1,10 +1,16 @@
 "use client";
-import { PencilEditIcon, TrashBinIcon, MailIcon } from "@/icons";
+import {
+  PencilEditIcon,
+  TrashBinIcon,
+  MailIcon,
+  EllipsisVertical,
+} from "@/icons";
 import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import ProfileImage from "../ProfileImage";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
 type DoctorListingProps = {
   doctor: UserAttributes;
@@ -119,7 +125,7 @@ export default function DoctorListView({
 
             <span
               className={`inline-block rounded-full px-2 py-0.5 capitalize text-xs md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
-                displayStatus
+                displayStatus,
               )}`}
             >
               {displayStatus}
@@ -127,7 +133,7 @@ export default function DoctorListView({
 
             <span
               className={`inline-block rounded-full px-2 py-0.5 capitalize text-xs md:text-sm font-medium whitespace-nowrap ${getInvitationStatusClasses(
-                doctor.invitationStatus
+                doctor.invitationStatus,
               )}`}
             >
               {doctor.invitationStatus || "Pending"}
@@ -153,7 +159,7 @@ export default function DoctorListView({
                       "Resend button clicked for doctor:",
                       doctor.id,
                       "invitationStatus:",
-                      doctor.invitationStatus
+                      doctor.invitationStatus,
                     );
                     if (doctor.id) onResendInvitation?.(doctor.id);
                   }}
@@ -195,7 +201,7 @@ export default function DoctorListView({
     <div
       // onClick={onRowClick}
       key={doctor.id}
-      className="grid  grid-cols-[2.5fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr] xl:grid-cols-[2.5fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr]  items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
+      className="grid  grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr]  items-center rounded-xl bg-white p-1 sm:p-1.5 xl:p-3 shadow-table"
     >
       <div className="flex items-center gap-2">
         <ProfileImage
@@ -207,40 +213,42 @@ export default function DoctorListView({
         />
 
         <div>
-          <h2 className="text-gray-800 text-sm md:text-base font-medium">
+          <h2 className="text-gray-800 text-sm xl:text-base font-medium">
             {doctor.fullName ?? "----"}
           </h2>
-          <h2 className="text-gray-800 text-sm  font-normal">{doctor.email}</h2>
+          <h2 className="text-gray-800 text-xs xl:text-sm  font-normal">
+            {doctor.email}
+          </h2>
         </div>
       </div>
 
-      <div className="text-sm md:text-base font-normal text-gray-800">
+      <div className="text-sm xl:text-base font-normal text-gray-800">
         {doctor.specialty ? doctor.specialty.replace(/_/g, " ") : "—"}
       </div>
-      <div className="text-sm md:text-base font-normal text-gray-800">
+      <div className="text-sm xl:text-base font-normal text-gray-800">
         {doctor.clinic ?? "—"}
       </div>
-      <div className="text-sm md:text-base font-normal text-gray-800">
+      <div className="text-sm xl:text-base font-normal text-gray-800">
         {doctor.phoneNo ?? "—"}
       </div>
-      <div className="text-sm md:text-base font-normal text-gray-800">
+      <div className="text-sm xl:text-base font-normal text-gray-800">
         {doctor.medicalLicense ?? "—"}
       </div>
 
-      <div className="font-medium xl:flex hidden text-sm md:text-base text-gray-800">
+      <div className="font-medium xl:flex hidden text-sm xl:text-base text-gray-800">
         <span
           className={`inline-block rounded-full capitalize px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
-            displayStatus
+            displayStatus,
           )}`}
         >
           {displayStatus}
         </span>
       </div>
 
-      <div className="font-medium text-sm md:text-base text-gray-800">
+      <div className="font-medium text-sm xl:text-base text-gray-800">
         <span
-          className={`inline-block rounded-full capitalize px-2.5 py-0.5 text-xxs md:text-sm font-medium ${getInvitationStatusClasses(
-            doctor.invitationStatus
+          className={`inline-block rounded-full capitalize px-2.5 py-0.5 text-xxs xl:text-sm font-medium ${getInvitationStatusClasses(
+            doctor.invitationStatus,
           )}`}
         >
           {doctor.invitationStatus || "Pending"}
@@ -248,7 +256,7 @@ export default function DoctorListView({
       </div>
 
       <div className="flex items-center justify-end gap-1">
-        {doctor.invitationStatus === "pending" && (
+        {/* {doctor.invitationStatus === "pending" && (
           <Tooltip content="Resend Invitation">
             <button
               onClick={(e) => {
@@ -257,7 +265,7 @@ export default function DoctorListView({
                   "Resend button clicked for doctor:",
                   doctor.id,
                   "invitationStatus:",
-                  doctor.invitationStatus
+                  doctor.invitationStatus,
                 );
                 if (doctor.id) onResendInvitation?.(doctor.id);
               }}
@@ -289,7 +297,68 @@ export default function DoctorListView({
           >
             <TrashBinIcon width="15" height="15" />
           </button>
-        </Tooltip>
+        </Tooltip> */}
+
+        <Menu>
+          <MenuButton
+            className={
+              "w-8 h-8 xl:h-9 xl:w-9 outline-none bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
+            }
+          >
+            <EllipsisVertical />
+          </MenuButton>
+          <MenuItems
+            anchor="bottom end"
+            className={
+              "absolute top-16 right-1 space-y-1 outline-none shadow-[0_14px_34px_0_rgba(0,0,0,0.1)] rounded-lg p-1 bg-white hidden w-44 md:block border border-gray-200 z-10"
+            }
+          >
+            {doctor.invitationStatus === "pending" && (
+              <MenuItem>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log(
+                      "Resend button clicked for doctor:",
+                      doctor.id,
+                      "invitationStatus:",
+                      doctor.invitationStatus,
+                    );
+                    if (doctor.id) onResendInvitation?.(doctor.id);
+                  }}
+                  className=" data-focus:bg-gray-100 cursor-pointer w-full flex items-center gap-2 rounded-sm p-1.5 text-sm hover:bg-gray-100"
+                >
+                  <MailIcon fill="currentColor" height={16} width={16} /> Resend
+                  Invitation
+                </button>
+              </MenuItem>
+            )}
+            <MenuItem>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (doctor.id) onEditDoctor?.(Number(doctor.id));
+                }}
+                className=" data-focus:bg-gray-100 w-full cursor-pointer flex items-center gap-2 rounded-sm p-1.5 text-sm hover:bg-gray-100"
+              >
+                <PencilEditIcon width="15" height="15" fill={"currentColor"} />{" "}
+                Edit
+              </button>
+            </MenuItem>
+            <MenuItem>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (doctor.id) onDeleteDoctor?.(Number(doctor.id));
+                }}
+                className=" data-focus:bg-gray-100 w-full cursor-pointer flex items-center gap-2 hover:text-red-500 rounded-sm p-1.5 text-sm hover:bg-gray-100"
+              >
+                <TrashBinIcon width="15" height="15" fill={"currentColor"} />{" "}
+                Delete
+              </button>
+            </MenuItem>
+          </MenuItems>
+        </Menu>
       </div>
     </div>
   );

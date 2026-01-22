@@ -93,7 +93,7 @@ function DoctorContent() {
         perPage: itemsPerPage,
       },
       fetchPolicy: "network-only",
-    }
+    },
   );
 
   // GraphQL mutation for modifying user access
@@ -153,7 +153,7 @@ function DoctorContent() {
   const handleResendInvitation = (doctorId: string | number) => {
     console.log("handleResendInvitation called with doctorId:", doctorId);
     const doctor = doctors?.find(
-      (d) => d.id === doctorId || d.id === String(doctorId)
+      (d) => d.id === doctorId || d.id === String(doctorId),
     );
     console.log("Found doctor:", doctor);
     if (doctor) {
@@ -267,7 +267,7 @@ function DoctorContent() {
           <TabPanels>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden sm:grid grid-cols-[2.5fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr] xl:grid-cols-[2.5fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="hidden sm:grid  grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr] text-black font-medium text-sm  px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div>
                     <h2>Name</h2>
                   </div>
@@ -337,7 +337,7 @@ function DoctorContent() {
             </TabPanel>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="hidden sm:grid grid-cols-[2.5fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr] xl:grid-cols-[2.5fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr] text-black font-medium text-sm  px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="hidden sm:grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr] text-black font-medium text-sm  px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div>
                     <h2>Name</h2>
                   </div>
