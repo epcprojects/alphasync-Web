@@ -331,7 +331,7 @@ const Page = () => {
     }
   }, [tierPricingData, isClinicOrder, debouncedQuantity]);
 
-  const handleAddItem = (values: {
+  const handleAddItem = async (values: {
     customer: string;
     product: string;
     quantity: number;
@@ -344,6 +344,48 @@ const Page = () => {
     const originalPrice =
       selectedProductData?.variants?.[0]?.price ?? values.price;
     const customPrice = selectedProductData?.customPrice;
+    const productId = selectedProductData?.productId || "";
+
+    // Check if the same product already exists in order items
+    const existingItemIndex = orderItems.findIndex(
+      (item) => item.productId === productId && item.variantId === selectedProductData?.variantId
+    );
+
+    if (existingItemIndex !== -1) {
+      // Item already exists, merge quantities
+      const existingItem = orderItems[existingItemIndex];
+      const newQuantity = existingItem.quantity + values.quantity;
+      let newPrice = existingItem.price;
+
+      // If it's a clinic order with tiered pricing, fetch new price based on combined quantity
+      if (isClinicOrder && existingItem.hasTierPricing && productId) {
+        try {
+          const { data } = await fetchTierPricing({
+            variables: {
+              productId: productId,
+              quantity: newQuantity,
+            },
+          });
+
+          if (data?.fetchTierPricing?.tieredPrice) {
+            newPrice = data.fetchTierPricing.tieredPrice;
+          }
+        } catch (error) {
+          console.error("Error fetching tier pricing for merged item:", error);
+          // Keep existing price if API call fails
+        }
+      }
+
+      // Update the existing item with merged quantity and new price
+      const updatedItems = [...orderItems];
+      updatedItems[existingItemIndex] = {
+        ...existingItem,
+        quantity: newQuantity,
+        price: newPrice,
+      };
+      setOrderItems(updatedItems);
+      return;
+    }
 
     // The displayed price is customPrice if present, otherwise originalPrice
     // For clinic orders, use base price (originalPrice) instead of marked up
@@ -367,7 +409,7 @@ const Page = () => {
 
     const newItem: OrderItem = {
       product: values.product,
-      productId: selectedProductData?.productId || "",
+      productId: productId,
       variantId: selectedProductData?.variantId || "",
       quantity: values.quantity,
       price: values.price,
