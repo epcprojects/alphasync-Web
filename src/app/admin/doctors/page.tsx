@@ -29,7 +29,7 @@ import DoctorDeleteModal from "@/app/components/ui/modals/DoctorDeleteModal";
 import ResendInvitationModal from "@/app/components/ui/modals/ResendInvitationModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ALL_DOCTORS } from "@/lib/graphql/queries";
-import { MODIFY_ACCESSS_USER } from "@/lib/graphql/mutations";
+import { MODIFY_ACCESSS_USER, EXPORT_DOCTORS } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
@@ -99,6 +99,9 @@ function DoctorContent() {
   // GraphQL mutation for modifying user access
   const [modifyAccessUser, { loading: modifyLoading }] =
     useMutation(MODIFY_ACCESSS_USER);
+
+  // GraphQL mutation for exporting doctors
+  const [exportDoctors, { loading: exportLoading }] = useMutation(EXPORT_DOCTORS);
 
   // Transform GraphQL data to match Doctor interface
   const doctors = data?.allDoctors.allData;
@@ -171,6 +174,52 @@ function DoctorContent() {
     }
   };
 
+  const handleExportDoctors = async () => {
+    try {
+      const { data } = await exportDoctors({
+        variables: {
+          status:
+            selectedStatus === "All Status"
+              ? undefined
+              : selectedStatus.toUpperCase(),
+          pendingInvites: selectedTabIndex === 1,
+          search: search || undefined,
+        },
+      });
+
+      if (data?.exportDoctors?.csvData && data?.exportDoctors?.fileName) {
+        // Try to decode base64 CSV data, fallback to plain text if it fails
+        let csvContent: string;
+        try {
+          csvContent = atob(data.exportDoctors.csvData);
+        } catch (e) {
+          // If decoding fails, assume it's already plain text
+          csvContent = data.exportDoctors.csvData;
+        }
+        
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", data.exportDoctors.fileName);
+        link.style.visibility = "hidden";
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        URL.revokeObjectURL(url);
+        showSuccessToast("Doctors exported successfully");
+      } else {
+        showErrorToast("Failed to export doctors. No data received.");
+      }
+    } catch (error) {
+      console.error("Error exporting doctors:", error);
+      showErrorToast("Failed to export doctors. Please try again.");
+    }
+  };
+
   const isMobile = useIsMobile();
 
   // Show error state
@@ -234,6 +283,15 @@ function DoctorContent() {
               size={isMobile ? "small" : "medium"}
               onClick={() => setIsCsvImportModalOpen(true)}
               heightClass="h-9 sm:h-auto"
+            />
+
+            <ThemeButton
+              label="Export"
+              size={isMobile ? "small" : "medium"}
+             
+              onClick={handleExportDoctors}
+              heightClass="h-9 sm:h-auto"
+              disabled={exportLoading}
             />
 
             <ThemeButton
