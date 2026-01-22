@@ -24,6 +24,7 @@ import {
   RequestRejectModal,
   RequestApproveModal,
   RequestListSkeleton,
+  ThemeButton,
 } from "@/app/components";
 import ChatModal from "@/app/components/ui/modals/ChatModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -32,6 +33,7 @@ import { ALL_ORDER_REQUESTS } from "@/lib/graphql/queries";
 import {
   APPROVE_ORDER_REQUEST,
   DENY_ORDER_REQUEST,
+  EXPORT_ORDER_REQUESTS,
 } from "@/lib/graphql/mutations";
 import { OrderRequestAttributes } from "@/lib/graphql/attributes";
 
@@ -102,6 +104,10 @@ function RequestContent() {
   // GraphQL mutation to deny order request
   const [denyOrderRequest, { loading: isDenying }] =
     useMutation(DENY_ORDER_REQUEST);
+
+  // GraphQL mutation to export order requests
+  const [exportOrderRequests, { loading: exportLoading }] =
+    useMutation(EXPORT_ORDER_REQUESTS);
 
   const transformedRequests =
     orderRequestsData?.allOrderRequests.allData?.map((request, index) => {
@@ -210,6 +216,67 @@ function RequestContent() {
     });
   };
 
+  const handleExportOrderRequests = async () => {
+    try {
+      // Use current filter values from the page
+      const { data } = await exportOrderRequests({
+        variables: {
+          status: getStatusValue(selectedStatus) || null,
+          patientId: null,
+          search: search || null,
+          reorder: selectedTabIndex === 1 ? true : null,
+        },
+      });
+
+      if (
+        data?.exportOrderRequests?.csvData &&
+        data?.exportOrderRequests?.fileName
+      ) {
+        // API returns base64 encoded CSV data - decode it
+        let csvContent: string;
+        try {
+          // Decode base64 to string
+          csvContent = atob(data.exportOrderRequests.csvData);
+        } catch (e) {
+          console.error("Error decoding base64 CSV data:", e);
+          showErrorToast("Failed to decode CSV data. Please try again.");
+          return;
+        }
+
+        // Add UTF-8 BOM for Excel compatibility
+        const BOM = "\uFEFF";
+        const blob = new Blob([BOM + csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+
+        // Create a download link
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute("href", url);
+        link.setAttribute(
+          "download",
+          data.exportOrderRequests.fileName || "order-requests.csv"
+        );
+        link.style.visibility = "hidden";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up the URL object
+        URL.revokeObjectURL(url);
+
+        showSuccessToast("Order requests exported successfully!");
+      } else {
+        showErrorToast("Failed to export order requests. No data received.");
+      }
+    } catch (error) {
+      console.error("Error exporting order requests:", error);
+      showErrorToast("Failed to export order requests. Please try again.");
+    }
+  };
+
   const isMobile = useIsMobile();
 
   // Show error message if query fails
@@ -253,6 +320,12 @@ function RequestContent() {
               className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
             />
           </div>
+
+          <ThemeButton
+            label="Export Requests"
+            onClick={handleExportOrderRequests}
+            disabled={exportLoading}
+          />
 
           <Menu>
             <MenuButton className="inline-flex py-1.5 md:py-2 px-2 sm:px-3 cursor-pointer whitespace-nowrap bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">

@@ -23,7 +23,7 @@ import CustomerOrderDetails from "@/app/components/ui/modals/CustomerOrderDetail
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { DOCTOR_ORDERS } from "@/lib/graphql/queries";
-import { CREATE_ORDER, CANCEL_ORDER } from "@/lib/graphql/mutations";
+import { CREATE_ORDER, CANCEL_ORDER, EXPORT_ORDERS } from "@/lib/graphql/mutations";
 import { format } from "date-fns";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/store/hooks";
@@ -141,6 +141,9 @@ function OrderContent() {
   const [createOrderMutation] = useMutation(CREATE_ORDER);
   const [cancelOrderMutation, { loading: cancellingOrder }] =
     useMutation(CANCEL_ORDER);
+
+  // GraphQL mutation to export orders
+  const [exportOrders, { loading: exportLoading }] = useMutation(EXPORT_ORDERS);
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState<{
@@ -289,6 +292,63 @@ function OrderContent() {
     setIsCancelModalOpen(true);
   };
 
+  const handleExportOrders = async () => {
+    try {
+      // Use current filter values from the page
+      const { data } = await exportOrders({
+        variables: {
+          status: selectedStatus || null,
+          patientId: null,
+          myClinic: myClinic ? true : false,
+        },
+      });
+
+      if (data?.exportOrders?.csvData && data?.exportOrders?.fileName) {
+        // API returns base64 encoded CSV data - decode it
+        let csvContent: string;
+        try {
+          // Decode base64 to string
+          csvContent = atob(data.exportOrders.csvData);
+        } catch (e) {
+          console.error("Error decoding base64 CSV data:", e);
+          showErrorToast("Failed to decode CSV data. Please try again.");
+          return;
+        }
+
+        // Add UTF-8 BOM for Excel compatibility
+        const BOM = "\uFEFF";
+        const blob = new Blob([BOM + csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+
+        // Create a download link
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute("href", url);
+        link.setAttribute(
+          "download",
+          data.exportOrders.fileName || "orders.csv"
+        );
+        link.style.visibility = "hidden";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up the URL object
+        URL.revokeObjectURL(url);
+
+        showSuccessToast("Orders exported successfully!");
+      } else {
+        showErrorToast("Failed to export orders. No data received.");
+      }
+    } catch (error) {
+      console.error("Error exporting orders:", error);
+      showErrorToast("Failed to export orders. Please try again.");
+    }
+  };
+
   const handleConfirmCancel = async () => {
     if (!orderToCancel) return;
     try {
@@ -392,6 +452,12 @@ function OrderContent() {
               Clear
             </button>
 
+            <ThemeButton
+              label="Export Orders"
+              onClick={handleExportOrders}
+              disabled={exportLoading}
+              className="w-full sm:w-fit"
+            />
             <ThemeButton
               label="New Order"
               className="w-full sm:w-fit"

@@ -787,6 +787,99 @@ export const CALCULATE_TAX = gql`
     }
   }
 `;
+
+export const EXPORT_PRODUCTS = gql`
+  mutation ExportProducts(
+    $search: String
+    $productType: String
+    $category: String
+    $inStockOnly: Boolean
+    $favoriteProducts: Boolean
+    $markedUp: Boolean
+    $notMarkedUp: Boolean
+    $patientId: ID
+  ) {
+    exportProducts(
+      input: {
+        search: $search
+        productType: $productType
+        category: $category
+        inStockOnly: $inStockOnly
+        favoriteProducts: $favoriteProducts
+        markedUp: $markedUp
+        notMarkedUp: $notMarkedUp
+        patientId: $patientId
+      }
+    ) {
+      clientMutationId
+      csvData
+      fileName
+    }
+  }
+`;
+
+export const EXPORT_PATIENTS = gql`
+  mutation ExportPatients(
+    $status: UserStatusEnum
+    $search: String
+    $pendingInvites: Boolean
+  ) {
+    exportPatients(
+      input: {
+        status: $status
+        search: $search
+        pendingInvites: $pendingInvites
+      }
+    ) {
+      clientMutationId
+      csvData
+      fileName
+    }
+  }
+`;
+
+export const EXPORT_ORDER_REQUESTS = gql`
+  mutation ExportOrderRequests(
+    $status: String
+    $patientId: ID
+    $search: String
+    $reorder: Boolean
+  ) {
+    exportOrderRequests(
+      input: {
+        status: $status
+        patientId: $patientId
+        search: $search
+        reorder: $reorder
+      }
+    ) {
+      clientMutationId
+      csvData
+      fileName
+    }
+  }
+`;
+
+export const EXPORT_ORDERS = gql`
+  mutation ExportOrders(
+    $status: String
+    $patientId: ID
+    $myClinic: Boolean
+  ) {
+    exportOrders(
+      input: {
+        status: $status
+        patientId: $patientId
+        myClinic: $myClinic
+      }
+    ) {
+      clientMutationId
+      csvData
+      fileName
+    }
+  }
+`;
+
 export const EXPORT_DOCTORS = gql`
   mutation ExportDoctors($status: UserStatusEnum, $pendingInvites: Boolean, $search: String) {
     exportDoctors(input: { status: $status, pendingInvites: $pendingInvites, search: $search }) {
@@ -795,6 +888,8 @@ export const EXPORT_DOCTORS = gql`
     }
   }
 `;
+
+
 export const EXPORT_ADMINS = gql`
   mutation ExportAdmins($status: UserStatusEnum, $pendingInvites: Boolean, $search: String) {
     exportAdmins(input: { status: $status, pendingInvites: $pendingInvites, search: $search }) {
@@ -803,4 +898,3 @@ export const EXPORT_ADMINS = gql`
     }
   }
 `;
-
