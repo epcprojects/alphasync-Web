@@ -13,7 +13,7 @@ import {
 } from "@/app/components";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { ALL_PATIENTS } from "@/lib/graphql/queries";
-import { MODIFY_ACCESSS_USER } from "@/lib/graphql/mutations";
+import { MODIFY_ACCESSS_USER, EXPORT_PATIENTS } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -98,6 +98,9 @@ function CustomerContent() {
   const [modifyAccessUser, { loading: modifyLoading }] =
     useMutation(MODIFY_ACCESSS_USER);
 
+  // GraphQL mutation to export patients
+  const [exportPatients, { loading: exportLoading }] = useMutation(EXPORT_PATIENTS);
+
   // Transform GraphQL data to match Patient interface
   const patients = data?.allPatients?.allData ?? [];
   const pageCount = data?.allPatients?.totalPages ?? 0;
@@ -152,6 +155,66 @@ function CustomerContent() {
       });
       setIsResendModalOpen(true);
       console.log("Modal should be opening now");
+    }
+  };
+
+  const handleExportPatients = async () => {
+    try {
+      // Use current filter values from the page
+      const { data } = await exportPatients({
+        variables: {
+          status:
+            selectedStatus === "All Status"
+              ? undefined
+              : (selectedStatus.toUpperCase() as any),
+          search: search || null,
+          pendingInvites: selectedTabIndex === 1 ? true : undefined,
+        },
+      });
+
+      if (data?.exportPatients?.csvData && data?.exportPatients?.fileName) {
+        // API returns base64 encoded CSV data - decode it
+        let csvContent: string;
+        try {
+          // Decode base64 to string
+          csvContent = atob(data.exportPatients.csvData);
+        } catch (e) {
+          console.error("Error decoding base64 CSV data:", e);
+          showErrorToast("Failed to decode CSV data. Please try again.");
+          return;
+        }
+
+        // Add UTF-8 BOM for Excel compatibility
+        const BOM = "\uFEFF";
+        const blob = new Blob([BOM + csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+
+        // Create a download link
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute("href", url);
+        link.setAttribute(
+          "download",
+          data.exportPatients.fileName || "patients.csv"
+        );
+        link.style.visibility = "hidden";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up the URL object
+        URL.revokeObjectURL(url);
+
+        showSuccessToast("Patients exported successfully!");
+      } else {
+        showErrorToast("Failed to export patients. No data received.");
+      }
+    } catch (error) {
+      console.error("Error exporting patients:", error);
+      showErrorToast("Failed to export patients. Please try again.");
     }
   };
 
@@ -212,6 +275,11 @@ function CustomerContent() {
               </MenuItems>
             </Menu>
 
+            <ThemeButton
+              label="Export Customers"
+              onClick={handleExportPatients}
+              disabled={exportLoading}
+            />
             <ThemeButton
               icon={<UserAddIcon />}
               label={isMobile ? "Add Customer" : "Add New Customer"}

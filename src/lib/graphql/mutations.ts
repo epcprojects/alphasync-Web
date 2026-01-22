@@ -817,3 +817,23 @@ export const EXPORT_PRODUCTS = gql`
     }
   }
 `;
+
+export const EXPORT_PATIENTS = gql`
+  mutation ExportPatients(
+    $status: UserStatusEnum
+    $search: String
+    $pendingInvites: Boolean
+  ) {
+    exportPatients(
+      input: {
+        status: $status
+        search: $search
+        pendingInvites: $pendingInvites
+      }
+    ) {
+      clientMutationId
+      csvData
+      fileName
+    }
+  }
+`;
