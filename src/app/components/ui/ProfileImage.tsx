@@ -31,7 +31,7 @@ export default function ProfileImage({
 
   const defaultFallbackClassName =
     fallbackClassName ||
-    `md:w-10 md:h-10 shrink-0 ${bg} ${text} flex items-center font-medium justify-center rounded-full`;
+    `xl:w-10 w-8 h-8 xl:h-10 shrink-0 ${bg} ${text} xl:text-base text-sm flex items-center font-medium justify-center rounded-full`;
 
   // Show fallback if no image URL or if image failed to load
   if (!imageUrl || imageError) {

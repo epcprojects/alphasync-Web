@@ -104,9 +104,11 @@ import RevenueIcon from "./RevenueIcon";
 import ShoppingCardDualIcon from "./ShoppingCardDualIcon";
 import AccountFilledIcon from "./AccountFilledIcon";
 import CalendarDotsIcon from "./CalendarDotsIcon";
+import EllipsisVertical from "./EllipsisVertical";
 
 
 export {
+    EllipsisVertical,
     AccountFilledIcon,
     CalendarDotsIcon,
     PercentIcon,
