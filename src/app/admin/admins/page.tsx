@@ -96,9 +96,9 @@ function AdminsContent() {
     useMutation(MODIFY_ACCESSS_USER);
 
   // Transform GraphQL data to match Admin interface
-  const admins = data?.allAdmins.allData;
+  const admins = data?.allAdmins?.allData ?? [];
 
-  const pageCount = data?.allAdmins.totalPages;
+  const pageCount = data?.allAdmins?.totalPages ?? 0;
 
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
@@ -268,9 +268,11 @@ function AdminsContent() {
                     <Skeleton className="w-full h-12 rounded-full" />
                     <Skeleton className="w-full h-12 rounded-full" />
                   </div>
+                ) : admins.length === 0 ? (
+                  <EmptyState />
                 ) : (
                   <>
-                    {admins?.map((admin: UserAttributes) => (
+                    {admins.map((admin: UserAttributes) => (
                       <AdminListView
                         key={admin.id}
                         admin={admin}
@@ -282,9 +284,8 @@ function AdminsContent() {
                     ))}
                   </>
                 )}
-                {(!admins || admins.length === 0) && !loading && <EmptyState />}
 
-                {pageCount && pageCount > 1 && (
+                {pageCount > 1 && (
                   <Pagination
                     currentPage={currentPage}
                     totalPages={pageCount}
@@ -322,9 +323,11 @@ function AdminsContent() {
                     <Skeleton className="w-full h-12 rounded-full" />
                     <Skeleton className="w-full h-12 rounded-full" />
                   </div>
+                ) : admins.length === 0 ? (
+                  <EmptyState />
                 ) : (
                   <>
-                    {admins?.map((admin: UserAttributes) => (
+                    {admins.map((admin: UserAttributes) => (
                       <AdminListView
                         key={admin.id}
                         admin={admin}
@@ -336,9 +339,8 @@ function AdminsContent() {
                     ))}
                   </>
                 )}
-                {(!admins || admins.length === 0) && !loading && <EmptyState />}
 
-                {pageCount && pageCount > 1 && (
+                {pageCount > 1 && (
                   <Pagination
                     currentPage={currentPage}
                     totalPages={pageCount}

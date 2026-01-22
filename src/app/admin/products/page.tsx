@@ -46,7 +46,7 @@ function ProductsContent() {
   const [currentPage, setCurrentPage] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
   const [showOutOfStock, setShowOutOfStock] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const isMobile = useIsMobile();
   const itemsPerPage = 10;
@@ -80,7 +80,7 @@ function ProductsContent() {
         page: currentPage + 1, // GraphQL uses 1-based pagination
         perPage: itemsPerPage,
         inStockOnly: showOutOfStock ? false : undefined,
-        category: selectedCategory || undefined,
+        category: selectedCategory === null ? null : selectedCategory || undefined,
       },
       fetchPolicy: "network-only",
     }
@@ -126,6 +126,7 @@ function ProductsContent() {
   };
 
   const orderStatuses = [
+    { label: "All Categories", value: null},
     { label: "Blood", value: "Blood" },
     { label: "Immunity", value: "Immunity" },
     { label: "Recovery", value: "Recovery" },
@@ -192,7 +193,7 @@ function ProductsContent() {
           <div className="flex items-center gap-1 p-1 rounded-full sm:bg-transparent sm:p-0 sm:shadow-none bg-white w-full shadow-table">
             <Menu>
               <MenuButton className="inline-flex py-2 px-3 cursor-pointer whitespace-nowrap bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-                {selectedCategory ? selectedCategory : "All Categories"}
+                {orderStatuses.find((s) => s.value === selectedCategory)?.label || "All Categories"}
                 <ArrowDownIcon fill="#717680" />
               </MenuButton>
 
@@ -205,14 +206,7 @@ function ProductsContent() {
                   <MenuItem key={status.label}>
                     <button
                       onClick={() => {
-                        setSelectedCategory(status.label);
-                        // setCurrentPage(0);
-                        // refetchOrderRequests({
-                        //   search: search || undefined,
-                        //   status: status.value,
-                        //   page: 1,
-                        //   perPage: itemsPerPage,
-                        // });
+                        setSelectedCategory(status.value);
                       }}
                       className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full`}
                     >

@@ -382,7 +382,7 @@ function PendingPayments() {
                 className="ps-8 md:ps-10 pe-3 md:pe-4 py-2 bg-gray-100 w-full md:min-w-68 outline-none focus:bg-white focus:ring focus:ring-gray-200 rounded-full"
               />
             </div>
-            <Menu>
+            {/* <Menu>
               <Tooltip content="Filters">
                 <MenuButton
                   onClick={() => {
@@ -418,9 +418,9 @@ function PendingPayments() {
                   </MenuItem>
                 ))}
               </MenuItems>
-            </Menu>
+            </Menu> */}
           </div>
-          {showFilterDropdown && (
+          {/* {showFilterDropdown && (
             <div
               className="block md:hidden fixed inset-0 z-50 bg-black/40 outline-none"
               onClick={() => {
@@ -467,7 +467,7 @@ function PendingPayments() {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </div>
       <div className="flex flex-col gap-4">
