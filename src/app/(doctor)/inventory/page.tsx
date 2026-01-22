@@ -27,7 +27,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
-import { CREATE_ORDER, TOGGLE_FAVOURITE, MARK_PRODUCT_NOT_FOR_SALE } from "@/lib/graphql/mutations";
+import { CREATE_ORDER, TOGGLE_FAVOURITE, MARK_PRODUCT_NOT_FOR_SALE, EXPORT_PRODUCTS } from "@/lib/graphql/mutations";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import {
   AllProductsResponse,
@@ -130,6 +130,9 @@ function InventoryContent() {
   // GraphQL mutation to mark product not for sale (revert to base, remove from customer catalog)
   const [markProductNotForSale] = useMutation(MARK_PRODUCT_NOT_FOR_SALE);
 
+  // GraphQL mutation to export products
+  const [exportProducts, { loading: exportLoading }] = useMutation(EXPORT_PRODUCTS);
+
   // Transform GraphQL product data to match the expected format
   const products: Product[] =
     productsData?.allProducts.allData?.map(transformGraphQLProduct) || [];
@@ -172,6 +175,70 @@ function InventoryContent() {
     } catch (error) {
       console.error("Error removing product from sale:", error);
       showErrorToast("Failed to remove from sale. Please try again.");
+    }
+  };
+
+  const handleExportProducts = async () => {
+    try {
+      // Use current filter values from the page
+      const { data } = await exportProducts({
+        variables: {
+          search: debouncedSearch || null,
+          productType: null,
+          category: null,
+          inStockOnly: showOutOfStock ? false : undefined,
+          favoriteProducts: showFavourites ? true : undefined,
+          markedUp:
+            markupFilter === "Marked Up"
+              ? true
+              : markupFilter === "Not Marked Up"
+              ? false
+              : undefined,
+          notMarkedUp: markupFilter === "Not Marked Up" ? true : undefined,
+          patientId: null,
+        },
+      });
+      
+      if (data?.exportProducts?.csvData && data?.exportProducts?.fileName) {
+        // API returns base64 encoded CSV data - decode it
+        let csvContent: string;
+        try {
+          // Decode base64 to string
+          csvContent = atob(data.exportProducts.csvData);
+        } catch (e) {
+          console.error("Error decoding base64 CSV data:", e);
+          showErrorToast("Failed to decode CSV data. Please try again.");
+          return;
+        }
+        
+        // Add UTF-8 BOM for Excel compatibility
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csvContent], { 
+          type: 'text/csv;charset=utf-8;' 
+        });
+        
+        // Create a download link
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', data.exportProducts.fileName || 'products.csv');
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the URL object
+        URL.revokeObjectURL(url);
+        
+        showSuccessToast("Products exported successfully!");
+      } else {
+        showErrorToast("Failed to export products. No data received.");
+      }
+    } catch (error) {
+      console.error("Error exporting products:", error);
+      showErrorToast("Failed to export products. Please try again.");
     }
   };
 
@@ -257,6 +324,11 @@ function InventoryContent() {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap md:justify-end justify-center">
+          <ThemeButton
+            label="Export Products"
+            onClick={handleExportProducts}
+            disabled={exportLoading}
+          />
           <ThemeButton
             label="Apply Markup"
             onClick={() => setIsBlanketMarkupModalOpen(true)}

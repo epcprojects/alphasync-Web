@@ -787,3 +787,33 @@ export const CALCULATE_TAX = gql`
     }
   }
 `;
+
+export const EXPORT_PRODUCTS = gql`
+  mutation ExportProducts(
+    $search: String
+    $productType: String
+    $category: String
+    $inStockOnly: Boolean
+    $favoriteProducts: Boolean
+    $markedUp: Boolean
+    $notMarkedUp: Boolean
+    $patientId: ID
+  ) {
+    exportProducts(
+      input: {
+        search: $search
+        productType: $productType
+        category: $category
+        inStockOnly: $inStockOnly
+        favoriteProducts: $favoriteProducts
+        markedUp: $markedUp
+        notMarkedUp: $notMarkedUp
+        patientId: $patientId
+      }
+    ) {
+      clientMutationId
+      csvData
+      fileName
+    }
+  }
+`;
