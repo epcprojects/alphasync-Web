@@ -68,8 +68,8 @@ function CustomerContent() {
 
   const statusOptions = [
     { label: "All Status", value: null },
-    { label: "Accepted", value: "ACCEPTED" },
-    { label: "Pending", value: "PENDING" },
+    { label: "Active", value: "ACTIVE" },
+    { label: "Inactive", value: "INACTIVE" },
   ];
 
   const itemsPerPage = 10;
@@ -99,8 +99,8 @@ function CustomerContent() {
     useMutation(MODIFY_ACCESSS_USER);
 
   // Transform GraphQL data to match Patient interface
-  const patients = data?.allPatients.allData;
-  const pageCount = data?.allPatients.totalPages;
+  const patients = data?.allPatients?.allData ?? [];
+  const pageCount = data?.allPatients?.totalPages ?? 0;
 
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
@@ -265,9 +265,11 @@ function CustomerContent() {
                     <Skeleton className="w-full h-12 rounded-full" />
                     <Skeleton className="w-full h-12 rounded-full" />
                   </div>
+                ) : patients.length === 0 ? (
+                  <EmptyState />
                 ) : (
                   <>
-                    {patients?.map((patient: UserAttributes) => (
+                    {patients.map((patient: UserAttributes) => (
                       <CustomerDatabaseView
                         onRowClick={() =>
                           router.push(`/customers/${patient.id}`)
@@ -285,11 +287,7 @@ function CustomerContent() {
                   </>
                 )}
 
-                {(!patients || patients.length === 0) && !loading && (
-                  <EmptyState />
-                )}
-
-                {pageCount && pageCount > 1 && (
+                {pageCount > 1 && (
                   <Pagination
                     currentPage={currentPage}
                     totalPages={pageCount}
@@ -324,9 +322,11 @@ function CustomerContent() {
                     <Skeleton className="w-full h-12 rounded-full" />
                     <Skeleton className="w-full h-12 rounded-full" />
                   </div>
+                ) : patients.length === 0 ? (
+                  <EmptyState />
                 ) : (
                   <>
-                    {patients?.map((patient: UserAttributes) => (
+                    {patients.map((patient: UserAttributes) => (
                       <CustomerDatabaseView
                         onRowClick={() =>
                           router.push(`/customers/${patient.id}`)
@@ -344,11 +344,7 @@ function CustomerContent() {
                   </>
                 )}
 
-                {(!patients || patients.length === 0) && !loading && (
-                  <EmptyState />
-                )}
-
-                {pageCount && pageCount > 1 && (
+                {pageCount > 1 && (
                   <Pagination
                     currentPage={currentPage}
                     totalPages={pageCount}

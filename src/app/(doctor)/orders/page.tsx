@@ -96,11 +96,10 @@ function OrderContent() {
     doctorAddress?: string;
   } | null>(null);
   const orderStatuses = [
-    { label: "Delivered", color: "before:bg-green-500" },
-    { label: "Processing", color: "before:bg-amber-500" },
-    { label: "Pending", color: "before:bg-red-500" },
-    { label: "Shipped", color: "before:bg-indigo-500" },
-    { label: "Cancelled", color: "before:bg-gray-600" },
+    { label: "All Status", value: null },
+    { label: "Pending", value: "PENDING", color: "before:bg-red-500" },
+    { label: "Canceled", value: "CANCELED", color: "before:bg-gray-600" },
+    { label: "Paid", value: "PAID", color: "before:bg-green-500" },
   ];
 
   const [range, setRange] = useState<Selection>({
@@ -110,7 +109,7 @@ function OrderContent() {
   });
 
   const itemsPerPage = 10;
-  const [selectedStatus, setSelectedStatus] = useState<string>("All Status");
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
 
   // Tab state for All Orders/My Clinics
@@ -130,7 +129,7 @@ function OrderContent() {
     DOCTOR_ORDERS,
     {
       variables: {
-        status: selectedStatus === "All Status" ? undefined : selectedStatus,
+        status: selectedStatus === null ? null : selectedStatus || undefined,
         page: currentPage + 1, // GraphQL pagination is 1-based
         perPage: itemsPerPage,
         myClinic: myClinic,
@@ -159,7 +158,7 @@ function OrderContent() {
   };
 
   const isFiltered =
-    selectedStatus !== "All Status" ||
+    selectedStatus !== null ||
     range.startDate.getTime() !== defaultRange.startDate.getTime();
 
   // Refetch data when tab or status changes
@@ -349,7 +348,7 @@ function OrderContent() {
             /> */}
             <Menu>
               <MenuButton className="inline-flex whitespace-nowrap py-1.5 md:w-fit w-full md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline justify-between data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-                {selectedStatus} <ArrowDownIcon fill="#717680" />
+                {orderStatuses.find((s) => s.value === selectedStatus)?.label || "All Status"} <ArrowDownIcon fill="#717680" />
               </MenuButton>
 
               <MenuItems
@@ -357,27 +356,17 @@ function OrderContent() {
                 anchor="bottom end"
                 className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
               >
-                <MenuItem>
-                  <button
-                    onClick={() => {
-                      setSelectedStatus("All Status");
-                      setCurrentPage(0);
-                      refetch();
-                    }}
-                    className="text-gray-500 hover:bg-gray-100 w-full py-2 px-2.5 rounded-md text-xs md:text-sm text-start"
-                  >
-                    All Status
-                  </button>
-                </MenuItem>
                 {orderStatuses.map((status) => (
                   <MenuItem key={status.label}>
                     <button
                       onClick={() => {
-                        setSelectedStatus(status.label);
+                        setSelectedStatus(status.value);
                         setCurrentPage(0);
                         refetch();
                       }}
-                      className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${status.color}`}
+                      className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full ${
+                        status.color ? `before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${status.color}` : ""
+                      }`}
                     >
                       {status.label}
                     </button>
@@ -389,7 +378,7 @@ function OrderContent() {
             <button
               disabled={!isFiltered}
               onClick={() => {
-                setSelectedStatus("All Status");
+                setSelectedStatus(null);
                 setRange({
                   startDate: new Date(2000, 0, 1),
                   endDate: new Date(),
