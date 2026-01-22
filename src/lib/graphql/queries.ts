@@ -115,6 +115,12 @@ export const ALL_PRODUCTS_INVENTORY = gql`
           shopifyVariantId
           sku
         }
+        tierPricing {
+          id
+          endCount
+          startCount
+          tieredPrice
+        }  
       }
       count
       nextPage
@@ -222,12 +228,26 @@ export const FETCH_PRODUCT = gql`
       vendor
       price
       tags
+      tierPricing {
+        endCount
+        startCount
+        tieredPrice
+        id
+      }
       variants {
         price
         id
         shopifyVariantId
         sku
       }
+    }
+  }
+`;
+export const FETCH_TIER_PRICING = gql`
+  query FetchTierPricing($productId: ID!, $quantity: Int!) {
+    fetchTierPricing(productId: $productId, quantity: $quantity) {
+      tieredPrice
+      id
     }
   }
 `;
