@@ -20,7 +20,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useRouter } from "next/navigation";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import Tooltip from "@/app/components/ui/tooltip";
-import { SYNC_PRODUCTS } from "@/lib/graphql/mutations";
+import { SYNC_PRODUCTS, EXPORT_PRODUCTS } from "@/lib/graphql/mutations";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import {
   AllProductsResponse,
@@ -90,6 +90,9 @@ function ProductsContent() {
   // GraphQL mutation for syncing products
   const [syncProducts] = useMutation<SyncProductsResponse>(SYNC_PRODUCTS);
 
+  // GraphQL mutation to export products
+  const [exportProducts, { loading: exportLoading }] = useMutation(EXPORT_PRODUCTS);
+
   // Transform GraphQL product data
   const products: Product[] =
     data?.allProducts.allData?.map(transformGraphQLProduct) || [];
@@ -122,6 +125,68 @@ function ProductsContent() {
       showErrorToast("Failed to sync products. Please try again.");
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleExportProducts = async () => {
+    try {
+      // Use current filter values from the page
+      const { data } = await exportProducts({
+        variables: {
+          search: debouncedSearch || null,
+          productType: null,
+          category: selectedCategory || null,
+          inStockOnly: showOutOfStock ? false : undefined,
+          favoriteProducts: undefined,
+          markedUp: undefined,
+          notMarkedUp: undefined,
+          patientId: null,
+        },
+      });
+
+      if (data?.exportProducts?.csvData && data?.exportProducts?.fileName) {
+        // API returns base64 encoded CSV data - decode it
+        let csvContent: string;
+        try {
+          // Decode base64 to string
+          csvContent = atob(data.exportProducts.csvData);
+        } catch (e) {
+          console.error("Error decoding base64 CSV data:", e);
+          showErrorToast("Failed to decode CSV data. Please try again.");
+          return;
+        }
+
+        // Add UTF-8 BOM for Excel compatibility
+        const BOM = "\uFEFF";
+        const blob = new Blob([BOM + csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+
+        // Create a download link
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute("href", url);
+        link.setAttribute(
+          "download",
+          data.exportProducts.fileName || "products.csv"
+        );
+        link.style.visibility = "hidden";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up the URL object
+        URL.revokeObjectURL(url);
+
+        showSuccessToast("Products exported successfully!");
+      } else {
+        showErrorToast("Failed to export products. No data received.");
+      }
+    } catch (error) {
+      console.error("Error exporting products:", error);
+      showErrorToast("Failed to export products. Please try again.");
     }
   };
 
@@ -231,6 +296,13 @@ function ProductsContent() {
                 />
               </button>
             </Tooltip>
+
+            <ThemeButton
+              label="Export Products"
+              onClick={handleExportProducts}
+              disabled={exportLoading}
+              className="w-full sm:w-fit"
+            />
 
             {/* <ThemeButton
               label={
