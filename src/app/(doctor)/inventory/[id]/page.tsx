@@ -597,14 +597,14 @@ export default function PostDetail() {
 
               <div className="flex flex-col sm:flex-row gap-2">
                 {product.customPrice != null && product.customPrice !== undefined && (
-                  <button
-                    type="button"
+                  <ThemeButton
                     onClick={handleRemoveFromSale}
+                    variant="outline"
+                    className="flex-1"
+                    heightClass="h-10 md:h-11"
                     disabled={removeFromSaleLoading}
-                    className="inline-flex items-center justify-center px-4 py-2.5 h-11 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {removeFromSaleLoading ? "Removing…" : "Remove from Sale"}
-                  </button>
+                    label={removeFromSaleLoading ? "Removing…" : "Remove from Sale"}
+                  />
                 )}
                 <ThemeButton
                   label="Order"
