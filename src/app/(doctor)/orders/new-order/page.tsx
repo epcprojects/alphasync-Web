@@ -299,6 +299,7 @@ const Page = () => {
     const timer = setTimeout(() => {
       if (
         isClinicOrder &&
+        preservedProduct && // Ensure product is still selected in form
         selectedProductData?.productId &&
         selectedProductData?.tierPricing &&
         selectedProductData.tierPricing.length > 0 &&
@@ -314,7 +315,7 @@ const Page = () => {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [debouncedQuantity, isClinicOrder, selectedProductData, fetchTierPricing]);
+  }, [debouncedQuantity, isClinicOrder, selectedProductData, preservedProduct, fetchTierPricing]);
 
   // Update price when tier pricing data is received
   useEffect(() => {
@@ -651,6 +652,8 @@ const Page = () => {
               handleAddItem(values);
               setPreservedProduct(""); // Clear preserved product when item is added
               setPreservedPrice(0);
+              setSelectedProductData(null); // Clear selected product data when item is added
+              setDebouncedQuantity(null); // Clear debounced quantity to prevent API calls
               resetForm({
                 values: {
                   customer: values.customer,
@@ -830,6 +833,9 @@ const Page = () => {
                         // Reset price if no product selected
                         setPreservedPrice(0);
                         setFieldValue("price", 0);
+                        setSelectedProductData(null);
+                        setDebouncedQuantity(null);
+                        updatePricingInfo(null);
                       }
                     }}
                   />
@@ -955,7 +961,9 @@ const Page = () => {
                             
                             // Set debounced quantity for tier pricing API call
                             // This will trigger the useEffect that calls the API
+                            // Only trigger if product is still selected in form
                             if (
+                              preservedProduct &&
                               isClinicOrder &&
                               selectedProductData?.tierPricing &&
                               selectedProductData.tierPricing.length > 0
