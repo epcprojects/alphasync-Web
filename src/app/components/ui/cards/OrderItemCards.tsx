@@ -66,7 +66,6 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
   requestStatus,
   paymentRequest,
 }) => {
-  console.log("item", item);
 
   // Check if there's a discount (tieredPrice exists and differs from product price)
   const hasDiscount =
