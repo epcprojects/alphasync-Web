@@ -25,6 +25,16 @@ import { useMutation } from "@apollo/client";
 import { PROCESS_PAYMENT, CALCULATE_TAX } from "@/lib/graphql/mutations";
 import { useAppSelector } from "@/lib/store/hooks";
 
+// Helper function to format numbers with commas
+const formatPrice = (value: number | string): string => {
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
+  if (isNaN(numValue)) return String(value);
+  return numValue.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 type OrderItem = {
   id: string | number;
   medicineName: string;
@@ -862,11 +872,11 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
           ? "Processing..."
           : isMobile && !request
           ? showForm
-            ? `Pay $${typeof total === "number" ? total.toFixed(2) : total}`
+            ? `Pay $${typeof total === "number" ? formatPrice(total) : formatPrice(parseFloat(String(total)) || 0)}`
             : "Continue"
           : request || isMobile
           ? "Pay Now"
-          : `Pay $${typeof total === "number" ? total.toFixed(2) : total}`
+          : `Pay $${typeof total === "number" ? formatPrice(total) : formatPrice(parseFloat(String(total)) || 0)}`
       }
       btnFullWidth={true}
     >
@@ -922,7 +932,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                             x{item.quantity}
                           </span>
                           <span className="text-sm font-semibold text-primary">
-                            ${item.price.toFixed(2)}
+                            ${formatPrice(item.price)}
                           </span>
                         </div>
                       </div>
@@ -933,7 +943,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                               Normal Price per Item:
                             </span>
                             <span className="text-gray-800 font-medium">
-                              ${normalPrice.toFixed(2)}
+                              ${formatPrice(normalPrice)}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -941,7 +951,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                               Discounted Price:
                             </span>
                             <span className="text-gray-800 font-medium">
-                              ${discountedPrice.toFixed(2)}
+                              ${formatPrice(discountedPrice)}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -949,7 +959,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                               Total Before Discount:
                             </span>
                             <span className="text-gray-800 font-medium">
-                              ${totalBeforeDiscount.toFixed(2)}
+                              ${formatPrice(totalBeforeDiscount)}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -957,7 +967,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                               Total With Discount:
                             </span>
                             <span className="text-primary font-semibold">
-                              ${totalWithDiscount.toFixed(2)}
+                              ${formatPrice(totalWithDiscount)}
                             </span>
                           </div>
                         </div>
@@ -972,7 +982,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     Sub total
                   </span>
                   <span className="text-sm font-medium text-gray-800">
-                    ${order?.subtotalPrice?.toFixed(2) ?? subTotal.toFixed(2)}
+                    ${formatPrice(order?.subtotalPrice ?? subTotal)}
                   </span>
                 </div>
                 {orderDiscountCalculation.hasAnyDiscount && (
@@ -982,7 +992,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                         Total Before Discount:
                       </span>
                       <span className="text-sm font-medium text-gray-800">
-                        ${orderDiscountCalculation.totalBeforeDiscount.toFixed(2)}
+                        ${formatPrice(orderDiscountCalculation.totalBeforeDiscount)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -990,7 +1000,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                         Total With Discount:
                       </span>
                       <span className="text-sm font-semibold text-primary">
-                        ${orderDiscountCalculation.totalWithDiscount.toFixed(2)}
+                        ${formatPrice(orderDiscountCalculation.totalWithDiscount)}
                       </span>
                     </div>
                   </>
@@ -1005,7 +1015,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     )}
                   </span>
                   <span className="text-sm font-medium text-gray-800">
-                    ${taxAmount.toFixed(2)}
+                    ${formatPrice(taxAmount)}
                   </span>
                 </div>
                 {taxError && (
@@ -1022,7 +1032,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   Total
                 </span>
                 <span className="text-base font-semibold text-primary">
-                  ${typeof total === "number" ? total.toFixed(2) : total}
+                  ${typeof total === "number" ? formatPrice(total) : formatPrice(parseFloat(String(total)) || 0)}
                 </span>
               </div>
             </div>
