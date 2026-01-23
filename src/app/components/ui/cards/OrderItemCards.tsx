@@ -23,6 +23,10 @@ export interface OrderItemProps {
     tags?: string[];
     imageUrl?: string;
     primaryImage?: string;
+    product?: {
+      price?: number | null;
+    } | null;
+    tieredPrice?: number | null;
   };
   requestStatus?: boolean;
   paymentRequest?: boolean;
@@ -52,6 +56,22 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
   requestStatus,
   paymentRequest,
 }) => {
+  console.log("item", item);
+
+  // Check if there's a discount (tieredPrice exists and differs from product price)
+  const hasDiscount =
+    item.tieredPrice !== undefined &&
+    item.tieredPrice !== null &&
+    item.product?.price !== undefined &&
+    item.product.price !== null &&
+    item.tieredPrice !== item.product.price;
+
+  const normalPrice = item.product?.price ?? item.price;
+  const discountedPrice = item.tieredPrice ?? item.price;
+  const quantity = item.quantity ?? 1;
+  const totalBeforeDiscount = normalPrice * quantity;
+  const totalWithDiscount = discountedPrice * quantity;
+
   const details =
     requestStatus && !paymentRequest
       ? [
@@ -73,7 +93,12 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
         ]
       : [
           { label: "Quantity", value: item.quantity },
-          { label: "Price", value: item.price.toFixed(2) || 120 },
+          ...(hasDiscount
+            ? [
+              { label: "Normal Price per Item:", value: `$${normalPrice.toFixed(2)}` },
+              { label: "Discounted Price:", value: `$${discountedPrice.toFixed(2)}` },
+            ]
+            : [{ label: "Price", value: `$${item.price.toFixed(2)}` || "120" }]),
         ];
 
   const notes: Note[] = [
@@ -197,21 +222,43 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                 </span>
               </div>
             ))}
-            <div className="flex justify-between">
-              <span className="text-base font-medium text-gray-800">
-                {requestStatus && !paymentRequest ? "Price" : "Total"}
-              </span>
-              {item.quantity && (
-                <span className="text-base font-semibold text-primary">
-                  ${(item.price * item.quantity).toFixed(2)}
+            {hasDiscount && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-sm font-normal text-gray-800">
+                    Total Before Discount:
+                  </span>
+                  <span className="text-sm font-medium text-gray-800">
+                    ${totalBeforeDiscount.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-base font-medium text-gray-800">
+                    Total With Discount:
+                  </span>
+                  <span className="text-base font-semibold text-primary">
+                    ${totalWithDiscount.toFixed(2)}
+                  </span>
+                </div>
+              </>
+            )}
+            {!hasDiscount && (
+              <div className="flex justify-between">
+                <span className="text-base font-medium text-gray-800">
+                  {requestStatus && !paymentRequest ? "Price" : "Total"}
                 </span>
-              )}
-              {requestStatus && paymentRequest && (
-                <span className="text-base font-semibold text-primary">
-                  ${(item.price + item.price * 0.08).toFixed(2)}
-                </span>
-              )}
-            </div>
+                {item.quantity && (
+                  <span className="text-base font-semibold text-primary">
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </span>
+                )}
+                {requestStatus && paymentRequest && (
+                  <span className="text-base font-semibold text-primary">
+                    ${(item.price + item.price * 0.08).toFixed(2)}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -226,14 +273,36 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
               {requestStatus ? item.strength : item.quantity}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-xs font-normal text-gray-800">
-              {requestStatus ? "Dosage Form:" : "Price"}
-            </span>
-            <span className="text-xs font-medium text-gray-800">
-              {requestStatus ? "Injectable" : `${item.price.toFixed(2)}`}
-            </span>
-          </div>
+          {!hasDiscount && (
+            <div className="flex justify-between">
+              <span className="text-xs font-normal text-gray-800">
+                {requestStatus ? "Dosage Form:" : "Price"}
+              </span>
+              <span className="text-xs font-medium text-gray-800">
+                {requestStatus ? "Injectable" : `${item.price.toFixed(2)}`}
+              </span>
+            </div>
+          )}
+          {hasDiscount && (
+            <>
+              <div className="flex justify-between">
+                <span className="text-xs font-normal text-gray-800">
+                  Normal Price per Item:
+                </span>
+                <span className="text-xs font-medium text-gray-800">
+                  ${normalPrice.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-xs font-normal text-gray-800">
+                  Discounted Price:
+                </span>
+                <span className="text-xs font-medium text-gray-800">
+                  ${discountedPrice.toFixed(2)}
+                </span>
+              </div>
+            </>
+          )}
           {requestStatus && (
             <>
               {paymentRequest ? (
@@ -293,21 +362,43 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
               )}
             </>
           )}
-          <div className="flex justify-between border-b border-b-gray-200 pb-4">
-            <span className="text-base font-medium text-gray-800">
-              {requestStatus && !paymentRequest ? "Price" : "Total"}
-            </span>
-            {item.quantity && (
-              <span className="text-base font-semibold text-primary">
-                ${(item.price * item.quantity).toFixed(2)}
+          {hasDiscount && (
+            <>
+              <div className="flex justify-between">
+                <span className="text-xs font-normal text-gray-800">
+                  Total Before Discount:
+                </span>
+                <span className="text-xs font-medium text-gray-800">
+                  ${totalBeforeDiscount.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-b-gray-200 pb-4">
+                <span className="text-base font-medium text-gray-800">
+                  Total With Discount:
+                </span>
+                <span className="text-base font-semibold text-primary">
+                  ${totalWithDiscount.toFixed(2)}
+                </span>
+              </div>
+            </>
+          )}
+          {!hasDiscount && (
+            <div className="flex justify-between border-b border-b-gray-200 pb-4">
+              <span className="text-base font-medium text-gray-800">
+                {requestStatus && !paymentRequest ? "Price" : "Total"}
               </span>
-            )}
-            {requestStatus && !item.quantity && (
-              <span className="text-base font-semibold text-primary">
-                ${item.price}
-              </span>
-            )}
-          </div>
+              {item.quantity && (
+                <span className="text-base font-semibold text-primary">
+                  ${(item.price * item.quantity).toFixed(2)}
+                </span>
+              )}
+              {requestStatus && !item.quantity && (
+                <span className="text-base font-semibold text-primary">
+                  ${item.price}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
       {notes.length > 0 && (

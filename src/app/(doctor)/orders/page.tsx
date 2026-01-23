@@ -53,8 +53,12 @@ interface DoctorOrdersResponse {
         id: string;
         quantity: number;
         price: number;
+        effectivePrice?: number;
+        tieredPrice?: number;
+        customPrice?: number;
         product: {
           title: string;
+          price: number;
         };
       }[];
       totalPrice: number;
@@ -91,6 +95,10 @@ function OrderContent() {
       quantity: number;
       price: number;
       amount: string;
+      product: {
+        price?: number;
+      };
+      tieredPrice?: number;
     }[];
     status?: string;
     doctorAddress?: string;
@@ -250,6 +258,10 @@ function OrderContent() {
         quantity: item.quantity,
         price: item.price,
         amount: `$${(item.price * item.quantity).toFixed(2)}`,
+        product: {
+          price: item.product.price,
+        },
+        tieredPrice: item.tieredPrice,
       })),
     });
     setIsDetailModalOpen(true);
@@ -282,6 +294,10 @@ function OrderContent() {
         quantity: item.quantity,
         price: item.price,
         amount: `$${(item.price * item.quantity).toFixed(2)}`,
+        product: {
+          price: item.product.price,
+        },
+        tieredPrice: item.tieredPrice,
       })),
     });
     setIsPaymentModalOpen(true);
@@ -758,6 +774,10 @@ function OrderContent() {
               quantity: item.quantity,
               price: item.price,
               amount: item.amount,
+              product: {
+                price: item.product.price,
+              },
+              tieredPrice: item.tieredPrice,
             })),
           }}
           onClick={async () => {

@@ -144,8 +144,12 @@ export const DOCTOR_ORDERS = gql`
           id
           quantity
           price
+          effectivePrice
+          tieredPrice
+          customPrice
           product {
             title
+            price
           }
         }
         totalPrice

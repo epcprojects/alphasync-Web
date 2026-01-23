@@ -13,9 +13,10 @@ interface OrderItem {
   amount: string;
   description?: string;
   imageUrl?: string;
-
+  tieredPrice?: number;          
   product?: {
     primaryImage?: string;
+    price?: number;
   };
 }
 

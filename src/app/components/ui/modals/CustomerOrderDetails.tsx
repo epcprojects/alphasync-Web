@@ -11,6 +11,10 @@ type OrderItem = {
   quantity: number;
   price: number;
   description?: string;
+  product?: {
+    price?: number | null;
+  } | null;
+  tieredPrice?: number | null;
 };
 
 type order = {
@@ -56,6 +60,36 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
     normalizeAddress(order.shippingAddress) ??
     normalizeAddress(order.patient?.address ?? undefined) ??
     "Address not available";
+
+  // Calculate order-level discount totals
+  const orderDiscountCalculation = order.orderItems.reduce(
+    (acc, item) => {
+      const hasDiscount =
+        item.tieredPrice !== undefined &&
+        item.tieredPrice !== null &&
+        item.product?.price !== undefined &&
+        item.product.price !== null &&
+        item.tieredPrice !== item.product.price;
+
+      if (hasDiscount) {
+        const normalPrice = item.product!.price!;
+        const discountedPrice = item.tieredPrice!;
+        const quantity = item.quantity || 1;
+        acc.totalBeforeDiscount += normalPrice * quantity;
+        acc.totalWithDiscount += discountedPrice * quantity;
+        acc.hasAnyDiscount = true;
+      } else {
+        // For items without discount, use the actual price
+        const itemPrice = item.price;
+        const quantity = item.quantity || 1;
+        acc.totalBeforeDiscount += itemPrice * quantity;
+        acc.totalWithDiscount += itemPrice * quantity;
+      }
+      return acc;
+    },
+    { totalBeforeDiscount: 0, totalWithDiscount: 0, hasAnyDiscount: false }
+  );
+
   const getOrderTags = (status?: string) => {
     switch (status) {
       case "Due Today":
@@ -137,12 +171,34 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               </span>
             </div>
           </div>
+          {orderDiscountCalculation.hasAnyDiscount && (
+            <div className="flex flex-col gap-2 px-2.5 md:px-0 border-b border-gray-200 pb-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-normal text-gray-800">
+                  Total Before Discount:
+                </span>
+                <span className="text-sm font-medium text-gray-800">
+                  ${orderDiscountCalculation.totalBeforeDiscount.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-semibold text-gray-800">
+                  Total With Discount:
+                </span>
+                <span className="text-lg font-semibold text-primary">
+                  ${orderDiscountCalculation.totalWithDiscount.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          )}
           <div className="flex justify-between items-center px-2.5 md:px-0 border-b border-gray-200 pb-4">
             <span className="text-lg font-semibold text-gray-800">
               Total Order
             </span>
             <span className="text-lg font-semibold text-primary">
-              ${order?.totalPrice}
+              ${typeof order?.totalPrice === "number"
+                ? order.totalPrice.toFixed(2)
+                : order?.totalPrice}
             </span>
           </div>
         </div>
