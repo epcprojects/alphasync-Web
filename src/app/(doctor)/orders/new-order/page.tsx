@@ -9,7 +9,6 @@ import * as Yup from "yup";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
-import { formatNumber } from "@/lib/helpers";
 import { useMutation, useQuery, useLazyQuery } from "@apollo/client/react";
 import { CREATE_ORDER } from "@/lib/graphql/mutations";
 import { FETCH_PRODUCT, FETCH_TIER_PRICING } from "@/lib/graphql/queries";
@@ -1132,7 +1131,10 @@ const Page = () => {
                     </div>
 
                     <div className="text-xs md:text-sm whitespace-nowrap">
-                      ${formatNumber(item.quantity * item.price)}
+                      ${(item.quantity * item.price).toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </div>
 
                     <div className="flex justify-end">
@@ -1152,7 +1154,10 @@ const Page = () => {
                       Total Amount:
                     </span>
                     <span className="text-primary text-base md:text-lg font-semibold">
-                      ${formatNumber(totalAmount)}
+                      ${totalAmount.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </span>
                   </div>
                   <div className="flex justify-end">
