@@ -4,6 +4,16 @@ import OrderItemCard from "../cards/OrderItemCards";
 import { pageVarient } from "../cards/PrescriptionOrderCard";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
+// Helper function to format numbers with commas
+const formatPrice = (value: number | string): string => {
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
+  if (isNaN(numValue)) return String(value);
+  return numValue.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 type OrderItem = {
   id: string | number;
   medicineName: string;
@@ -11,6 +21,10 @@ type OrderItem = {
   quantity: number;
   price: number;
   description?: string;
+  product?: {
+    price?: number | null;
+  } | null;
+  tieredPrice?: number | null;
 };
 
 type order = {
@@ -56,6 +70,36 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
     normalizeAddress(order.shippingAddress) ??
     normalizeAddress(order.patient?.address ?? undefined) ??
     "Address not available";
+
+  // Calculate order-level discount totals
+  const orderDiscountCalculation = order.orderItems.reduce(
+    (acc, item) => {
+      const hasDiscount =
+        item.tieredPrice !== undefined &&
+        item.tieredPrice !== null &&
+        item.product?.price !== undefined &&
+        item.product.price !== null &&
+        item.tieredPrice !== item.product.price;
+
+      if (hasDiscount) {
+        const normalPrice = item.product!.price!;
+        const discountedPrice = item.tieredPrice!;
+        const quantity = item.quantity || 1;
+        acc.totalBeforeDiscount += normalPrice * quantity;
+        acc.totalWithDiscount += discountedPrice * quantity;
+        acc.hasAnyDiscount = true;
+      } else {
+        // For items without discount, use the actual price
+        const itemPrice = item.price;
+        const quantity = item.quantity || 1;
+        acc.totalBeforeDiscount += itemPrice * quantity;
+        acc.totalWithDiscount += itemPrice * quantity;
+      }
+      return acc;
+    },
+    { totalBeforeDiscount: 0, totalWithDiscount: 0, hasAnyDiscount: false }
+  );
+
   const getOrderTags = (status?: string) => {
     switch (status) {
       case "Due Today":
@@ -92,7 +136,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               <div className="flex justify-between items-center">
                 <span className="text-sm font-normal text-gray-800">Tax</span>
                 <span className="text-sm font-medium text-gray-800">
-                  ${order?.totalTax?.toFixed(2)}
+                  ${formatPrice(order?.totalTax ?? 0)}
                 </span>
               </div>
             )}
@@ -142,7 +186,11 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               Total Order
             </span>
             <span className="text-lg font-semibold text-primary">
-              ${order?.totalPrice}
+              ${formatPrice(
+                typeof order?.totalPrice === "number"
+                  ? order.totalPrice
+                  : parseFloat(String(order?.totalPrice)) || 0
+              )}
             </span>
           </div>
         </div>

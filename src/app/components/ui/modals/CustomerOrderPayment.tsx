@@ -25,12 +25,26 @@ import { useMutation } from "@apollo/client";
 import { PROCESS_PAYMENT, CALCULATE_TAX } from "@/lib/graphql/mutations";
 import { useAppSelector } from "@/lib/store/hooks";
 
+// Helper function to format numbers with commas
+const formatPrice = (value: number | string): string => {
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
+  if (isNaN(numValue)) return String(value);
+  return numValue.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 type OrderItem = {
   id: string | number;
   medicineName: string;
   amount: string;
   quantity: number;
   price: number;
+  product?: {
+    price?: number | null;
+  } | null;
+  tieredPrice?: number | null;
 };
 
 type order = {
@@ -332,6 +346,37 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   };
 
   if (!order && !request) return null;
+
+  // Calculate order-level discount totals
+  const orderDiscountCalculation = order
+    ? order.orderItems.reduce(
+        (acc, item) => {
+          const hasDiscount =
+            item.tieredPrice !== undefined &&
+            item.tieredPrice !== null &&
+            item.product?.price !== undefined &&
+            item.product.price !== null &&
+            item.tieredPrice !== item.product.price;
+
+          if (hasDiscount) {
+            const normalPrice = item.product!.price!;
+            const discountedPrice = item.tieredPrice!;
+            const quantity = item.quantity || 1;
+            acc.totalBeforeDiscount += normalPrice * quantity;
+            acc.totalWithDiscount += discountedPrice * quantity;
+            acc.hasAnyDiscount = true;
+          } else {
+            // For items without discount, use the actual price
+            const itemPrice = item.price;
+            const quantity = item.quantity || 1;
+            acc.totalBeforeDiscount += itemPrice * quantity;
+            acc.totalWithDiscount += itemPrice * quantity;
+          }
+          return acc;
+        },
+        { totalBeforeDiscount: 0, totalWithDiscount: 0, hasAnyDiscount: false }
+      )
+    : { totalBeforeDiscount: 0, totalWithDiscount: 0, hasAnyDiscount: false };
 
   const subTotal =
     order?.orderItems?.reduce(
@@ -827,11 +872,11 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
           ? "Processing..."
           : isMobile && !request
           ? showForm
-            ? `Pay $${typeof total === "number" ? total.toFixed(2) : total}`
+            ? `Pay $${typeof total === "number" ? formatPrice(total) : formatPrice(parseFloat(String(total)) || 0)}`
             : "Continue"
           : request || isMobile
           ? "Pay Now"
-          : `Pay $${typeof total === "number" ? total.toFixed(2) : total}`
+          : `Pay $${typeof total === "number" ? formatPrice(total) : formatPrice(parseFloat(String(total)) || 0)}`
       }
       btnFullWidth={true}
     >
@@ -848,35 +893,88 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                 </span>
               </div>
               <div className="flex flex-col gap-4 mt-4 border-b border-gray-200 pb-3 md:pb-4 ">
-                {order.orderItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex justify-between items-center bg-gray-100 rounded-md p-1.5 gap-2"
-                  >
-                    <div className="flex gap-2 items-center">
-                      <div className="w-12 h-12 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
-                        <Image
-                          alt="#"
-                          src={"/images/products/p1.png"}
-                          width={1024}
-                          height={1024}
-                          unoptimized
-                        />
+                {order.orderItems.map((item) => {
+                  const hasDiscount =
+                    item.tieredPrice !== undefined &&
+                    item.tieredPrice !== null &&
+                    item.product?.price !== undefined &&
+                    item.product.price !== null &&
+                    item.tieredPrice !== item.product.price;
+
+                  const normalPrice = item.product?.price ?? item.price;
+                  const discountedPrice = item.tieredPrice ?? item.price;
+                  const quantity = item.quantity || 1;
+                  const totalBeforeDiscount = normalPrice * quantity;
+                  const totalWithDiscount = discountedPrice * quantity;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex flex-col gap-2 bg-gray-100 rounded-md p-1.5"
+                    >
+                      <div className="flex justify-between items-center gap-2">
+                        <div className="flex gap-2 items-center">
+                          <div className="w-12 h-12 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
+                            <Image
+                              alt="#"
+                              src={"/images/products/p1.png"}
+                              width={1024}
+                              height={1024}
+                              unoptimized
+                            />
+                          </div>
+                          <span className="text-sm font-normal text-gray-800">
+                            {item.medicineName}
+                          </span>
+                        </div>
+                        <div className="flex gap-2 items-center">
+                          <span className="text-sm font-medium text-raven bg-white px-2.5 rounded-sm">
+                            x{item.quantity}
+                          </span>
+                          <span className="text-sm font-semibold text-primary">
+                            ${formatPrice(item.price)}
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-sm font-normal text-gray-800">
-                        {item.medicineName}
-                      </span>
+                      {hasDiscount && (
+                        <div className="flex flex-col gap-1 pl-14 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">
+                              Normal Price per Item:
+                            </span>
+                            <span className="text-gray-800 font-medium">
+                              ${formatPrice(normalPrice)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">
+                              Discounted Price:
+                            </span>
+                            <span className="text-gray-800 font-medium">
+                              ${formatPrice(discountedPrice)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">
+                              Total Before Discount:
+                            </span>
+                            <span className="text-gray-800 font-medium">
+                              ${formatPrice(totalBeforeDiscount)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">
+                              Total With Discount:
+                            </span>
+                            <span className="text-primary font-semibold">
+                              ${formatPrice(totalWithDiscount)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex gap-2 items-center">
-                      <span className="text-sm font-medium text-raven bg-white px-2.5 rounded-sm">
-                        x{item.quantity}
-                      </span>
-                      <span className="text-sm font-semibold text-primary">
-                        ${item.price.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="flex flex-col gap-2 border-b border-gray-200 py-3 md:py-4">
                 <div className="flex justify-between items-center">
@@ -884,9 +982,29 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     Sub total
                   </span>
                   <span className="text-sm font-medium text-gray-800">
-                    ${order?.subtotalPrice?.toFixed(2) ?? subTotal.toFixed(2)}
+                    ${formatPrice(order?.subtotalPrice ?? subTotal)}
                   </span>
                 </div>
+                {orderDiscountCalculation.hasAnyDiscount && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-normal text-gray-800">
+                        Total Before Discount:
+                      </span>
+                      <span className="text-sm font-medium text-gray-800">
+                        ${formatPrice(orderDiscountCalculation.totalBeforeDiscount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-normal text-gray-800">
+                        Total With Discount:
+                      </span>
+                      <span className="text-sm font-semibold text-primary">
+                        ${formatPrice(orderDiscountCalculation.totalWithDiscount)}
+                      </span>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-normal text-gray-800">
                     Tax
@@ -897,7 +1015,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     )}
                   </span>
                   <span className="text-sm font-medium text-gray-800">
-                    ${taxAmount.toFixed(2)}
+                    ${formatPrice(taxAmount)}
                   </span>
                 </div>
                 {taxError && (
@@ -914,7 +1032,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                   Total
                 </span>
                 <span className="text-base font-semibold text-primary">
-                  ${typeof total === "number" ? total.toFixed(2) : total}
+                  ${typeof total === "number" ? formatPrice(total) : formatPrice(parseFloat(String(total)) || 0)}
                 </span>
               </div>
             </div>
