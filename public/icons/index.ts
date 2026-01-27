@@ -105,9 +105,15 @@ import ShoppingCardDualIcon from "./ShoppingCardDualIcon";
 import AccountFilledIcon from "./AccountFilledIcon";
 import CalendarDotsIcon from "./CalendarDotsIcon";
 import EllipsisVertical from "./EllipsisVertical";
+import InfoFilledIcon from "./InfoFilledIcon";
+import MoreIcon from "./MoreIcon";
+import ShoppingCartRemoveIcon from "./ShoppingCartRemoveIcon";
 
 
 export {
+    ShoppingCartRemoveIcon,
+    MoreIcon,
+    InfoFilledIcon,
     EllipsisVertical,
     AccountFilledIcon,
     CalendarDotsIcon,
