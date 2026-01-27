@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ThemeButton, ThemeInput, AppModal, Skeleton } from "@/app/components";
+import { ThemeButton, ThemeInput, AppModal, Skeleton, Pagination } from "@/app/components";
 import { PlusIcon, DashboardIcon, PencilEditIcon, TrashBinIcon } from "@/icons";
 import * as Yup from "yup";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
@@ -44,6 +44,8 @@ const videoSchema = Yup.object().shape({
 });
 
 const AdminTrainingVideosPage: React.FC = () => {
+    const [currentPage, setCurrentPage] = useState(0);
+    const itemsPerPage = 9; // 3 columns x 3 rows
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingVideo, setEditingVideo] = useState<TrainingVideo | null>(null);
@@ -64,8 +66,8 @@ const AdminTrainingVideosPage: React.FC = () => {
     refetch: refetchVideos,
   } = useQuery<AllVideosResponse>(ALL_VIDEOS, {
     variables: {
-      perPage: null,
-      page: null,
+          perPage: itemsPerPage,
+          page: currentPage + 1, // GraphQL uses 1-based pagination
     },
     fetchPolicy: "network-only",
   });
@@ -77,6 +79,7 @@ const AdminTrainingVideosPage: React.FC = () => {
         resetForm();
         setIsModalOpen(false);
         setEditingVideo(null);
+          setCurrentPage(0); // Reset to first page
         // Refetch videos to get the updated list
         refetchVideos();
       }
@@ -99,6 +102,7 @@ const AdminTrainingVideosPage: React.FC = () => {
           setIsModalOpen(false);
           setEditingVideo(null);
         }
+          setCurrentPage(0); // Reset to first page
         // Refetch videos to get the updated list
         refetchVideos();
       }
@@ -204,6 +208,12 @@ const AdminTrainingVideosPage: React.FC = () => {
       url: video.videoUrl,
       createdAt: video.createdAt,
     })) || [];
+
+    const totalPages = videosData?.allVideos?.totalPages || 1;
+
+    const handlePageChange = (selectedPage: number) => {
+        setCurrentPage(selectedPage);
+    };
 
   useEffect(() => {
     const validateForm = async () => {
@@ -364,102 +374,112 @@ const AdminTrainingVideosPage: React.FC = () => {
         />
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {videosLoading ? (
-          <>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <article
-                key={index}
-                className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between"
-              >
-                <div className="p-4 md:p-5 flex flex-col gap-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <Skeleton className="h-5 w-3/4 mb-2" />
-                      <Skeleton className="h-4 w-1/2" />
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Skeleton className="h-8 w-8 rounded-lg" />
-                      <Skeleton className="h-8 w-8 rounded-lg" />
-                    </div>
-                  </div>
-                </div>
-                <Skeleton className="w-full aspect-video max-h-[300px] bg-gray-200" />
-              </article>
-            ))}
-          </>
-        ) : videosError ? (
-          <div className="col-span-full bg-white rounded-xl border border-red-200 p-6 md:p-12 text-center text-red-500 text-sm">
-            Failed to load training videos. Please try again.
-          </div>
-        ) : trainingVideos.length === 0 ? (
-          <div className="col-span-full bg-white rounded-xl border border-dashed border-gray-200 p-6 md:p-12 text-center text-gray-500 text-sm">
-            No training videos available at this time.
-          </div>
-        ) : (
-          trainingVideos.map((video) => {
-            const embedUrl = getEmbedUrl(video.url);
-            const isDirectVideo = video.url.match(/\.(mp4|webm|ogg|mov)$/i);
-            
-            return (
-              <article
-                key={video.id}
-                    className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between"
-              >
-                <div className="p-4 md:p-5 flex flex-col gap-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <h3 className="text-black font-semibold text-base md:text-lg">
-                        {video.title}
-                      </h3>
-                      {video.createdAt && (
-                        <p className="text-gray-500 text-xs md:text-sm mt-1">
-                          {formatDate(video.createdAt)}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => handleEdit(video)}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
-                        aria-label="Edit video"
-                      >
-                        <PencilEditIcon width="16" height="16" fill="currentColor" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(video)}
-                        className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600"
-                        aria-label="Delete video"
-                      >
-                        <TrashBinIcon width="16" height="16" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="relative w-full aspect-video bg-black max-h-[300px]">
-                  {isDirectVideo ? (
-                    <video
-                      controls
-                      className="w-full h-full object-contain"
-                      src={embedUrl}
-                    >
-                      Your browser does not support the video tag.
-                    </video>
+          <div className="flex flex-col gap-4 md:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                  {videosLoading ? (
+                      <>
+                          {Array.from({ length: 6 }).map((_, index) => (
+                              <article
+                                  key={index}
+                                  className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between"
+                              >
+                                  <div className="p-4 md:p-5 flex flex-col gap-3">
+                                      <div className="flex items-start justify-between gap-2">
+                                          <div className="flex-1">
+                                              <Skeleton className="h-5 w-3/4 mb-2" />
+                                              <Skeleton className="h-4 w-1/2" />
+                                          </div>
+                                          <div className="flex items-center gap-1 shrink-0">
+                                              <Skeleton className="h-8 w-8 rounded-lg" />
+                                              <Skeleton className="h-8 w-8 rounded-lg" />
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <Skeleton className="w-full aspect-video max-h-[300px] bg-gray-200" />
+                              </article>
+                          ))}
+                      </>
+                  ) : videosError ? (
+                      <div className="col-span-full bg-white rounded-xl border border-red-200 p-6 md:p-12 text-center text-red-500 text-sm">
+                          Failed to load training videos. Please try again.
+                      </div>
+                  ) : trainingVideos.length === 0 ? (
+                      <div className="col-span-full bg-white rounded-xl border border-dashed border-gray-200 p-6 md:p-12 text-center text-gray-500 text-sm">
+                          No training videos available at this time.
+                      </div>
                   ) : (
-                    <iframe
-                      src={embedUrl}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title={video.title}
-                    />
+                      trainingVideos.map((video) => {
+                          const embedUrl = getEmbedUrl(video.url);
+                          const isDirectVideo = video.url.match(/\.(mp4|webm|ogg|mov)$/i);
+
+                          return (
+                              <article
+                                  key={video.id}
+                                  className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between"
+                              >
+                                  <div className="p-4 md:p-5 flex flex-col gap-3">
+                                      <div className="flex items-start justify-between gap-2">
+                                          <div className="flex-1">
+                                              <h3 className="text-black font-semibold text-base md:text-lg">
+                                                  {video.title}
+                                              </h3>
+                                              {video.createdAt && (
+                                                  <p className="text-gray-500 text-xs md:text-sm mt-1">
+                                                      {formatDate(video.createdAt)}
+                                                  </p>
+                                              )}
+                                          </div>
+                                          <div className="flex items-center gap-1 shrink-0">
+                                              <button
+                                                  onClick={() => handleEdit(video)}
+                                                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                                                  aria-label="Edit video"
+                                              >
+                                                  <PencilEditIcon width="16" height="16" fill="currentColor" />
+                                              </button>
+                                              <button
+                                                  onClick={() => handleDeleteClick(video)}
+                                                  className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600"
+                                                  aria-label="Delete video"
+                                              >
+                                                  <TrashBinIcon width="16" height="16" />
+                                              </button>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <div className="relative w-full aspect-video bg-black max-h-[300px]">
+                                      {isDirectVideo ? (
+                                          <video
+                                              controls
+                                              className="w-full h-full object-contain"
+                                              src={embedUrl}
+                                          >
+                                              Your browser does not support the video tag.
+                                          </video>
+                                      ) : (
+                                          <iframe
+                                              src={embedUrl}
+                                              className="w-full h-full"
+                                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                              allowFullScreen
+                                              title={video.title}
+                                          />
+                                      )}
+                                  </div>
+                              </article>
+                          );
+                      })
                   )}
-                </div>
-              </article>
-            );
-          })
-        )}
-      </section>
+              </div>
+
+              {totalPages > 1 && (
+                  <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                  />
+              )}
+          </div>
 
       <AppModal
         isOpen={isModalOpen}
