@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ThemeButton, ThemeInput, AppModal } from "@/app/components";
-import { PlusIcon, DashboardIcon, PencilEditIcon } from "@/icons";
+import { PlusIcon, DashboardIcon, PencilEditIcon, TrashBinIcon } from "@/icons";
 import * as Yup from "yup";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useMutation, useQuery } from "@apollo/client";
@@ -45,7 +45,9 @@ const videoSchema = Yup.object().shape({
 
 const AdminTrainingVideosPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingVideo, setEditingVideo] = useState<TrainingVideo | null>(null);
+  const [deletingVideo, setDeletingVideo] = useState<TrainingVideo | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     url: "",
@@ -87,16 +89,26 @@ const AdminTrainingVideosPage: React.FC = () => {
   const [updateVideo, { loading: updateVideoLoading }] = useMutation(UPDATE_VIDEO, {
     onCompleted: (data) => {
       if (data?.updateVideo?.success) {
-        showSuccessToast("Training video updated successfully");
-        resetForm();
-        setIsModalOpen(false);
-        setEditingVideo(null);
+        if (deletingVideo) {
+          showSuccessToast("Training video deleted successfully");
+          setIsDeleteModalOpen(false);
+          setDeletingVideo(null);
+        } else {
+          showSuccessToast("Training video updated successfully");
+          resetForm();
+          setIsModalOpen(false);
+          setEditingVideo(null);
+        }
         // Refetch videos to get the updated list
         refetchVideos();
       }
     },
     onError: (error) => {
-      showErrorToast(error.message || "Failed to update training video");
+      if (deletingVideo) {
+        showErrorToast(error.message || "Failed to delete training video");
+      } else {
+        showErrorToast(error.message || "Failed to update training video");
+      }
     },
   });
 
@@ -283,6 +295,27 @@ const AdminTrainingVideosPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const handleDeleteClick = (video: TrainingVideo) => {
+    setDeletingVideo(video);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingVideo) return;
+    
+    await updateVideo({
+      variables: {
+        id: deletingVideo.id,
+        archived: true,
+      },
+    });
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+    setDeletingVideo(null);
+  };
+
   const resetForm = () => {
     setFormData({
       title: "",
@@ -366,13 +399,22 @@ const AdminTrainingVideosPage: React.FC = () => {
                         </p>
                       )}
                     </div>
-                    <button
-                      onClick={() => handleEdit(video)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0 text-gray-600"
-                      aria-label="Edit video"
-                    >
-                      <PencilEditIcon width="16" height="16" fill="currentColor" />
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => handleEdit(video)}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                        aria-label="Edit video"
+                      >
+                        <PencilEditIcon width="16" height="16" fill="currentColor" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(video)}
+                        className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600"
+                        aria-label="Delete video"
+                      >
+                        <TrashBinIcon width="16" height="16" />
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div className="relative w-full aspect-video bg-black max-h-[300px]">
@@ -450,6 +492,36 @@ const AdminTrainingVideosPage: React.FC = () => {
             type="url"
             value={formData.url}
           />
+        </div>
+      </AppModal>
+
+      <AppModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleDeleteCancel}
+        title="Delete Training Video"
+        onConfirm={handleDeleteConfirm}
+        confirmLabel={updateVideoLoading ? "Deleting..." : "Delete"}
+        icon={<TrashBinIcon width="20" height="20" />}
+        size="small"
+        outSideClickClose={!updateVideoLoading}
+        confimBtnDisable={updateVideoLoading}
+        disableCloseButton={updateVideoLoading}
+        onCancel={handleDeleteCancel}
+        cancelLabel="Cancel"
+        confirmBtnVarient="danger"
+      >
+        <div className="flex flex-col gap-3">
+          <p className="text-gray-700 text-sm md:text-base">
+            Are you sure you want to delete this training video?
+          </p>
+          {deletingVideo && (
+            <p className="text-gray-600 text-sm font-medium">
+              "{deletingVideo.title}"
+            </p>
+          )}
+          <p className="text-gray-500 text-xs md:text-sm">
+            This action cannot be undone.
+          </p>
         </div>
       </AppModal>
     </div>
