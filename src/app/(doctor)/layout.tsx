@@ -58,7 +58,6 @@ const menuItems = [
     icon: ReminderIcon,
   },
   { label: "Requests", href: "/requests", icon: RequestIcon },
-  { label: "Training Videos", href: "/training-videos", icon: DashboardIcon },
   { label: "Settings", href: "/settings", icon: SettingsIcon },
 ];
 
