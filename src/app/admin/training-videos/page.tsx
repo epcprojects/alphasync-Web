@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ThemeButton, ThemeInput, AppModal } from "@/app/components";
+import { ThemeButton, ThemeInput, AppModal, Skeleton } from "@/app/components";
 import { PlusIcon, DashboardIcon, PencilEditIcon, TrashBinIcon } from "@/icons";
 import * as Yup from "yup";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
@@ -366,9 +366,28 @@ const AdminTrainingVideosPage: React.FC = () => {
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {videosLoading ? (
-          <div className="col-span-full bg-white rounded-xl border border-gray-200 p-6 md:p-12 text-center text-gray-500 text-sm">
-            Loading training videos...
-          </div>
+          <>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <article
+                key={index}
+                className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between"
+              >
+                <div className="p-4 md:p-5 flex flex-col gap-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <Skeleton className="h-5 w-3/4 mb-2" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                    </div>
+                  </div>
+                </div>
+                <Skeleton className="w-full aspect-video max-h-[300px] bg-gray-200" />
+              </article>
+            ))}
+          </>
         ) : videosError ? (
           <div className="col-span-full bg-white rounded-xl border border-red-200 p-6 md:p-12 text-center text-red-500 text-sm">
             Failed to load training videos. Please try again.
