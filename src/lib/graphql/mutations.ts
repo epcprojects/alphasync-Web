@@ -898,3 +898,11 @@ export const EXPORT_ADMINS = gql`
     }
   }
 `;
+
+export const CREATE_VIDEO = gql`
+  mutation CreateVideo($title: String!, $videoUrl: String!) {
+    createVideo(input: { title: $title, videoUrl: $videoUrl }) {
+      success
+    }
+  }
+`;
