@@ -67,28 +67,6 @@ const Page = () => {
           </div>
 
           <div className="sm:py-[2px] sm:px-0 flex items-center gap-1 md:gap-2 rounded-full bg-white sm:bg-transparent p-1 shadow-table sm:shadow-none">
-            <Tooltip content="Favorite Products">
-              <button
-                onClick={() => setShowFavourites((prev) => !prev)}
-                className={`w-8 h-8 shrink-0 md:h-11 md:w-11 ${
-                  showFavourites &&
-                  "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-                }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
-              >
-                {showFavourites ? (
-                  <HeartFilledIcon
-                    height={isMobile ? 16 : 20}
-                    width={isMobile ? 16 : 20}
-                  />
-                ) : (
-                  <FavoriteIcon
-                    height={isMobile ? "16" : "20"}
-                    width={isMobile ? "16" : "20"}
-                  />
-                )}
-              </button>
-            </Tooltip>
-
             <Tooltip content="Grid View">
               <button
                 onClick={() => {

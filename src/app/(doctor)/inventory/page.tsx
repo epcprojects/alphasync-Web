@@ -42,6 +42,7 @@ import {
   Product,
   transformGraphQLProduct,
 } from "@/types/products";
+import { useAppSelector } from "@/lib/store/hooks";
 
 function InventoryContent() {
   const [search, setSearch] = useState("");
@@ -67,6 +68,8 @@ function InventoryContent() {
   const isMobile = useIsMobile();
   const itemsPerPage = 9;
   const [currentPage, setCurrentPage] = useState(1);
+
+  const userEmail = useAppSelector((state) => state.auth.user?.email);
 
   const markupFilterOptions = [
     { label: "All", value: "All" },
@@ -337,7 +340,7 @@ function InventoryContent() {
               </span>
             )} */}
             <Tooltip
-              autoShowOnLoad
+              autoShowOnceKey={userEmail}
               side="bottom"
               content="Click Add to Shop, enter your selling price, and click Save. The product will be added to your shop."
             >
