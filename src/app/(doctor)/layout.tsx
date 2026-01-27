@@ -58,6 +58,7 @@ const menuItems = [
     icon: ReminderIcon,
   },
   { label: "Requests", href: "/requests", icon: RequestIcon },
+  { label: "Training Videos", href: "/training-videos", icon: DashboardIcon },
   { label: "Settings", href: "/settings", icon: SettingsIcon },
 ];
 
@@ -68,6 +69,7 @@ const headings: Record<string, string> = {
   "/clinic": "Clinic",
   "/reminder": "Refill Reminders",
   "/request": "Patient Requests",
+  "/training-videos": "Training Videos",
   "/settings": "Settings",
   "/notifications": "Notifications",
   "/accounting": "Peptide Accounting",
@@ -83,6 +85,7 @@ const noStatsRoutes = [
   "/clinic",
   "/reminder",
   "/requests",
+  "/training-videos",
   "/settings",
   "/notifications",
 ];

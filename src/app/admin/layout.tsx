@@ -58,6 +58,11 @@ const menuItems = [
     href: "/admin/products",
     icon: ShoppingCartIcon,
   },
+  {
+    label: "Training Videos",
+    href: "/admin/training-videos",
+    icon: DashboardIcon,
+  },
   { label: "Settings", href: "/admin/settings", icon: SettingsIcon },
 ];
 
@@ -66,10 +71,16 @@ const headings: Record<string, string> = {
   "/admin/doctors": "Trusted Peptide Solutions",
   "/admin/admins": "Admin Management",
   "/admin/products": "Product Management",
+  "/admin/training-videos": "Training Videos",
   "/admin/settings": "Settings",
 };
 
-const noStatsRoutes = ["/admin/settings", "/admin/dashboard", "/admin/admins"];
+const noStatsRoutes = [
+  "/admin/settings",
+  "/admin/dashboard",
+  "/admin/admins",
+  "/admin/training-videos",
+];
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 
