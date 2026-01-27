@@ -906,3 +906,11 @@ export const CREATE_VIDEO = gql`
     }
   }
 `;
+
+export const UPDATE_VIDEO = gql`
+  mutation UpdateVideo($id: ID!, $title: String, $videoUrl: String) {
+    updateVideo(input: { id: $id, title: $title, videoUrl: $videoUrl }) {
+      success
+    }
+  }
+`;

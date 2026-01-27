@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { ThemeButton, ThemeInput, AppModal } from "@/app/components";
-import { PlusIcon, DashboardIcon } from "@/icons";
+import { PlusIcon, DashboardIcon, PencilEditIcon } from "@/icons";
 import * as Yup from "yup";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useMutation, useQuery } from "@apollo/client";
-import { CREATE_VIDEO } from "@/lib/graphql/mutations";
+import { CREATE_VIDEO, UPDATE_VIDEO } from "@/lib/graphql/mutations";
 import { ALL_VIDEOS } from "@/lib/graphql/queries";
 
 interface TrainingVideo {
@@ -45,6 +45,7 @@ const videoSchema = Yup.object().shape({
 
 const AdminTrainingVideosPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingVideo, setEditingVideo] = useState<TrainingVideo | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     url: "",
@@ -73,12 +74,29 @@ const AdminTrainingVideosPage: React.FC = () => {
         showSuccessToast("Training video added successfully");
         resetForm();
         setIsModalOpen(false);
+        setEditingVideo(null);
         // Refetch videos to get the updated list
         refetchVideos();
       }
     },
     onError: (error) => {
       showErrorToast(error.message || "Failed to create training video");
+    },
+  });
+
+  const [updateVideo, { loading: updateVideoLoading }] = useMutation(UPDATE_VIDEO, {
+    onCompleted: (data) => {
+      if (data?.updateVideo?.success) {
+        showSuccessToast("Training video updated successfully");
+        resetForm();
+        setIsModalOpen(false);
+        setEditingVideo(null);
+        // Refetch videos to get the updated list
+        refetchVideos();
+      }
+    },
+    onError: (error) => {
+      showErrorToast(error.message || "Failed to update training video");
     },
   });
 
@@ -225,12 +243,24 @@ const AdminTrainingVideosPage: React.FC = () => {
     try {
       await videoSchema.validate(formData, { abortEarly: false });
       // Form is valid, proceed with submission
-      await createVideo({
-        variables: {
-          title: formData.title,
-          videoUrl: formData.url,
-        },
-      });
+      if (editingVideo) {
+        // Update existing video
+        await updateVideo({
+          variables: {
+            id: editingVideo.id,
+            title: formData.title,
+            videoUrl: formData.url,
+          },
+        });
+      } else {
+        // Create new video
+        await createVideo({
+          variables: {
+            title: formData.title,
+            videoUrl: formData.url,
+          },
+        });
+      }
     } catch (err: any) {
       // Show all errors when submit is attempted
       const newErrors: Record<string, string> = {};
@@ -244,6 +274,15 @@ const AdminTrainingVideosPage: React.FC = () => {
     }
   };
 
+  const handleEdit = (video: TrainingVideo) => {
+    setEditingVideo(video);
+    setFormData({
+      title: video.title,
+      url: video.url,
+    });
+    setIsModalOpen(true);
+  };
+
   const resetForm = () => {
     setFormData({
       title: "",
@@ -253,6 +292,7 @@ const AdminTrainingVideosPage: React.FC = () => {
     setTouchedFields(new Set());
     setHasAttemptedSubmit(false);
     setIsFormValid(false);
+    setEditingVideo(null);
   };
 
   const handleCancel = () => {
@@ -260,8 +300,13 @@ const AdminTrainingVideosPage: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  const handleAddNew = () => {
+    resetForm();
+    setIsModalOpen(true);
+  };
+
   useEffect(() => {
-    if (isModalOpen) {
+    if (isModalOpen && !editingVideo) {
       resetForm();
     }
   }, [isModalOpen]);
@@ -279,7 +324,7 @@ const AdminTrainingVideosPage: React.FC = () => {
         </div>
         <ThemeButton
           label="Add Training Video"
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleAddNew}
           icon={<PlusIcon />}
           variant="filled"
           heightClass="h-10"
@@ -307,17 +352,28 @@ const AdminTrainingVideosPage: React.FC = () => {
             return (
               <article
                 key={video.id}
-                className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col"
+                    className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between"
               >
                 <div className="p-4 md:p-5 flex flex-col gap-3">
-                  <h3 className="text-black font-semibold text-base md:text-lg">
-                    {video.title}
-                  </h3>
-                  {video.createdAt && (
-                    <p className="text-gray-500 text-xs md:text-sm">
-                      {formatDate(video.createdAt)}
-                    </p>
-                  )}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <h3 className="text-black font-semibold text-base md:text-lg">
+                        {video.title}
+                      </h3>
+                      {video.createdAt && (
+                        <p className="text-gray-500 text-xs md:text-sm mt-1">
+                          {formatDate(video.createdAt)}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleEdit(video)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0 text-gray-600"
+                      aria-label="Edit video"
+                    >
+                      <PencilEditIcon width="16" height="16" fill="currentColor" />
+                    </button>
+                  </div>
                 </div>
                 <div className="relative w-full aspect-video bg-black max-h-[300px]">
                   {isDirectVideo ? (
@@ -347,14 +403,22 @@ const AdminTrainingVideosPage: React.FC = () => {
       <AppModal
         isOpen={isModalOpen}
         onClose={handleCancel}
-        title="Add Training Video"
+        title={editingVideo ? "Edit Training Video" : "Add Training Video"}
         onConfirm={handleConfirm}
-        confirmLabel={createVideoLoading ? "Adding..." : "Add Video"}
+        confirmLabel={
+          editingVideo
+            ? updateVideoLoading
+              ? "Updating..."
+              : "Update Video"
+            : createVideoLoading
+            ? "Adding..."
+            : "Add Video"
+        }
         icon={<DashboardIcon fill="#374151" />}
         size="medium"
-        outSideClickClose={!createVideoLoading}
-        confimBtnDisable={!isFormValid || createVideoLoading}
-        disableCloseButton={createVideoLoading}
+        outSideClickClose={!createVideoLoading && !updateVideoLoading}
+        confimBtnDisable={!isFormValid || createVideoLoading || updateVideoLoading}
+        disableCloseButton={createVideoLoading || updateVideoLoading}
         onCancel={handleCancel}
         cancelLabel="Cancel"
       >
