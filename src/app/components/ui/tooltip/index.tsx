@@ -9,7 +9,7 @@ interface TooltipProps {
   side?: "top" | "bottom" | "left" | "right";
   sideOffset?: number;
   className?: string;
-  autoShowOnLoad?: boolean;
+  autoShowOnceKey?: string;
   autoHideAfter?: number;
 }
 
@@ -19,22 +19,31 @@ export default function Tooltip({
   side = "top",
   sideOffset = 8,
   className = "",
-  autoShowOnLoad = false,
+  autoShowOnceKey,
   autoHideAfter = 10000,
 }: TooltipProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!autoShowOnLoad) return;
+    if (!autoShowOnceKey) return;
 
-    setOpen(true);
+    try {
+      const alreadyShown = localStorage.getItem(autoShowOnceKey) === "1";
+      if (alreadyShown) return;
 
-    const timer = setTimeout(() => {
-      setOpen(false);
-    }, autoHideAfter);
+      // Show now
+      setOpen(true);
 
-    return () => clearTimeout(timer);
-  }, [autoShowOnLoad, autoHideAfter]);
+      // Mark as shown immediately (so even if user reloads quickly, it won't keep popping)
+      localStorage.setItem(autoShowOnceKey, "1");
+
+      const timer = setTimeout(() => setOpen(false), autoHideAfter);
+      return () => clearTimeout(timer);
+    } catch {
+      // If localStorage blocked (privacy mode), just don't auto-show
+      return;
+    }
+  }, [autoShowOnceKey, autoHideAfter]);
   return (
     <RadixTooltip.Provider>
       <RadixTooltip.Root open={open} onOpenChange={setOpen} delayDuration={0}>
