@@ -42,7 +42,7 @@ export const userpayload = `
             shippingCity
             shippingStreet2
             shippingStreet1
-       
+       hasViewedAllVideos
 `;
 
 export interface UserAttributes {
@@ -89,6 +89,7 @@ export interface UserAttributes {
   shippingPostalCode?: string;
   shippingCountry?: string;
   unreadNotifications?: boolean;
+  hasViewedAllVideos?: boolean;
 }
 
 export interface ProductInfo {

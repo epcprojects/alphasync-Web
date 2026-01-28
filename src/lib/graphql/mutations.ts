@@ -923,3 +923,12 @@ export const MARK_VIDEO_AS_VIEWED = gql`
     }
   }
 `;
+
+export const MARK_ALL_VIDEOS_AS_VIEWED = gql`
+  mutation MarkVideoAsViewed($viewedAll: Boolean) {
+    markVideoAsViewed(input: { viewedAll: $viewedAll }) {
+      success
+      hasViewedAllVideos
+    }
+  }
+`;

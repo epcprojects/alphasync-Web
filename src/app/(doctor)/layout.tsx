@@ -1,7 +1,7 @@
 "use client";
 import React, { ReactNode } from "react";
-import { useQuery } from "@apollo/client";
-import { DashboardStats, Header, DoctorRoute } from "../components";
+import { useQuery, useMutation } from "@apollo/client";
+import { DashboardStats, Header, DoctorRoute, TrainingVideosBlockingPage } from "../components";
 import {
   SyrupIcon,
   InventoryIcon,
@@ -21,8 +21,10 @@ import {
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { useAppSelector } from "@/lib/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
 import { DOCTOR_DASHBOARD } from "@/lib/graphql/queries";
+import { MARK_ALL_VIDEOS_AS_VIEWED } from "@/lib/graphql/mutations";
+import { setUser } from "@/lib/store/slices/authSlice";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -114,7 +116,14 @@ const formatNumber = (value?: number | null) =>
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   const user = useAppSelector((state) => state.auth.user);
+  const dispatch = useAppDispatch();
   const pathname = usePathname();
+  
+  // Check if doctor hasn't viewed all videos (allow access to training-videos page)
+  const isDoctor = user?.userType?.toLowerCase() === "doctor";
+  const hasNotViewedAllVideos = isDoctor && user?.hasViewedAllVideos === false;
+  const isTrainingVideosPage = pathname === "/training-videos";
+  const shouldShowBlockingPage = hasNotViewedAllVideos && !isTrainingVideosPage;
   const heading =
     Object.keys(headings).find((key) => pathname.startsWith(key)) !== undefined
       ? headings[Object.keys(headings).find((key) => pathname.startsWith(key))!]
@@ -205,6 +214,29 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     },
   ];
 
+  // Mutation to mark all videos as viewed
+  const [markAllVideosAsViewed, { loading: markAllLoading }] = useMutation(
+    MARK_ALL_VIDEOS_AS_VIEWED,
+    {
+      onCompleted: (data) => {
+        if (data?.markVideoAsViewed?.success) {
+          // Update user in Redux so blocking page disappears
+          if (user) {
+            dispatch(
+              setUser({
+                ...user,
+                hasViewedAllVideos: true,
+              })
+            );
+          }
+        }
+      },
+      onError: (error) => {
+        console.error("Failed to mark all videos as viewed:", error);
+      },
+    }
+  );
+
   const accountStats = [
     {
       label: "Total Revenue",
@@ -259,6 +291,27 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       bgColor: "bg-orange-400",
     },
   ];
+
+  // Handler for marking all videos as viewed
+  const handleMarkAllAsViewed = () => {
+    markAllVideosAsViewed({
+      variables: {
+        viewedAll: true,
+      },
+    });
+  };
+
+  // Show blocking page if doctor hasn't viewed all videos (except on training-videos page)
+  if (shouldShowBlockingPage) {
+    return (
+      <DoctorRoute>
+        <TrainingVideosBlockingPage
+          onMarkAllAsViewed={handleMarkAllAsViewed}
+          isLoading={markAllLoading}
+        />
+      </DoctorRoute>
+    );
+  }
 
   return (
     <DoctorRoute>
