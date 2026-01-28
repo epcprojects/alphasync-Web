@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import ReactPlayer from "react-player";
 import { Skeleton, Pagination } from "@/app/components";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { ALL_VIDEOS } from "@/lib/graphql/queries";
+import { MARK_VIDEO_AS_VIEWED } from "@/lib/graphql/mutations";
 
 interface TrainingVideo {
   id: string;
@@ -35,6 +37,7 @@ interface AllVideosResponse {
 const DoctorTrainingVideosPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 9; // 3 columns x 3 rows
+  const [viewedVideos, setViewedVideos] = useState<Set<string>>(new Set());
 
   const {
     data: videosData,
@@ -48,41 +51,45 @@ const DoctorTrainingVideosPage: React.FC = () => {
     fetchPolicy: "network-only",
   });
 
-  // Convert video URL to embeddable URL
-  const getEmbedUrl = (url: string): string => {
-    try {
-      // YouTube URLs
-      if (url.includes("youtube.com/watch")) {
-        const videoId = url.split("v=")[1]?.split("&")[0];
-        return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  const [markVideoAsViewed] = useMutation(MARK_VIDEO_AS_VIEWED, {
+    onError: (error) => {
+      console.error("Failed to mark video as viewed:", error);
+    },
+  });
+
+  const handleVideoView = async (videoId: string) => {
+    // Only mark as viewed if not already viewed in this session
+    if (!viewedVideos.has(videoId)) {
+      setViewedVideos((prev) => new Set(prev).add(videoId));
+      try {
+        await markVideoAsViewed({
+          variables: {
+            videoId: videoId,
+          },
+        });
+      } catch (error) {
+        console.error("Error marking video as viewed:", error);
+        // Remove from viewed set if mutation failed so it can be retried
+        setViewedVideos((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(videoId);
+          return newSet;
+        });
       }
-      if (url.includes("youtu.be/")) {
-        const videoId = url.split("youtu.be/")[1]?.split("?")[0];
-        return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
-      }
-      
-      // Vimeo URLs
-      if (url.includes("vimeo.com/")) {
-        const videoId = url.split("vimeo.com/")[1]?.split("?")[0];
-        return videoId ? `https://player.vimeo.com/video/${videoId}` : url;
-      }
-      
-      // Direct video URLs (mp4, webm, etc.)
-      if (url.match(/\.(mp4|webm|ogg|mov)$/i)) {
-        return url;
-      }
-      
-      // If it's already an embed URL, return as is
-      if (url.includes("/embed/") || url.includes("/video/")) {
-        return url;
-      }
-      
-      // Default: return original URL (will try to embed as iframe)
-      return url;
-    } catch {
-      return url;
     }
   };
+
+  // Transform GraphQL data to TrainingVideo format
+  const trainingVideos: TrainingVideo[] =
+    videosData?.allVideos?.allData?.map((video) => ({
+      id: video.id,
+      title: video.title,
+      url: video.videoUrl,
+      createdAt: video.createdAt,
+    })) || [];
+
+  // Convert video URL to embeddable URL
+  // (react-player handles YouTube/Vimeo/etc directly)
 
   // Format date helper function
   const formatDate = (dateString: string): string => {
@@ -131,15 +138,6 @@ const DoctorTrainingVideosPage: React.FC = () => {
       return "";
     }
   };
-
-  // Transform GraphQL data to TrainingVideo format
-  const trainingVideos: TrainingVideo[] =
-    videosData?.allVideos?.allData?.map((video) => ({
-      id: video.id,
-      title: video.title,
-      url: video.videoUrl,
-      createdAt: video.createdAt,
-    })) || [];
 
   const totalPages = videosData?.allVideos?.totalPages || 1;
 
@@ -190,10 +188,7 @@ const DoctorTrainingVideosPage: React.FC = () => {
               No training videos available at this time.
             </div>
           ) : (
-            trainingVideos.map((video) => {
-              const embedUrl = getEmbedUrl(video.url);
-              const isDirectVideo = video.url.match(/\.(mp4|webm|ogg|mov)$/i);
-              
+                  trainingVideos.map((video) => {
               return (
                 <article
                   key={video.id}
@@ -214,23 +209,13 @@ const DoctorTrainingVideosPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="relative w-full aspect-video bg-black max-h-[300px]">
-                    {isDirectVideo ? (
-                      <video
-                        controls
-                        className="w-full h-full object-contain"
-                        src={embedUrl}
-                      >
-                        Your browser does not support the video tag.
-                      </video>
-                    ) : (
-                      <iframe
-                        src={embedUrl}
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        title={video.title}
-                      />
-                    )}
+                    <ReactPlayer
+                      src={video.url}
+                      controls
+                      width="100%"
+                      height="100%"
+                      onStart={() => handleVideoView(video.id)}
+                    />
                   </div>
                 </article>
               );

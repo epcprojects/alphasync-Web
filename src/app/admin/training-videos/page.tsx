@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import ReactPlayer from "react-player";
 import { ThemeButton, ThemeInput, AppModal, Skeleton, Pagination } from "@/app/components";
 import { PlusIcon, DashboardIcon, PencilEditIcon, TrashBinIcon } from "@/icons";
 import * as Yup from "yup";
@@ -117,40 +118,7 @@ const AdminTrainingVideosPage: React.FC = () => {
   });
 
   // Convert video URL to embeddable URL
-  const getEmbedUrl = (url: string): string => {
-    try {
-      // YouTube URLs
-      if (url.includes("youtube.com/watch")) {
-        const videoId = url.split("v=")[1]?.split("&")[0];
-        return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
-      }
-      if (url.includes("youtu.be/")) {
-        const videoId = url.split("youtu.be/")[1]?.split("?")[0];
-        return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
-      }
-      
-      // Vimeo URLs
-      if (url.includes("vimeo.com/")) {
-        const videoId = url.split("vimeo.com/")[1]?.split("?")[0];
-        return videoId ? `https://player.vimeo.com/video/${videoId}` : url;
-      }
-      
-      // Direct video URLs (mp4, webm, etc.)
-      if (url.match(/\.(mp4|webm|ogg|mov)$/i)) {
-        return url;
-      }
-      
-      // If it's already an embed URL, return as is
-      if (url.includes("/embed/") || url.includes("/video/")) {
-        return url;
-      }
-      
-      // Default: return original URL (will try to embed as iframe)
-      return url;
-    } catch {
-      return url;
-    }
-  };
+  // (react-player handles YouTube/Vimeo/etc directly)
 
   // Format date helper function
   const formatDate = (dateString: string): string => {
@@ -408,10 +376,7 @@ const AdminTrainingVideosPage: React.FC = () => {
                           No training videos available at this time.
                       </div>
                   ) : (
-                      trainingVideos.map((video) => {
-                          const embedUrl = getEmbedUrl(video.url);
-                          const isDirectVideo = video.url.match(/\.(mp4|webm|ogg|mov)$/i);
-
+                  trainingVideos.map((video) => {
                           return (
                               <article
                                   key={video.id}
@@ -448,23 +413,12 @@ const AdminTrainingVideosPage: React.FC = () => {
                                       </div>
                                   </div>
                                   <div className="relative w-full aspect-video bg-black max-h-[300px]">
-                                      {isDirectVideo ? (
-                                          <video
-                                              controls
-                                              className="w-full h-full object-contain"
-                                              src={embedUrl}
-                                          >
-                                              Your browser does not support the video tag.
-                                          </video>
-                                      ) : (
-                                          <iframe
-                                              src={embedUrl}
-                                              className="w-full h-full"
-                                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                              allowFullScreen
-                                              title={video.title}
-                                          />
-                                      )}
+                                      <ReactPlayer
+                                          src={video.url}
+                                          controls
+                                          width="100%"
+                                          height="100%"
+                                      />
                                   </div>
                               </article>
                           );

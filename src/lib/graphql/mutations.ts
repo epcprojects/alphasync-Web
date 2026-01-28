@@ -914,3 +914,12 @@ export const UPDATE_VIDEO = gql`
     }
   }
 `;
+
+export const MARK_VIDEO_AS_VIEWED = gql`
+  mutation MarkVideoAsViewed($videoId: ID!) {
+    markVideoAsViewed(input: { videoId: $videoId }) {
+      hasViewedAllVideos
+      success
+    }
+  }
+`;
