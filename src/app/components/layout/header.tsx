@@ -79,6 +79,10 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
   const isAdminHeader = menuItems.some((item) =>
     item.label.includes("Doctors"),
   );
+
+  const isDoctorHeader = menuItems.some((item) =>
+    item.label.includes("Inventory"),
+  );
   const user = useAppSelector((state) => state.auth.user);
   const INITIAL_AVATAR = "/images/arinaProfile.png";
 
@@ -183,7 +187,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
           </div>
 
           <div className="items-center  gap-2.5 flex ">
-            <CartPopover />
+            {isDoctorHeader && <CartPopover />}
 
             {hasPendingPayment && (
               <Link

@@ -86,7 +86,7 @@ export default function CartPopover() {
           >
             <PopoverPanel
               anchor="bottom end"
-              className="z-50 mt-3 w-95 rounded-xl border absolute right-0 top-12 border-gray-200 bg-white shadow-xl ring-1 ring-black/5 focus:outline-none"
+              className="z-[100] mt-3 w-95 rounded-xl border absolute right-0 top-12 border-gray-200 bg-white shadow-xl ring-1 ring-black/5 focus:outline-none"
             >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-b-gray-100 p-4">
