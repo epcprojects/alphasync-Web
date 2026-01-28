@@ -4,7 +4,6 @@ import AppModal from "./AppModal";
 import { useState } from "react";
 import { InventoryIcon } from "@/icons";
 import Image from "next/image";
-import { Images } from "@/app/ui/images";
 
 interface ModalProps {
   isOpen: boolean;
