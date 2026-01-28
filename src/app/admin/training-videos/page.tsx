@@ -189,16 +189,21 @@ const AdminTrainingVideosPage: React.FC = () => {
         await videoSchema.validate(formData, { abortEarly: false });
         setErrors({});
         setIsFormValid(true);
-      } catch (err: any) {
+      } catch (err: unknown) {
         const newErrors: Record<string, string> = {};
-        if (err.inner) {
-          err.inner.forEach((error: any) => {
+
+        if (err && err instanceof Yup.ValidationError) {
+          err.inner.forEach((error) => {
             // Only show errors for touched fields or if submit was attempted
-            if (hasAttemptedSubmit || touchedFields.has(error.path)) {
+            if (
+              error.path &&
+              (hasAttemptedSubmit || touchedFields.has(error.path))
+            ) {
               newErrors[error.path] = error.message;
             }
           });
         }
+
         setErrors(newErrors);
         setIsFormValid(false);
       }
@@ -251,14 +256,18 @@ const AdminTrainingVideosPage: React.FC = () => {
           },
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Show all errors when submit is attempted
       const newErrors: Record<string, string> = {};
-      if (err.inner) {
-        err.inner.forEach((error: any) => {
-          newErrors[error.path] = error.message;
+
+      if (err && err instanceof Yup.ValidationError) {
+        err.inner.forEach((error) => {
+          if (error.path) {
+            newErrors[error.path] = error.message;
+          }
         });
       }
+
       setErrors(newErrors);
       setIsFormValid(false);
     }
@@ -509,7 +518,7 @@ const AdminTrainingVideosPage: React.FC = () => {
           </p>
           {deletingVideo && (
             <p className="text-gray-600 text-sm font-medium">
-              "{deletingVideo.title}"
+              &quot;{deletingVideo.title}&quot;
             </p>
           )}
           <p className="text-gray-500 text-xs md:text-sm">

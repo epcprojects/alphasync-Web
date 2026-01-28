@@ -37,7 +37,7 @@ const TrainingVideosBlockingPage: React.FC<TrainingVideosBlockingPageProps> = ({
           {/* Message */}
           <div className="flex flex-col gap-3">
             <p className="text-base md:text-lg text-gray-700">
-              You haven't viewed all training videos yet.
+              You haven&apos;t viewed all training videos yet.
             </p>
             <p className="text-sm md:text-base text-gray-600">
               Please watch all training videos to continue using the platform, or you can mark them all as viewed if you prefer.
