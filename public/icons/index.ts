@@ -108,10 +108,12 @@ import EllipsisVertical from "./EllipsisVertical";
 import InfoFilledIcon from "./InfoFilledIcon";
 import MoreIcon from "./MoreIcon";
 import ShoppingCartRemoveIcon from "./ShoppingCartRemoveIcon";
+import PencilEditIcon2 from "./PencilEditIcon2";
 
 
 export {
     ShoppingCartRemoveIcon,
+    PencilEditIcon2,
     MoreIcon,
     InfoFilledIcon,
     EllipsisVertical,
