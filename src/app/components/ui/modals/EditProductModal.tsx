@@ -88,7 +88,7 @@ const EditProductModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           options={categories}
           value={category}
           onChange={setCategory}
-          placeholder="Select Language"
+          placeholder="Select Category"
           showSearch
         />
 

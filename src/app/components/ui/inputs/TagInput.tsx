@@ -74,7 +74,7 @@ export default function TagInput({
         {tags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-0.5 rounded-full border border-gray-200 bg-gray-50 ps-3 py-0.5 pe-1.5 font-medium text-sm text-gray-700"
+            className="inline-flex items-center gap-0.5 rounded-lg border border-gray-200 break-all bg-gray-50 ps-3 py-0.5 pe-1.5 font-medium text-sm text-gray-700"
           >
             {tag}
             {!disabled && (
