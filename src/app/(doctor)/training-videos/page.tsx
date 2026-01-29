@@ -40,6 +40,7 @@ const DoctorTrainingVideosPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 9; // 3 columns x 3 rows
   const [viewedVideos, setViewedVideos] = useState<Set<string>>(new Set());
+  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
 
@@ -266,6 +267,11 @@ const DoctorTrainingVideosPage: React.FC = () => {
                       controls
                       width="100%"
                       height="100%"
+                      light={activeVideoId !== video.id}
+                      playIcon={null}
+                      playing={activeVideoId === video.id}
+                      onClickPreview={() => setActiveVideoId(video.id)}
+                      onPause={() => setActiveVideoId(null)}
                       onStart={() => handleVideoView(video.id)}
                     />
                   </div>

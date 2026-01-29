@@ -9,6 +9,7 @@ import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useMutation, useQuery } from "@apollo/client";
 import { CREATE_VIDEO, UPDATE_VIDEO } from "@/lib/graphql/mutations";
 import { ALL_VIDEOS } from "@/lib/graphql/queries";
+import { Config } from "react-player/types";
 
 interface TrainingVideo {
   id: string;
@@ -43,6 +44,152 @@ const videoSchema = Yup.object().shape({
     .url("Please enter a valid URL")
     .required("Video link is required"),
 });
+
+// Optimized Video Player Component
+function OptimizedVideoPlayer({ url }: { url: string }) {
+  const [isClient, setIsClient] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const handleReady = () => {
+    setHasError(false);
+  };
+
+  const handleError = (error: unknown) => {
+    console.error('Video player error:', error);
+    setHasError(true);
+  };
+
+  const handleClickPreview = () => {
+    // Ensure single click both loads and starts playback
+    setIsPlaying(true);
+  };
+
+  // Extract video ID from YouTube URL for thumbnail
+  const getYouTubeId = (url: string) => {
+    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+    return match ? match[1] : null;
+  };
+
+  const youtubeId = getYouTubeId(url);
+
+  if (!isClient) {
+    return (
+      <div className="w-full aspect-video bg-gray-200 animate-pulse flex items-center justify-center">
+        <div className="text-gray-400">Loading player...</div>
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div className="w-full aspect-video bg-gray-100 flex flex-col items-center justify-center gap-2">
+        <div className="text-red-500 text-sm">Failed to load video</div>
+        {youtubeId && (
+          <a
+            href={`https://www.youtube.com/watch?v=${youtubeId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 text-sm underline"
+          >
+            Open in YouTube
+          </a>
+        )}
+      </div>
+    );
+  }
+
+  const getYouTubeConfig = () => {
+    if (typeof window === 'undefined') return {};
+
+    return {
+      youtube: {
+        playerVars: {
+          origin: window.location.origin, // FIX: Add origin to fix postMessage error
+          modestbranding: 1,
+          rel: 0,
+          showinfo: 0,
+          enablejsapi: 1,
+          widget_referrer: window.location.origin,
+          fs: 1,
+          playsinline: 1,
+          // Use youtube-nocookie.com for better privacy/cookie handling
+          host: 'https://www.youtube-nocookie.com'
+        }
+      }
+    };
+  };
+
+  // Check if it's a YouTube URL
+  const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+
+  return (
+    <div className="relative w-full aspect-video bg-black">
+      <ReactPlayer
+        src={url}
+        width="100%"
+        height="100%"
+        controls
+        light={youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg` : true}
+        playIcon={null}
+        playing={isPlaying}
+        onClickPreview={handleClickPreview}
+        onPause={() => setIsPlaying(false)}
+        onReady={handleReady}
+        onError={handleError}
+        config={isYouTube ? getYouTubeConfig() as unknown as Config : {}}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+        }}
+      />
+    </div>
+  );
+}
+
+// Add Lazy Load Video Player Component
+function LazyVideoPlayer({ url }: { url: string }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const playerRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px'
+      }
+    );
+
+    if (playerRef.current) {
+      observer.observe(playerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={playerRef} className="relative w-full aspect-video bg-black">
+      {isVisible ? (
+        <OptimizedVideoPlayer url={url} />
+      ) : (
+        <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center">
+          <div className="text-gray-400">Loading video...</div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const AdminTrainingVideosPage: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(0);
@@ -116,9 +263,6 @@ const AdminTrainingVideosPage: React.FC = () => {
       }
     },
   });
-
-  // Convert video URL to embeddable URL
-  // (react-player handles YouTube/Vimeo/etc directly)
 
   // Format date helper function
   const formatDate = (dateString: string): string => {
@@ -422,12 +566,7 @@ const AdminTrainingVideosPage: React.FC = () => {
                                       </div>
                                   </div>
                                   <div className="relative w-full aspect-video bg-black max-h-[300px]">
-                                      <ReactPlayer
-                                          src={video.url}
-                                          controls
-                                          width="100%"
-                                          height="100%"
-                                      />
+                                <LazyVideoPlayer url={video.url} />
                                   </div>
                               </article>
                           );
