@@ -2,10 +2,12 @@
 
 import React, { useState } from "react";
 import ReactPlayer from "react-player";
-import { Skeleton, Pagination } from "@/app/components";
+import { Skeleton, Pagination, ThemeButton } from "@/app/components";
 import { useQuery, useMutation } from "@apollo/client";
 import { ALL_VIDEOS } from "@/lib/graphql/queries";
-import { MARK_VIDEO_AS_VIEWED } from "@/lib/graphql/mutations";
+import { MARK_ALL_VIDEOS_AS_VIEWED, MARK_VIDEO_AS_VIEWED } from "@/lib/graphql/mutations";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { setUser } from "@/lib/store/slices/authSlice";
 
 interface TrainingVideo {
   id: string;
@@ -38,6 +40,8 @@ const DoctorTrainingVideosPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 9; // 3 columns x 3 rows
   const [viewedVideos, setViewedVideos] = useState<Set<string>>(new Set());
+  const user = useAppSelector((state) => state.auth.user);
+  const dispatch = useAppDispatch();
 
   const {
     data: videosData,
@@ -56,6 +60,35 @@ const DoctorTrainingVideosPage: React.FC = () => {
       console.error("Failed to mark video as viewed:", error);
     },
   });
+
+  const [markAllVideosAsViewed, { loading: markAllLoading }] = useMutation(
+    MARK_ALL_VIDEOS_AS_VIEWED,
+    {
+      onCompleted: (data) => {
+        if (data?.markVideoAsViewed?.success) {
+          if (user) {
+            dispatch(
+              setUser({
+                ...user,
+                hasViewedAllVideos: true,
+              })
+            );
+          }
+        }
+      },
+      onError: (error) => {
+        console.error("Failed to mark all videos as viewed:", error);
+      },
+    }
+  );
+
+  const handleMarkAllAsViewed = () => {
+    markAllVideosAsViewed({
+      variables: {
+        viewedAll: true,
+      },
+    });
+  };
 
   const handleVideoView = async (videoId: string) => {
     // Only mark as viewed if not already viewed in this session
@@ -156,6 +189,15 @@ const DoctorTrainingVideosPage: React.FC = () => {
             Learn how to use the platform with our training videos.
           </p>
         </div>
+        {user?.hasViewedAllVideos === false && (
+          <ThemeButton
+            label={markAllLoading ? "Marking..." : "Mark All as Viewed"}
+            onClick={handleMarkAllAsViewed}
+            variant="outline"
+            heightClass="h-10"
+            disabled={markAllLoading}
+          />
+        )}
       </section>
 
       <div className="flex flex-col gap-4 md:gap-6">
@@ -206,6 +248,16 @@ const DoctorTrainingVideosPage: React.FC = () => {
                           </p>
                         )}
                       </div>
+                      {user?.hasViewedAllVideos === false && (
+                        <ThemeButton
+                          label="Mark as viewed"
+                          onClick={() => handleVideoView(video.id)}
+                          variant="outline"
+                          heightClass="h-8"
+                          className="shrink-0 text-sm"
+                          disabled={viewedVideos.has(video.id)}
+                        />
+                      )}
                     </div>
                   </div>
                   <div className="relative w-full aspect-video bg-black max-h-[300px]">
