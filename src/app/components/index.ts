@@ -53,8 +53,14 @@ import {
   CustomerRoute,
   DoctorOrAdminRoute,
 } from "./RoleBasedRoute";
+import PriceModal from "./ui/modals/PriceModal";
+import CartPopover from "./ui/CartPopover";
+import ShopProductCard from "./ui/cards/ShopProductCard";
 
 export {
+  ShopProductCard,
+  PriceModal,
+  CartPopover,
   EmptyState,
   Loader,
   NotificationToggle,

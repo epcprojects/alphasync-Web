@@ -12,6 +12,7 @@ import Cookies from "js-cookie";
 import { clearUser } from "@/lib/store/slices/authSlice";
 import { useRouter } from "next/navigation";
 import { useApolloClient } from "@apollo/client";
+import CartPopover from "../ui/CartPopover";
 
 interface MenuItemType {
   label: string;
@@ -70,13 +71,13 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
   }, []);
 
   const hasPendingPayment = menuItems.some((item) =>
-    item.href.includes("pending-payment")
+    item.href.includes("pending-payment"),
   );
 
   const hasMyClinic = menuItems.some((item) => item.href.includes("clinic"));
 
   const isAdminHeader = menuItems.some((item) =>
-    item.label.includes("Doctors")
+    item.label.includes("Doctors"),
   );
   const user = useAppSelector((state) => state.auth.user);
   const INITIAL_AVATAR = "/images/arinaProfile.png";
@@ -182,6 +183,8 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
           </div>
 
           <div className="items-center  gap-2.5 flex ">
+            <CartPopover />
+
             {hasPendingPayment && (
               <Link
                 href={"/customer-requests"}
@@ -250,8 +253,8 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                         user?.userType === "doctor"
                           ? "/settings"
                           : user?.userType === "patient"
-                          ? "/profile"
-                          : "/admin/settings"
+                            ? "/profile"
+                            : "/admin/settings"
                       }
                       className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10"
                     >
