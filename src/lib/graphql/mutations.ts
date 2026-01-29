@@ -898,3 +898,37 @@ export const EXPORT_ADMINS = gql`
     }
   }
 `;
+
+export const CREATE_VIDEO = gql`
+  mutation CreateVideo($title: String!, $videoUrl: String!) {
+    createVideo(input: { title: $title, videoUrl: $videoUrl }) {
+      success
+    }
+  }
+`;
+
+export const UPDATE_VIDEO = gql`
+  mutation UpdateVideo($id: ID!, $title: String, $videoUrl: String, $archived: Boolean) {
+    updateVideo(input: { id: $id, title: $title, videoUrl: $videoUrl, archived: $archived }) {
+      success
+    }
+  }
+`;
+
+export const MARK_VIDEO_AS_VIEWED = gql`
+  mutation MarkVideoAsViewed($videoId: ID!) {
+    markVideoAsViewed(input: { videoId: $videoId }) {
+      hasViewedAllVideos
+      success
+    }
+  }
+`;
+
+export const MARK_ALL_VIDEOS_AS_VIEWED = gql`
+  mutation MarkVideoAsViewed($viewedAll: Boolean) {
+    markVideoAsViewed(input: { viewedAll: $viewedAll }) {
+      success
+      hasViewedAllVideos
+    }
+  }
+`;

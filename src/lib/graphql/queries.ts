@@ -635,3 +635,25 @@ export const PEPTIDE_ACCOUNTING_CHARTS = gql`
     }
   }
 `;
+
+export const ALL_VIDEOS = gql`
+  query AllVideos($perPage: Int, $page: Int) {
+    allVideos(perPage: $perPage, page: $page) {
+      count
+      nextPage
+      prevPage
+      totalPages
+      allData {
+        uploadedBy {
+          fullName
+          firstName
+          imageUrl
+        }
+        videoUrl
+        title
+        id
+        createdAt
+      }
+    }
+  }
+`;

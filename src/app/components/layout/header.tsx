@@ -3,7 +3,7 @@ import React, { useEffect, useState, MouseEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Images } from "@/app/ui/images";
-import { ProfileIcon, LogoutIcon, RequestIcon, AccountingIcon } from "@/icons";
+import { ProfileIcon, LogoutIcon, RequestIcon, AccountingIcon, DashboardIcon } from "@/icons";
 import HeaderMenuNavItems from "./HeaderMenuNavItems";
 import Notifications from "../ui/Notifications";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
@@ -234,6 +234,16 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                       {user?.email}
                     </span>
                   </div>
+                  {user?.userType === "doctor" && (
+                    <MenuItem>
+                      <Link
+                        href="/training-videos"
+                        className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10"
+                      >
+                        <DashboardIcon fill="currentColor" /> Training Videos
+                      </Link>
+                    </MenuItem>
+                  )}
                   <MenuItem>
                     <Link
                       href={
@@ -338,6 +348,18 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                         </Link>
                       );
                     })}
+                    {user?.userType === "doctor" && (
+                      <Link
+                        onClick={closeMenu}
+                        href="/training-videos"
+                        className="flex items-center gap-1.5 p-1.5 text-base font-normal leading-7 text-gray-900 hover:bg-gray-100"
+                      >
+                        <span className="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center">
+                          <DashboardIcon fill="currentColor" />
+                        </span>
+                        Training Videos
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         closeMenu();

@@ -45,6 +45,7 @@ import NotificationList from "./ui/NotificationList";
 import ChangePassword from "@/app/components/ChangePassword";
 import ImageUpload from "@/app/components/ImageUpload";
 import Chat from "./ui/chat/Chat";
+import TrainingVideosBlockingPage from "./TrainingVideosBlockingPage";
 import {
   RoleBasedRoute,
   AdminRoute,
@@ -106,4 +107,5 @@ export {
   DoctorRoute,
   CustomerRoute,
   DoctorOrAdminRoute,
+  TrainingVideosBlockingPage,
 };
