@@ -107,9 +107,7 @@ export default function ProductCard({
                 )}
                 <ThemeButton
                   label={
-                    product.basePrice === product.price
-                      ? "Add to Shop"
-                      : "Change Customer Price"
+                    isMarkedUp ? "Change Customer Price" : "Add to Shop"
                   }
                   icon={<InventoryIcon fill="#2862A9" />}
                   onClick={(e) => {
@@ -119,7 +117,7 @@ export default function ProductCard({
                   variant="outline"
                   className="flex-1"
                   heightClass="h-10 md:h-11"
-                  disabled={customPrice === null || customPrice === undefined}
+                  disabled={false}
                 />
 
                 <h2 className="text-gray-950 font-semibold text-sm md:text-lg lg:text-xl min-w-16 text-end">

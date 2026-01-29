@@ -60,7 +60,8 @@ function InventoryContent() {
     shopifyVariantId: string;
     title: string;
     price?: number;
-    customPrice?: number;
+    customPrice?: number | null;
+    imageUrl?: string | null;
   } | null>(null);
 
   const router = useRouter();
@@ -478,13 +479,22 @@ function InventoryContent() {
                     product={product}
                     customPrice={originalProduct?.customPrice}
                     onBtnClick={() => {
-                      if (isMarkedUp) {
-                        setShowPriceModal(true);
-                      } else if (originalProduct) {
-                        router.push(
-                          `/orders/new-order?productId=${originalProduct.id}`,
-                        );
+                      // Not marked up -> Add to Shop
+                      // Marked up -> Change Customer Price
+                      if (!originalProduct) {
+                        showErrorToast("Product information is missing");
+                        return;
                       }
+                      const firstVariant = originalProduct.variants?.[0];
+                      setSelectedProduct({
+                        id: originalProduct.id,
+                        shopifyVariantId: firstVariant?.shopifyVariantId || "",
+                        title: originalProduct.title,
+                        price: firstVariant?.price ?? 0,
+                        customPrice: originalProduct.customPrice ?? null,
+                        imageUrl: originalProduct.primaryImage ?? null,
+                      });
+                      setShowPriceModal(true);
                     }}
                     onCardClick={() =>
                       router.push(`/inventory/${product.originalId}`)
@@ -524,12 +534,21 @@ function InventoryContent() {
                     onToggleFavourite={() => {
                       handleToggleFavorite(product.originalId);
                     }}
-                    onAddToCart={() => {
-                      if (originalProduct) {
-                        router.push(
-                          `/orders/new-order?productId=${originalProduct.id}`,
-                        );
+                    onBtnClick={() => {
+                      if (!originalProduct) {
+                        showErrorToast("Product information is missing");
+                        return;
                       }
+                      const firstVariant = originalProduct.variants?.[0];
+                      setSelectedProduct({
+                        id: originalProduct.id,
+                        shopifyVariantId: firstVariant?.shopifyVariantId || "",
+                        title: originalProduct.title,
+                        price: firstVariant?.price ?? 0,
+                        customPrice: originalProduct.customPrice ?? null,
+                        imageUrl: originalProduct.primaryImage ?? null,
+                      });
+                      setShowPriceModal(true);
                     }}
                   />
                 );
@@ -561,7 +580,7 @@ function InventoryContent() {
         onConfirm={handleConfirmOrder}
         productId={selectedProduct?.id}
         shopifyVariantId={selectedProduct?.shopifyVariantId}
-        customPrice={selectedProduct?.customPrice}
+        customPrice={selectedProduct?.customPrice ?? undefined}
         price={selectedProduct?.price}
         isLoading={createOrderLoading}
         onClose={() => {
@@ -573,6 +592,20 @@ function InventoryContent() {
       <PriceModal
         isOpen={showPricModal}
         onClose={() => setShowPriceModal(false)}
+        product={
+          selectedProduct
+            ? {
+              id: selectedProduct.id,
+              title: selectedProduct.title,
+              imageUrl: selectedProduct.imageUrl,
+              basePrice: selectedProduct.price ?? 0,
+              customPrice: selectedProduct.customPrice ?? null,
+            }
+            : null
+        }
+        onSuccess={() => {
+          refetch();
+        }}
       />
 
       <BlanketMarkupModal
