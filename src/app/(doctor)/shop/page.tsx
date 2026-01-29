@@ -1,5 +1,7 @@
 "use client";
-import { Pagination, ShopProductCard, ThemeButton } from "@/app/components";
+
+import { Pagination, ShopProductCard, Skeleton, ThemeButton } from "@/app/components";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   DeliveryBoxIcon,
@@ -9,20 +11,110 @@ import {
 } from "@/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
+import type { AllProductsResponse } from "@/types/products";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { addItem } from "@/lib/store/slices/cartSlice";
+import { ADD_TO_CART } from "@/lib/graphql/mutations";
+import { showErrorToast } from "@/lib/toast";
 
 const Page = () => {
   const isMobile = useIsMobile();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const dispatch = useAppDispatch();
+  const [addToCartMutation] = useMutation(ADD_TO_CART, {
+    onError: (e) => {
+      showErrorToast(e.message || "Failed to add to cart");
+    },
+  });
 
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
 
-  const pageCount = 1;
+  const itemsPerPage = 9;
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const { data, loading, error } = useQuery<AllProductsResponse>(
+    ALL_PRODUCTS_INVENTORY,
+    {
+      variables: {
+        search: debouncedSearch || null,
+        page: currentPage,
+        perPage: itemsPerPage,
+        markedUp: true,
+      },
+      fetchPolicy: "network-only",
+    }
+  );
+
+  const pageCount = data?.allProducts?.totalPages || 1;
+
+  const shopProducts = useMemo(() => {
+    const allData = data?.allProducts?.allData ?? [];
+    return allData.map((p, idx) => {
+      const firstVariant = p.variants?.[0];
+      const customerPrice =
+        p.customPrice != null && p.customPrice !== undefined
+          ? p.customPrice
+          : firstVariant?.price ?? 0;
+
+      const basePrice = (() => {
+        const priceRangeStr = (p.priceRange || "").trim();
+        if (priceRangeStr.startsWith("$")) {
+          return priceRangeStr.split(" - ")[0] || priceRangeStr;
+        }
+        const match = priceRangeStr.match(/[\d.]+/);
+        if (match) {
+          const n = Number(match[0]);
+          if (!Number.isNaN(n)) return `$${n.toFixed(2)}`;
+        }
+        if (firstVariant?.price != null) return `$${Number(firstVariant.price).toFixed(2)}`;
+        return undefined;
+      })();
+
+      return {
+        id: Number(p.id) || idx + 1,
+        originalId: p.id,
+        title: p.title,
+        description: p.description || "",
+        category: p.productType || (p.tags?.[0] ?? "N/A"),
+        stock: p.totalInventory ?? 0,
+        price: `$${Number(customerPrice).toFixed(2)}`,
+        basePrice,
+        image:
+          (typeof p.primaryImage === "string" && p.primaryImage.trim().length > 0
+            ? p.primaryImage
+            : p.images?.find((img) => typeof img === "string" && img.trim().length > 0)) ||
+          "",
+        isFavourite: !!p.isFavorited,
+      };
+    });
+  }, [data]);
 
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
   };
+
+  if (error) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="bg-white rounded-xl border border-red-200 p-6 md:p-12 text-center text-red-500 text-sm">
+          Failed to load shop products. Please try again.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
@@ -62,75 +154,91 @@ const Page = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
-        <ShopProductCard
-          key={1}
-          product={{
-            category: "Healing Peptide",
-            description:
-              "A 1:1 blend of CJC-1295 No DAC (5mg) and Ipamorelin (5mg)",
-            id: 1,
-            image:
-              "https://cdn.shopify.com/s/files/1/0904/1811/8965/files/ABM-SC-DIHEX-10x30_03345989-23ee-4fa3-9b74-ada8af232649.webp?v=1759262951",
-            isFavourite: false,
-            price: "$83.00",
-            stock: 50,
-            title: "2X Blend CJC-1295 No DAC (5mg) / Ipamorelin (5mg)",
-            basePrice: "$83.00",
-          }}
-          onBtnClick={() => {}}
-          onCardClick={() => {}}
-        />
-        <ShopProductCard
-          key={2}
-          product={{
-            category: "Healing Peptide",
-            description:
-              "A 1:1 blend of CJC-1295 No DAC (5mg) and Ipamorelin (5mg) nd Ipamorelin (5mg)",
-            id: 1,
-            image:
-              "https://cdn.shopify.com/s/files/1/0904/1811/8965/files/ABM-SC-DIHEX-10x30_03345989-23ee-4fa3-9b74-ada8af232649.webp?v=1759262951",
-            isFavourite: false,
-            price: "$83.00",
-            stock: 50,
-            title: "2X Blend CJC-1295 No DAC (5mg) / Ipamorelin (5mg)",
-            basePrice: "$83.00",
-          }}
-          onBtnClick={() => {}}
-          onCardClick={() => {}}
-        />
-      </div>
-
-      <Pagination
-        currentPage={currentPage - 1} // Convert 1-based to 0-based for pagination component
-        totalPages={pageCount + 2}
-        onPageChange={(selectedPage) => handlePageChange(selectedPage + 1)} // Convert 0-based back to 1-based
-      />
-
-      <div className="h-full bg-white py-20 flex flex-col justify-center items-center gap-7 text-center rounded-xl">
-        <ShoppingCartRemoveIcon />
-        <div className="space-y-3">
-          <h2 className="font-semibold text-2xl text-gray-900">
-            Your shop is empty.
-          </h2>
-
-          <p className="font-medium text-lg text-gray-800">
-            Head to{" "}
-            <Link
-              className="text-primary hover:underline underline-offset-2"
-              href="/inventory"
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-6">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
             >
-              Inventory
-            </Link>
-            , mark up an item, and start selling.
-          </p>
+              <Skeleton className="w-full h-48 rounded-lg mb-4" />
+              <Skeleton className="h-5 w-3/4 mb-2" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-2/3 mb-4" />
+              <div className="flex justify-between items-center mb-4">
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+              <Skeleton className="h-10 w-full rounded-lg" />
+            </div>
+          ))}
         </div>
-        <ThemeButton
-          label="Add Products"
-          icon={<PlusIcon />}
-          onClick={() => router.push("/inventory")}
-        />
-      </div>
+      ) : shopProducts.length === 0 ? (
+        <div className="h-full bg-white py-20 flex flex-col justify-center items-center gap-7 text-center rounded-xl">
+          <ShoppingCartRemoveIcon />
+          <div className="space-y-3">
+            <h2 className="font-semibold text-2xl text-gray-900">
+              Your shop is empty.
+            </h2>
+
+              <p className="font-medium text-lg text-gray-800">
+                Head to{" "}
+                <Link
+                  className="text-primary hover:underline underline-offset-2"
+                  href="/inventory"
+                >
+                  Inventory
+                </Link>
+                , mark up an item, and start selling.
+              </p>
+            </div>
+            <ThemeButton
+              label="Add Products"
+              icon={<PlusIcon />}
+              onClick={() => router.push("/inventory")}
+            />
+          </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-6">
+            {shopProducts.map((product) => (
+              <ShopProductCard
+                key={product.originalId || product.id}
+                product={product}
+                onAddToCart={(payload) => {
+                  dispatch(
+                    addItem({
+                      id: payload.productId,
+                      name: payload.name,
+                      price: payload.price,
+                      qty: payload.qty,
+                      imageSrc: payload.imageSrc,
+                    })
+                  );
+                  // Call API (server-side cart) as well
+                  addToCartMutation({
+                    variables: {
+                      productId: payload.productId,
+                      quantity: payload.qty,
+                    },
+                  });
+                }}
+                onCardClick={() => {
+                  router.push(`/inventory/${product.originalId}`);
+                }}
+              />
+            ))}
+          </div>
+
+          {pageCount > 1 && (
+            <Pagination
+              currentPage={currentPage - 1} // Convert 1-based to 0-based
+              totalPages={pageCount}
+              onPageChange={(selectedPage) => handlePageChange(selectedPage + 1)}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 };

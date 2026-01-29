@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment, useMemo, useState } from "react";
+import React, { Fragment, useMemo } from "react";
 import Image from "next/image";
 import {
   Popover,
@@ -10,14 +10,8 @@ import {
 } from "@headlessui/react";
 import { ShoppingCartIcon } from "@/icons";
 import ThemeButton from "./buttons/ThemeButton";
-
-type CartItem = {
-  id: string;
-  name: string;
-  price: number;
-  qty: number;
-  imageSrc: string;
-};
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { removeItem as removeCartItem } from "@/lib/store/slices/cartSlice";
 
 function formatMoney(n: number) {
   return new Intl.NumberFormat("en-US", {
@@ -27,33 +21,21 @@ function formatMoney(n: number) {
 }
 
 export default function CartPopover() {
-  const [items, setItems] = useState<CartItem[]>([
-    {
-      id: "1",
-      name: "2X Blend CJC-1295 No DAC (5mg) / Ipamorelin (5mg)",
-      price: 68,
-      qty: 1,
-      imageSrc:
-        "https://cdn.shopify.com/s/files/1/0904/1811/8965/files/ABM-SC-DIHEX-10x30_03345989-23ee-4fa3-9b74-ada8af232649.webp?v=1759262951",
-    },
-    {
-      id: "2",
-      name: "2X Blend CJC-1295 No DAC (5mg) / Ipamorelin (5mg)",
-      price: 68,
-      qty: 1,
-      imageSrc:
-        "https://cdn.shopify.com/s/files/1/0904/1811/8965/files/ABM-SC-DIHEX-10x30_03345989-23ee-4fa3-9b74-ada8af232649.webp?v=1759262951",
-    },
-  ]);
+  const dispatch = useAppDispatch();
+  const items = useAppSelector((state) => state.cart.items);
+  const itemsCountFromStore = useAppSelector((state) => state?.cart?.items?.length);
 
-  const count = useMemo(() => items.reduce((s, i) => s + i.qty, 0), [items]);
+  const count = useMemo(() => {
+    // Prefer server-provided count if available; fallback to sum of quantities
+    if (typeof itemsCountFromStore === "number") return itemsCountFromStore;
+    return items.reduce((s, i) => s + i.qty, 0);
+  }, [items, itemsCountFromStore]);
   const total = useMemo(
     () => items.reduce((s, i) => s + i.price * i.qty, 0),
     [items],
   );
 
-  const removeItem = (id: string) =>
-    setItems((prev) => prev.filter((x) => x.id !== id));
+  const removeItem = (id: string) => dispatch(removeCartItem(id));
 
   return (
     <Popover className="relative">
@@ -156,6 +138,7 @@ export default function CartPopover() {
                 <ThemeButton
                   type="button"
                   label="Continue"
+                  disabled={items.length === 0}
                   onClick={() => {
                     close();
                   }}
