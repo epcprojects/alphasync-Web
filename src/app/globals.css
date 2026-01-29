@@ -57,6 +57,7 @@
 
   --animate-slideUp: slideUp 0.3s ease-out;
   --animate-pulse-icon: pulse-icon 1.5s ease-in-out infinite;
+    --shadow-table: 0px 1px 3px rgba(0,0,0,0.1), 0px 1px 2px rgba(0,0,0,0.06);
 }
 
 @layer utilities {
@@ -64,7 +65,7 @@
     animation: pulse-icon 1.5s ease-in-out infinite;
   }
 
-  --shadow-table: 0px 1px 3px rgba(0,0,0,0.1), 0px 1px 2px rgba(0,0,0,0.06);
+
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -296,7 +297,17 @@ width: 16px !important;
 } */
 
 
+.ql-toolbar {
+  @apply border-0! border-b; 
+}
 
+.ql-container {
+  @apply rounded-lg border-0! border-lightGray
+}
+
+.ql-editor {
+   @apply rounded-lg border border-lightGray text-gray-900 text-base
+}
 }
 
 

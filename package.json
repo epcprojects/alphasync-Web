@@ -24,6 +24,8 @@
     "js-cookie": "^3.0.5",
     "jspdf": "^3.0.4",
     "next": "^15.5.7",
+    "primereact": "^10.9.7",
+    "quill": "^2.0.3",
     "react": "^19.1.2",
     "react-apexcharts": "^1.9.0",
     "react-date-range": "^2.0.1",
