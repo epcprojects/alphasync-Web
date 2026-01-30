@@ -146,7 +146,7 @@ export default function ProductListView({
             aria-label={isMarkedUp ? "Change Customer Price" : "Add to Shop"}
             type="button"
           >
-            <InventoryIcon fill="#2862A9" width={16} height={16} />
+            <InventoryIcon fill="#2862A9" width="16" height="16" />
           </button>
         </Tooltip>
       </div>

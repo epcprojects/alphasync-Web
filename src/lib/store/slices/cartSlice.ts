@@ -54,26 +54,27 @@ const cartSlice = createSlice({
       state.totalMarkedUpPrice = cart?.totalMarkedUpPrice ?? 0;
 
       const serverItems = cart?.cartItems ?? [];
-      state.items = serverItems
-        .map((ci) => {
-          const product = ci.product;
-          const id = product?.id;
-          if (!id) return null;
-          const imageSrc =
-            (product?.primaryImage && product.primaryImage.trim().length > 0
-              ? product.primaryImage
-              : product?.images?.find((img) => typeof img === "string" && img.trim().length > 0)) ||
-            "";
-          return {
+      state.items = serverItems.flatMap((ci): CartItem[] => {
+        const product = ci.product;
+        const id = product?.id;
+        if (!id) return [];
+        const imageSrc =
+          (product?.primaryImage && product.primaryImage.trim().length > 0
+            ? product.primaryImage
+            : product?.images?.find(
+                (img) => typeof img === "string" && img.trim().length > 0,
+              )) || "";
+        return [
+          {
             id,
             cartItemId: ci.id,
             name: product?.title || "Product",
             price: Number(ci.markedUpPrice ?? 0),
             qty: Number(ci.quantity ?? 1),
             imageSrc,
-          } satisfies CartItem;
-        })
-        .filter((x): x is CartItem => !!x);
+          },
+        ];
+      });
     },
     addItem: (state, action: PayloadAction<CartItem>) => {
       const incoming = action.payload;
