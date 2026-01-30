@@ -26,6 +26,7 @@ export const FETCH_USER = gql`
           totalBasePrice
           totalMarkedUpPrice
           cartItems {
+            id
             quantity
             markedUpPrice
             product {

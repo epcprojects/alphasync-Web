@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export type CartItem = {
   id: string; // product id (GraphQL id)
+  cartItemId?: string; // server cart item id (needed for removeFromCart)
   name: string;
   price: number; // unit price
   qty: number;
@@ -14,6 +15,7 @@ export type ServerCart = {
   totalBasePrice?: number;
   totalMarkedUpPrice?: number;
   cartItems?: Array<{
+    id?: string;
     quantity?: number;
     markedUpPrice?: number;
     product?: {
@@ -64,6 +66,7 @@ const cartSlice = createSlice({
             "";
           return {
             id,
+            cartItemId: ci.id,
             name: product?.title || "Product",
             price: Number(ci.markedUpPrice ?? 0),
             qty: Number(ci.quantity ?? 1),

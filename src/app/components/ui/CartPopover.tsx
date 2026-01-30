@@ -8,10 +8,12 @@ import {
   PopoverPanel,
   Transition,
 } from "@headlessui/react";
+import { useMutation } from "@apollo/client";
 import { ShoppingCartIcon } from "@/icons";
 import ThemeButton from "./buttons/ThemeButton";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { removeItem as removeCartItem } from "@/lib/store/slices/cartSlice";
+import { REMOVE_FROM_CART } from "@/lib/graphql/mutations";
 
 function formatMoney(n: number) {
   return new Intl.NumberFormat("en-US", {
@@ -24,6 +26,7 @@ export default function CartPopover() {
   const dispatch = useAppDispatch();
   const items = useAppSelector((state) => state.cart.items);
   const itemsCountFromStore = useAppSelector((state) => state?.cart?.items?.length);
+  const [removeFromCart] = useMutation(REMOVE_FROM_CART);
 
   const count = useMemo(() => {
     // Prefer server-provided count if available; fallback to sum of quantities
@@ -35,7 +38,18 @@ export default function CartPopover() {
     [items],
   );
 
-  const removeItem = (id: string) => dispatch(removeCartItem(id));
+  const removeItem = async (item: (typeof items)[number]) => {
+    // Optimistic UI
+    dispatch(removeCartItem(item.id));
+
+    // If we have the server cartItemId (from fetchUser/cart hydration), sync deletion to backend.
+    if (!item.cartItemId) return;
+    try {
+      await removeFromCart({ variables: { cartItemId: item.cartItemId } });
+    } catch {
+      // If backend removal fails, we'll reconcile on next fetchUser refresh.
+    }
+  };
 
   return (
     <Popover className="relative">
@@ -113,7 +127,7 @@ export default function CartPopover() {
                               </h2>
                               <button
                                 type="button"
-                                onClick={() => removeItem(item.id)}
+                                onClick={() => void removeItem(item)}
                                 className="text-sm font-medium text-red-500 cursor-pointer hover:underline underline-offset-2 hover:text-red-600"
                               >
                                 Remove

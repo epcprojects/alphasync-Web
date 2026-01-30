@@ -744,6 +744,15 @@ export const ADD_TO_CART = gql`
   }
 `;
 
+export const REMOVE_FROM_CART = gql`
+  mutation RemoveFromCart($cartItemId: ID!) {
+    removeFromCart(input: { cartItemId: $cartItemId }) {
+      success
+      message
+    }
+  }
+`;
+
 /**
  * Marks a product not for sale: reverts to base price, clears customPrice,
  * and removes it from customer inventory until marked up again.
