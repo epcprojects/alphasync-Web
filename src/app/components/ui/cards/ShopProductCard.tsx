@@ -1,6 +1,6 @@
 "use client";
 
-import { CrossIcon, InventoryIcon, ShopingCartIcon } from "@/icons";
+import { CrossIcon, ShopingCartIcon } from "@/icons";
 import ThemeButton from "../buttons/ThemeButton";
 import ProductImage from "@/app/components/ui/ProductImage";
 import React, { useMemo, useState } from "react";
@@ -27,12 +27,16 @@ interface ProductCardProps {
     qty: number;
     imageSrc: string;
   }) => void;
+  onRemoveFromShop?: (productId: string) => Promise<void> | void;
+  removingFromShop?: boolean;
   onCardClick?: () => void;
 }
 
 export default function ShopProductCard({
   product,
   onAddToCart,
+  onRemoveFromShop,
+  removingFromShop,
   onCardClick,
 }: ProductCardProps) {
   const maxQty = useMemo(() => {
@@ -68,6 +72,14 @@ export default function ShopProductCard({
     setQuantity(maxQty > 0 ? "1" : "0");
   };
 
+  const handleRemoveFromShop = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    e.stopPropagation();
+    const productId = product.originalId || String(product.id);
+    await Promise.resolve(onRemoveFromShop?.(productId));
+  };
+
   return (
     <div
       onClick={onCardClick}
@@ -75,9 +87,10 @@ export default function ShopProductCard({
     >
       <button
         className="absolute top-4 end-4 text-gray-700 hover:bg-gray-100 rounded-full border border-gray-200 h-8 w-8 md:h-11 md:w-11 flex items-center justify-center cursor-pointer"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
+        aria-label="Remove from shop"
+        type="button"
+        disabled={!!removingFromShop}
+        onClick={handleRemoveFromShop}
       >
         <CrossIcon fill="currentColor" />
       </button>

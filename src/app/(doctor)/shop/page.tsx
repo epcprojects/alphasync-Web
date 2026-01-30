@@ -16,7 +16,7 @@ import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import type { AllProductsResponse } from "@/types/products";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { addItem } from "@/lib/store/slices/cartSlice";
-import { ADD_TO_CART } from "@/lib/graphql/mutations";
+import { ADD_TO_CART, MARK_PRODUCT_NOT_FOR_SALE } from "@/lib/graphql/mutations";
 import { showErrorToast } from "@/lib/toast";
 
 const Page = () => {
@@ -29,9 +29,15 @@ const Page = () => {
       showErrorToast(e.message || "Failed to add to cart");
     },
   });
+  const [markProductNotForSale] = useMutation(MARK_PRODUCT_NOT_FOR_SALE, {
+    onError: (e) => {
+      showErrorToast(e.message || "Failed to remove from shop");
+    },
+  });
 
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
+  const [removingProductIds, setRemovingProductIds] = useState<Record<string, boolean>>({});
 
   const itemsPerPage = 9;
 
@@ -44,7 +50,7 @@ const Page = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data, loading, error } = useQuery<AllProductsResponse>(
+  const { data, loading, error, refetch } = useQuery<AllProductsResponse>(
     ALL_PRODUCTS_INVENTORY,
     {
       variables: {
@@ -103,6 +109,22 @@ const Page = () => {
 
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
+  };
+
+  const handleRemoveFromShop = async (productId: string) => {
+    if (removingProductIds[productId]) return;
+    setRemovingProductIds((prev) => ({ ...prev, [productId]: true }));
+    try {
+      await markProductNotForSale({ variables: { productId } });
+      // Product will no longer match markedUp:true after this, so refresh list
+      await refetch();
+    } finally {
+      setRemovingProductIds((prev) => {
+        const next = { ...prev };
+        delete next[productId];
+        return next;
+      });
+    }
   };
 
   if (error) {
@@ -205,6 +227,8 @@ const Page = () => {
               <ShopProductCard
                 key={product.originalId || product.id}
                 product={product}
+                onRemoveFromShop={handleRemoveFromShop}
+                removingFromShop={!!removingProductIds[product.originalId || String(product.id)]}
                 onAddToCart={(payload) => {
                   dispatch(
                     addItem({
