@@ -22,6 +22,7 @@ import {
 } from "@/lib/store/slices/cartSlice";
 import AppModal from "@/app/components/ui/modals/AppModal";
 import CustomerOrderPayment from "@/app/components/ui/modals/CustomerOrderPayment";
+import AddCustomerModal from "@/app/components/ui/modals/AddCustomerModal";
 
 interface OrderItem {
   product: string;
@@ -141,6 +142,8 @@ const Page = () => {
   const [clinicCheckoutOrder, setClinicCheckoutOrder] = useState<PaymentOrder | undefined>(
     undefined,
   );
+  const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
+  const [customerSelectKey, setCustomerSelectKey] = useState(0);
   const [customerDraft, setCustomerDraft] = useState("");
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
   const [preservedProduct, setPreservedProduct] = useState("");
@@ -1180,8 +1183,19 @@ const Page = () => {
                 </div>
                 {!isClinicOrder && (
                 <div>
+                      <div className="flex justify-end mb-2">
+                        <ThemeButton
+                          label="Add New Customer"
+                          icon={<PlusIcon />}
+                          onClick={() => setIsAddCustomerModalOpen(true)}
+                          variant="primaryOutline"
+                          heightClass="h-10"
+                          className="w-full sm:w-fit"
+                        />
+                      </div>
                   <CustomerSelect
-                    selectedCustomer={values.customer}
+                        key={customerSelectKey}
+                        selectedCustomer={values.customer || customerDraft}
                     setSelectedCustomer={(val: string) => {
                       if (lockedCustomer) return; // prevent changing after first item
                       // Preserve current product value when customer changes
@@ -1723,6 +1737,33 @@ const Page = () => {
           }}
         />
       )}
+
+      <AddCustomerModal
+        isOpen={isAddCustomerModalOpen}
+        onClose={() => setIsAddCustomerModalOpen(false)}
+        onConfirm={(data) => {
+          setIsAddCustomerModalOpen(false);
+
+          const firstName = typeof data?.firstName === "string" ? data.firstName : "";
+          const lastName = typeof data?.lastName === "string" ? data.lastName : "";
+          const fullName = `${firstName} ${lastName}`.trim() || data?.email || "Customer";
+          const id = data?.id != null ? String(data.id) : "";
+
+          // Ensure the newly created customer is selected immediately
+          setCustomerDraft(fullName);
+          setSelectedCustomerData({
+            name: fullName,
+            displayName: fullName,
+            email: typeof data?.email === "string" ? data.email : "",
+            id,
+          });
+          formikSetFieldValueRef.current?.("customer", fullName);
+          setLockedCustomer(null);
+
+          // Force CustomerSelect to refetch latest customers
+          setCustomerSelectKey((k) => k + 1);
+        }}
+      />
     </div>
   );
 };
