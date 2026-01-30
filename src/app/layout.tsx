@@ -57,7 +57,7 @@ export default function RootLayout({
           </ReduxProvider>
         </GraphQLProvider>
         <Script
-          src="https://js.authorize.net/v1/Accept.js"
+          src="https://jstest.authorize.net/v1/Accept.js"
           strategy="afterInteractive"
         />
       </body>
