@@ -21,6 +21,7 @@ import {
   removeItem as removeCartItem,
 } from "@/lib/store/slices/cartSlice";
 import AppModal from "@/app/components/ui/modals/AppModal";
+import CustomerOrderPayment from "@/app/components/ui/modals/CustomerOrderPayment";
 
 interface OrderItem {
   product: string;
@@ -39,6 +40,8 @@ interface OrderItem {
   isMarkedUp?: boolean;
 }
 
+type PaymentOrder = NonNullable<React.ComponentProps<typeof CustomerOrderPayment>["order"]>;
+
 const Page = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,6 +50,7 @@ const Page = () => {
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
   const cartLoaded = useAppSelector((state) => state.cart.loaded);
+  const user = useAppSelector((state) => state.auth.user);
   
   const [selectedProductData, setSelectedProductData] = useState<{
     name: string;
@@ -133,6 +137,10 @@ const Page = () => {
   >([]);
   const [confirmSwitchLoading, setConfirmSwitchLoading] = useState(false);
   const handleOrderTypeChangeRef = useRef<(nextIsClinicOrder: boolean) => void>(() => { });
+  const [isClinicPaymentOpen, setIsClinicPaymentOpen] = useState(false);
+  const [clinicCheckoutOrder, setClinicCheckoutOrder] = useState<PaymentOrder | undefined>(
+    undefined,
+  );
   const [customerDraft, setCustomerDraft] = useState("");
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
   const [preservedProduct, setPreservedProduct] = useState("");
@@ -880,7 +888,7 @@ const Page = () => {
 
       if (isClinicOrder) {
         // Clinic order: no patient, no custom pricing (same as ClinicOrderModal)
-        await createOrder({
+        const res = await createOrder({
           variables: {
             orderItems: orderItemsInput,
             totalPrice: totalAmount,
@@ -888,6 +896,39 @@ const Page = () => {
             useCustomPricing: false,
           },
         });
+
+        const createdOrderId = res?.data?.createOrder?.order?.id;
+        const displayId = String(createdOrderId ?? "");
+
+        setClinicCheckoutOrder({
+          id: createdOrderId ?? "0",
+          displayId: displayId || "—",
+          doctorName: user?.fullName || "Clinic Order",
+          orderedOn: new Date().toISOString(),
+          subtotalPrice: totalAmount,
+          totalTax: 0,
+          totalPrice: totalAmount,
+          orderItems: orderItems.map((item) => {
+            const base = Number(item.originalPrice ?? item.price);
+            const effective = Number(item.price ?? 0);
+            const hasDiscount =
+              Number.isFinite(base) &&
+              Number.isFinite(effective) &&
+              base > 0 &&
+              effective > 0 &&
+              effective !== base;
+            return {
+              id: item.productId,
+              medicineName: item.product,
+              amount: "",
+              quantity: item.quantity,
+              price: effective,
+              product: { price: Number.isFinite(base) ? base : null },
+              tieredPrice: hasDiscount ? effective : null,
+            };
+          }),
+        });
+        setIsClinicPaymentOpen(true);
       } else {
         // Customer order: require selected customer
         if (!selectedCustomerData) {
@@ -929,7 +970,9 @@ const Page = () => {
         productSelectRef.current.refetch();
       }
 
-      showSuccessToast("Order created successfully");
+      if (!isClinicOrder) {
+        showSuccessToast("Order created successfully");
+      }
     } catch (error) {
       console.error("Error creating order:", error);
       showErrorToast("Failed to create order. Please try again.");
@@ -1615,6 +1658,8 @@ const Page = () => {
                       label={
                         createOrderLoading
                           ? "Creating Order..."
+                              : isClinicOrder
+                                ? "Create Order & Checkout"
                           : "Create Order"
                       }
                       onClick={handleCreateOrder}
@@ -1661,6 +1706,23 @@ const Page = () => {
           and will be removed from your cart. Are you sure you want to continue?
         </p>
       </AppModal>
+
+      {clinicCheckoutOrder && (
+        <CustomerOrderPayment
+          isOpen={isClinicPaymentOpen}
+          onClose={() => {
+            setIsClinicPaymentOpen(false);
+            setClinicCheckoutOrder(undefined);
+          }}
+          order={clinicCheckoutOrder}
+          onClick={async () => {
+            setIsClinicPaymentOpen(false);
+            setClinicCheckoutOrder(undefined);
+            showSuccessToast("Payment processed successfully");
+            router.push("/orders");
+          }}
+        />
+      )}
     </div>
   );
 };
