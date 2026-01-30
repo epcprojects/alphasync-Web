@@ -10,12 +10,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useMutation, useQuery, useLazyQuery } from "@apollo/client/react";
 import { useApolloClient } from "@apollo/client";
-import { ADD_TO_CART, CREATE_ORDER, REMOVE_FROM_CART } from "@/lib/graphql/mutations";
+import { ADD_TO_CART, CLEAR_CART, CREATE_ORDER, REMOVE_FROM_CART } from "@/lib/graphql/mutations";
 import { FETCH_PRODUCT, FETCH_TIER_PRICING, FETCH_USER } from "@/lib/graphql/queries";
 import type { ProductSelectRef } from "@/app/components/ui/inputs/ProductSelect";
 import { FetchProductResponse } from "@/types/products";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
-import { addItem as addCartItem, removeItem as removeCartItem } from "@/lib/store/slices/cartSlice";
+import {
+  addItem as addCartItem,
+  clearCart as clearReduxCart,
+  removeItem as removeCartItem,
+} from "@/lib/store/slices/cartSlice";
 import AppModal from "@/app/components/ui/modals/AppModal";
 
 interface OrderItem {
@@ -179,6 +183,11 @@ const Page = () => {
     },
   });
   const [removeFromCart] = useMutation(REMOVE_FROM_CART);
+  const [clearCartMutation] = useMutation(CLEAR_CART, {
+    onError: (e) => {
+      showErrorToast(e.message || "Failed to clear cart");
+    },
+  });
 
   const handleConfirmSwitchToCustomer = async () => {
     if (confirmSwitchLoading) return;
@@ -898,6 +907,13 @@ const Page = () => {
             useCustomPricing,
           },
         });
+      }
+
+      // Clear cart after successful order placement (server + local)
+      try {
+        await clearCartMutation({ variables: { clientMutationId: null } });
+      } finally {
+        dispatch(clearReduxCart());
       }
 
       // Reset form state

@@ -753,6 +753,16 @@ export const REMOVE_FROM_CART = gql`
   }
 `;
 
+export const CLEAR_CART = gql`
+  mutation ClearCart($clientMutationId: String) {
+    clearCart(input: { clientMutationId: $clientMutationId }) {
+      clientMutationId
+      message
+      success
+    }
+  }
+`;
+
 /**
  * Marks a product not for sale: reverts to base price, clears customPrice,
  * and removes it from customer inventory until marked up again.
