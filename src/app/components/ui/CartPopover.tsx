@@ -8,6 +8,7 @@ import {
   PopoverPanel,
   Transition,
 } from "@headlessui/react";
+import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client";
 import { ShoppingCartIcon } from "@/icons";
 import ThemeButton from "./buttons/ThemeButton";
@@ -23,6 +24,7 @@ function formatMoney(n: number) {
 }
 
 export default function CartPopover() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const items = useAppSelector((state) => state.cart.items);
   const itemsCountFromStore = useAppSelector((state) => state?.cart?.items?.length);
@@ -155,6 +157,7 @@ export default function CartPopover() {
                   disabled={items.length === 0}
                   onClick={() => {
                     close();
+                    router.push("/orders/new-order");
                   }}
                 />
               </div>

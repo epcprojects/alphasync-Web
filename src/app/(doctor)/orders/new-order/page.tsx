@@ -1,19 +1,22 @@
 "use client";
 import React, { useState, useRef, useMemo, useEffect } from "react";
 import { ArrowDownIcon, PlusIcon, TrashBinIcon } from "@/icons";
-import { ProductSelect, CustomerSelect } from "@/app/components";
+import { ProductSelect, CustomerSelect, Skeleton } from "@/app/components";
 import { ThemeInput, ThemeButton } from "@/app/components";
 import { Formik, Form, Field } from "formik";
-import { Switch } from "@headlessui/react";
 import * as Yup from "yup";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useMutation, useQuery, useLazyQuery } from "@apollo/client/react";
-import { CREATE_ORDER } from "@/lib/graphql/mutations";
-import { FETCH_PRODUCT, FETCH_TIER_PRICING } from "@/lib/graphql/queries";
+import { useApolloClient } from "@apollo/client";
+import { ADD_TO_CART, CREATE_ORDER, REMOVE_FROM_CART } from "@/lib/graphql/mutations";
+import { FETCH_PRODUCT, FETCH_TIER_PRICING, FETCH_USER } from "@/lib/graphql/queries";
 import type { ProductSelectRef } from "@/app/components/ui/inputs/ProductSelect";
 import { FetchProductResponse } from "@/types/products";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { addItem as addCartItem, removeItem as removeCartItem } from "@/lib/store/slices/cartSlice";
+import AppModal from "@/app/components/ui/modals/AppModal";
 
 interface OrderItem {
   product: string;
@@ -26,12 +29,20 @@ interface OrderItem {
   initialPrice: number; // Track the initial price when item was added
   hasTierPricing?: boolean; // Track if product has tiered pricing
   latestMarkedUpPrice?: number | null; // Store latest marked up price for validation
+  cartQty?: number;
+  cartPrice?: number;
+  cartItemId?: string;
+  isMarkedUp?: boolean;
 }
 
 const Page = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const productIdFromUrl = searchParams.get("productId");
+  const apolloClient = useApolloClient();
+  const dispatch = useAppDispatch();
+  const cartItems = useAppSelector((state) => state.cart.items);
+  const cartLoaded = useAppSelector((state) => state.cart.loaded);
   
   const [selectedProductData, setSelectedProductData] = useState<{
     name: string;
@@ -110,6 +121,14 @@ const Page = () => {
     });
   }, [selectedProductData, latestMarkedUpPrice, isClinicOrder]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const orderItemsRef = useRef<OrderItem[]>([]);
+  const [isCartHydrating, setIsCartHydrating] = useState(false);
+  const [confirmSwitchModalOpen, setConfirmSwitchModalOpen] = useState(false);
+  const [pendingUnmarkedItems, setPendingUnmarkedItems] = useState<
+    Array<{ productId: string; name: string; cartItemId?: string }>
+  >([]);
+  const [confirmSwitchLoading, setConfirmSwitchLoading] = useState(false);
+  const handleOrderTypeChangeRef = useRef<(nextIsClinicOrder: boolean) => void>(() => { });
   const [customerDraft, setCustomerDraft] = useState("");
   const [lockedCustomer, setLockedCustomer] = useState<string | null>(null);
   const [preservedProduct, setPreservedProduct] = useState("");
@@ -153,6 +172,273 @@ const Page = () => {
 
   // Debounced quantity for tier pricing API call
   const [debouncedQuantity, setDebouncedQuantity] = useState<number | null>(null);
+
+  const [addToCartMutation, { loading: addingToCart }] = useMutation(ADD_TO_CART, {
+    onError: (e) => {
+      showErrorToast(e.message || "Failed to add to cart");
+    },
+  });
+  const [removeFromCart] = useMutation(REMOVE_FROM_CART);
+
+  const handleConfirmSwitchToCustomer = async () => {
+    if (confirmSwitchLoading) return;
+    setConfirmSwitchLoading(true);
+    try {
+      const needsCartItemIds = pendingUnmarkedItems.some((x) => !x.cartItemId);
+      const productToCartItemId = new Map<string, string>();
+
+      if (needsCartItemIds) {
+        type FetchUserCartResult = {
+          fetchUser?: {
+            user?: {
+              cart?: {
+                cartItems?: Array<
+                  | {
+                    id?: string;
+                    product?: { id?: string } | null;
+                  }
+                  | null
+                > | null;
+              } | null;
+            } | null;
+          } | null;
+        };
+
+        try {
+          const { data } = await apolloClient.query<FetchUserCartResult>({
+            query: FETCH_USER,
+            fetchPolicy: "network-only",
+          });
+          const serverCartItems = data?.fetchUser?.user?.cart?.cartItems ?? [];
+          serverCartItems.forEach((ci) => {
+            const pid = ci?.product?.id;
+            const cid = ci?.id;
+            if (pid && cid) productToCartItemId.set(pid, cid);
+          });
+        } catch {
+          // Best effort: we can still remove locally and reconcile later.
+        }
+      }
+
+      await Promise.all(
+        pendingUnmarkedItems.map(async (item) => {
+          dispatch(removeCartItem(item.productId));
+          const cartItemId =
+            item.cartItemId || productToCartItemId.get(item.productId);
+          if (!cartItemId) return;
+          try {
+            await removeFromCart({ variables: { cartItemId } });
+          } catch {
+            // Best effort; will reconcile on next refresh.
+          }
+        }),
+      );
+
+      setConfirmSwitchModalOpen(false);
+      setPendingUnmarkedItems([]);
+      handleOrderTypeChangeRef.current(false);
+    } finally {
+      setConfirmSwitchLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    orderItemsRef.current = orderItems;
+  }, [orderItems]);
+
+  const getProductImageSrc = (p: FetchProductResponse["fetchProduct"]) => {
+    const primary =
+      typeof p?.primaryImage === "string" && p.primaryImage.trim().length > 0
+        ? p.primaryImage
+        : null;
+    if (primary) return primary;
+    const fromImages =
+      p?.images?.find((img) => typeof img === "string" && img.trim().length > 0) ??
+      null;
+    return fromImages || "";
+  };
+
+  const handleAddToCartFromForm = async (values: {
+    customer: string;
+    product: string;
+    quantity: number;
+    price: number;
+  }) => {
+    const productId = selectedProductData?.productId;
+    if (!productId) {
+      showErrorToast("Please select a product");
+      return false;
+    }
+
+    const qty = Number(values.quantity ?? 1);
+    if (!Number.isFinite(qty) || qty <= 0) {
+      showErrorToast("Please enter a valid quantity");
+      return false;
+    }
+
+    let imageSrc = "";
+    try {
+      const { data } = await apolloClient.query<FetchProductResponse>({
+        query: FETCH_PRODUCT,
+        variables: { id: productId },
+        fetchPolicy: "cache-first",
+      });
+      imageSrc = getProductImageSrc(data?.fetchProduct);
+    } catch {
+      // Best effort. Cart can still render without image.
+    }
+
+    // Save in Redux cart (optimistic UI)
+    dispatch(
+      addCartItem({
+        id: productId,
+        name: selectedProductData?.name || values.product || "Product",
+        price: Number(values.price ?? 0),
+        qty,
+        imageSrc,
+      }),
+    );
+
+    // Save on server cart
+    await addToCartMutation({
+      variables: {
+        productId,
+        quantity: qty,
+      },
+    });
+
+    showSuccessToast("Added to cart");
+    return true;
+  };
+
+  // Hydrate right-side "Order Items" from cart
+  useEffect(() => {
+    let cancelled = false;
+
+    const getLatestMarkedUp = (product: FetchProductResponse["fetchProduct"]) => {
+      const originalPrice = Number(product?.variants?.[0]?.price ?? 0);
+      const history = product?.customPriceChangeHistory ?? [];
+      if (!history?.length) {
+        const fallback = product?.customPrice ?? originalPrice;
+        return fallback != null ? Number(fallback) : null;
+      }
+      const sorted = [...history].sort(
+        (a, b) =>
+          new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(),
+      );
+      const latest = sorted[0]?.customPrice;
+      return latest != null ? Number(latest) : null;
+    };
+
+    const hydrateFromCart = async () => {
+      // While cart is still being hydrated elsewhere (fetchUser), show skeleton on the right.
+      if (!cartLoaded) {
+        setIsCartHydrating(true);
+        return;
+      }
+
+      const prevItems = orderItemsRef.current;
+      const hasCartDerivedItems = prevItems.some(
+        (i) => i.cartQty != null || i.cartPrice != null || !!i.cartItemId,
+      );
+
+      // If cart is empty, clear only if we previously hydrated from cart
+      if (cartItems.length === 0) {
+        setIsCartHydrating(false);
+        if (!hasCartDerivedItems) return;
+        setOrderItems([]);
+        setPriceErrors({});
+        return;
+      }
+
+      setIsCartHydrating(true);
+      const prevByProductId = new Map(prevItems.map((i) => [i.productId, i]));
+
+      const next = await Promise.all(
+        cartItems.map(async (ci) => {
+          const productId = ci.id;
+          const prev = prevByProductId.get(productId);
+
+          let variantId = prev?.variantId || "";
+          let originalPrice = prev?.originalPrice ?? 0;
+          let customPrice = prev?.customPrice;
+          let latestMarkedUpPriceForItem = prev?.latestMarkedUpPrice ?? null;
+          let hasTierPricing = prev?.hasTierPricing;
+          // default to "marked up" until proven otherwise to avoid accidental removals
+          let isMarkedUp = prev?.isMarkedUp ?? true;
+
+          try {
+            const { data } = await apolloClient.query<FetchProductResponse>({
+              query: FETCH_PRODUCT,
+              variables: { id: productId },
+              fetchPolicy: "cache-first",
+            });
+            const p = data?.fetchProduct;
+            if (p) {
+              const firstVariant = p.variants?.[0];
+              variantId =
+                firstVariant?.shopifyVariantId || firstVariant?.id || variantId;
+              originalPrice = Number(firstVariant?.price ?? originalPrice ?? 0);
+              customPrice = p.customPrice ?? customPrice;
+              latestMarkedUpPriceForItem = getLatestMarkedUp(p);
+              hasTierPricing = (p.tierPricing?.length ?? 0) > 0;
+              const markedUpByHistory =
+                (p.customPriceChangeHistory?.length ?? 0) > 0;
+              const markedUpByCustomPrice =
+                p.customPrice != null && p.customPrice !== undefined;
+              // We treat either history or customPrice as "marked up"
+              isMarkedUp = markedUpByHistory || markedUpByCustomPrice;
+            }
+          } catch {
+            // Best-effort hydration; fall back to cart values.
+          }
+
+          const cartQty = Number(ci.qty ?? 1);
+          const cartPrice = Number(ci.price ?? 0);
+
+          const prevCartQty = prev?.cartQty ?? prev?.quantity;
+          const prevCartPrice = prev?.cartPrice ?? prev?.price;
+          const hasUserQtyEdit = prev ? prev.quantity !== prevCartQty : false;
+          const hasUserPriceEdit = prev ? prev.price !== prevCartPrice : false;
+
+          const quantity = hasUserQtyEdit ? prev!.quantity : cartQty;
+          const price = hasUserPriceEdit ? prev!.price : cartPrice;
+
+          // If user hasn't edited price, keep initialPrice aligned with cart price.
+          const initialPrice = hasUserPriceEdit
+            ? prev?.initialPrice ?? cartPrice
+            : cartPrice;
+
+          return {
+            product: prev?.product || ci.name || "Product",
+            productId,
+            variantId,
+            quantity,
+            price,
+            originalPrice,
+            customPrice,
+            initialPrice,
+            latestMarkedUpPrice: latestMarkedUpPriceForItem,
+            hasTierPricing,
+            cartQty,
+            cartPrice,
+            cartItemId: ci.cartItemId,
+            isMarkedUp,
+          } satisfies OrderItem;
+        }),
+      );
+
+      if (cancelled) return;
+      setOrderItems(next);
+      setPriceErrors({});
+      setIsCartHydrating(false);
+    };
+
+    void hydrateFromCart();
+    return () => {
+      cancelled = true;
+    };
+  }, [apolloClient, cartItems, cartLoaded]);
 
   // Prefill product when fetched from URL
   useEffect(() => {
@@ -502,7 +788,8 @@ const Page = () => {
     }
   };
 
-  const handleDeleteItem = (index: number) => {
+  const handleDeleteItem = async (index: number) => {
+    const item = orderItems[index];
     setOrderItems((prev) => prev.filter((_, i) => i !== index));
     // Clear error for deleted item and reindex remaining errors
     setPriceErrors((prev) => {
@@ -517,6 +804,18 @@ const Page = () => {
       });
       return newErrors;
     });
+
+    // If this item came from cart, remove it from cart as well.
+    if (item && cartItems.some((ci) => ci.id === item.productId)) {
+      dispatch(removeCartItem(item.productId));
+      if (item.cartItemId) {
+        try {
+          await removeFromCart({ variables: { cartItemId: item.cartItemId } });
+        } catch {
+          // Best effort; will reconcile on next cart refresh.
+        }
+      }
+    }
   };
 
   const totalAmount = orderItems.reduce(
@@ -647,8 +946,9 @@ const Page = () => {
             }}
             validationSchema={OrderSchema}
             enableReinitialize
-            onSubmit={(values, { resetForm }) => {
-              handleAddItem(values);
+            onSubmit={async (values, { resetForm }) => {
+              const ok = await handleAddToCartFromForm(values);
+              if (!ok) return;
               setPreservedProduct(""); // Clear preserved product when item is added
               setPreservedPrice(0);
               setSelectedProductData(null); // Clear selected product data when item is added
@@ -674,62 +974,150 @@ const Page = () => {
               // Store setFieldValue in ref for use in useEffect
               formikSetFieldValueRef.current = setFieldValue;
               
+              const handleOrderTypeChange = (nextIsClinicOrder: boolean) => {
+                setIsClinicOrder(nextIsClinicOrder);
+                // Reset debounced quantity when order type changes
+                setDebouncedQuantity(null);
+                setPriceErrors({});
+
+                // Keep existing items (hydrated from cart), but adapt pricing when switching order type:
+                // - Clinic order: use base/original price
+                // - Customer order: use cart/marked-up price
+                setOrderItems((prev) =>
+                  prev.map((item) => {
+                    const cartPrice =
+                      item.cartPrice != null ? Number(item.cartPrice) : Number(item.price);
+                    const basePrice = Number(item.originalPrice ?? item.price);
+
+                    if (nextIsClinicOrder) {
+                      const nextPrice =
+                        Number.isFinite(basePrice) && basePrice > 0 ? basePrice : item.price;
+                      return { ...item, price: nextPrice, initialPrice: nextPrice };
+                    }
+
+                    const nextPrice =
+                      Number.isFinite(cartPrice) && cartPrice > 0 ? cartPrice : item.price;
+                    return { ...item, price: nextPrice, initialPrice: nextPrice };
+                  }),
+                );
+
+                if (nextIsClinicOrder) {
+                  setLockedCustomer(null);
+                  setSelectedCustomerData(null);
+                  setCustomerDraft("");
+                  setFieldValue("customer", "");
+                // Clinic order: show base price in the price input
+                  if (selectedProductData && productBasePrice !== null) {
+                    setFieldValue("price", productBasePrice);
+                    setPreservedPrice(productBasePrice);
+                  }
+                } else {
+                  // Customer order: only marked-up products allowed
+                  const isMarkedUp =
+                    (selectedProductData?.customPriceChangeHistory?.length ?? 0) > 0;
+                  if (selectedProductData && !isMarkedUp) {
+                    // Selected product is not marked up; clear it (cannot use for customer orders)
+                    setFieldValue("product", "");
+                    setPreservedProduct("");
+                    setSelectedProductData(null);
+                    setFieldValue("price", 0);
+                    setPreservedPrice(0);
+                    updatePricingInfo(null);
+                  } else if (selectedProductData) {
+                  // Product is marked up: show latest marked up price in the price input
+                    const priceToUse = latestMarkedUpPrice ?? productBasePrice ?? 0;
+                    setFieldValue("price", priceToUse);
+                    setPreservedPrice(priceToUse);
+                  }
+                }
+              };
+
+              handleOrderTypeChangeRef.current = handleOrderTypeChange;
+
+              const requestOrderTypeChange = (nextIsClinicOrder: boolean) => {
+                // Prompt only when switching from My Clinic -> Customer
+                if (!nextIsClinicOrder && isClinicOrder) {
+                  if (!cartLoaded || isCartHydrating) {
+                    showErrorToast("Please wait while cart items load.");
+                    return;
+                  }
+
+                  const unmarked = orderItems.filter((i) => i.isMarkedUp === false);
+                  if (unmarked.length > 0) {
+                    setPendingUnmarkedItems(
+                      unmarked.map((i) => ({
+                        productId: i.productId,
+                        name: i.product || "Product",
+                        cartItemId: i.cartItemId,
+                      })),
+                    );
+                    setConfirmSwitchModalOpen(true);
+                    return;
+                  }
+                }
+
+                handleOrderTypeChange(nextIsClinicOrder);
+              };
+
               return (
-              <Form className="flex flex-col gap-4 md:gap-5">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-700 text-sm font-medium">
-                    My clinic&apos;s order
-                  </span>
-                  <Switch
-                    checked={isClinicOrder}
-                    disabled={orderItems.length > 0}
-                    onChange={(checked) => {
-                      setIsClinicOrder(checked);
-                      // Reset debounced quantity when clinic toggle changes
-                      setDebouncedQuantity(null);
-                      if (checked) {
-                        setLockedCustomer(null);
-                        setSelectedCustomerData(null);
-                        setCustomerDraft("");
-                        setFieldValue("customer", "");
-                        // Clinic order: show base price in the price input
-                        if (
-                          selectedProductData &&
-                          productBasePrice !== null
-                        ) {
-                          setFieldValue("price", productBasePrice);
-                          setPreservedPrice(productBasePrice);
-                        }
-                      } else {
-                        // Non‑clinic (customer order): only marked-up products allowed
-                        const isMarkedUp =
-                          (selectedProductData?.customPriceChangeHistory
-                            ?.length ?? 0) > 0;
-                        if (selectedProductData && !isMarkedUp) {
-                          // Selected product is not marked up; clear it (cannot use for customer orders)
-                          setFieldValue("product", "");
-                          setPreservedProduct("");
-                          setSelectedProductData(null);
-                          setFieldValue("price", 0);
-                          setPreservedPrice(0);
-                          updatePricingInfo(null);
-                        } else if (selectedProductData) {
-                          // Product is marked up: show latest marked up price in the price input
-                          const priceToUse =
-                            latestMarkedUpPrice ?? productBasePrice ?? 0;
-                          setFieldValue("price", priceToUse);
-                          setPreservedPrice(priceToUse);
-                        }
-                      }
-                    }}
-                    className={`group inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition data-checked:bg-gradient-to-r data-checked:from-[#3C85F5] data-checked:to-[#1A407A] ${
-                      orderItems.length > 0
-                        ? "cursor-not-allowed opacity-60"
-                        : "cursor-pointer"
-                    }`}
-                  >
-                    <span className="size-4 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-6" />
-                  </Switch>
+                <Form className="flex flex-col gap-4 md:gap-5">
+                  <div className="flex flex-row gap-12 items-center">
+                    <span className="text-gray-900 text-base font-semibold">
+                      This order is for:
+                    </span>
+                    <div
+                      className={`flex items-center gap-8`}
+                    >
+                      <label
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="orderType"
+                          className="sr-only"
+                          checked={!isClinicOrder}
+                          onChange={() => requestOrderTypeChange(false)}
+                        />
+                        <span
+                          className={`h-5 w-5 rounded-full border flex items-center justify-center ${!isClinicOrder
+                            ? "border-primary"
+                            : "border-gray-300"
+                            }`}
+                        >
+                          {!isClinicOrder ? (
+                            <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+                          ) : null}
+                        </span>
+                        <span className="text-gray-900 text-base font-semibold">
+                          Customer
+                        </span>
+                      </label>
+
+                      <label
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="orderType"
+                          className="sr-only"
+                          checked={isClinicOrder}
+                          onChange={() => requestOrderTypeChange(true)}
+                        />
+                        <span
+                          className={`h-5 w-5 rounded-full border flex items-center justify-center ${isClinicOrder
+                            ? "border-primary"
+                            : "border-gray-300"
+                            }`}
+                        >
+                          {isClinicOrder ? (
+                            <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+                          ) : null}
+                        </span>
+                        <span className="text-gray-900 text-base font-semibold">
+                          My Clinic
+                        </span>
+                      </label>
+                    </div>
                 </div>
                 {!isClinicOrder && (
                 <div>
@@ -1006,11 +1394,11 @@ const Page = () => {
                 </div>
 
                 <ThemeButton
-                  label="Add to Order"
+                    label="Add to Cart"
                   type="submit"
                   icon={<PlusIcon />}
                   variant="primaryOutline"
-                    disabled={tierPricingLoading}
+                    disabled={tierPricingLoading || addingToCart}
                 />
               </Form>
             );
@@ -1022,12 +1410,53 @@ const Page = () => {
           <div className="p-4 flex items-center gap-3 border-b border-gray-200">
             <h2 className="text-black font-medium text-xl">Order Items</h2>
             <span className="bg-blue-50 border rounded-full text-xs py-0.5 px-2.5 border-blue-200 text-blue-700">
-              {orderItems.length}
+              {cartLoaded && !isCartHydrating ? orderItems.length : "..."}
             </span>
           </div>
 
           <div className="h-full">
-            {orderItems.length === 0 ? (
+            {!cartLoaded || isCartHydrating ? (
+              <div className="p-5 space-y-3">
+                <div className="hidden sm:grid grid-cols-6 text-black text-xs font-medium bg-gray-100 py-2 px-3 rounded-md">
+                  <div className="col-span-2">Product</div>
+                  <div>Quantity</div>
+                  <div>Price</div>
+                  <div>Total</div>
+                  <div>Actions</div>
+                </div>
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="grid grid-cols-6 sm:gap-0 gap-2 bg-gray-50 items-center py-3 mb-0.5 px-3 rounded-md"
+                  >
+                    <div className="col-span-6 sm:col-span-2">
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                    <div className="col-span-2 sm:col-auto">
+                      <Skeleton className="h-7 w-14 rounded-md" />
+                    </div>
+                    <div className="col-span-2 sm:col-auto">
+                      <Skeleton className="h-7 w-14 rounded-md" />
+                    </div>
+                    <div className="col-span-1 sm:col-auto">
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                    <div className="col-span-1 sm:col-auto flex justify-end">
+                      <Skeleton className="h-8 w-8 rounded-md" />
+                    </div>
+                  </div>
+                ))}
+                <div className="py-2 px-3 md:px-4 flex flex-col gap-2">
+                  <div className="flex justify-between items-center">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-5 w-24" />
+                  </div>
+                  <div className="flex justify-end">
+                    <Skeleton className="h-10 w-full sm:w-44 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            ) : orderItems.length === 0 ? (
               <div className="flex items-center flex-col gap-4 p-5 justify-center h-full text-gray-900">
                 <Image
                   src={"/images/fallbackImages/noItemIllu.svg"}
@@ -1139,7 +1568,7 @@ const Page = () => {
 
                     <div className="flex justify-end">
                       <button
-                        onClick={() => handleDeleteItem(index)}
+                        onClick={() => void handleDeleteItem(index)}
                         className="rounded-md w-8 h-8 flex items-center border bg-white border-gray-200 justify-center hover:bg-red-100"
                       >
                         <TrashBinIcon width="12" height="12" />
@@ -1177,7 +1606,13 @@ const Page = () => {
                       icon={<PlusIcon height="18" width="18" />}
                       heightClass="h-10"
                       className="w-full sm:w-fit"
-                      disabled={createOrderLoading || tierPricingLoading || orderItems.length === 0}
+                          disabled={
+                            createOrderLoading ||
+                            tierPricingLoading ||
+                            !cartLoaded ||
+                            isCartHydrating ||
+                            orderItems.length === 0
+                          }
                     />
                   </div>
                 </div>
@@ -1186,6 +1621,30 @@ const Page = () => {
           </div>
         </div>
       </div>
+
+      <AppModal
+        isOpen={confirmSwitchModalOpen}
+        onClose={() => {
+          if (confirmSwitchLoading) return;
+          setConfirmSwitchModalOpen(false);
+          setPendingUnmarkedItems([]);
+        }}
+        title="Remove unmarked items?"
+        subtitle=""
+        onConfirm={() => void handleConfirmSwitchToCustomer()}
+        confirmLabel={confirmSwitchLoading ? "Removing..." : "Yes, continue"}
+        cancelLabel="No, stay on My Clinic"
+        confimBtnDisable={confirmSwitchLoading}
+        disableCloseButton={confirmSwitchLoading}
+        outSideClickClose={!confirmSwitchLoading}
+        bodyPaddingClasses="p-4 md:p-6"
+      >
+        <p className="text-sm md:text-base text-gray-700">
+          {pendingUnmarkedItems.length} item
+          {pendingUnmarkedItems.length === 1 ? "" : "s"} have not been marked up
+          and will be removed from your cart. Are you sure you want to continue?
+        </p>
+      </AppModal>
     </div>
   );
 };
