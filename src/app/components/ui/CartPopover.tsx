@@ -27,7 +27,7 @@ export default function CartPopover() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const items = useAppSelector((state) => state.cart.items);
-  const itemsCountFromStore = useAppSelector((state) => state?.cart?.items?.length);
+  const itemsCountFromStore = useAppSelector((state) => state.cart.itemsCount);
   const [removeFromCart] = useMutation(REMOVE_FROM_CART);
 
   const count = useMemo(() => {
