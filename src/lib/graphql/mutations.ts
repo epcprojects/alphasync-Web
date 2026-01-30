@@ -736,6 +736,33 @@ export const UPDATE_PRODUCT_PRICE = gql`
   }
 `;
 
+export const ADD_TO_CART = gql`
+  mutation AddToCart($productId: ID!, $quantity: Int!) {
+    addToCart(input: { productId: $productId, quantity: $quantity }) {
+      success
+    }
+  }
+`;
+
+export const REMOVE_FROM_CART = gql`
+  mutation RemoveFromCart($cartItemId: ID!) {
+    removeFromCart(input: { cartItemId: $cartItemId }) {
+      success
+      message
+    }
+  }
+`;
+
+export const CLEAR_CART = gql`
+  mutation ClearCart($clientMutationId: String) {
+    clearCart(input: { clientMutationId: $clientMutationId }) {
+      clientMutationId
+      message
+      success
+    }
+  }
+`;
+
 /**
  * Marks a product not for sale: reverts to base price, clears customPrice,
  * and removes it from customer inventory until marked up again.

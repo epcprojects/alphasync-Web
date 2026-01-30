@@ -20,6 +20,23 @@ export const FETCH_USER = gql`
     fetchUser {
       user {
         ${userpayload}
+        cart {
+          id
+          itemsCount
+          totalBasePrice
+          totalMarkedUpPrice
+          cartItems {
+            id
+            quantity
+            markedUpPrice
+            product {
+              id
+              title
+              primaryImage
+              images
+            }
+          }
+        }
       }
     }
   }

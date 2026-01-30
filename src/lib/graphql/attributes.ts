@@ -90,6 +90,22 @@ export interface UserAttributes {
   shippingCountry?: string;
   unreadNotifications?: boolean;
   hasViewedAllVideos?: boolean;
+  cart?: {
+    id?: string;
+    itemsCount?: number;
+    totalBasePrice?: number;
+    totalMarkedUpPrice?: number;
+    cartItems?: Array<{
+      quantity?: number;
+      markedUpPrice?: number;
+      product?: {
+        id?: string;
+        title?: string;
+        primaryImage?: string | null;
+        images?: Array<string | null> | null;
+      } | null;
+    }> | null;
+  } | null;
 }
 
 export interface ProductInfo {

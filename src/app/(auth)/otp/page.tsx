@@ -94,7 +94,7 @@ function OTPContent() {
         showSuccessToast("Logged in successfully!");
 
         if (storedData?.userType === "DOCTOR") {
-          window.location.href = "/inventory";
+          window.location.href = "/shop";
         } else if (storedData?.userType === "PATIENT") {
           if (user?.addressVerified) {
             window.location.href = "/pending-payments";

@@ -1,5 +1,5 @@
 "use client";
-import { HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon, RejectIcon } from "@/icons";
+import { HeartFilledIcon, HeartOutlineIcon, RejectIcon, InventoryIcon } from "@/icons";
 import Tooltip from "../tooltip";
 import ProductImage from "@/app/components/ui/ProductImage";
 
@@ -20,7 +20,7 @@ type Product = {
 type ProductListViewProps = {
   product: Product;
   onToggleFavourite?: (id: number) => void;
-  onAddToCart?: (id: number) => void;
+  onBtnClick?: (id: number) => void;
   onRowClick?: () => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
@@ -29,7 +29,7 @@ type ProductListViewProps = {
 export default function ProductListView({
   product: product,
   onToggleFavourite,
-  onAddToCart,
+  onBtnClick,
   onRowClick,
   onRemoveFromSale,
   customPrice,
@@ -135,16 +135,18 @@ export default function ProductListView({
           </Tooltip>
         )}
 
-        <Tooltip content="Order Now">
+        <Tooltip content={isMarkedUp ? "Change Customer Price" : "Add to Shop"}>
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onAddToCart?.(product.id);
+              onBtnClick?.(product.id);
             }}
-            disabled={customPrice === null || customPrice === undefined}
+            disabled={!onBtnClick}
             className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={isMarkedUp ? "Change Customer Price" : "Add to Shop"}
+            type="button"
           >
-            <ShopingCartIcon width={16} height={16} />
+            <InventoryIcon fill="#2862A9" width={16} height={16} />
           </button>
         </Tooltip>
       </div>

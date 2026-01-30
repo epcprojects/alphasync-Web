@@ -35,7 +35,7 @@ const OTPVerify = () => {
 
       // Navigate based on user type
       if (loginType === "Doctor") {
-        router.push("/inventory");
+        router.push("/shop");
       } else if (loginType === "Customer") {
         if (user?.addressVerified === true) {
           router.push("/pending-payments");

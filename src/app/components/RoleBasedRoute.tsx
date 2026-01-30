@@ -39,7 +39,7 @@ export function RoleBasedRoute({
             router.push("/admin/doctors");
             break;
           case "doctor":
-            router.push("/inventory");
+            router.push("/shop");
             break;
           case "customer":
           case "patient":
