@@ -123,7 +123,7 @@ export default function CartPopover() {
                               {item.name}
                             </p>
 
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between gap-2">
                               <h2 className="text-gray-700 font-medium text-sm">
                                 Quantity: {item.qty}
                               </h2>
