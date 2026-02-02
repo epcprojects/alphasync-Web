@@ -20,6 +20,8 @@ import Pagination from "@/app/components/ui/Pagination";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import PeptideOrderListView from "@/app/components/ui/cards/PeptideOrderListView";
+import CustomerOrderDetails from "@/app/components/ui/modals/CustomerOrderDetails";
+import { useAppSelector } from "@/lib/store/hooks";
 
 interface DoctorOrdersResponse {
   doctorOrders: {
@@ -37,12 +39,15 @@ interface DoctorOrdersResponse {
         id: string;
         quantity: number;
         price: number;
+        tieredPrice?: number | null;
         product: {
           title: string;
+          price?: number | null;
         };
       }[];
       totalPrice: number;
       subtotalPrice: number;
+      totalTax?: number | null;
       netCost: number | null;
       profit: number | null;
     }[];
@@ -71,12 +76,37 @@ interface PeptideAccountingChartsResponse {
 
 type DateFilter = "today" | "thisMonth" | "last3Months" | "thisYear" | "custom";
 
+type ClinicOrderDetails = {
+  id: string;
+  displayId: string;
+  doctorName: string;
+  orderedOn: string;
+  totalPrice: number;
+  subtotalPrice?: number | null;
+  totalTax?: number | null;
+  orderItems: {
+    id: string;
+    medicineName: string;
+    quantity: number;
+    price: number;
+    amount: string;
+    product?: { price?: number | null } | null;
+    tieredPrice?: number | null;
+  }[];
+  status?: string;
+  doctorAddress?: string | null;
+};
+
 const Page = () => {
   const isMobile = useIsMobile();
   const router = useRouter();
+  const user = useAppSelector((state) => state.auth.user);
   const [activeFilter, setActiveFilter] = useState<DateFilter>("last3Months");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
+  const [isClinicDetailOpen, setIsClinicDetailOpen] = useState(false);
+  const [selectedClinicOrder, setSelectedClinicOrder] =
+    useState<ClinicOrderDetails | null>(null);
   const [range, setRange] = useState({
     startDate: new Date(),
     endDate: new Date(),
@@ -226,6 +256,40 @@ const Page = () => {
 
   const handlePageChange = (selected: number) => {
     setCurrentPage(selected);
+  };
+
+  const openClinicOrderDetails = (order: DoctorOrdersResponse["doctorOrders"]["allData"][0]) => {
+    const doctorAddress =
+      user?.address ||
+      (user?.street1
+        ? `${user.street1}${user.street2 ? `, ${user.street2}` : ""}, ${
+            user.city || ""
+          }, ${user.state || ""} ${user.postalCode || ""}`.trim()
+        : null);
+
+    setSelectedClinicOrder({
+      id: order.id,
+      displayId: String(order.displayId || order.id),
+      doctorName: order.patient?.fullName || "Clinic Order",
+      orderedOn: format(new Date(order.createdAt), "MM/dd/yyyy"),
+      totalPrice: order.totalPrice,
+      subtotalPrice: order.subtotalPrice,
+      totalTax: order.totalTax ?? undefined,
+      status: order.status,
+      doctorAddress: doctorAddress || undefined,
+      orderItems: order.orderItems.map((item) => ({
+        id: item.id,
+        medicineName: item.product?.title || "Unknown Product",
+        quantity: item.quantity,
+        price: item.price,
+        amount: `$${(item.price * item.quantity).toFixed(2)}`,
+        product: {
+          price: item.product?.price ?? null,
+        },
+        tieredPrice: item.tieredPrice ?? null,
+      })),
+    });
+    setIsClinicDetailOpen(true);
   };
 
   return (
@@ -478,7 +542,7 @@ const Page = () => {
             />
           </span>
           <h2 className="text-black whitespace-nowrap font-semibold text-lg sm:text-2xl lg:text-3xl">
-            Recent Orders
+            Paid Orders
           </h2>
         </div>
       </div>
@@ -528,7 +592,13 @@ const Page = () => {
         ) : (
           orders.map((order) => (
             <PeptideOrderListView
-              onRowClick={() => router.push(`/orders/${order.id}`)}
+              onRowClick={() => {
+                if (!order.patient) {
+                  openClinicOrderDetails(order);
+                  return;
+                }
+                router.push(`/orders/${order.id}`);
+              }}
               key={order.id}
               order={{
                 id: parseInt(order.id),
@@ -547,7 +617,6 @@ const Page = () => {
                 profit: order.profit ?? 0,
                 orderItems: order.orderItems,
               }}
-              onViewOrderDetail={() => router.push(`/orders/${order.id}`)}
             />
           ))
         )}
@@ -565,6 +634,17 @@ const Page = () => {
           />
         )}
       </div>
+
+      <CustomerOrderDetails
+        isOpen={isClinicDetailOpen}
+        onClose={() => {
+          setIsClinicDetailOpen(false);
+          setSelectedClinicOrder(null);
+        }}
+        order={selectedClinicOrder}
+        type="order"
+        showDoctorName={false}
+      />
     </div>
   );
 };
