@@ -38,6 +38,8 @@ interface AppModalProps {
   disableCloseButton?: boolean;
   hideCrossButton?: boolean;
   headerTooltip?: string;
+  headerTooltipAutoShowOnceKey?: string;
+  headerTooltipAutoHideAfter?: number;
 }
 
 const sizeClasses = {
@@ -74,6 +76,8 @@ const AppModal: React.FC<AppModalProps> = ({
   disableCloseButton = false,
   hideCrossButton = false,
   headerTooltip,
+  headerTooltipAutoShowOnceKey,
+  headerTooltipAutoHideAfter,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -121,7 +125,11 @@ const AppModal: React.FC<AppModalProps> = ({
               </div>
 
               {headerTooltip && (
-                <Tooltip content={headerTooltip?.toString()}>
+                <Tooltip
+                  content={headerTooltip?.toString()}
+                  autoShowOnceKey={headerTooltipAutoShowOnceKey}
+                  autoHideAfter={headerTooltipAutoHideAfter}
+                >
                   <InfoFilledIcon />
                 </Tooltip>
               )}

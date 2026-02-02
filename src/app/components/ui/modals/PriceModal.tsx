@@ -7,6 +7,7 @@ import { InventoryIcon } from "@/icons";
 import Image from "next/image";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { UPDATE_PRODUCT_PRICE } from "@/lib/graphql/mutations";
+import { useAppSelector } from "@/lib/store/hooks";
 
 interface ModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ interface ModalProps {
 const PriceModal: React.FC<ModalProps> = ({ isOpen, onClose, onSuccess, product }) => {
   const [price, setPrice] = useState("");
   const [error, setError] = useState("");
+  const userId = useAppSelector((state) => state.auth.user?.id);
 
   const [updateProductPrice, { loading: updating }] = useMutation(UPDATE_PRODUCT_PRICE);
 
@@ -120,6 +122,8 @@ const PriceModal: React.FC<ModalProps> = ({ isOpen, onClose, onSuccess, product 
       confimBtnDisable={!!error || updating || !product}
       outSideClickClose={false}
       headerTooltip="Set the price customers will see and pay."
+      headerTooltipAutoShowOnceKey={`tooltip:price-modal:${userId ?? "anon"}`}
+      headerTooltipAutoHideAfter={8000}
       disableCloseButton={updating}
     >
       <div className="flex flex-col gap-6">
