@@ -115,7 +115,7 @@ const Page = () => {
 
   const itemsPerPage = 10;
 
-  const paidOnlyStatus: "PAID" = "PAID";
+  const paidOnlyStatus = "PAID" as const;
 
   // Map DateFilter to TimeRangeEnum
   const getTimeRangeEnum = (filter: DateFilter): string => {
