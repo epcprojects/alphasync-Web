@@ -1030,6 +1030,8 @@ const Page = () => {
               setFieldValue,
               setFieldTouched,
               setFieldError,
+              setErrors,
+              setTouched,
               errors,
               touched,
             }) => {
@@ -1041,6 +1043,12 @@ const Page = () => {
                 // Reset debounced quantity when order type changes
                 setDebouncedQuantity(null);
                 setPriceErrors({});
+                // Reset Formik validation UI when switching order type
+                setErrors({});
+                setTouched(
+                  { customer: false, product: false, quantity: false, price: false },
+                  false,
+                );
 
                 // Keep existing items (hydrated from cart), but adapt pricing when switching order type:
                 // - Clinic order: use base/original price
@@ -1067,10 +1075,13 @@ const Page = () => {
                   setLockedCustomer(null);
                   setSelectedCustomerData(null);
                   setCustomerDraft("");
-                  setFieldValue("customer", "");
+                  // Avoid triggering validation during mode switch
+                  setFieldValue("customer", "", false);
+                  setFieldTouched("customer", false, false);
+                  setFieldError("customer", undefined);
                 // Clinic order: show base price in the price input
                   if (selectedProductData && productBasePrice !== null) {
-                    setFieldValue("price", productBasePrice);
+                    setFieldValue("price", productBasePrice, false);
                     setPreservedPrice(productBasePrice);
                   }
                 } else {
@@ -1079,18 +1090,24 @@ const Page = () => {
                     (selectedProductData?.customPriceChangeHistory?.length ?? 0) > 0;
                   if (selectedProductData && !isMarkedUp) {
                     // Selected product is not marked up; clear it (cannot use for customer orders)
-                    setFieldValue("product", "");
+                    setFieldValue("product", "", false);
+                    setFieldTouched("product", false, false);
+                    setFieldError("product", undefined);
                     setPreservedProduct("");
                     setSelectedProductData(null);
-                    setFieldValue("price", 0);
+                    setFieldValue("price", 0, false);
                     setPreservedPrice(0);
                     updatePricingInfo(null);
                   } else if (selectedProductData) {
                   // Product is marked up: show latest marked up price in the price input
                     const priceToUse = latestMarkedUpPrice ?? productBasePrice ?? 0;
-                    setFieldValue("price", priceToUse);
+                    setFieldValue("price", priceToUse, false);
                     setPreservedPrice(priceToUse);
                   }
+
+                  // Don’t show customer validation just because we switched modes
+                  setFieldTouched("customer", false, false);
+                  setFieldError("customer", undefined);
                 }
               };
 
@@ -1203,7 +1220,7 @@ const Page = () => {
                       setFieldValue("customer", val);
                       setCustomerDraft(val);
                     }}
-                    errors={errors.customer || ""}
+                    errors={touched.customer ? errors.customer || "" : ""}
                     touched={touched.customer}
                     disabled={!!lockedCustomer}
                     placeholder={
@@ -1232,7 +1249,7 @@ const Page = () => {
                       setFieldValue("product", product);
                       setPreservedProduct(product);
                     }}
-                    errors={errors.product || ""}
+                    errors={touched.product ? errors.product || "" : ""}
                     touched={touched.product}
                     onProductChange={(selectedProduct) => {
                       setSelectedProductData(selectedProduct);
