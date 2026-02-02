@@ -9,6 +9,7 @@ import {
   ProductListView,
   Pagination,
   ThemeButton,
+  PriceModal,
 } from "@/components";
 import {
   DeliveryBoxIcon,
@@ -19,6 +20,8 @@ import {
   SearchIcon,
   PackageOutlineIcon,
   ArrowDownIcon,
+  InfoIcon,
+  InfoFilledIcon,
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
@@ -27,13 +30,18 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
-import { CREATE_ORDER, TOGGLE_FAVOURITE, MARK_PRODUCT_NOT_FOR_SALE, EXPORT_PRODUCTS } from "@/lib/graphql/mutations";
+import {
+  CREATE_ORDER,
+  TOGGLE_FAVOURITE,
+  EXPORT_PRODUCTS,
+} from "@/lib/graphql/mutations";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import {
   AllProductsResponse,
   Product,
   transformGraphQLProduct,
 } from "@/types/products";
+import { useAppSelector } from "@/lib/store/hooks";
 
 function InventoryContent() {
   const [search, setSearch] = useState("");
@@ -42,6 +50,7 @@ function InventoryContent() {
   const [showGridView, setShowGridView] = useState(true);
   const [showOutOfStock, setShowOutOfStock] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [showPricModal, setShowPriceModal] = useState(false);
   const [markupFilter, setMarkupFilter] = useState<string>("All");
   const [isBlanketMarkupModalOpen, setIsBlanketMarkupModalOpen] =
     useState(false);
@@ -51,13 +60,16 @@ function InventoryContent() {
     shopifyVariantId: string;
     title: string;
     price?: number;
-    customPrice?: number;
+    customPrice?: number | null;
+    imageUrl?: string | null;
   } | null>(null);
 
   const router = useRouter();
   const isMobile = useIsMobile();
   const itemsPerPage = 9;
   const [currentPage, setCurrentPage] = useState(1);
+
+  const userEmail = useAppSelector((state) => state.auth.user?.email);
 
   const markupFilterOptions = [
     { label: "All", value: "All" },
@@ -112,8 +124,8 @@ function InventoryContent() {
         markupFilter === "Marked Up"
           ? true
           : markupFilter === "Not Marked Up"
-          ? false
-          : undefined,
+            ? false
+            : undefined,
       notMarkedUp: markupFilter === "Not Marked Up" ? true : undefined,
     },
     fetchPolicy: "network-only",
@@ -127,11 +139,9 @@ function InventoryContent() {
   // GraphQL mutation to toggle favorite
   const [toggleFavorite] = useMutation(TOGGLE_FAVOURITE);
 
-  // GraphQL mutation to mark product not for sale (revert to base, remove from customer catalog)
-  const [markProductNotForSale] = useMutation(MARK_PRODUCT_NOT_FOR_SALE);
-
   // GraphQL mutation to export products
-  const [exportProducts, { loading: exportLoading }] = useMutation(EXPORT_PRODUCTS);
+  const [exportProducts, { loading: exportLoading }] =
+    useMutation(EXPORT_PRODUCTS);
 
   // Transform GraphQL product data to match the expected format
   const products: Product[] =
@@ -165,19 +175,6 @@ function InventoryContent() {
     }
   };
 
-  const handleRemoveFromSale = async (productId: string) => {
-    try {
-      await markProductNotForSale({
-        variables: { productId },
-      });
-      await refetch();
-      showSuccessToast("Product removed from sale. It’s back to base price and no longer available for customers to purchase.");
-    } catch (error) {
-      console.error("Error removing product from sale:", error);
-      showErrorToast("Failed to remove from sale. Please try again.");
-    }
-  };
-
   const handleExportProducts = async () => {
     try {
       // Use current filter values from the page
@@ -192,13 +189,13 @@ function InventoryContent() {
             markupFilter === "Marked Up"
               ? true
               : markupFilter === "Not Marked Up"
-              ? false
-              : undefined,
+                ? false
+                : undefined,
           notMarkedUp: markupFilter === "Not Marked Up" ? true : undefined,
           patientId: null,
         },
       });
-      
+
       if (data?.exportProducts?.csvData && data?.exportProducts?.fileName) {
         // API returns base64 encoded CSV data - decode it
         let csvContent: string;
@@ -210,28 +207,31 @@ function InventoryContent() {
           showErrorToast("Failed to decode CSV data. Please try again.");
           return;
         }
-        
+
         // Add UTF-8 BOM for Excel compatibility
-        const BOM = '\uFEFF';
-        const blob = new Blob([BOM + csvContent], { 
-          type: 'text/csv;charset=utf-8;' 
+        const BOM = "\uFEFF";
+        const blob = new Blob([BOM + csvContent], {
+          type: "text/csv;charset=utf-8;",
         });
-        
+
         // Create a download link
-        const link = document.createElement('a');
+        const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', data.exportProducts.fileName || 'products.csv');
-        link.style.visibility = 'hidden';
-        
+
+        link.setAttribute("href", url);
+        link.setAttribute(
+          "download",
+          data.exportProducts.fileName || "products.csv",
+        );
+        link.style.visibility = "hidden";
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         // Clean up the URL object
         URL.revokeObjectURL(url);
-        
+
         showSuccessToast("Products exported successfully!");
       } else {
         showErrorToast("Failed to export products. No data received.");
@@ -314,13 +314,20 @@ function InventoryContent() {
           </span>
           <div className="flex items-center gap-2 md:gap-3">
             <h2 className="lg:w-full text-black font-semibold text-xl md:text-3xl lg:4xl">
-              Peptide Inventory
+              Inventory
             </h2>
-            {!productsLoading && (
+            {/* {!productsLoading && (
               <span className="flex items-center justify-center px-2 md:px-3 py-1 md:py-1.5 bg-gray-100 text-gray-700 text-sm md:text-base font-medium rounded-full">
                 {productsData?.allProducts.count || 0}
               </span>
-            )}
+            )} */}
+            <Tooltip
+              autoShowOnceKey={userEmail}
+              side="bottom"
+              content="Click Add to Shop, enter your selling price, and click Save. The product will be added to your shop."
+            >
+              <InfoFilledIcon />
+            </Tooltip>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap md:justify-end justify-center">
@@ -461,23 +468,34 @@ function InventoryContent() {
               {displayProducts.map((product) => {
                 // Find the original GraphQL product data using the originalId
                 const originalProduct = productsData?.allProducts.allData?.find(
-                  (p) => p.id === product.originalId
+                  (p) => p.id === product.originalId,
                 );
-
+                const isMarkedUp =
+                  originalProduct?.customPrice != null &&
+                  originalProduct?.customPrice !== undefined;
                 return (
                   <ProductCard
                     key={product.originalId}
                     product={product}
                     customPrice={originalProduct?.customPrice}
-                    onAddToCart={() => {
-                      if (originalProduct) {
-                        router.push(`/orders/new-order?productId=${originalProduct.id}`);
+                    onBtnClick={() => {
+                      // Not marked up -> Add to Shop
+                      // Marked up -> Change Customer Price
+                      if (!originalProduct) {
+                        showErrorToast("Product information is missing");
+                        return;
                       }
+                      const firstVariant = originalProduct.variants?.[0];
+                      setSelectedProduct({
+                        id: originalProduct.id,
+                        shopifyVariantId: firstVariant?.shopifyVariantId || "",
+                        title: originalProduct.title,
+                        price: firstVariant?.price ?? 0,
+                        customPrice: originalProduct.customPrice ?? null,
+                        imageUrl: originalProduct.primaryImage ?? null,
+                      });
+                      setShowPriceModal(true);
                     }}
-                    onToggleFavourite={() => {
-                      handleToggleFavorite(product.originalId);
-                    }}
-                    onRemoveFromSale={handleRemoveFromSale}
                     onCardClick={() =>
                       router.push(`/inventory/${product.originalId}`)
                     }
@@ -502,7 +520,7 @@ function InventoryContent() {
               {displayProducts.map((product) => {
                 // Find the original GraphQL product data using the originalId
                 const originalProduct = productsData?.allProducts.allData?.find(
-                  (p) => p.id === product.originalId
+                  (p) => p.id === product.originalId,
                 );
 
                 return (
@@ -516,12 +534,22 @@ function InventoryContent() {
                     onToggleFavourite={() => {
                       handleToggleFavorite(product.originalId);
                     }}
-                    onAddToCart={() => {
-                      if (originalProduct) {
-                        router.push(`/orders/new-order?productId=${originalProduct.id}`);
+                    onBtnClick={() => {
+                      if (!originalProduct) {
+                        showErrorToast("Product information is missing");
+                        return;
                       }
+                      const firstVariant = originalProduct.variants?.[0];
+                      setSelectedProduct({
+                        id: originalProduct.id,
+                        shopifyVariantId: firstVariant?.shopifyVariantId || "",
+                        title: originalProduct.title,
+                        price: firstVariant?.price ?? 0,
+                        customPrice: originalProduct.customPrice ?? null,
+                        imageUrl: originalProduct.primaryImage ?? null,
+                      });
+                      setShowPriceModal(true);
                     }}
-                    onRemoveFromSale={handleRemoveFromSale}
                   />
                 );
               })}
@@ -552,12 +580,31 @@ function InventoryContent() {
         onConfirm={handleConfirmOrder}
         productId={selectedProduct?.id}
         shopifyVariantId={selectedProduct?.shopifyVariantId}
-        customPrice={selectedProduct?.customPrice}
+        customPrice={selectedProduct?.customPrice ?? undefined}
         price={selectedProduct?.price}
         isLoading={createOrderLoading}
         onClose={() => {
           setIsOrderModalOpen(false);
           setSelectedProduct(null);
+        }}
+      />
+
+      <PriceModal
+        isOpen={showPricModal}
+        onClose={() => setShowPriceModal(false)}
+        product={
+          selectedProduct
+            ? {
+              id: selectedProduct.id,
+              title: selectedProduct.title,
+              imageUrl: selectedProduct.imageUrl,
+              basePrice: selectedProduct.price ?? 0,
+              customPrice: selectedProduct.customPrice ?? null,
+            }
+            : null
+        }
+        onSuccess={() => {
+          refetch();
         }}
       />
 

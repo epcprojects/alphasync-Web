@@ -1,6 +1,12 @@
 "use client";
 
-import { HeartFilledIcon, HeartOutlineIcon, ShopingCartIcon, CrossIcon } from "@/icons";
+import {
+  HeartFilledIcon,
+  HeartOutlineIcon,
+  ShopingCartIcon,
+  CrossIcon,
+  InventoryIcon,
+} from "@/icons";
 import ThemeButton from "../buttons/ThemeButton";
 import ProductImage from "@/app/components/ui/ProductImage";
 import Tooltip from "../tooltip";
@@ -21,18 +27,16 @@ type Product = {
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart?: (id: number) => void;
+  onBtnClick?: (id: number) => void;
   onCardClick?: () => void;
-  onToggleFavourite?: (id: number) => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
 }
 
 export default function ProductCard({
   product,
-  onAddToCart,
+  onBtnClick,
   onCardClick,
-  onToggleFavourite,
   onRemoveFromSale,
   customPrice,
 }: ProductCardProps) {
@@ -41,21 +45,8 @@ export default function ProductCard({
   return (
     <div
       onClick={onCardClick}
-      className="rounded-2xl pb-2 cursor-pointer flex-col bg-white shadow-table border relative border-gray-200 px-2 flex items-center justify-center"
+      className="rounded-2xl pb-2 cursor-pointer flex-col bg-white shadow-table border  border-gray-200 px-2 flex items-center justify-center"
     >
-      <button
-        className="absolute top-4 end-4 cursor-pointer"
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleFavourite?.(product.id);
-        }}
-      >
-        {product.isFavourite ? (
-          <HeartFilledIcon fill="#2862A9" />
-        ) : (
-          <HeartOutlineIcon fill="#374151" />
-        )}
-      </button>
       <div className="bg-[url(/images/productBgPattern.png)] bg-cover h-52 md:h-60 pt-3 pb-2 bg-[position:0_20px] flex items-center justify-center ">
         <ProductImage
           width={240}
@@ -91,10 +82,10 @@ export default function ProductCard({
             <div className="flex flex-col gap-2">
               {product.basePrice && (
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 text-xs md:text-sm">
-                    Base Price:
+                  <span className="text-gray-00 font-semibold text-xs md:text-sm">
+                    My Clinic Price:
                   </span>
-                  <span className="text-gray-700 font-medium text-xs md:text-sm">
+                  <span className="text-gray-950 font-semibold text-sm md:text-lg lg:text-xl min-w-16 text-end">
                     {product.basePrice}
                   </span>
                 </div>
@@ -115,16 +106,18 @@ export default function ProductCard({
                   </Tooltip>
                 )}
                 <ThemeButton
-                  label="Order"
-                  icon={<ShopingCartIcon />}
+                  label={
+                    isMarkedUp ? "Change Customer Price" : "Add to Shop"
+                  }
+                  icon={<InventoryIcon fill="#2862A9" />}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onAddToCart?.(product.id);
+                    onBtnClick?.(product.id);
                   }}
                   variant="outline"
                   className="flex-1"
                   heightClass="h-10 md:h-11"
-                  disabled={customPrice === null || customPrice === undefined}
+                  disabled={false}
                 />
 
                 <h2 className="text-gray-950 font-semibold text-sm md:text-lg lg:text-xl min-w-16 text-end">
