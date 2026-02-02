@@ -53,6 +53,7 @@ const menuItems = [
   { label: "Accounting", href: "/accounting", icon: DashboardIcon },
   { label: "Customers", href: "/customers", icon: CustomerIcon },
   { label: "Orders", href: "/orders", icon: OrdersIcon },
+  { label: "Training Videos", href: "/training-videos", icon: DashboardIcon },
   // { label: "My Clinic", href: "/clinic", icon: DeliveryBoxIcon },
 
   {

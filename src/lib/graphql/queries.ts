@@ -670,6 +670,7 @@ export const ALL_VIDEOS = gql`
         title
         id
         createdAt
+        isViewed
       }
     }
   }

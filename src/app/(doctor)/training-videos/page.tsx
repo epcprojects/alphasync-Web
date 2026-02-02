@@ -8,12 +8,14 @@ import { ALL_VIDEOS } from "@/lib/graphql/queries";
 import { MARK_ALL_VIDEOS_AS_VIEWED, MARK_VIDEO_AS_VIEWED } from "@/lib/graphql/mutations";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
+import { TickIcon } from "@/icons";
 
 interface TrainingVideo {
   id: string;
   title: string;
   url: string;
   createdAt: string;
+  isViewed: boolean;
 }
 
 interface AllVideosResponse {
@@ -27,6 +29,7 @@ interface AllVideosResponse {
       title: string;
       videoUrl: string;
       createdAt: string;
+      isViewed: boolean;
       uploadedBy: {
         fullName: string;
         firstName: string;
@@ -120,6 +123,7 @@ const DoctorTrainingVideosPage: React.FC = () => {
       title: video.title,
       url: video.videoUrl,
       createdAt: video.createdAt,
+      isViewed: video.isViewed,
     })) || [];
 
   // Convert video URL to embeddable URL
@@ -232,6 +236,11 @@ const DoctorTrainingVideosPage: React.FC = () => {
             </div>
           ) : (
                   trainingVideos.map((video) => {
+              const isViewed =
+                user?.hasViewedAllVideos === true ||
+                video.isViewed ||
+                viewedVideos.has(video.id);
+
               return (
                 <article
                   key={video.id}
@@ -249,15 +258,22 @@ const DoctorTrainingVideosPage: React.FC = () => {
                           </p>
                         )}
                       </div>
-                      {user?.hasViewedAllVideos === false && (
-                        <ThemeButton
-                          label="Mark as viewed"
-                          onClick={() => handleVideoView(video.id)}
-                          variant="outline"
-                          heightClass="h-8"
-                          className="shrink-0 text-sm"
-                          disabled={viewedVideos.has(video.id)}
-                        />
+                      {isViewed ? (
+                        <div className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-medium text-white">
+                          <TickIcon />
+                          Viewed
+                        </div>
+                      ) : (
+                        user?.hasViewedAllVideos === false && (
+                          <ThemeButton
+                            label="Mark as viewed"
+                            onClick={() => handleVideoView(video.id)}
+                            variant="outline"
+                            heightClass="h-8"
+                            className="shrink-0 text-sm"
+                            disabled={viewedVideos.has(video.id)}
+                          />
+                        )
                       )}
                     </div>
                   </div>
