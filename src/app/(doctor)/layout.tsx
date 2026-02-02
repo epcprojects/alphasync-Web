@@ -48,12 +48,13 @@ const poppins_init = Poppins({
 });
 
 const menuItems = [
+  { label: "Shop", href: "/shop", icon: InventoryIcon },
   { label: "Inventory", href: "/inventory", icon: InventoryIcon },
   { label: "Accounting", href: "/accounting", icon: DashboardIcon },
   { label: "Customers", href: "/customers", icon: CustomerIcon },
   { label: "Orders", href: "/orders", icon: OrdersIcon },
   // { label: "My Clinic", href: "/clinic", icon: DeliveryBoxIcon },
- 
+
   {
     label: "Reminder",
     href: "/reminder",
@@ -139,7 +140,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
   const hideStats = noStatsRoutes.some((route) => pathname.startsWith(route));
   const showSubHeads = showSubHeading.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   const isMobile = useIsMobile();

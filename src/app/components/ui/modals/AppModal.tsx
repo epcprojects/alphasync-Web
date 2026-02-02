@@ -1,9 +1,10 @@
 "use client";
 import React from "react";
-import { CrossIcon, ShoppingCartIcon } from "@/icons";
+import { CrossIcon, InfoFilledIcon, ShoppingCartIcon } from "@/icons";
 import ThemeButton, { buttonVariant } from "../buttons/ThemeButton";
 import Portal from "../portal";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import Tooltip from "../tooltip";
 
 export enum ModalPosition {
   CENTER = "center",
@@ -36,6 +37,7 @@ interface AppModalProps {
   cancelBtnIcon?: React.ReactNode;
   disableCloseButton?: boolean;
   hideCrossButton?: boolean;
+  headerTooltip?: string;
 }
 
 const sizeClasses = {
@@ -71,6 +73,7 @@ const AppModal: React.FC<AppModalProps> = ({
   cancelBtnIcon,
   disableCloseButton = false,
   hideCrossButton = false,
+  headerTooltip,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -116,6 +119,12 @@ const AppModal: React.FC<AppModalProps> = ({
                   </h3>
                 )}
               </div>
+
+              {headerTooltip && (
+                <Tooltip content={headerTooltip?.toString()}>
+                  <InfoFilledIcon />
+                </Tooltip>
+              )}
             </div>
 
             {!hideCrossButton && (

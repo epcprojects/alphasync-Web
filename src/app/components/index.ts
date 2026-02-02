@@ -53,8 +53,20 @@ import {
   CustomerRoute,
   DoctorOrAdminRoute,
 } from "./RoleBasedRoute";
+import PriceModal from "./ui/modals/PriceModal";
+import CartPopover from "./ui/CartPopover";
+import ShopProductCard from "./ui/cards/ShopProductCard";
+import EditProductModal from "./ui/modals/EditProductModal";
+import Dropdown from "./ui/inputs/ThemeDropDown";
+import TagInput from "./ui/inputs/TagInput";
 
 export {
+  Dropdown,
+  TagInput,
+  EditProductModal,
+  ShopProductCard,
+  PriceModal,
+  CartPopover,
   EmptyState,
   Loader,
   NotificationToggle,
