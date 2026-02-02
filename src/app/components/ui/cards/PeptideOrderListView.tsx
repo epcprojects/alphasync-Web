@@ -218,7 +218,7 @@ export default function PeptideOrderListView({
     <div
       onClick={onRowClick}
       key={order.id}
-      className="hidden sm:grid hover:bg-gray-100 group  md:grid md:grid-cols-[5rem_5rem_1fr_1fr_3rem_3rem_1fr_1fr] lg:grid-cols-[8rem_5rem_2fr_2fr_1fr_1fr_1fr_1fr_5rem_9rem] gap-2 lg:gap-4 items-center rounded-xl bg-white p-3 shadow-table cursor-pointer"
+      className="hidden sm:grid hover:bg-gray-100 group  md:grid md:grid-cols-[5rem_5rem_2fr_1fr_3rem_3rem_1fr_1fr] lg:grid-cols-[8rem_5rem_3fr_2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 lg:gap-4 items-center rounded-xl bg-white p-3 shadow-table cursor-pointer"
     >
       <div className="sm:block hidden">
         <h2 className="text-gray-800 text-sm md:text-base font-normal">
@@ -256,7 +256,7 @@ export default function PeptideOrderListView({
         ${order.total}
       </div>
 
-      <div className=" font-medium text-sm md:text-base text-gray-800">
+      <div className=" font-medium text-sm md:text-base text-gray-800 text-center">
         <span
           className={`flex md:inline rounded-full md:whitespace-nowrap wrap-break-word px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
             order.status

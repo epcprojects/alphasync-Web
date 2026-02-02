@@ -4,7 +4,10 @@ import HorizontalBarChart from "@/app/components/charts/HorizontalBarChart";
 import RevenueChart from "@/app/components/charts/RevenueChart";
 import DateRangeSelector from "@/app/components/DateRangePicker";
 import { useQuery } from "@apollo/client/react";
-import { DOCTOR_ORDERS, PEPTIDE_ACCOUNTING_CHARTS } from "@/lib/graphql/queries";
+import {
+  DOCTOR_ORDERS_ALL,
+  PEPTIDE_ACCOUNTING_CHARTS,
+} from "@/lib/graphql/queries";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   AccountFilledIcon,
@@ -17,6 +20,8 @@ import Pagination from "@/app/components/ui/Pagination";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import PeptideOrderListView from "@/app/components/ui/cards/PeptideOrderListView";
+import CustomerOrderDetails from "@/app/components/ui/modals/CustomerOrderDetails";
+import { useAppSelector } from "@/lib/store/hooks";
 
 interface DoctorOrdersResponse {
   doctorOrders: {
@@ -34,12 +39,15 @@ interface DoctorOrdersResponse {
         id: string;
         quantity: number;
         price: number;
+        tieredPrice?: number | null;
         product: {
           title: string;
+          price?: number | null;
         };
       }[];
       totalPrice: number;
       subtotalPrice: number;
+      totalTax?: number | null;
       netCost: number | null;
       profit: number | null;
     }[];
@@ -68,13 +76,37 @@ interface PeptideAccountingChartsResponse {
 
 type DateFilter = "today" | "thisMonth" | "last3Months" | "thisYear" | "custom";
 
+type ClinicOrderDetails = {
+  id: string;
+  displayId: string;
+  doctorName: string;
+  orderedOn: string;
+  totalPrice: number;
+  subtotalPrice?: number | null;
+  totalTax?: number | null;
+  orderItems: {
+    id: string;
+    medicineName: string;
+    quantity: number;
+    price: number;
+    amount: string;
+    product?: { price?: number | null } | null;
+    tieredPrice?: number | null;
+  }[];
+  status?: string;
+  doctorAddress?: string | null;
+};
+
 const Page = () => {
   const isMobile = useIsMobile();
   const router = useRouter();
+  const user = useAppSelector((state) => state.auth.user);
   const [activeFilter, setActiveFilter] = useState<DateFilter>("last3Months");
   const [search, setSearch] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [isClinicDetailOpen, setIsClinicDetailOpen] = useState(false);
+  const [selectedClinicOrder, setSelectedClinicOrder] =
+    useState<ClinicOrderDetails | null>(null);
   const [range, setRange] = useState({
     startDate: new Date(),
     endDate: new Date(),
@@ -83,13 +115,7 @@ const Page = () => {
 
   const itemsPerPage = 10;
 
-  const orderStatuses = [
-    { label: "All Status", value: null },
-   
-    { label: "Pending", value: "PENDING", color: "before:bg-red-500" },
-    { label: "Paid", value: "PAID", color: "before:bg-green-500" },
-    { label: "Cancelled", value: "CANCELED", color: "before:bg-gray-600" },
-  ];
+  const paidOnlyStatus = "PAID" as const;
 
   // Map DateFilter to TimeRangeEnum
   const getTimeRangeEnum = (filter: DateFilter): string => {
@@ -112,16 +138,16 @@ const Page = () => {
   // Memoize orders query variables to prevent unnecessary refetches
   const ordersVariables = useMemo(
     () => ({
-      status: selectedStatus === null ? null : selectedStatus || undefined,
+      // Accounting should only show PAID orders (clinic + customer).
+      status: paidOnlyStatus,
       page: currentPage + 1, // GraphQL pagination is 1-based
       perPage: itemsPerPage,
-      myClinic: false,
     }),
-    [selectedStatus, currentPage, itemsPerPage]
+    [paidOnlyStatus, currentPage, itemsPerPage]
   );
 
   const { data, loading, error, refetch } = useQuery<DoctorOrdersResponse>(
-    DOCTOR_ORDERS,
+    DOCTOR_ORDERS_ALL,
     {
       variables: ordersVariables,
       fetchPolicy: "network-only",
@@ -171,13 +197,11 @@ const Page = () => {
     );
   }, [data?.doctorOrders.allData, search]);
 
-  const isFiltered = selectedStatus !== null;
-
-  // Refetch orders when status or page changes
+  // Refetch orders when page changes
   useEffect(() => {
     refetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedStatus, currentPage]);
+  }, [currentPage]);
 
   const today = () => {
     const d = new Date();
@@ -232,6 +256,40 @@ const Page = () => {
 
   const handlePageChange = (selected: number) => {
     setCurrentPage(selected);
+  };
+
+  const openClinicOrderDetails = (order: DoctorOrdersResponse["doctorOrders"]["allData"][0]) => {
+    const doctorAddress =
+      user?.address ||
+      (user?.street1
+        ? `${user.street1}${user.street2 ? `, ${user.street2}` : ""}, ${
+            user.city || ""
+          }, ${user.state || ""} ${user.postalCode || ""}`.trim()
+        : null);
+
+    setSelectedClinicOrder({
+      id: order.id,
+      displayId: String(order.displayId || order.id),
+      doctorName: order.patient?.fullName || "Clinic Order",
+      orderedOn: format(new Date(order.createdAt), "MM/dd/yyyy"),
+      totalPrice: order.totalPrice,
+      subtotalPrice: order.subtotalPrice,
+      totalTax: order.totalTax ?? undefined,
+      status: order.status,
+      doctorAddress: doctorAddress || undefined,
+      orderItems: order.orderItems.map((item) => ({
+        id: item.id,
+        medicineName: item.product?.title || "Unknown Product",
+        quantity: item.quantity,
+        price: item.price,
+        amount: `$${(item.price * item.quantity).toFixed(2)}`,
+        product: {
+          price: item.product?.price ?? null,
+        },
+        tieredPrice: item.tieredPrice ?? null,
+      })),
+    });
+    setIsClinicDetailOpen(true);
   };
 
   return (
@@ -484,75 +542,13 @@ const Page = () => {
             />
           </span>
           <h2 className="text-black whitespace-nowrap font-semibold text-lg sm:text-2xl lg:text-3xl">
-            Recent Orders
+            Paid Orders
           </h2>
-        </div>
-
-        <div className="bg-white rounded-full flex flex-row w-full items-center gap-2 p-1 md:p-2  shadow-table sm:w-fit">
-          {/* <div className="flex items-center relative w-full md:shadow-none rounded-full">
-            <span className="absolute left-3">
-              <SearchIcon
-                height={isMobile ? "16" : "20"}
-                width={isMobile ? "16" : "20"}
-              />
-            </span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 h-full py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full  md:min-w-80 outline-none focus:ring focus:ring-gray-200 rounded-full"
-            />
-          </div> */}
-          <div className="flex items-center  gap-1 md:gap-2 md:bg-transparent md:shadow-none rounded-full">
-            <Menu>
-              <MenuButton className="inline-flex whitespace-nowrap py-1.5 md:w-fit w-full md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline justify-between data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-                {orderStatuses.find((s) => s.value === selectedStatus)?.label || "All Status"} <ArrowDownIcon fill="#717680" />
-              </MenuButton>
-
-              <MenuItems
-                transition
-                anchor="bottom end"
-                className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
-              >
-                {orderStatuses.map((status) => (
-                  <MenuItem key={status.label}>
-                    <button
-                      onClick={() => {
-                        setSelectedStatus(status.value);
-                        setCurrentPage(0);
-                      }}
-                      className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full ${
-                        status.color ? `before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${status.color}` : ""
-                      }`}
-                    >
-                      {status.label}
-                    </button>
-                  </MenuItem>
-                ))}
-              </MenuItems>
-            </Menu>
-
-            <button
-              disabled={!isFiltered}
-              onClick={() => {
-                setSelectedStatus(null);
-                setRange({
-                  startDate: new Date(2000, 0, 1),
-                  endDate: new Date(),
-                  key: "selection",
-                });
-                setCurrentPage(0);
-              }}
-              className="bg-gray-100 hover:bg-gray-300 rounded-full hidden sm:flex h-9 md:h-10 px-3 text-xs md:text-sm py-2.5 text-gray-700 md:leading-5 cursor-pointer disabled:text-gray-400 disabled:cursor-not-allowed disabled:bg-gray-200"
-            >
-              Clear
-            </button>
-          </div>
         </div>
       </div>
 
       <div className="space-y-1">
-        <div className="hidden md:grid md:grid-cols-[5rem_5rem_1fr_1fr_3rem_3rem_1fr_1fr] lg:grid-cols-[8rem_5rem_2fr_2fr_1fr_1fr_1fr_1fr_5rem_9rem] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
+        <div className="hidden md:grid md:grid-cols-[5rem_5rem_2fr_1fr_3rem_3rem_1fr_1fr] lg:grid-cols-[8rem_5rem_3fr_2fr_1fr_1fr_1fr_1fr_1fr_1fr] text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
           <div>
             <h2 className="whitespace-nowrap">Order #</h2>
           </div>
@@ -596,7 +592,13 @@ const Page = () => {
         ) : (
           orders.map((order) => (
             <PeptideOrderListView
-              onRowClick={() => router.push(`/orders/${order.id}`)}
+              onRowClick={() => {
+                if (!order.patient) {
+                  openClinicOrderDetails(order);
+                  return;
+                }
+                router.push(`/orders/${order.id}`);
+              }}
               key={order.id}
               order={{
                 id: parseInt(order.id),
@@ -604,7 +606,7 @@ const Page = () => {
                 displayId: order.displayId
                   ? parseInt(order.displayId.toString())
                   : parseInt(order.id),
-                customer: order.patient?.fullName || "Unknown Customer",
+                customer: order.patient?.fullName || "Clinic Order",
                 imageUrl: order.patient?.imageUrl,
                 customerEmail: order.patient?.email,
                 date: format(new Date(order.createdAt), "MM-dd-yy"),
@@ -615,7 +617,6 @@ const Page = () => {
                 profit: order.profit ?? 0,
                 orderItems: order.orderItems,
               }}
-              onViewOrderDetail={() => router.push(`/orders/${order.id}`)}
             />
           ))
         )}
@@ -633,6 +634,17 @@ const Page = () => {
           />
         )}
       </div>
+
+      <CustomerOrderDetails
+        isOpen={isClinicDetailOpen}
+        onClose={() => {
+          setIsClinicDetailOpen(false);
+          setSelectedClinicOrder(null);
+        }}
+        order={selectedClinicOrder}
+        type="order"
+        showDoctorName={false}
+      />
     </div>
   );
 };
