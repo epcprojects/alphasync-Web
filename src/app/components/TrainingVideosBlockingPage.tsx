@@ -56,7 +56,7 @@ const TrainingVideosBlockingPage: React.FC<TrainingVideosBlockingPageProps> = ({
             />
             {onMarkAllAsViewed && (
               <ThemeButton
-                label={isLoading ? "Marking..." : "Mark All as Viewed"}
+                label={isLoading ? "Skipping..." : "Skip"}
                 onClick={onMarkAllAsViewed}
                 variant="outline"
                 heightClass="h-11 md:h-12"
