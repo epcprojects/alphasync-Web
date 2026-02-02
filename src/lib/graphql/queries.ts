@@ -182,6 +182,44 @@ export const DOCTOR_ORDERS = gql`
     }
   }
 `;
+
+// Used where we want *both* clinic + customer orders without forcing a myClinic filter.
+export const DOCTOR_ORDERS_ALL = gql`
+  query DoctorOrdersAll($status: OrderStatusEnum, $page: Int, $perPage: Int) {
+    doctorOrders(status: $status, page: $page, perPage: $perPage) {
+      allData {
+        id
+        displayId
+        patient {
+         ${userpayload}
+        }
+        createdAt
+        status
+        orderItems {
+          id
+          quantity
+          price
+          effectivePrice
+          tieredPrice
+          customPrice
+          product {
+            title
+            price
+          }
+        }
+        totalPrice
+        profit
+        netCost
+        subtotalPrice
+        totalTax
+      }
+      count
+      nextPage
+      prevPage
+      totalPages
+    }
+  }
+`;
 export const FETCH_CUSTOMER = gql`
   query FetchUser($id: ID!) {
     fetchUser(id: $id) {
