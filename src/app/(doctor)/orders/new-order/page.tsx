@@ -1902,6 +1902,7 @@ const Page = () => {
             showSuccessToast("Payment processed successfully");
             router.push("/orders");
           }}
+          showOrderNotConfirmedAlertOnClose={true}
         />
       )}
 

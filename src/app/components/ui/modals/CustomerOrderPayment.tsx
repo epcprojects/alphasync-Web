@@ -77,6 +77,8 @@ interface CustomerOrderPaymentProps {
   order?: order;
   onClick: (token: AcceptOpaqueData) => unknown | Promise<unknown>;
   request?: requestProps;
+  /** When true, closing without paying shows an alert (e.g. from new order page). */
+  showOrderNotConfirmedAlertOnClose?: boolean;
 }
 
 const cardImages: Record<CardType, React.FC> = {
@@ -110,6 +112,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   onClick,
   request,
   isOpen,
+  showOrderNotConfirmedAlertOnClose = false,
 }) => {
   const { user } = useAppSelector((state) => state.auth);
 
@@ -843,7 +846,11 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     if (isMobile && showForm) {
       setShowForm(false);
     }
-    setShowOrderNotConfirmedAlert(true);
+    if (showOrderNotConfirmedAlertOnClose) {
+      setShowOrderNotConfirmedAlert(true);
+    } else {
+      onClose();
+    }
   };
 
   const handleDismissOrderNotConfirmedAlert = () => {
@@ -868,9 +875,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
           e.preventDefault();
           void handlePaymentSubmit();
         }}
-        onCancel={() => {
-          handleCloseWithoutPayment();
-        }}
+        onCancel={handleCloseWithoutPayment}
       confimBtnDisable={
         ((showForm || !isMobile) &&
           (!isAnyFieldValid() || cardType === "Default")) ||
@@ -1335,25 +1340,27 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
       )}
     </AppModal>
 
-      <AppModal
-        isOpen={showOrderNotConfirmedAlert}
-        onClose={handleDismissOrderNotConfirmedAlert}
-        title="Your order is saved"
-        subtitle="No worries — it's placed but not confirmed yet."
-        position={ModalPosition.CENTER}
-        showFooter={true}
-        hideCancelBtn={true}
-        onConfirm={handleDismissOrderNotConfirmedAlert}
-        confirmLabel="Got it"
-        size="small"
-        centerFooter={true}
-      >
-        <p className="text-gray-700 text-sm md:text-base">
-          When you&apos;re ready, head to the <strong>Order</strong> page, open
-          your order, and complete payment from the <strong>My Clinic</strong>{" "}
-          tab. We&apos;ll keep it saved for you.
-        </p>
-      </AppModal>
+      {showOrderNotConfirmedAlertOnClose && (
+        <AppModal
+          isOpen={showOrderNotConfirmedAlert}
+          onClose={handleDismissOrderNotConfirmedAlert}
+          title="Your order is saved"
+          subtitle="No worries — it's placed but not confirmed yet."
+          position={ModalPosition.CENTER}
+          showFooter={true}
+          hideCancelBtn={true}
+          onConfirm={handleDismissOrderNotConfirmedAlert}
+          confirmLabel="Got it"
+          size="small"
+          centerFooter={true}
+        >
+          <p className="text-gray-700 text-sm md:text-base">
+            When you&apos;re ready, head to the <strong>Order</strong> page, open
+            your order, and complete payment from the <strong>My Clinic</strong>{" "}
+            tab. We&apos;ll keep it saved for you.
+          </p>
+        </AppModal>
+      )}
     </>
   );
 };
