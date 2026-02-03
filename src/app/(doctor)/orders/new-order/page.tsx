@@ -1020,7 +1020,7 @@ const Page = () => {
         });
 
         const createdOrderId = res?.data?.createOrder?.order?.id;
-        const displayId = String(createdOrderId ?? "");
+        const displayId = String(res?.data?.createOrder?.order?.displayId ?? "");
 
         setClinicCheckoutOrder({
           id: createdOrderId ?? "0",
