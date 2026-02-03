@@ -1349,9 +1349,9 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
         centerFooter={true}
       >
         <p className="text-gray-700 text-sm md:text-base">
-          When you're ready, head to the <strong>Order</strong> page, open your
-          order, and complete payment from the <strong>My Clinic</strong> tab.
-          We'll keep it saved for you.
+          When you&apos;re ready, head to the <strong>Order</strong> page, open
+          your order, and complete payment from the <strong>My Clinic</strong>{" "}
+          tab. We&apos;ll keep it saved for you.
         </p>
       </AppModal>
     </>
