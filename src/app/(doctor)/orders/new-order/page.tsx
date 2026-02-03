@@ -1484,7 +1484,7 @@ const Page = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {selectedProductData.tierPricing.map((tier, index) => (
+                              {selectedProductData.tierPricing.slice(0, 3).map((tier, index) => (
                               <tr key={tier.id || index} className="border-b border-gray-100">
                                 <td className="py-2 px-2 text-gray-700">
                                   {tier.startCount}+
@@ -1496,6 +1496,11 @@ const Page = () => {
                             ))}
                           </tbody>
                         </table>
+                          {/* {selectedProductData.tierPricing.length > 3 && (
+                          <p className="text-gray-500 text-xs mt-1.5">
+                            Showing first 3 price breaks
+                          </p>
+                        )} */}
                       </div>
                     ) : (
                       <p className="text-gray-600 text-xs md:text-sm">
