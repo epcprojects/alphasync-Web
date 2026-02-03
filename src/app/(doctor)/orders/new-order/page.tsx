@@ -1634,7 +1634,7 @@ const Page = () => {
                 </div>
 
                 <ThemeButton
-                    label="Add to Cart"
+                    label={isClinicOrder ? "Add to Order" : "Add to Cart"}
                   type="submit"
                   icon={<PlusIcon />}
                   variant="primaryOutline"
