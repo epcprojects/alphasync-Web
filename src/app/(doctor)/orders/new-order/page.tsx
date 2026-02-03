@@ -170,6 +170,9 @@ const Page = () => {
   // Ref to apply customer prices (custom / latest marked up / base) when hydration runs after confirming switch from clinic to customer
   const applyCustomerPricesAfterHydrationRef = useRef(false);
 
+  // Ref so we only apply tier price from the latest quantity fetch per item (avoids stale responses)
+  const lastTierFetchForItemRef = useRef<{ index: number; quantity: number } | null>(null);
+
   // GraphQL mutation to create order
   const [
     createOrder,
@@ -315,12 +318,30 @@ const Page = () => {
       // Best effort. Cart can still render without image.
     }
 
-    // Save in Redux cart (optimistic UI)
+    shouldFetchTierPricingForOrderItemsRef.current = true;
+    // For clinic orders, fetch tier price for the quantity that will be in the cart (existing + new) so merged item shows correct tier
+    let priceToUse = Number(values.price ?? 0);
+    if (isClinicOrder) {
+      const existingCartItem = cartItems.find((ci) => ci.id === productId);
+      const totalQty = existingCartItem ? (existingCartItem.qty ?? 0) + qty : qty;
+      try {
+        const { data } = await fetchTierPricing({
+          variables: { productId, quantity: totalQty },
+        });
+        if (data?.fetchTierPricing?.tieredPrice != null) {
+          priceToUse = Number(data.fetchTierPricing.tieredPrice);
+        }
+      } catch {
+        // Keep form price on error
+      }
+    }
+
+    // Save in Redux cart (optimistic UI). For clinic merge, slice will set existing.price = incoming.price so merged item has tier for total qty
     dispatch(
       addCartItem({
         id: productId,
         name: selectedProductData?.name || values.product || "Product",
-        price: Number(values.price ?? 0),
+        price: priceToUse,
         qty,
         imageSrc,
       }),
@@ -429,12 +450,26 @@ const Page = () => {
           const hasUserPriceEdit = prev ? prev.price !== prevCartPrice : false;
 
           const quantity = hasUserQtyEdit ? prev!.quantity : cartQty;
-          const price = hasUserPriceEdit ? prev!.price : cartPrice;
-
-          // If user hasn't edited price, keep initialPrice aligned with cart price.
-          const initialPrice = hasUserPriceEdit
+          let price = hasUserPriceEdit ? prev!.price : cartPrice;
+          let initialPrice = hasUserPriceEdit
             ? prev?.initialPrice ?? cartPrice
             : cartPrice;
+
+          // Clinic order with tiered pricing: fetch tier price for current quantity so price stays correct when quantity changes (e.g. add more to cart)
+          if (isClinicOrder && hasTierPricing && productId && !hasUserPriceEdit) {
+            try {
+              const { data } = await fetchTierPricing({
+                variables: { productId, quantity },
+              });
+              if (data?.fetchTierPricing?.tieredPrice != null) {
+                const tieredPrice = Number(data.fetchTierPricing.tieredPrice);
+                price = tieredPrice;
+                initialPrice = tieredPrice;
+              }
+            } catch {
+              // Keep cart-derived price on error
+            }
+          }
 
           return {
             product: prev?.product || ci.name || "Product",
@@ -494,7 +529,7 @@ const Page = () => {
     return () => {
       cancelled = true;
     };
-  }, [apolloClient, cartItems, cartLoaded]);
+  }, [apolloClient, cartItems, cartLoaded, isClinicOrder, fetchTierPricing]);
 
   // Prefill product when fetched from URL
   useEffect(() => {
@@ -686,7 +721,6 @@ const Page = () => {
 
     const items = [...orderItems];
     let hasUpdates = false;
-
     (async () => {
       const updated = [...items];
       for (let i = 0; i < items.length; i++) {
@@ -825,11 +859,19 @@ const Page = () => {
     field: keyof OrderItem,
     value: number
   ) => {
-    const updated = [...orderItems];
-    const currentItem = updated[index];
-    
-    // If quantity is being updated and it's a clinic order with tiered pricing, fetch new price
-    if (field === "quantity" && isClinicOrder && currentItem.hasTierPricing && currentItem.productId) {
+    const currentItem = orderItems[index];
+    if (!currentItem) return;
+
+    // Update quantity/price immediately so UI reflects the change
+    setOrderItems((prev) => {
+      const next = [...prev];
+      if (next[index]) next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+
+    // When quantity changes and order type is clinic, fetch tier pricing and update price
+    if (field === "quantity" && isClinicOrder && currentItem.productId) {
+      lastTierFetchForItemRef.current = { index, quantity: value };
       try {
         const { data } = await fetchTierPricing({
           variables: {
@@ -837,63 +879,49 @@ const Page = () => {
             quantity: value,
           },
         });
-        
-        if (data?.fetchTierPricing?.tieredPrice) {
-          updated[index] = { 
-            ...currentItem, 
-            [field]: value,
-            price: data.fetchTierPricing.tieredPrice 
-          };
-        } else {
-          updated[index] = { ...currentItem, [field]: value };
+
+        if (data?.fetchTierPricing?.tieredPrice != null) {
+          const tieredPrice = Number(data.fetchTierPricing.tieredPrice);
+          setOrderItems((prev) => {
+            const next = [...prev];
+            const item = next[index];
+            const last = lastTierFetchForItemRef.current;
+            if (!item || !last || last.index !== index || last.quantity !== value) return prev;
+            next[index] = { ...item, price: tieredPrice, initialPrice: tieredPrice };
+            return next;
+          });
         }
       } catch (error) {
         console.error("Error fetching tier pricing:", error);
-        // If API fails, just update quantity without changing price
-        updated[index] = { ...currentItem, [field]: value };
       }
-    } else {
-      updated[index] = { ...currentItem, [field]: value };
     }
-    
-    setOrderItems(updated);
-    
+
     // Validate price for non-clinic orders when price is updated
     if (field === "price") {
       if (!isClinicOrder) {
-        // Validate price against original price and latest marked up price for non-clinic orders
-        const updatedItem = updated[index];
         let errorMessage: string | null = null;
-        
-        if (updatedItem.price < updatedItem.originalPrice) {
-          errorMessage = `Price must be greater than or equal to original price ($${updatedItem.originalPrice.toFixed(2)})`;
+        if (value < currentItem.originalPrice) {
+          errorMessage = `Price must be greater than or equal to original price ($${currentItem.originalPrice.toFixed(2)})`;
         } else if (
-          updatedItem.latestMarkedUpPrice !== null &&
-          updatedItem.latestMarkedUpPrice !== undefined &&
-          updatedItem.price > updatedItem.latestMarkedUpPrice
+          currentItem.latestMarkedUpPrice != null &&
+          value > currentItem.latestMarkedUpPrice
         ) {
-          errorMessage = `Price cannot exceed the latest marked up price ($${updatedItem.latestMarkedUpPrice.toFixed(2)})`;
+          errorMessage = `Price cannot exceed the latest marked up price ($${currentItem.latestMarkedUpPrice.toFixed(2)})`;
         }
-        
         if (errorMessage) {
-          setPriceErrors((prev) => ({
-            ...prev,
-            [index]: errorMessage!,
-          }));
+          setPriceErrors((prev) => ({ ...prev, [index]: errorMessage }));
         } else {
-          // Clear error if price is valid
           setPriceErrors((prev) => {
-            const newErrors = { ...prev };
-            delete newErrors[index];
-            return newErrors;
+            const next = { ...prev };
+            delete next[index];
+            return next;
           });
         }
       } else {
-        // For clinic orders, just clear any existing errors
         setPriceErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[index];
-          return newErrors;
+          const next = { ...prev };
+          delete next[index];
+          return next;
         });
       }
     }
