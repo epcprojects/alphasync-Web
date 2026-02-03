@@ -40,6 +40,7 @@ interface AppModalProps {
   headerTooltip?: string;
   headerTooltipAutoShowOnceKey?: string;
   headerTooltipAutoHideAfter?: number;
+  centerFooter?: boolean;
 }
 
 const sizeClasses = {
@@ -78,6 +79,7 @@ const AppModal: React.FC<AppModalProps> = ({
   headerTooltip,
   headerTooltipAutoShowOnceKey,
   headerTooltipAutoHideAfter,
+  centerFooter = false,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -162,7 +164,9 @@ const AppModal: React.FC<AppModalProps> = ({
             <div
               className={`${
                 btnFullWidth && "gap-6"
-              } border-t border-gray-200 bg-white flex gap-2 sm:rounded-b-2xl items-center justify-between p-2 md:p-4`}
+              } border-t border-gray-200 bg-white flex gap-2 sm:rounded-b-2xl items-center p-2 md:p-4 ${
+                centerFooter ? "justify-center" : "justify-between"
+              }`}
             >
               {!hideCancelBtn && (
                 <ThemeButton
