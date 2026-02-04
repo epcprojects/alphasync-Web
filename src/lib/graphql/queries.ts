@@ -645,6 +645,55 @@ export const ADMIN_DASHBOARD = gql`
     }
   }
 `;
+
+export const ADMIN_ORDERS = gql`
+  query AdminOrders(
+    $page: Int
+    $perPage: Int
+    $doctorId: ID
+    $myClinic: Boolean
+    $search: String
+  ) {
+    adminOrders(
+      page: $page
+      perPage: $perPage
+      doctorId: $doctorId
+      myClinic: $myClinic
+      search: $search
+    ) {
+      count
+      nextPage
+      prevPage
+      totalPages
+      allData {
+        id
+        displayId
+        createdAt
+        processedAt
+        status
+        myClinic
+        totalPrice
+        netCost
+        profit
+        doctor {
+          id
+          email
+          fullName
+          imageUrl
+        }
+        orderItems {
+          id
+        }
+        patient {
+          id
+          fullName
+          email
+          imageUrl
+        }
+      }
+    }
+  }
+`;
 export const ORDERS_GRAPH = gql`
   query OrdersGraph($period: OrdersGraphPeriodEnum!) {
     ordersGraph(period: $period) {

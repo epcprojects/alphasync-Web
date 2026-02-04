@@ -9,6 +9,7 @@ import {
   DashboardIcon,
   SettingsIcon,
   AdminIcon,
+  OrdersIcon,
 } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
@@ -59,6 +60,11 @@ const menuItems = [
     icon: ShoppingCartIcon,
   },
   {
+    label: "Orders",
+    href: "/admin/orders",
+    icon: OrdersIcon,
+  },
+  {
     label: "Training Videos",
     href: "/admin/training-videos",
     icon: DashboardIcon,
@@ -71,6 +77,7 @@ const headings: Record<string, string> = {
   "/admin/doctors": "Trusted Peptide Solutions",
   "/admin/admins": "Admin Management",
   "/admin/products": "Product Management",
+  "/admin/orders": "Orders",
   "/admin/training-videos": "Training Videos",
   "/admin/settings": "Settings",
 };
