@@ -158,20 +158,28 @@ const Page = () => {
           </div>
         </div>
 
-        <div className="sm:bg-white rounded-full flex-col sm:flex-row w-full flex items-center gap-1 md:gap-2 p-0 md:px-2.5 md:py-2 lg:shadow lg:w-fit">
-          <div className="flex items-center relative w-full p-1 sm:p-0 rounded-full bg-white sm:bg-transparent shadow-table sm:shadow-none">
-            <span className="absolute left-3">
-              <SearchIcon
-                height={isMobile ? "16" : "20"}
-                width={isMobile ? "16" : "20"}
+        <div className="flex flex-col sm:flex-row w-full lg:w-auto items-stretch sm:items-center gap-2 lg:gap-3">
+          <ThemeButton
+            label="Add Items to Shop"
+            icon={<PlusIcon />}
+            onClick={() => router.push("/inventory")}
+            className="shrink-0"
+          />
+          <div className="sm:bg-white rounded-full flex-col sm:flex-row w-full flex items-center gap-1 md:gap-2 p-0 md:px-2.5 md:py-2 lg:shadow lg:w-fit">
+            <div className="flex items-center relative w-full p-1 sm:p-0 rounded-full bg-white sm:bg-transparent shadow-table sm:shadow-none">
+              <span className="absolute left-3">
+                <SearchIcon
+                  height={isMobile ? "16" : "20"}
+                  width={isMobile ? "16" : "20"}
+                />
+              </span>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search"
+                className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full md:min-w-56 outline-none focus:ring focus:ring-gray-200 rounded-full"
               />
-            </span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search"
-              className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full md:min-w-56 outline-none focus:ring focus:ring-gray-200 rounded-full"
-            />
+            </div>
           </div>
         </div>
       </div>

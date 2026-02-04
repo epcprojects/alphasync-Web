@@ -394,6 +394,7 @@ export const CREATE_ORDER = gql`
     ) {
       order {
         id
+        displayId
       }
     }
   }

@@ -164,6 +164,15 @@ const Page = () => {
   // Ref to store Formik's setFieldValue function
   const formikSetFieldValueRef = useRef<((field: string, value: string | number) => void) | null>(null);
 
+  // Ref to trigger fetchTierPricing for all order items when user switches to clinic
+  const shouldFetchTierPricingForOrderItemsRef = useRef(false);
+
+  // Ref to apply customer prices (custom / latest marked up / base) when hydration runs after confirming switch from clinic to customer
+  const applyCustomerPricesAfterHydrationRef = useRef(false);
+
+  // Ref so we only apply tier price from the latest quantity fetch per item (avoids stale responses)
+  const lastTierFetchForItemRef = useRef<{ index: number; quantity: number } | null>(null);
+
   // GraphQL mutation to create order
   const [
     createOrder,
@@ -256,6 +265,7 @@ const Page = () => {
 
       setConfirmSwitchModalOpen(false);
       setPendingUnmarkedItems([]);
+      applyCustomerPricesAfterHydrationRef.current = true;
       handleOrderTypeChangeRef.current(false);
     } finally {
       setConfirmSwitchLoading(false);
@@ -308,12 +318,30 @@ const Page = () => {
       // Best effort. Cart can still render without image.
     }
 
-    // Save in Redux cart (optimistic UI)
+    shouldFetchTierPricingForOrderItemsRef.current = true;
+    // For clinic orders, fetch tier price for the quantity that will be in the cart (existing + new) so merged item shows correct tier
+    let priceToUse = Number(values.price ?? 0);
+    if (isClinicOrder) {
+      const existingCartItem = cartItems.find((ci) => ci.id === productId);
+      const totalQty = existingCartItem ? (existingCartItem.qty ?? 0) + qty : qty;
+      try {
+        const { data } = await fetchTierPricing({
+          variables: { productId, quantity: totalQty },
+        });
+        if (data?.fetchTierPricing?.tieredPrice != null) {
+          priceToUse = Number(data.fetchTierPricing.tieredPrice);
+        }
+      } catch {
+        // Keep form price on error
+      }
+    }
+
+    // Save in Redux cart (optimistic UI). For clinic merge, slice will set existing.price = incoming.price so merged item has tier for total qty
     dispatch(
       addCartItem({
         id: productId,
         name: selectedProductData?.name || values.product || "Product",
-        price: Number(values.price ?? 0),
+        price: priceToUse,
         qty,
         imageSrc,
       }),
@@ -422,12 +450,26 @@ const Page = () => {
           const hasUserPriceEdit = prev ? prev.price !== prevCartPrice : false;
 
           const quantity = hasUserQtyEdit ? prev!.quantity : cartQty;
-          const price = hasUserPriceEdit ? prev!.price : cartPrice;
-
-          // If user hasn't edited price, keep initialPrice aligned with cart price.
-          const initialPrice = hasUserPriceEdit
+          let price = hasUserPriceEdit ? prev!.price : cartPrice;
+          let initialPrice = hasUserPriceEdit
             ? prev?.initialPrice ?? cartPrice
             : cartPrice;
+
+          // Clinic order with tiered pricing: fetch tier price for current quantity so price stays correct when quantity changes (e.g. add more to cart)
+          if (isClinicOrder && hasTierPricing && productId && !hasUserPriceEdit) {
+            try {
+              const { data } = await fetchTierPricing({
+                variables: { productId, quantity },
+              });
+              if (data?.fetchTierPricing?.tieredPrice != null) {
+                const tieredPrice = Number(data.fetchTierPricing.tieredPrice);
+                price = tieredPrice;
+                initialPrice = tieredPrice;
+              }
+            } catch {
+              // Keep cart-derived price on error
+            }
+          }
 
           return {
             product: prev?.product || ci.name || "Product",
@@ -449,7 +491,36 @@ const Page = () => {
       );
 
       if (cancelled) return;
-      setOrderItems(next);
+
+      // When user just confirmed switching from clinic to customer, apply customer prices so they are not overwritten by cart-derived price
+      let itemsToSet = next;
+      if (applyCustomerPricesAfterHydrationRef.current) {
+        applyCustomerPricesAfterHydrationRef.current = false;
+        itemsToSet = next.map((item) => {
+          const basePrice = Number(item.originalPrice ?? item.price);
+          const customPrice =
+            item.customPrice != null && Number.isFinite(Number(item.customPrice))
+              ? Number(item.customPrice)
+              : null;
+          const latestMarkedUp =
+            item.latestMarkedUpPrice != null &&
+            Number.isFinite(Number(item.latestMarkedUpPrice))
+              ? Number(item.latestMarkedUpPrice)
+              : null;
+          const cartPrice =
+            item.cartPrice != null && Number.isFinite(Number(item.cartPrice))
+              ? Number(item.cartPrice)
+              : null;
+          const nextPrice =
+            customPrice ??
+            latestMarkedUp ??
+            cartPrice ??
+            (Number.isFinite(basePrice) && basePrice > 0 ? basePrice : item.price);
+          return { ...item, price: nextPrice, initialPrice: nextPrice };
+        });
+      }
+
+      setOrderItems(itemsToSet);
       setPriceErrors({});
       setIsCartHydrating(false);
     };
@@ -458,7 +529,7 @@ const Page = () => {
     return () => {
       cancelled = true;
     };
-  }, [apolloClient, cartItems, cartLoaded]);
+  }, [apolloClient, cartItems, cartLoaded, isClinicOrder, fetchTierPricing]);
 
   // Prefill product when fetched from URL
   useEffect(() => {
@@ -637,6 +708,60 @@ const Page = () => {
     }
   }, [tierPricingData, isClinicOrder, debouncedQuantity]);
 
+  // When user switches to clinic, fetch tier pricing for each order item and update right-side prices
+  useEffect(() => {
+    if (!isClinicOrder || !shouldFetchTierPricingForOrderItemsRef.current) {
+      return;
+    }
+    if (orderItems.length === 0) {
+      shouldFetchTierPricingForOrderItemsRef.current = false;
+      return;
+    }
+    shouldFetchTierPricingForOrderItemsRef.current = false;
+
+    const items = [...orderItems];
+    let hasUpdates = false;
+    (async () => {
+      const updated = [...items];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (!item.productId) continue;
+        try {
+          const { data } = await fetchTierPricing({
+            variables: {
+              productId: item.productId,
+              quantity: item.quantity,
+            },
+          });
+          if (data?.fetchTierPricing?.tieredPrice != null) {
+            const tieredPrice = Number(data.fetchTierPricing.tieredPrice);
+            updated[i] = {
+              ...item,
+              price: tieredPrice,
+              initialPrice: tieredPrice,
+            };
+            hasUpdates = true;
+          }
+        } catch (error) {
+          console.error(`Error fetching tier pricing for item ${i}:`, error);
+        }
+      }
+      if (hasUpdates) {
+        setOrderItems((prev) => {
+          // Only apply if the list still matches (user didn't add/remove items while we were fetching)
+          if (prev.length !== updated.length) return prev;
+          const same = prev.every(
+            (p, i) =>
+              updated[i] &&
+              p.productId === updated[i].productId &&
+              p.quantity === updated[i].quantity
+          );
+          return same ? updated : prev;
+        });
+      }
+    })();
+  }, [isClinicOrder, orderItems, fetchTierPricing]);
+
   const handleAddItem = async (values: {
     customer: string;
     product: string;
@@ -734,11 +859,19 @@ const Page = () => {
     field: keyof OrderItem,
     value: number
   ) => {
-    const updated = [...orderItems];
-    const currentItem = updated[index];
-    
-    // If quantity is being updated and it's a clinic order with tiered pricing, fetch new price
-    if (field === "quantity" && isClinicOrder && currentItem.hasTierPricing && currentItem.productId) {
+    const currentItem = orderItems[index];
+    if (!currentItem) return;
+
+    // Update quantity/price immediately so UI reflects the change
+    setOrderItems((prev) => {
+      const next = [...prev];
+      if (next[index]) next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+
+    // When quantity changes and order type is clinic, fetch tier pricing and update price
+    if (field === "quantity" && isClinicOrder && currentItem.productId) {
+      lastTierFetchForItemRef.current = { index, quantity: value };
       try {
         const { data } = await fetchTierPricing({
           variables: {
@@ -746,63 +879,49 @@ const Page = () => {
             quantity: value,
           },
         });
-        
-        if (data?.fetchTierPricing?.tieredPrice) {
-          updated[index] = { 
-            ...currentItem, 
-            [field]: value,
-            price: data.fetchTierPricing.tieredPrice 
-          };
-        } else {
-          updated[index] = { ...currentItem, [field]: value };
+
+        if (data?.fetchTierPricing?.tieredPrice != null) {
+          const tieredPrice = Number(data.fetchTierPricing.tieredPrice);
+          setOrderItems((prev) => {
+            const next = [...prev];
+            const item = next[index];
+            const last = lastTierFetchForItemRef.current;
+            if (!item || !last || last.index !== index || last.quantity !== value) return prev;
+            next[index] = { ...item, price: tieredPrice, initialPrice: tieredPrice };
+            return next;
+          });
         }
       } catch (error) {
         console.error("Error fetching tier pricing:", error);
-        // If API fails, just update quantity without changing price
-        updated[index] = { ...currentItem, [field]: value };
       }
-    } else {
-      updated[index] = { ...currentItem, [field]: value };
     }
-    
-    setOrderItems(updated);
-    
+
     // Validate price for non-clinic orders when price is updated
     if (field === "price") {
       if (!isClinicOrder) {
-        // Validate price against original price and latest marked up price for non-clinic orders
-        const updatedItem = updated[index];
         let errorMessage: string | null = null;
-        
-        if (updatedItem.price < updatedItem.originalPrice) {
-          errorMessage = `Price must be greater than or equal to original price ($${updatedItem.originalPrice.toFixed(2)})`;
+        if (value < currentItem.originalPrice) {
+          errorMessage = `Price must be greater than or equal to original price ($${currentItem.originalPrice.toFixed(2)})`;
         } else if (
-          updatedItem.latestMarkedUpPrice !== null &&
-          updatedItem.latestMarkedUpPrice !== undefined &&
-          updatedItem.price > updatedItem.latestMarkedUpPrice
+          currentItem.latestMarkedUpPrice != null &&
+          value > currentItem.latestMarkedUpPrice
         ) {
-          errorMessage = `Price cannot exceed the latest marked up price ($${updatedItem.latestMarkedUpPrice.toFixed(2)})`;
+          errorMessage = `Price cannot exceed the latest marked up price ($${currentItem.latestMarkedUpPrice.toFixed(2)})`;
         }
-        
         if (errorMessage) {
-          setPriceErrors((prev) => ({
-            ...prev,
-            [index]: errorMessage!,
-          }));
+          setPriceErrors((prev) => ({ ...prev, [index]: errorMessage }));
         } else {
-          // Clear error if price is valid
           setPriceErrors((prev) => {
-            const newErrors = { ...prev };
-            delete newErrors[index];
-            return newErrors;
+            const next = { ...prev };
+            delete next[index];
+            return next;
           });
         }
       } else {
-        // For clinic orders, just clear any existing errors
         setPriceErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[index];
-          return newErrors;
+          const next = { ...prev };
+          delete next[index];
+          return next;
         });
       }
     }
@@ -901,7 +1020,7 @@ const Page = () => {
         });
 
         const createdOrderId = res?.data?.createOrder?.order?.id;
-        const displayId = String(createdOrderId ?? "");
+        const displayId = String(res?.data?.createOrder?.order?.displayId ?? "");
 
         setClinicCheckoutOrder({
           id: createdOrderId ?? "0",
@@ -1051,12 +1170,10 @@ const Page = () => {
                 );
 
                 // Keep existing items (hydrated from cart), but adapt pricing when switching order type:
-                // - Clinic order: use base/original price
-                // - Customer order: use cart/marked-up price
+                // - Clinic order: use base/original price (then tier pricing is fetched in useEffect)
+                // - Customer order: restore previous customer price (custom / latest marked up / cart / base)
                 setOrderItems((prev) =>
                   prev.map((item) => {
-                    const cartPrice =
-                      item.cartPrice != null ? Number(item.cartPrice) : Number(item.price);
                     const basePrice = Number(item.originalPrice ?? item.price);
 
                     if (nextIsClinicOrder) {
@@ -1065,8 +1182,25 @@ const Page = () => {
                       return { ...item, price: nextPrice, initialPrice: nextPrice };
                     }
 
+                    // Switching back to Customer: show previous customer price (custom > latest marked up > cart > base)
+                    const customPrice =
+                      item.customPrice != null && Number.isFinite(Number(item.customPrice))
+                        ? Number(item.customPrice)
+                        : null;
+                    const latestMarkedUp =
+                      item.latestMarkedUpPrice != null &&
+                      Number.isFinite(Number(item.latestMarkedUpPrice))
+                        ? Number(item.latestMarkedUpPrice)
+                        : null;
+                    const cartPrice =
+                      item.cartPrice != null && Number.isFinite(Number(item.cartPrice))
+                        ? Number(item.cartPrice)
+                        : null;
                     const nextPrice =
-                      Number.isFinite(cartPrice) && cartPrice > 0 ? cartPrice : item.price;
+                      customPrice ??
+                      latestMarkedUp ??
+                      cartPrice ??
+                      (Number.isFinite(basePrice) && basePrice > 0 ? basePrice : item.price);
                     return { ...item, price: nextPrice, initialPrice: nextPrice };
                   }),
                 );
@@ -1079,6 +1213,8 @@ const Page = () => {
                   setFieldValue("customer", "", false);
                   setFieldTouched("customer", false, false);
                   setFieldError("customer", undefined);
+                  // Fetch tier pricing for all order items and update right-side prices
+                  shouldFetchTierPricingForOrderItemsRef.current = true;
                 // Clinic order: show base price in the price input
                   if (selectedProductData && productBasePrice !== null) {
                     setFieldValue("price", productBasePrice, false);
@@ -1099,8 +1235,12 @@ const Page = () => {
                     setPreservedPrice(0);
                     updatePricingInfo(null);
                   } else if (selectedProductData) {
-                  // Product is marked up: show latest marked up price in the price input
-                    const priceToUse = latestMarkedUpPrice ?? productBasePrice ?? 0;
+                    // Product is marked up: show custom price or latest marked up price in the price input
+                    const priceToUse =
+                      selectedProductData.customPrice ??
+                      latestMarkedUpPrice ??
+                      productBasePrice ??
+                      0;
                     setFieldValue("price", priceToUse, false);
                     setPreservedPrice(priceToUse);
                   }
@@ -1138,6 +1278,9 @@ const Page = () => {
                 handleOrderTypeChange(nextIsClinicOrder);
               };
 
+              const orderTypeRadioDisabled =
+                confirmSwitchLoading || tierPricingLoading || isCartHydrating;
+
               return (
                 <Form className="flex flex-col gap-4 md:gap-5">
                   <div className="flex flex-row gap-12 items-center">
@@ -1145,7 +1288,7 @@ const Page = () => {
                       This order is for:
                     </span>
                     <div
-                      className={`flex items-center gap-8`}
+                      className={`flex items-center gap-8 ${orderTypeRadioDisabled ? "pointer-events-none opacity-60" : ""}`}
                     >
                       <label
                         className="flex items-center gap-2 cursor-pointer"
@@ -1155,6 +1298,7 @@ const Page = () => {
                           name="orderType"
                           className="sr-only"
                           checked={!isClinicOrder}
+                          disabled={orderTypeRadioDisabled}
                           onChange={() => requestOrderTypeChange(false)}
                         />
                         <span
@@ -1180,6 +1324,7 @@ const Page = () => {
                           name="orderType"
                           className="sr-only"
                           checked={isClinicOrder}
+                          disabled={orderTypeRadioDisabled}
                           onChange={() => requestOrderTypeChange(true)}
                         />
                         <span
@@ -1267,7 +1412,7 @@ const Page = () => {
                       setDebouncedQuantity(null);
 
                       // Auto-populate price when product is selected
-                      // Clinic: tiered price (if available) or base price. Non‑clinic: latest marked up price.
+                      // Clinic: tiered price (if available) or base price. Customer: custom price or latest marked up price.
                       if (selectedProduct) {
                         const basePrice =
                           selectedProduct.variants?.[0]?.price ??
@@ -1285,22 +1430,22 @@ const Page = () => {
                           if (sorted[0]?.customPrice != null)
                             latestMarkedUp = Number(sorted[0].customPrice);
                         }
-                        const latestMarkedUpValue =
-                          latestMarkedUp ??
-                          selectedProduct.customPrice ??
-                          selectedProduct.originalPrice ??
-                          selectedProduct.variants?.[0]?.price ??
-                          selectedProduct.price ??
-                          0;
                         
-                        // For clinic orders, use tiered pricing if available (quantity 1 = first tier)
+                        // For clinic orders, use tiered pricing if available (quantity 1 = first tier) or base price
                         let priceToUse: number;
                         if (isClinicOrder && selectedProduct.tierPricing && selectedProduct.tierPricing.length > 0) {
-                          // Get price for quantity 1 (first tier)
                           const firstTier = selectedProduct.tierPricing.find(tier => tier.startCount === 1);
                           priceToUse = firstTier?.tieredPrice ?? basePrice;
+                        } else if (isClinicOrder) {
+                          priceToUse = basePrice;
                         } else {
-                          priceToUse = isClinicOrder ? basePrice : latestMarkedUpValue;
+                          // Customer order: custom price or latest marked up price in the price input
+                          priceToUse =
+                            selectedProduct.customPrice ??
+                            latestMarkedUp ??
+                            selectedProduct.originalPrice ??
+                            basePrice ??
+                            0;
                         }
                         
                         setPreservedPrice(priceToUse);
@@ -1367,7 +1512,7 @@ const Page = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {selectedProductData.tierPricing.map((tier, index) => (
+                              {selectedProductData.tierPricing.slice(0, 3).map((tier, index) => (
                               <tr key={tier.id || index} className="border-b border-gray-100">
                                 <td className="py-2 px-2 text-gray-700">
                                   {tier.startCount}+
@@ -1379,6 +1524,11 @@ const Page = () => {
                             ))}
                           </tbody>
                         </table>
+                          {/* {selectedProductData.tierPricing.length > 3 && (
+                          <p className="text-gray-500 text-xs mt-1.5">
+                            Showing first 3 price breaks
+                          </p>
+                        )} */}
                       </div>
                     ) : (
                       <p className="text-gray-600 text-xs md:text-sm">
@@ -1436,9 +1586,8 @@ const Page = () => {
                           if (!isNaN(numValue) && numValue > 0) {
                             setFieldValue("quantity", numValue);
                             
-                            // Set debounced quantity for tier pricing API call
-                            // This will trigger the useEffect that calls the API
-                            // Only trigger if product is still selected in form
+                            // Only update price when quantity changes for clinic orders (tiered pricing).
+                            // For customer orders, price stays as custom/latest marked up price and does not change with quantity.
                             if (
                               preservedProduct &&
                               isClinicOrder &&
@@ -1446,14 +1595,15 @@ const Page = () => {
                               selectedProductData.tierPricing.length > 0
                             ) {
                               setDebouncedQuantity(numValue);
-                            } else {
-                              // Fallback to local calculation if not clinic order or no tier pricing
+                            } else if (isClinicOrder) {
+                              // Clinic order but no tier pricing API: fallback to local tier calculation
                               const tieredPrice = getTieredPrice(numValue);
                               if (tieredPrice !== null) {
                                 setFieldValue("price", tieredPrice);
                                 setPreservedPrice(tieredPrice);
                               }
                             }
+                            // Customer order: do not change price when quantity changes
                           } else {
                             setFieldValue("quantity", 1);
                             setDebouncedQuantity(1);
@@ -1484,7 +1634,7 @@ const Page = () => {
                 </div>
 
                 <ThemeButton
-                    label="Add to Cart"
+                    label={isClinicOrder ? "Add to Order" : "Add to Cart"}
                   type="submit"
                   icon={<PlusIcon />}
                   variant="primaryOutline"
@@ -1752,6 +1902,7 @@ const Page = () => {
             showSuccessToast("Payment processed successfully");
             router.push("/orders");
           }}
+          showOrderNotConfirmedAlertOnClose={true}
         />
       )}
 

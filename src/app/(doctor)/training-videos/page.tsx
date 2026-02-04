@@ -60,6 +60,16 @@ const DoctorTrainingVideosPage: React.FC = () => {
   });
 
   const [markVideoAsViewed] = useMutation(MARK_VIDEO_AS_VIEWED, {
+    onCompleted: (data) => {
+      if (data?.markVideoAsViewed?.success && data?.markVideoAsViewed?.hasViewedAllVideos && user) {
+        dispatch(
+          setUser({
+            ...user,
+            hasViewedAllVideos: true,
+          })
+        );
+      }
+    },
     onError: (error) => {
       console.error("Failed to mark video as viewed:", error);
     },

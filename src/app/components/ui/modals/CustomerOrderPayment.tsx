@@ -77,6 +77,8 @@ interface CustomerOrderPaymentProps {
   order?: order;
   onClick: (token: AcceptOpaqueData) => unknown | Promise<unknown>;
   request?: requestProps;
+  /** When true, closing without paying shows an alert (e.g. from new order page). */
+  showOrderNotConfirmedAlertOnClose?: boolean;
 }
 
 const cardImages: Record<CardType, React.FC> = {
@@ -110,6 +112,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   onClick,
   request,
   isOpen,
+  showOrderNotConfirmedAlertOnClose = false,
 }) => {
   const { user } = useAppSelector((state) => state.auth);
 
@@ -146,6 +149,8 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const [calculatedTotal, setCalculatedTotal] = useState<number | null>(null);
   const [isCalculatingTax, setIsCalculatingTax] = useState(false);
   const [taxError, setTaxError] = useState("");
+  const [showOrderNotConfirmedAlert, setShowOrderNotConfirmedAlert] =
+    useState(false);
 
   useBodyScrollLock(isOpen);
   const [processPaymentMutation] = useMutation(PROCESS_PAYMENT);
@@ -837,30 +842,40 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
     }
   };
 
+  const handleCloseWithoutPayment = () => {
+    if (isMobile && showForm) {
+      setShowForm(false);
+    }
+    if (showOrderNotConfirmedAlertOnClose) {
+      setShowOrderNotConfirmedAlert(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleDismissOrderNotConfirmedAlert = () => {
+    setShowOrderNotConfirmedAlert(false);
+    onClose();
+  };
+
   return (
-    <AppModal
-      isOpen={isOpen}
-      onClose={onClose}
-      icon={<Card />}
-      outSideClickClose={false}
-      title={isMobile && !showForm ? "Order Summary" : "Complete Payment"}
-      subtitle={
-        isMobile ? "" : "Your payment information is secure and encrypted"
-      }
-      position={ModalPosition.RIGHT}
-      showFooter={true}
-      onConfirm={(e) => {
-        e.preventDefault();
-        void handlePaymentSubmit();
-      }}
-      onCancel={() => {
-        if (isMobile && showForm) {
-          setShowForm(false);
-          onClose();
-        } else {
-          onClose();
+    <>
+      <AppModal
+        isOpen={isOpen}
+        onClose={handleCloseWithoutPayment}
+        icon={<Card />}
+        outSideClickClose={false}
+        title={isMobile && !showForm ? "Order Summary" : "Complete Payment"}
+        subtitle={
+          isMobile ? "" : "Your payment information is secure and encrypted"
         }
-      }}
+        position={ModalPosition.RIGHT}
+        showFooter={true}
+        onConfirm={(e) => {
+          e.preventDefault();
+          void handlePaymentSubmit();
+        }}
+        onCancel={handleCloseWithoutPayment}
       confimBtnDisable={
         ((showForm || !isMobile) &&
           (!isAnyFieldValid() || cardType === "Default")) ||
@@ -1324,6 +1339,29 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
         </div>
       )}
     </AppModal>
+
+      {showOrderNotConfirmedAlertOnClose && (
+        <AppModal
+          isOpen={showOrderNotConfirmedAlert}
+          onClose={handleDismissOrderNotConfirmedAlert}
+          title="Your order is saved"
+          subtitle="No worries — it's placed but not confirmed yet."
+          position={ModalPosition.CENTER}
+          showFooter={true}
+          hideCancelBtn={true}
+          onConfirm={handleDismissOrderNotConfirmedAlert}
+          confirmLabel="Got it"
+          size="small"
+          centerFooter={true}
+        >
+          <p className="text-gray-700 text-sm md:text-base">
+            When you&apos;re ready, head to the <strong>Order</strong> page, open
+            your order, and complete payment from the <strong>My Clinic</strong>{" "}
+            tab. We&apos;ll keep it saved for you.
+          </p>
+        </AppModal>
+      )}
+    </>
   );
 };
 
