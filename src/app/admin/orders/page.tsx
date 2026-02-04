@@ -3,19 +3,9 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@apollo/client/react";
-import {
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-  Tab,
-  TabGroup,
-  TabList,
-  TabPanel,
-  TabPanels,
-} from "@headlessui/react";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 
-import { ArrowDownIcon, OrdersIcon, SearchIcon } from "@/icons";
+import { OrdersIcon, SearchIcon } from "@/icons";
 import {
   EmptyState,
   Loader,
@@ -230,30 +220,6 @@ function OrdersContent() {
           </div>
 
           <div className="flex items-center gap-1 md:gap-2 bg-white sm:p-0 sm:bg-transparent w-full sm:w-fit p-1 rounded-full shadow-table sm:shadow-none">
-            <Menu>
-              <MenuButton className="w-full sm:w-fit whitespace-nowrap flex justify-between py-1.5 sm:py-2 px-2 sm:px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm/6 font-medium shadow-inner focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-                {orderTabs[selectedTabIndex]?.label ?? "Orders"}{" "}
-                <ArrowDownIcon fill="#717680" />
-              </MenuButton>
-
-              <MenuItems
-                transition
-                anchor="bottom end"
-                className="min-w-44 z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0"
-              >
-                {orderTabs.map((tab, idx) => (
-                  <MenuItem key={tab.label}>
-                    <button
-                      onClick={() => setSelectedTabIndex(idx)}
-                      className="flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full"
-                    >
-                      {tab.label}
-                    </button>
-                  </MenuItem>
-                ))}
-              </MenuItems>
-            </Menu>
-
             <ThemeButton
               label="Export Orders"
               onClick={handleExportOrders}
