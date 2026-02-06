@@ -1626,6 +1626,7 @@ const Page = () => {
                       required={true}
                       min="0.01"
                       step="0.01"
+                      disabled={isClinicOrder}
                     />
                     {errors.price && touched.price && (
                       <p className="text-red-500 text-xs">{errors.price}</p>
@@ -1781,6 +1782,7 @@ const Page = () => {
                           min="0.01"
                           step="0.01"
                           value={item.price}
+                          disabled={isClinicOrder}
                           onChange={(e) => {
                             const newPrice = Number(e.target.value);
                             if (!isNaN(newPrice) && newPrice > 0) {
@@ -1789,7 +1791,7 @@ const Page = () => {
                           }}
                           className={`rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs ${
                             !isClinicOrder && priceErrors[index] ? "border-red-500" : ""
-                          }`}
+                          } ${isClinicOrder ? "cursor-not-allowed bg-gray-50" : ""}`}
                         />
                         {!isClinicOrder && priceErrors[index] && (
                           <p className="text-red-500 text-[12px] mt-0.5 me-2">
