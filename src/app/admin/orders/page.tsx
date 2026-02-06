@@ -16,7 +16,7 @@ import OrderListView from "@/app/components/ui/cards/OrderListView";
 import AdminOrderDetailCanvas from "@/app/admin/orders/AdminOrderDetailCanvas";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ADMIN_ORDERS } from "@/lib/graphql/queries";
-import { EXPORT_ORDERS } from "@/lib/graphql/mutations";
+import { EXPORT_ADMIN_ORDERS } from "@/lib/graphql/mutations";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 interface OrdersResponse {
@@ -129,7 +129,7 @@ function OrdersContent() {
     }
   );
 
-  const [exportOrders, { loading: exportLoading }] = useMutation(EXPORT_ORDERS);
+  const [exportAdminOrders, { loading: exportLoading }] = useMutation(EXPORT_ADMIN_ORDERS);
 
   const orders = data?.adminOrders?.allData ?? [];
   const pageCount = data?.adminOrders?.totalPages ?? 0;
@@ -146,31 +146,25 @@ function OrdersContent() {
 
   const handleExportOrders = async () => {
     try {
-      const { data } = await exportOrders({
+      const { data } = await exportAdminOrders({
         variables: {
-          status: null,
-          patientId: null,
+          doctorId: null,
           myClinic,
         },
       });
 
-      if (data?.exportOrders?.csvData && data?.exportOrders?.fileName) {
-        let csvContent: string;
-        try {
-          csvContent = atob(data.exportOrders.csvData);
-        } catch {
-          csvContent = data.exportOrders.csvData;
-        }
-
+      const result = data?.exportAdminOrders;
+      if (result?.success && result?.csvString) {
         const BOM = "\uFEFF";
-        const blob = new Blob([BOM + csvContent], {
+        const blob = new Blob([BOM + result.csvString], {
           type: "text/csv;charset=utf-8;",
         });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
+        const fileName = `admin-orders-${myClinic ? "clinic" : "customer"}-${new Date().toISOString().slice(0, 10)}.csv`;
 
         link.setAttribute("href", url);
-        link.setAttribute("download", data.exportOrders.fileName || "orders.csv");
+        link.setAttribute("download", fileName);
         link.style.visibility = "hidden";
 
         document.body.appendChild(link);
@@ -178,9 +172,9 @@ function OrdersContent() {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
-        showSuccessToast("Orders exported successfully!");
+        showSuccessToast(result.message || "Orders exported successfully!");
       } else {
-        showErrorToast("Failed to export orders. No data received.");
+        showErrorToast(result?.message || "Failed to export orders. No data received.");
       }
     } catch (e) {
       console.error("Error exporting orders:", e);
