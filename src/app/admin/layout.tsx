@@ -87,6 +87,7 @@ const noStatsRoutes = [
   "/admin/dashboard",
   "/admin/admins",
   "/admin/training-videos",
+  "/admin/orders",
 ];
 
 const numberFormatter = new Intl.NumberFormat("en-US");
