@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDownIcon, DoctorFilledIcon, PlusIcon, SearchIcon } from "@/icons";
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import {
   EmptyState,
   Loader,
@@ -64,7 +64,7 @@ function DoctorContent() {
   const [doctorToDelete, setDoctorToDelete] = useState<DoctorFormData>();
   const [doctorToResend, setDoctorToResend] = useState<DoctorFormData>();
 
-  // Tab state for Active/Pending doctors
+  // Tab state: 0 = All, 1 = Active, 2 = Pending
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   const orderStatuses = [
@@ -78,6 +78,15 @@ function DoctorContent() {
 
   const [currentPage, setCurrentPage] = useState(0);
 
+  // Sync status when switching tabs: Active tab → "Active", All tab → "All Status"
+  useEffect(() => {
+    if (selectedTabIndex === 1) {
+      setSelectedStatus("Active");
+    } else if (selectedTabIndex === 0) {
+      setSelectedStatus("All Status");
+    }
+  }, [selectedTabIndex]);
+
   // GraphQL query with variables
   const { data, loading, error, refetch } = useQuery<AllDoctorsResponse>(
     ALL_DOCTORS,
@@ -88,7 +97,10 @@ function DoctorContent() {
           selectedStatus === "All Status"
             ? undefined
             : selectedStatus.toUpperCase(),
-        pendingInvites: selectedTabIndex === 1,
+        pendingInvites:
+          selectedTabIndex === 0
+            ? undefined
+            : selectedTabIndex === 2,
         page: currentPage + 1,
         perPage: itemsPerPage,
       },
@@ -127,6 +139,12 @@ function DoctorContent() {
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
     setCurrentPage(0);
+    // Sync tab with status: Active → Active Doctors tab, others → All Doctors tab
+    if (status === "Active") {
+      setSelectedTabIndex(1);
+    } else {
+      setSelectedTabIndex(0);
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -182,7 +200,8 @@ function DoctorContent() {
             selectedStatus === "All Status"
               ? undefined
               : selectedStatus.toUpperCase(),
-          pendingInvites: selectedTabIndex === 1,
+          pendingInvites:
+            selectedTabIndex === 0 ? undefined : selectedTabIndex === 2,
           search: search || undefined,
         },
       });
@@ -305,14 +324,14 @@ function DoctorContent() {
         </div>
       </div>
 
-      {/* Tabs for Active/Pending Doctors */}
+      {/* Tabs for All/Active/Pending Doctors */}
       <div className="sm:bg-white rounded-xl sm:shadow-table">
         <TabGroup
           selectedIndex={selectedTabIndex}
           onChange={setSelectedTabIndex}
         >
           <TabList className="flex items-center border-b bg-white rounded-t-xl mb-2 sm:mb-0 border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-4">
-            {["All Doctors", "Pending Doctors"].map((tab, index) => (
+            {["All Doctors", "Active Doctors", "Pending Doctors"].map((tab, index) => (
               <Tab
                 key={index}
                 as="button"
@@ -369,6 +388,75 @@ function DoctorContent() {
                     {doctors?.map((doctor: UserAttributes) => (
                       <DoctorListView
                         // onRowClick={() => router.push(`/orders/${doctor.id}`)}
+                        key={doctor.id}
+                        doctor={doctor}
+                        onEditDoctor={() => handleEdit(doctor)}
+                        onDeleteDoctor={() => handleDelete(doctor)}
+                        onResendInvitation={() =>
+                          doctor.id && handleResendInvitation(doctor.id)
+                        }
+                      />
+                    ))}
+                  </>
+                )}
+                {(!doctors || doctors.length === 0) && !loading && (
+                  <EmptyState />
+                )}
+
+                {pageCount && pageCount > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pageCount}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div className="space-y-1 p-0 md:p-4 pt-0">
+                <div className="hidden sm:grid  grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr] text-black font-medium text-sm  px-2 py-2.5 bg-white rounded-xl shadow-table">
+                  <div>
+                    <h2>Name</h2>
+                  </div>
+                  <div>
+                    <h2>Specialty</h2>
+                  </div>
+                  <div>
+                    <h2>Clinic</h2>
+                  </div>
+                  <div>
+                    <h2>Phone</h2>
+                  </div>
+                  <div>
+                    <h2>Medical License</h2>
+                  </div>
+                  <div className="xl:flex hidden">
+                    <h2>Status</h2>
+                  </div>
+                  <div>
+                    <h2>Invitation</h2>
+                  </div>
+                  <div>
+                    <h2>Actions</h2>
+                  </div>
+                </div>
+                {error && (
+                  <div className="text-center">
+                    <p className="text-red-500 mb-4">{error.message}</p>
+                  </div>
+                )}
+
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                  </div>
+                ) : (
+                  <>
+                    {doctors?.map((doctor: UserAttributes) => (
+                      <DoctorListView
                         key={doctor.id}
                         doctor={doctor}
                         onEditDoctor={() => handleEdit(doctor)}
