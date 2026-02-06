@@ -1,7 +1,6 @@
 "use client";
 
 import React, { Suspense, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 
@@ -14,6 +13,7 @@ import {
   Pagination,
 } from "@/app/components";
 import OrderListView from "@/app/components/ui/cards/OrderListView";
+import AdminOrderDetailCanvas from "@/app/admin/orders/AdminOrderDetailCanvas";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ADMIN_ORDERS } from "@/lib/graphql/queries";
 import { EXPORT_ORDERS } from "@/lib/graphql/mutations";
@@ -28,6 +28,8 @@ interface OrdersResponse {
       processedAt?: string | null;
       status: string;
       myClinic?: boolean | null;
+      subtotalPrice?: number | null;
+      totalTax?: number | null;
       totalPrice: number;
       netCost: number | null;
       profit: number | null;
@@ -37,7 +39,13 @@ interface OrdersResponse {
         fullName?: string | null;
         imageUrl?: string | null;
       } | null;
-      orderItems: { id: string }[];
+      orderItems: Array<{
+        id: string;
+        quantity: number;
+        price: number;
+        totalPrice: number;
+        product?: { id: string; title?: string | null; price?: number | null; primaryImage?: string | null } | null;
+      }>;
       patient: {
         id: string;
         fullName?: string | null;
@@ -73,7 +81,6 @@ function formatDateUtcParts(
 }
 
 function OrdersContent() {
-  const router = useRouter();
   const isMobile = useIsMobile();
 
   const itemsPerPage = 10;
@@ -82,6 +89,7 @@ function OrdersContent() {
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState<OrdersResponse["adminOrders"]["allData"][0] | null>(null);
 
   const orderTabs = [
     { label: "Customer Orders", myClinic: false },
@@ -318,9 +326,7 @@ function OrdersContent() {
                             layout="admin"
                             hideCustomer={tab.myClinic}
                             gridCols={tab.myClinic ? adminOrdersGridClinic : adminOrdersGrid}
-                            onRowClick={() =>
-                              router.push(`/admin/orders/${order.id}`)
-                            }
+                            onRowClick={() => setSelectedOrder(order)}
                             key={order.id}
                             order={{
                               id: parseInt(order.id),
@@ -354,9 +360,7 @@ function OrdersContent() {
                               netCost: order.netCost ?? 0,
                               profit: order.profit ?? 0,
                             }}
-                            onViewOrderDetail={() =>
-                              router.push(`/admin/orders/${order.id}`)
-                            }
+                            onViewOrderDetail={() => setSelectedOrder(order)}
                           />
                         );
                       })}
@@ -380,6 +384,12 @@ function OrdersContent() {
           </TabPanels>
         </TabGroup>
       </div>
+
+      <AdminOrderDetailCanvas
+        order={selectedOrder}
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+      />
     </div>
   );
 }
