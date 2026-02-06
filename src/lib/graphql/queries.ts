@@ -252,6 +252,7 @@ export const FETCH_ORDER = gql`
         product {
           id
           title
+          price
           variants {
             id
             price
@@ -262,6 +263,7 @@ export const FETCH_ORDER = gql`
     }
   }
 `;
+
 export const FETCH_PRODUCT = gql`
   query FetchProduct($id: ID!) {
     fetchProduct(id: $id) {
@@ -672,6 +674,8 @@ export const ADMIN_ORDERS = gql`
         processedAt
         status
         myClinic
+        subtotalPrice
+        totalTax
         totalPrice
         netCost
         profit
@@ -683,6 +687,15 @@ export const ADMIN_ORDERS = gql`
         }
         orderItems {
           id
+          quantity
+          price
+          totalPrice
+          product {
+            id
+            title
+            price
+            primaryImage
+          }
         }
         patient {
           id
