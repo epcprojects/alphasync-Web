@@ -942,6 +942,17 @@ export const EXPORT_ORDERS = gql`
   }
 `;
 
+export const EXPORT_ADMIN_ORDERS = gql`
+  mutation ExportAdminOrders($doctorId: ID, $myClinic: Boolean) {
+    exportAdminOrders(input: { doctorId: $doctorId, myClinic: $myClinic }) {
+      clientMutationId
+      csvString
+      message
+      success
+    }
+  }
+`;
+
 export const EXPORT_DOCTORS = gql`
   mutation ExportDoctors($status: UserStatusEnum, $pendingInvites: Boolean, $search: String) {
     exportDoctors(input: { status: $status, pendingInvites: $pendingInvites, search: $search }) {
