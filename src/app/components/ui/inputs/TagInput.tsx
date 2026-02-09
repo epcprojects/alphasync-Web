@@ -7,6 +7,7 @@ type TagInputProps = {
   label?: string;
   value?: string[];
   onChange?: (tags: string[]) => void;
+  onBlur?: () => void;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -16,6 +17,7 @@ export default function TagInput({
   label = "Tags",
   value,
   onChange,
+  onBlur,
   placeholder = "",
   disabled = false,
   className = "",
@@ -114,6 +116,7 @@ export default function TagInput({
           onBlur={() => {
             // click outside => add tag
             commitTag(input);
+            onBlur?.();
           }}
         />
       </div>
