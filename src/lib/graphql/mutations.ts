@@ -737,6 +737,40 @@ export const UPDATE_PRODUCT_PRICE = gql`
   }
 `;
 
+export const UPDATE_PRODUCT = gql`
+  mutation UpdateProduct(
+    $id: ID!
+    $title: String
+    $description: String
+    $vendor: String
+    $productType: String
+    $handle: String
+    $tags: [String!]
+  ) {
+    updateProduct(
+      input: {
+        id: $id
+        productAttributes: {
+          title: $title
+          description: $description
+          vendor: $vendor
+          productType: $productType
+          handle: $handle
+          tags: $tags
+        }
+      }
+    ) {
+      id
+      title
+      description
+      handle
+      vendor
+      productType
+      tags
+    }
+  }
+`;
+
 export const ADD_TO_CART = gql`
   mutation AddToCart($productId: ID!, $quantity: Int!) {
     addToCart(input: { productId: $productId, quantity: $quantity }) {

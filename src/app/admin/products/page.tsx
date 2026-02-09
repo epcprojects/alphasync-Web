@@ -50,6 +50,9 @@ function ProductsContent() {
   const [showOutOfStock, setShowOutOfStock] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showEditModal, setEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<
+    AllProductsResponse["allProducts"]["allData"][0] | null
+  >(null);
 
   const isMobile = useIsMobile();
   const itemsPerPage = 10;
@@ -101,6 +104,7 @@ function ProductsContent() {
   // Transform GraphQL product data
   const products: Product[] =
     data?.allProducts.allData?.map(transformGraphQLProduct) || [];
+  const rawProducts = data?.allProducts.allData ?? [];
 
   const pageCount = data?.allProducts.totalPages || 1;
 
@@ -451,6 +455,10 @@ function ProductsContent() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        const raw = rawProducts.find(
+                          (p) => p.id === product.originalId
+                        );
+                        setSelectedProduct(raw ?? null);
                         setEditModal(true);
                       }}
                       className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
@@ -481,7 +489,12 @@ function ProductsContent() {
 
       <EditProductModal
         isOpen={showEditModal}
-        onClose={() => setEditModal(false)}
+        onClose={() => {
+          setEditModal(false);
+          setSelectedProduct(null);
+        }}
+        product={selectedProduct}
+        onSuccess={() => refetch()}
       />
     </div>
   );

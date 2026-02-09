@@ -527,6 +527,8 @@ export default function ProductDetailPage() {
       <EditProductModal
         isOpen={showEditModal}
         onClose={() => setEditModal(false)}
+        product={product}
+        onSuccess={() => refetch()}
       />
     </div>
   );
