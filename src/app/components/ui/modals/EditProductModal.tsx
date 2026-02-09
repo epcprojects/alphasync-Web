@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useMutation } from "@apollo/client/react";
-import Dropdown from "../inputs/ThemeDropDown";
 import ThemeInput from "../inputs/ThemeInput";
 import AppModal, { ModalPosition } from "./AppModal";
 import { InventoryIcon } from "@/icons";
@@ -31,19 +30,6 @@ interface ModalProps {
   onSuccess?: () => void;
 }
 
-const DEFAULT_CATEGORIES = [
-  { value: "healing-peptides", label: "Healing Peptides" },
-  { value: "regenerative-therapies", label: "Regenerative Therapies" },
-  { value: "anti-aging", label: "Anti-Aging Solutions" },
-  { value: "cellular-repair", label: "Cellular Repair" },
-  { value: "skin-rejuvenation", label: "Skin Rejuvenation" },
-  { value: "wellness-optimization", label: "Wellness Optimization" },
-  { value: "hormone-balance", label: "Hormone Balance" },
-  { value: "immune-support", label: "Immune Support" },
-  { value: "metabolic-health", label: "Metabolic Health" },
-  { value: "longevity-medicine", label: "Longevity Medicine" },
-];
-
 const EditProductModal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
@@ -51,36 +37,16 @@ const EditProductModal: React.FC<ModalProps> = ({
   onSuccess,
 }) => {
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<string | undefined>();
   const [tags, setTags] = useState<string[]>([]);
   const [vendor, setVendor] = useState("");
   const [desc, setDesc] = useState("");
 
   const [updateProduct, { loading: updateLoading }] = useMutation(UPDATE_PRODUCT);
 
-  // Include current productType in options if not in default list
-  const categories = (() => {
-    const productType = product?.productType?.trim();
-    if (!productType) return DEFAULT_CATEGORIES;
-    const exists = DEFAULT_CATEGORIES.some(
-      (c) => c.value === productType || c.label === productType
-    );
-    if (exists) return DEFAULT_CATEGORIES;
-    return [
-      { value: productType, label: productType },
-      ...DEFAULT_CATEGORIES,
-    ];
-  })();
-
   // Initialize form when product changes or modal opens
   useEffect(() => {
     if (product && isOpen) {
       setTitle(product.title ?? "");
-      setCategory(
-        product.productType && product.productType.trim()
-          ? product.productType.trim()
-          : undefined
-      );
       setTags(product.tags && product.tags.length > 0 ? [...product.tags] : []);
       setVendor(product.vendor ?? "");
       setDesc(product.description ?? "");
@@ -98,7 +64,6 @@ const EditProductModal: React.FC<ModalProps> = ({
           title: title.trim() || null,
           description: desc.trim() || null,
           vendor: vendor.trim() || null,
-          productType: category?.trim() || null,
           tags: tags.length > 0 ? tags : null,
         },
       });
@@ -151,15 +116,6 @@ const EditProductModal: React.FC<ModalProps> = ({
           label="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-        />
-
-        <Dropdown
-          label="Category"
-          options={categories}
-          value={category}
-          onChange={setCategory}
-          placeholder="Select Category"
-          showSearch
         />
 
         <ThemeInput
