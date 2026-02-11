@@ -37,6 +37,7 @@
     "react-toastify": "^11.0.5",
     "recharts": "^3.5.1",
     "swiper": "^11.2.10",
+    "typescript": "^5",
     "yup": "^1.7.0"
   },
   "devDependencies": {
@@ -50,7 +51,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "tailwindcss": "^4"
   }
 }
