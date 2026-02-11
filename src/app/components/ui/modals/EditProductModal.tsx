@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@apollo/client/react";
 import ThemeInput from "../inputs/ThemeInput";
 import AppModal, { ModalPosition } from "./AppModal";
@@ -41,7 +41,6 @@ const EditProductModal: React.FC<ModalProps> = ({
   const [vendor, setVendor] = useState("");
   const [desc, setDesc] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const editorWrapperRef = useRef<HTMLDivElement>(null);
 
   const [updateProduct, { loading: updateLoading }] = useMutation(UPDATE_PRODUCT);
 
@@ -62,9 +61,6 @@ const EditProductModal: React.FC<ModalProps> = ({
 
     // Prevent removing content that was already there
     const hadTitle = Boolean(product.title?.trim());
-    const hadDescription = Boolean(
-      product.description && getPlainTextLength(product.description) > 0
-    );
     const hadVendor = Boolean(product.vendor?.trim());
     const hadTags = Boolean(product.tags && product.tags.length > 0);
 
@@ -72,9 +68,6 @@ const EditProductModal: React.FC<ModalProps> = ({
 
     if (hadTitle && !title.trim()) {
       newErrors.title = "Title is required and cannot be cleared.";
-    }
-    if (hadDescription && getPlainTextLength(desc) === 0) {
-      newErrors.description = "Description is required and cannot be cleared.";
     }
     if (hadVendor && !vendor.trim()) {
       newErrors.vendor = "Manufacturer is required and cannot be cleared.";
@@ -132,13 +125,10 @@ const EditProductModal: React.FC<ModalProps> = ({
   const charCount = getPlainTextLength(desc);
 
   const validateField = (
-    field: "title" | "vendor" | "tags" | "description"
+    field: "title" | "vendor" | "tags"
   ): string | null => {
     if (!product) return null;
     const hadTitle = Boolean(product.title?.trim());
-    const hadDescription = Boolean(
-      product.description && getPlainTextLength(product.description) > 0
-    );
     const hadVendor = Boolean(product.vendor?.trim());
     const hadTags = Boolean(product.tags && product.tags.length > 0);
 
@@ -148,12 +138,10 @@ const EditProductModal: React.FC<ModalProps> = ({
       return "Manufacturer is required and cannot be cleared.";
     if (field === "tags" && hadTags && tags.length === 0)
       return "At least one tag is required.";
-    if (field === "description" && hadDescription && getPlainTextLength(desc) === 0)
-      return "Description is required and cannot be cleared.";
     return null;
   };
 
-  const handleBlur = (field: "title" | "vendor" | "tags" | "description") => {
+  const handleBlur = (field: "title" | "vendor" | "tags") => {
     const err = validateField(field);
     setErrors((prev) => {
       const next = { ...prev };
@@ -236,7 +224,7 @@ const EditProductModal: React.FC<ModalProps> = ({
           )}
         </div>
 
-        <div ref={editorWrapperRef}>
+        <div>
           <span className="block mb-1 text-sm text-slate-700 font-normal text-start">
             Description
           </span>
@@ -246,29 +234,13 @@ const EditProductModal: React.FC<ModalProps> = ({
               const text = e.textValue ?? "";
               if (text.length <= MAX_CHARS) {
                 setDesc(e.htmlValue ?? "");
-                if (errors.description)
-                  setErrors((prev) => ({ ...prev, description: "" }));
               }
-            }}
-            onBlur={() => {
-              // Defer validation - if user clicked toolbar, focus stays inside editor
-              setTimeout(() => {
-                if (
-                  editorWrapperRef.current?.contains(document.activeElement)
-                ) {
-                  return;
-                }
-                handleBlur("description");
-              }, 0);
             }}
             headerTemplate={headerTemplate}
             style={{ height: "200px" }}
-            className={errors.description ? "[&_.ql-container]:border-red-500" : ""}
           />
-          <div className="mt-1.5 flex justify-between text-sm">
-            <span className={errors.description ? "text-red-500" : "text-tertiary"}>
-              {errors.description || `${charCount}/${MAX_CHARS} characters left`}
-            </span>
+          <div className="mt-1.5 text-sm text-tertiary">
+            {charCount}/{MAX_CHARS} characters left
           </div>
         </div>
       </div>
