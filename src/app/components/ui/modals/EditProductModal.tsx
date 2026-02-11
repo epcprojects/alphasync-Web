@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@apollo/client/react";
 import ThemeInput from "../inputs/ThemeInput";
 import AppModal, { ModalPosition } from "./AppModal";
@@ -41,6 +41,7 @@ const EditProductModal: React.FC<ModalProps> = ({
   const [vendor, setVendor] = useState("");
   const [desc, setDesc] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const editorWrapperRef = useRef<HTMLDivElement>(null);
 
   const [updateProduct, { loading: updateLoading }] = useMutation(UPDATE_PRODUCT);
 
@@ -235,7 +236,7 @@ const EditProductModal: React.FC<ModalProps> = ({
           )}
         </div>
 
-        <div>
+        <div ref={editorWrapperRef}>
           <span className="block mb-1 text-sm text-slate-700 font-normal text-start">
             Description
           </span>
@@ -249,7 +250,17 @@ const EditProductModal: React.FC<ModalProps> = ({
                   setErrors((prev) => ({ ...prev, description: "" }));
               }
             }}
-            onBlur={() => handleBlur("description")}
+            onBlur={() => {
+              // Defer validation - if user clicked toolbar, focus stays inside editor
+              setTimeout(() => {
+                if (
+                  editorWrapperRef.current?.contains(document.activeElement)
+                ) {
+                  return;
+                }
+                handleBlur("description");
+              }, 0);
+            }}
             headerTemplate={headerTemplate}
             style={{ height: "200px" }}
             className={errors.description ? "[&_.ql-container]:border-red-500" : ""}
