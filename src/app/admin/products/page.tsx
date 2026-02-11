@@ -6,6 +6,7 @@ import {
   ReloadIcon,
   PackageOutlineIcon,
   ArrowDownIcon,
+  PencilEditIcon,
 } from "@/icons";
 import React, { Suspense, useState } from "react";
 import {
@@ -14,6 +15,7 @@ import {
   Skeleton,
   ThemeButton,
   Pagination,
+  EditProductModal,
 } from "@/app/components";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -47,6 +49,10 @@ function ProductsContent() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [showOutOfStock, setShowOutOfStock] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showEditModal, setEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<
+    AllProductsResponse["allProducts"]["allData"][0] | null
+  >(null);
 
   const isMobile = useIsMobile();
   const itemsPerPage = 10;
@@ -80,10 +86,11 @@ function ProductsContent() {
         page: currentPage + 1, // GraphQL uses 1-based pagination
         perPage: itemsPerPage,
         inStockOnly: showOutOfStock ? false : undefined,
-        category: selectedCategory === null ? null : selectedCategory || undefined,
+        category:
+          selectedCategory === null ? null : selectedCategory || undefined,
       },
       fetchPolicy: "network-only",
-    }
+    },
   );
 
   console.log("data", data);
@@ -91,11 +98,13 @@ function ProductsContent() {
   const [syncProducts] = useMutation<SyncProductsResponse>(SYNC_PRODUCTS);
 
   // GraphQL mutation to export products
-  const [exportProducts, { loading: exportLoading }] = useMutation(EXPORT_PRODUCTS);
+  const [exportProducts, { loading: exportLoading }] =
+    useMutation(EXPORT_PRODUCTS);
 
   // Transform GraphQL product data
   const products: Product[] =
     data?.allProducts.allData?.map(transformGraphQLProduct) || [];
+  const rawProducts = data?.allProducts.allData ?? [];
 
   const pageCount = data?.allProducts.totalPages || 1;
 
@@ -115,7 +124,7 @@ function ProductsContent() {
       if (result.data?.syncProducts) {
         const { message, productsCount } = result.data.syncProducts;
         showSuccessToast(
-          `${message}. ${productsCount} products synced successfully.`
+          `${message}. ${productsCount} products synced successfully.`,
         );
         // Refetch products after sync
         refetch();
@@ -169,7 +178,7 @@ function ProductsContent() {
         link.setAttribute("href", url);
         link.setAttribute(
           "download",
-          data.exportProducts.fileName || "products.csv"
+          data.exportProducts.fileName || "products.csv",
         );
         link.style.visibility = "hidden";
 
@@ -191,7 +200,7 @@ function ProductsContent() {
   };
 
   const orderStatuses = [
-    { label: "All Categories", value: null},
+    { label: "All Categories", value: null },
     { label: "Blood", value: "Blood" },
     { label: "Immunity", value: "Immunity" },
     { label: "Recovery", value: "Recovery" },
@@ -258,7 +267,8 @@ function ProductsContent() {
           <div className="flex items-center gap-1 p-1 rounded-full sm:bg-transparent sm:p-0 sm:shadow-none bg-white w-full shadow-table">
             <Menu>
               <MenuButton className="inline-flex py-2 px-3 cursor-pointer whitespace-nowrap bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-                {orderStatuses.find((s) => s.value === selectedCategory)?.label || "All Categories"}
+                {orderStatuses.find((s) => s.value === selectedCategory)
+                  ?.label || "All Categories"}
                 <ArrowDownIcon fill="#717680" />
               </MenuButton>
 
@@ -335,12 +345,13 @@ function ProductsContent() {
           <div className="col-span-2">
             <h2>Prescription</h2>
           </div>
-          <div className="col-span-2">
+          <div className="col-span-1">
             <h2>Price</h2>
           </div>
           <div className="col-span-1">
             <h2>Stock</h2>
           </div>
+          <div className="col-span-1 text-center">Actions</div>
         </div>
 
         {error && (
@@ -417,7 +428,7 @@ function ProductsContent() {
                 </div>
 
                 {/* Price */}
-                <div className="md:col-span-2 flex justify-between md:justify-start items-center">
+                <div className="md:col-span-1 flex justify-between md:justify-start items-center">
                   <span className="text-xs text-gray-500 md:hidden">Price</span>
                   <span className="text-sm font-medium text-gray-900">
                     {product.price}
@@ -437,6 +448,29 @@ function ProductsContent() {
                     {product.stock ? "In Stock" : "Out Stock"}
                   </span>
                 </div>
+
+                {/* Actions */}
+                <div className="col-span-1 flex justify-end items-center pe-4">
+                  <Tooltip content="Edit">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const raw = rawProducts.find(
+                          (p) => p.id === product.originalId
+                        );
+                        setSelectedProduct(raw ?? null);
+                        setEditModal(true);
+                      }}
+                      className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+                    >
+                      <PencilEditIcon
+                        width="15"
+                        height="15"
+                        fill={"currentColor"}
+                      />
+                    </button>
+                  </Tooltip>
+                </div>
               </div>
             ))}
           </>
@@ -452,6 +486,16 @@ function ProductsContent() {
           />
         )}
       </div>
+
+      <EditProductModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setEditModal(false);
+          setSelectedProduct(null);
+        }}
+        product={selectedProduct}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 }

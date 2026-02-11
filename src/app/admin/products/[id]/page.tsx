@@ -1,6 +1,17 @@
 "use client";
-import { ProductSwiper, ThemeButton, Loader } from "@/app/components";
-import { ArrowDownIcon, HeartFilledIcon, HeartOutlineIcon } from "@/icons";
+import {
+  ProductSwiper,
+  ThemeButton,
+  Loader,
+  EditProductModal,
+} from "@/app/components";
+import {
+  ArrowDownIcon,
+  HeartFilledIcon,
+  HeartOutlineIcon,
+  PencilEditIcon,
+  PencilEditIcon2,
+} from "@/icons";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -20,6 +31,7 @@ export default function ProductDetailPage() {
   const [priceError, setPriceError] = useState<string>("");
   const [isEditingPrice, setIsEditingPrice] = useState(false);
 
+  const [showEditModal, setEditModal] = useState(false);
   // GraphQL query to fetch product data
   const { data, loading, error, refetch } = useQuery<FetchProductResponse>(
     FETCH_PRODUCT,
@@ -29,7 +41,7 @@ export default function ProductDetailPage() {
       },
       skip: !params.id,
       fetchPolicy: "network-only",
-    }
+    },
   );
 
   // GraphQL mutation to toggle favorite
@@ -65,7 +77,7 @@ export default function ProductDetailPage() {
       // Refetch the product to get updated favorite status
       await refetch();
       showSuccessToast(
-        product.isFavorited ? "Removed from favorites" : "Added to favorites"
+        product.isFavorited ? "Removed from favorites" : "Added to favorites",
       );
     } catch (error) {
       console.error("Error toggling favorite:", error);
@@ -89,8 +101,8 @@ export default function ProductDetailPage() {
     if (priceValue < originalPrice) {
       showErrorToast(
         `Price cannot be less than the original price ($${originalPrice.toFixed(
-          2
-        )})`
+          2,
+        )})`,
       );
       return;
     }
@@ -286,9 +298,21 @@ export default function ProductDetailPage() {
           </div>
           <div className="flex flex-col gap-2.5 md:gap-5">
             <div>
-              <h2 className="text-gray-900 font-semibold text-lg md:text-3xl xl:text-3xl">
-                {product.title}
-              </h2>
+              <div className="flex items-center gap-3 justify-between">
+                <h2 className="text-gray-900 font-semibold text-lg md:text-3xl xl:text-3xl">
+                  {product.title}
+                </h2>
+
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setEditModal(true);
+                  }}
+                  className="border border-primary rounded-lg h-7 w-7 md:h-9 md:w-9 flex items-center justify-center "
+                >
+                  <PencilEditIcon2 />
+                </button>
+              </div>
 
               <div className="flex items-center gap-3 mt-2">
                 <span className="text-primary font-semibold text-sm md:text-lg xl:text-xl">
@@ -347,7 +371,7 @@ export default function ProductDetailPage() {
                             product?.variants?.[0]?.price || 0;
                           if (priceValue < originalPrice) {
                             setPriceError(
-                              `Minimum price: $${originalPrice.toFixed(2)}`
+                              `Minimum price: $${originalPrice.toFixed(2)}`,
                             );
                           }
                         }
@@ -499,6 +523,13 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      <EditProductModal
+        isOpen={showEditModal}
+        onClose={() => setEditModal(false)}
+        product={product}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 }
