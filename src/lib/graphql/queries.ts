@@ -679,6 +679,9 @@ export const ADMIN_ORDERS = gql`
         totalPrice
         netCost
         profit
+        shipmentStatus
+        shipstationOrderId
+        trackingNumber
         doctor {
           id
           email

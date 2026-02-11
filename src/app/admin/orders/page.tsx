@@ -33,6 +33,9 @@ interface OrdersResponse {
       totalPrice: number;
       netCost: number | null;
       profit: number | null;
+      shipmentStatus?: string | null;
+      shipstationOrderId?: string | null;
+      trackingNumber?: string | null;
       doctor?: {
         id: string;
         email?: string | null;
@@ -98,12 +101,12 @@ function OrdersContent() {
 
   const myClinic = orderTabs[selectedTabIndex]?.myClinic;
 
-  /** Grid template: Order ID | Customer | Doctor | Payment Date | Status | Items | Total | Net Cost | Profit | Actions */
+  /** Grid template: Order ID | Customer | Doctor | Payment Date | Status | Shipment | Items | Total | Net Cost | Profit | Actions */
   const adminOrdersGrid =
-    "md:grid-cols-[1.5fr_2.5fr_2fr_1.5fr_1fr_1fr_1.5fr_1fr_1fr_1fr]";
-  /** Clinic orders: no Customer column — Order ID | Doctor | Payment Date | ... */
+    "md:grid-cols-[1.5fr_2.5fr_2fr_1.5fr_1fr_1fr_1fr_1.5fr_1fr_1fr_1fr]";
+  /** Clinic orders: no Customer column — Order ID | Doctor | Payment Date | Status | Shipment | ... */
   const adminOrdersGridClinic =
-    "md:grid-cols-[1.5fr_1.5fr_1.5fr_1fr_1fr_1.5fr_1fr_1fr_1fr]";
+    "md:grid-cols-[1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1.5fr_1fr_1fr_1fr]";
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -269,6 +272,9 @@ function OrdersContent() {
                       <h2>Status</h2>
                     </div>
                     <div>
+                      <h2>Shipment Status</h2>
+                    </div>
+                    <div>
                       <h2>Items</h2>
                     </div>
                     <div>
@@ -349,6 +355,7 @@ function OrdersContent() {
                                 );
                               })(),
                               status: order.status,
+                              shipmentStatus: order.shipmentStatus ?? null,
                               items: order.orderItems.length,
                               total: order.totalPrice,
                               netCost: order.netCost ?? 0,

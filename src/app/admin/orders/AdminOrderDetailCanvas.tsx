@@ -42,6 +42,9 @@ export interface AdminOrderDetail {
   totalPrice: number;
   netCost: number | null;
   profit: number | null;
+  shipmentStatus?: string | null;
+  shipstationOrderId?: string | null;
+  trackingNumber?: string | null;
   doctor?: {
     id: string;
     email?: string | null;
@@ -148,6 +151,42 @@ export default function AdminOrderDetailCanvas({
               </div>
             )}
           </div>
+
+          {(order.shipmentStatus ||
+            order.shipstationOrderId ||
+            order.trackingNumber) && (
+            <div className="space-y-2 border-b border-gray-200 pb-4">
+              <h3 className="text-sm font-semibold text-gray-800">Shipment</h3>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Status</span>
+                <span
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${
+                    order.shipmentStatus?.toLowerCase().includes("delivered")
+                      ? "bg-green-50 border border-green-200 text-green-700"
+                      : order.shipmentStatus?.toLowerCase().includes("shipped")
+                        ? "bg-indigo-50 border border-indigo-200 text-indigo-700"
+                        : "bg-amber-50 border border-amber-200 text-amber-700"
+                  }`}
+                >
+                  {order.shipmentStatus ?? "In Progress"}
+                </span>
+              </div>
+              {order.shipstationOrderId && (
+                <div className="flex justify-between text-sm gap-4">
+                  <span className="text-gray-600 shrink-0">ShipStation Order ID</span>
+                  <span className="text-gray-900 font-mono text-xs break-all text-right">
+                    {order.shipstationOrderId}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm gap-4">
+                <span className="text-gray-600 shrink-0">Tracking Number</span>
+                <span className="text-gray-900 font-mono text-xs break-all text-right">
+                  {order.trackingNumber ?? "In Progress"}
+                </span>
+              </div>
+            </div>
+          )}
 
           <div>
             <h3 className="text-sm font-semibold text-gray-800 mb-2">Items</h3>

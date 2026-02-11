@@ -15,6 +15,7 @@ type Order = {
   /** Optional doctor name for admin layout (separate column on customer orders). */
   doctorName?: string | null;
   status: string;
+  shipmentStatus?: string | null;
   items: number;
   total: number;
   netCost: number;
@@ -90,6 +91,15 @@ export function formatStatusDisplay(status: string) {
   }
 }
 
+function getShipmentStatusClasses(status: string | null | undefined) {
+  if (!status) return "bg-gray-50 border border-gray-200 text-gray-600";
+  const s = String(status).toLowerCase();
+  if (s.includes("delivered")) return "bg-green-50 border border-green-200 text-green-700";
+  if (s.includes("shipped")) return "bg-indigo-50 border border-indigo-200 text-indigo-700";
+  if (s.includes("label")) return "bg-amber-50 border border-amber-200 text-amber-700";
+  return "bg-gray-100 border border-gray-200 text-gray-700";
+}
+
 export default function OrderListView({
   order: order,
   onViewOrderDetail,
@@ -152,6 +162,16 @@ export default function OrderListView({
               <p className="text-gray-900 font-medium">{order.doctorName}</p>
             </div>
           )}
+          <div className="col-span-2">
+            <p className="text-gray-500">Shipment Status</p>
+            <span
+              className={`inline-block mt-0.5 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${getShipmentStatusClasses(
+                order.shipmentStatus
+              )}`}
+            >
+              {order.shipmentStatus ?? "—"}
+            </span>
+          </div>
           <div>
             <p className="text-gray-500">Payment Date</p>
             <p className="text-gray-900 font-medium">{order.date}</p>
@@ -383,6 +403,16 @@ export default function OrderListView({
           {formatStatusDisplay(order.status)}
         </span>
       </div>
+
+      {layout === "admin" && (
+        <div
+          className={`flex md:inline w-fit rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium text-center self-center capitalize ${getShipmentStatusClasses(
+            order.shipmentStatus
+          )}`}
+        >
+          {order.shipmentStatus ?? "—"}
+        </div>
+      )}
 
       <div className=" font-medium text-sm md:text-base text-gray-800">
         <span className="inline-block rounded-full px-2 py-0.5 text-xs  font-medium text-gray-700 bg-gray-50 border border-gray-200">
