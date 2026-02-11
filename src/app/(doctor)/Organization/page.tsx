@@ -14,14 +14,23 @@ import React, { useEffect, useState } from "react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import type { AllProductsResponse } from "@/types/products";
 import EmptyResult from "@/app/components/ui/EmptyResult/EmptyResult";
-import OrganizationDatabaseView from "@/app/components/ui/cards/OrganizationDatabaseView";
+import OrganizationDatabaseView, { OganizationUser } from "@/app/components/ui/cards/OrganizationDatabaseView";
 import Link from "next/link";
+import AddEditUserModal from "@/app/components/ui/modals/AddEditUserModal";
+import { Button } from "@headlessui/react";
 
 const Page = () => {
   const isMobile = useIsMobile();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const router = useRouter();
+  const [editUser, seteditUser] = useState<OganizationUser | null>(null);
+
+  
+  function handleEdit(user: OganizationUser){
+     seteditUser(user);
+      setshowAddEditModal(true);
+  }
+  const [showAddEditModal, setshowAddEditModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
   const TEST_DATA = [
@@ -111,10 +120,7 @@ const Page = () => {
               <ThemeButton
                 label="Add User"
                 icon={<PlusIcon />}
-                onClick={() => (
-                ()=>{}
-                )}
-                
+                onClick={() => setshowAddEditModal(true)}
               />
             </div>
           </div>
@@ -132,32 +138,39 @@ const Page = () => {
           <OrganizationDatabaseView
             key={index}
             user={data}
-            onEditUser={() => console.log("Edit User")}
-            onDisableUser={ () => console.log("Disable User")}
+            onEditUser={() => handleEdit(data)
+            }
+            onDisableUser={() => console.log("Disable User")}
             onDeleteUser={() => console.log("Delete User")}
-            onRowClick={() => console.log("Row clicked")}
           />
         ))}
-        <Pagination currentPage={1} totalPages={20} onPageChange={()=> {}}/>
+        <Pagination currentPage={1} totalPages={20} onPageChange={() => {}} />
       </div>
 
       <EmptyResult
         title={"No users added yet."}
         description={
-         <p className="font-medium text-lg text-gray-800">
-              Click{" "}
-               <Link
-                  className="text-primary hover:underline underline-offset-2"
-                 href="#"
-               >
-                 ‘Add User’
-              </Link>
-              {" "}to invite team members to your organization.
-             </p>
+          <p className="font-medium text-lg text-gray-800">
+            Click{" "}
+            <Button className="text-primary hover:underline underline-offset-2" onClick={()=>setshowAddEditModal(true)}>
+              ‘Add User’
+            </Button>{" "}
+            to invite team members to your organization.
+          </p>
         }
         buttonLabel="Add User"
-        buttonOnClick={()=>router.push("/inventory")}
+        buttonOnClick={() => setshowAddEditModal(true)}
         icon={<NoUserIcon />}
+      />
+
+      <AddEditUserModal
+        isOpen={showAddEditModal}
+        onClose={() => {
+          setshowAddEditModal(false);
+          seteditUser(null);
+        }}
+        
+        initialvalues={editUser}
       />
     </div>
   );

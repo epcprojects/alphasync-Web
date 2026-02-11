@@ -8,7 +8,7 @@ import Tooltip from "../tooltip";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import ProfileImage from "@/app/components/ui/ProfileImage";
 
-type User = {
+export type OganizationUser = {
   id: number;
   name: string;
   contact: string;
@@ -18,11 +18,10 @@ type User = {
 };
 
 type OrganizationDatabaseViewProps = {
-  user?: User;
-  onRowClick?: () => void;
-  onEditUser?: (id: string | number) => void;
-  onDisableUser?: (id: string |number ) => void;
-   onDeleteUser?: (id: string |number ) => void;
+  user?: OganizationUser;
+  onEditUser: () => void;
+  onDisableUser: () => void;
+   onDeleteUser: () => void;
 };
 
 const colorPairs = [
@@ -55,7 +54,6 @@ function getStatusClasses(status?: string) {
 
 export default function CustomerDatabaseView({
   user,
-  onRowClick,
   onEditUser,
   onDisableUser,
   onDeleteUser
@@ -73,7 +71,6 @@ export default function CustomerDatabaseView({
   if (ismobile)
     return (
       <div
-        onClick={onRowClick}
         key={id}
         className="bg-white flex flex-col gap-2 p-2  cursor-pointer  rounded-xl shadow-table"
       >
@@ -116,7 +113,7 @@ export default function CustomerDatabaseView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (id) onEditUser;
+              if (id) onEditUser();
             }}
             className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
@@ -125,7 +122,7 @@ export default function CustomerDatabaseView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (id) onDisableUser;
+              if (id) onDisableUser();
             }}
             className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
@@ -135,7 +132,7 @@ export default function CustomerDatabaseView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (id) onDeleteUser;
+              if (id) onDeleteUser();
             }}
             className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
@@ -148,9 +145,8 @@ export default function CustomerDatabaseView({
 
   return (
     <div
-      onClick={onRowClick}
       key={id}
-      className="grid cursor-pointer grid-cols-12 hover:bg-gray-100 group gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
+      className="grid cursor-pointer grid-cols-12 hover:bg-gray-100  gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
       <div className="col-span-4 flex items-center gap-3">
         <div className="flex items-center gap-1 md:gap-2">
@@ -193,7 +189,7 @@ export default function CustomerDatabaseView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (id) onEditUser;
+              if (id) onEditUser();
             }}
             className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
@@ -204,7 +200,7 @@ export default function CustomerDatabaseView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (id) onDisableUser;
+              if (id) onDisableUser();
             }}
             className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
@@ -215,7 +211,7 @@ export default function CustomerDatabaseView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (id) onDeleteUser;
+              if (id) onDeleteUser();
             }}
             className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
