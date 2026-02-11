@@ -108,8 +108,10 @@ import EllipsisVertical from "./EllipsisVertical";
 import InfoFilledIcon from "./InfoFilledIcon";
 import MoreIcon from "./MoreIcon";
 import ShoppingCartRemoveIcon from "./ShoppingCartRemoveIcon";
-
-
+import OrganizationIcon from "./OrganizationIcon";
+import OrganizationFilledIcon from "./OrganizationFilledIcon";
+import NoUserIcon from "./NoUserIcon";
+import DisableProfileIcon from "./DisableProfileIcon";
 export {
     ShoppingCartRemoveIcon,
     MoreIcon,
@@ -220,5 +222,9 @@ export {
     ApproveCheckIcon,
     RejectIcon,
     EyeIcon,
-    UserRejectIcon
+    UserRejectIcon,
+    OrganizationIcon,
+    OrganizationFilledIcon,
+    NoUserIcon,
+    DisableProfileIcon
 };

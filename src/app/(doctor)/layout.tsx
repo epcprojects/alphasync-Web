@@ -17,6 +17,7 @@ import {
   ShoppingCardDualIcon,
   PercentIcon,
   DashboardIcon,
+  OrganizationIcon,
 } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
@@ -54,6 +55,7 @@ const menuItems = [
   { label: "Customers", href: "/customers", icon: CustomerIcon },
   { label: "Orders", href: "/orders", icon: OrdersIcon },
   { label: "Training Videos", href: "/training-videos", icon: DashboardIcon },
+  {label: "Organization", href:"/Organization", icon: OrganizationIcon},
   // { label: "My Clinic", href: "/clinic", icon: DeliveryBoxIcon },
 
   {
@@ -76,6 +78,7 @@ const headings: Record<string, string> = {
   "/settings": "Settings",
   "/notifications": "Notifications",
   "/accounting": "Peptide Accounting",
+  "/Organization": "Elevated Healthcare Solutions"
 };
 
 const subHeadings: Record<string, string> = {
