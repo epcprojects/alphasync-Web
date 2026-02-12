@@ -12,6 +12,7 @@ import {
   PriceModal,
 } from "@/components";
 import {
+  CrossIcon,
   DeliveryBoxIcon,
   FavoriteIcon,
   GridViewIcon,
@@ -49,6 +50,7 @@ function InventoryContent() {
   const [showFavourites, setShowFavourites] = useState(false);
   const [showGridView, setShowGridView] = useState(true);
   const [showOutOfStock, setShowOutOfStock] = useState(false);
+  const [showUpcoming, setShowUpcoming] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [showPricModal, setShowPriceModal] = useState(false);
   const [markupFilter, setMarkupFilter] = useState<string>("All");
@@ -98,6 +100,11 @@ function InventoryContent() {
     setCurrentPage(1);
   }, [showOutOfStock]);
 
+  // Reset to first page when upcoming filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [showUpcoming]);
+
   // Reset to first page when favorites filter changes
   useEffect(() => {
     setCurrentPage(1);
@@ -119,6 +126,7 @@ function InventoryContent() {
       page: currentPage, // Use currentPage directly (1-based pagination)
       perPage: itemsPerPage,
       inStockOnly: showOutOfStock ? false : undefined,
+      upcoming: showUpcoming ? true : undefined,
       favoriteProducts: showFavourites ? true : undefined,
       markedUp:
         markupFilter === "Marked Up"
@@ -184,6 +192,7 @@ function InventoryContent() {
           productType: null,
           category: null,
           inStockOnly: showOutOfStock ? false : undefined,
+          upcoming: showUpcoming ? true : undefined,
           favoriteProducts: showFavourites ? true : undefined,
           markedUp:
             markupFilter === "Marked Up"
@@ -305,30 +314,56 @@ function InventoryContent() {
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 md:gap-4">
-          <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] md:w-11 md:h-11">
-            <DeliveryBoxIcon
-              height={isMobile ? 16 : 24}
-              width={isMobile ? 16 : 24}
-            />
-          </span>
-          <div className="flex items-center gap-2 md:gap-3">
-            <h2 className="lg:w-full text-black font-semibold text-xl md:text-3xl lg:4xl">
-              Inventory
-            </h2>
-            {/* {!productsLoading && (
-              <span className="flex items-center justify-center px-2 md:px-3 py-1 md:py-1.5 bg-gray-100 text-gray-700 text-sm md:text-base font-medium rounded-full">
-                {productsData?.allProducts.count || 0}
-              </span>
-            )} */}
-            <Tooltip
-              autoShowOnceKey={userEmail}
-              side="bottom"
-              content="Click Add to Shop, enter your selling price, and click Save. The product will be added to your shop."
-            >
-              <InfoFilledIcon />
-            </Tooltip>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 md:gap-4">
+            <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] md:w-11 md:h-11">
+              <DeliveryBoxIcon
+                height={isMobile ? 16 : 24}
+                width={isMobile ? 16 : 24}
+              />
+            </span>
+            <div className="flex items-center gap-2 md:gap-3">
+              <h2 className="lg:w-full text-black font-semibold text-xl md:text-3xl lg:4xl">
+                Inventory
+              </h2>
+              <Tooltip
+                autoShowOnceKey={userEmail}
+                side="bottom"
+                content="Click Add to Shop, enter your selling price, and click Save. The product will be added to your shop."
+              >
+                <InfoFilledIcon />
+              </Tooltip>
+            </div>
           </div>
+          <ThemeButton
+            label="Coming Soon Products"
+            variant="filled"
+            size="medium"
+            onClick={() => setShowUpcoming((prev) => !prev)}
+            icon={
+              showUpcoming ? (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setShowUpcoming(false);
+                    }
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowUpcoming(false);
+                  }}
+                  className="shrink-0 flex items-center justify-center hover:opacity-80 cursor-pointer"
+                  aria-label="Clear coming soon filter"
+                >
+                  <CrossIcon height="12" width="12" fill="currentColor" />
+                </span>
+              ) : undefined
+            }
+            className="w-fit"
+          />
         </div>
         <div className="flex items-center gap-2 flex-wrap md:justify-end justify-center">
           <ThemeButton

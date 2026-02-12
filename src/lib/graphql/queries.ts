@@ -88,6 +88,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
     $page: Int
     $perPage: Int
     $inStockOnly: Boolean
+    $upcoming: Boolean
     $category: String
     $favoriteProducts: Boolean
     $patientId: ID
@@ -99,6 +100,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
       page: $page
       perPage: $perPage
       inStockOnly: $inStockOnly
+      upcoming: $upcoming
       category: $category
       favoriteProducts: $favoriteProducts
       patientId: $patientId
@@ -137,7 +139,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
           endCount
           startCount
           tieredPrice
-        }  
+        }
       }
       count
       nextPage
