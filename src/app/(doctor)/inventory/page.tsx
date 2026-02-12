@@ -508,11 +508,14 @@ function InventoryContent() {
                 const isMarkedUp =
                   originalProduct?.customPrice != null &&
                   originalProduct?.customPrice !== undefined;
+                const isIntegrityVendor =
+                  originalProduct?.vendor?.trim() === "Integrity";
                 return (
                   <ProductCard
                     key={product.originalId}
                     product={product}
                     customPrice={originalProduct?.customPrice}
+                    disablePriceButton={isIntegrityVendor}
                     onBtnClick={() => {
                       // Not marked up -> Add to Shop
                       // Marked up -> Change Customer Price
@@ -557,6 +560,8 @@ function InventoryContent() {
                 const originalProduct = productsData?.allProducts.allData?.find(
                   (p) => p.id === product.originalId,
                 );
+                const isIntegrityVendor =
+                  originalProduct?.vendor?.trim() === "Integrity";
 
                 return (
                   <ProductListView
@@ -566,6 +571,7 @@ function InventoryContent() {
                     }
                     product={product}
                     customPrice={originalProduct?.customPrice}
+                    disablePriceButton={isIntegrityVendor}
                     onToggleFavourite={() => {
                       handleToggleFavorite(product.originalId);
                     }}

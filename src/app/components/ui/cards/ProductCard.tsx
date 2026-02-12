@@ -31,6 +31,7 @@ interface ProductCardProps {
   onCardClick?: () => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
+  disablePriceButton?: boolean;
 }
 
 export default function ProductCard({
@@ -39,6 +40,7 @@ export default function ProductCard({
   onCardClick,
   onRemoveFromSale,
   customPrice,
+  disablePriceButton = false,
 }: ProductCardProps) {
   const productId = product.originalId || String(product.id);
   const isMarkedUp = customPrice != null && customPrice !== undefined;
@@ -112,12 +114,12 @@ export default function ProductCard({
                   icon={<InventoryIcon fill="#2862A9" />}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onBtnClick?.(product.id);
+                    if (!disablePriceButton) onBtnClick?.(product.id);
                   }}
                   variant="outline"
                   className="flex-1"
                   heightClass="h-10 md:h-11"
-                  disabled={false}
+                  disabled={disablePriceButton}
                 />
 
                 <h2 className="text-gray-950 font-semibold text-sm md:text-lg lg:text-xl min-w-16 text-end">

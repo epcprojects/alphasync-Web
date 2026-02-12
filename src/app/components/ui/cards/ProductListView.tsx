@@ -24,6 +24,7 @@ type ProductListViewProps = {
   onRowClick?: () => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
+  disablePriceButton?: boolean;
 };
 
 export default function ProductListView({
@@ -33,6 +34,7 @@ export default function ProductListView({
   onRowClick,
   onRemoveFromSale,
   customPrice,
+  disablePriceButton = false,
 }: ProductListViewProps) {
   const productId = product.originalId || String(product.id);
   const isMarkedUp = customPrice != null && customPrice !== undefined;
@@ -139,9 +141,9 @@ export default function ProductListView({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onBtnClick?.(product.id);
+              if (!disablePriceButton) onBtnClick?.(product.id);
             }}
-            disabled={!onBtnClick}
+            disabled={!onBtnClick || disablePriceButton}
             className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label={isMarkedUp ? "Change Customer Price" : "Add to Shop"}
             type="button"
