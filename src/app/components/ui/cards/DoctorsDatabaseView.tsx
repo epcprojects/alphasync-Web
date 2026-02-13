@@ -1,27 +1,25 @@
 "use client";
 import {
-  DisableProfileIcon,
-  PencilEditIcon,
-  TrashBinIcon,
+    ArrowLeftIcon,
 } from "@/icons";
 import Tooltip from "../tooltip";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import ProfileImage from "@/app/components/ui/ProfileImage";
 
-export type OganizationUser = {
+export type Doctor = {
   id: number;
   name: string;
+  speciality: string;
   contact: string;
   email: string;
+  npiNumber: string;
   status: string;
   imageUrl?: string;
 };
 
-type OrganizationDatabaseViewProps = {
-  user?: OganizationUser;
-  onEditUser: () => void;
-  onDisableUser: () => void;
-   onDeleteUser: () => void;
+type DoctorDatabaseViewProps = {
+  user?: Doctor;
+ onRowClick: ()=>void;
 };
 
 const colorPairs = [
@@ -52,15 +50,15 @@ function getStatusClasses(status?: string) {
 }
 
 
-export default function OrganizationDatabaseView({
+export default function DoctorDatabaseView({
   user,
-  onEditUser,
-  onDisableUser,
-  onDeleteUser
-}: OrganizationDatabaseViewProps) {
+    onRowClick
+}: DoctorDatabaseViewProps) {
   const id = user?.id;
   const name = user?.name;
   const contact = user?.contact;
+  const speciality = user?.speciality;
+  const npiNumber = user?.npiNumber;
   const email = user?.email;
  const status = user?.status;
 
@@ -95,7 +93,6 @@ export default function OrganizationDatabaseView({
               </h2>
             </div>
           </div>
-
           <div className=" font-medium text-xs md:text-sm text-gray-800">
             <span
               className={`inline-block rounded-full px-2.5 py-0.5 text-xs capitalize md:text-sm font-medium whitespace-nowrap ${getStatusClasses(
@@ -107,10 +104,20 @@ export default function OrganizationDatabaseView({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-1 w-full">
-          <div className="flex items-center gap-1">
-           
-          <button
+        <div className="flex justify-between  items-center  gap-1 w-full">
+          <div className="flex flex-col items-center gap-1">
+            <div>
+        <span className="text-gray-800 text-sm wrap-break-word md:text-base font-medium">
+          {speciality || "—"}
+        </span>
+      </div>
+      <div className=" text-gray-800 wrap-break-word text-sm md:text-base font-normal">
+        {contact || "—"}
+      </div>
+       <div className=" text-gray-800 wrap-break-word text-sm md:text-base font-normal">
+        {npiNumber || "—"}
+      </div>
+          {/* <button
             onClick={(e) => {
               e.stopPropagation();
               if (id) onEditUser();
@@ -118,8 +125,8 @@ export default function OrganizationDatabaseView({
             className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
             <PencilEditIcon fill="currentColor" />
-          </button>
-          <button
+          </button> */}
+          {/* <button
             onClick={(e) => {
               e.stopPropagation();
               if (id) onDisableUser();
@@ -127,9 +134,9 @@ export default function OrganizationDatabaseView({
             className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
             <DisableProfileIcon fill="currentColor" />
-          </button>
+          </button> */}
 
-          <button
+          {/* <button
             onClick={(e) => {
               e.stopPropagation();
               if (id) onDeleteUser();
@@ -137,8 +144,17 @@ export default function OrganizationDatabaseView({
             className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
             <TrashBinIcon fill="currentColor" />
-          </button>
+          </button> */}
           </div>
+          <button
+            onClick={(e) => {
+               e.stopPropagation();
+              if (id) onRowClick();
+            }}
+            className="flex  rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+          >
+           <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
+          </button>
         </div>
       </div>
     );
@@ -146,9 +162,10 @@ export default function OrganizationDatabaseView({
   return (
     <div
       key={id}
-      className="grid cursor-pointer grid-cols-12 hover:bg-gray-100  gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
+      onClick={onRowClick}
+      className="grid cursor-pointer grid-cols-12 hover:bg-gray-100 items-center gap-4 rounded-xl bg-white p-1 md:p-3 shadow-table"
     >
-      <div className="col-span-4 flex items-center gap-3">
+      <div className="col-span-3 flex items-center gap-3">
         <div className="flex items-center gap-1 md:gap-2">
           <ProfileImage
             imageUrl={user?.imageUrl}
@@ -157,23 +174,29 @@ export default function OrganizationDatabaseView({
             bg={bg}
             text={text}
           />
-
+           <div className="flex flex-col">
           <h3 className="font-medium line-clamp-1 text-gray-800 text-sm md:text-base">
             {name || "----"}
           </h3>
+          <h3 className="font-medium line-clamp-1 text-gray-800 text-sm md:text-base">
+            {email || "----"}
+          </h3>
+          </div>
         </div>
       </div>
 
-      <div className="col-span-3">
+      <div className="col-span-2">
         <span className="text-gray-800 text-sm wrap-break-word md:text-base font-medium">
-          {email || "—"}
+          {speciality || "—"}
         </span>
       </div>
       <div className="col-span-2 text-gray-800 wrap-break-word text-sm md:text-base font-normal">
         {contact || "—"}
       </div>
-
-      <div className="col-span-1 font-medium text-sm md:text-base text-gray-800">
+       <div className="col-span-2 text-gray-800 wrap-break-word text-sm md:text-base font-normal">
+        {npiNumber || "—"}
+      </div>
+      <div className="col-span-2 font-medium text-sm md:text-base text-gray-800">
         <span
           className={`block rounded-full w-fit px-2.5 capitalize  md:whitespace-nowrap wrap-break-word py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             status,
@@ -183,39 +206,17 @@ export default function OrganizationDatabaseView({
         </span>
       </div>
 
-      <div className="col-span-2 flex items-center flex-wrap justify-end gap-2">
+      <div className="col-span-1 flex items-center flex-wrap justify-end gap-2">
         
-        <Tooltip content="Edit User">
+        <Tooltip content="See Details">
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              if (id) onEditUser();
+             e.stopPropagation();
+              if (id) onRowClick();
             }}
-            className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+            className="flex  rotate-180 md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
-            <PencilEditIcon fill="currentColor" />
-          </button>
-        </Tooltip>
-        <Tooltip content="Disable User">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (id) onDisableUser();
-            }}
-            className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
-          >
-            <DisableProfileIcon fill="currentColor" />
-          </button>
-        </Tooltip>
-        <Tooltip content="Delete User">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (id) onDeleteUser();
-            }}
-            className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
-          >
-            <TrashBinIcon fill="currentColor" />
+           <ArrowLeftIcon width="15" height="15" stroke={"currentColor"} />
           </button>
         </Tooltip>
       </div>

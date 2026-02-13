@@ -113,6 +113,8 @@ import OrganizationFilledIcon from "./OrganizationFilledIcon";
 import NoUserIcon from "./NoUserIcon";
 import DisableProfileIcon from "./DisableProfileIcon";
 import PlusProfileIcon from "./PlusProfileIcon";
+import DollarCircleIcon from "./DollarCircleIcon";
+import CoinsIcon from "./CoinsIcon";
 export {
     ShoppingCartRemoveIcon,
     MoreIcon,
@@ -228,5 +230,7 @@ export {
     OrganizationFilledIcon,
     NoUserIcon,
     DisableProfileIcon,
-    PlusProfileIcon
+    PlusProfileIcon,
+    DollarCircleIcon,
+    CoinsIcon
 };

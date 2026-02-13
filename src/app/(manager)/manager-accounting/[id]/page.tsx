@@ -1,3 +1,4 @@
+
 "use client";
 import { EmptyState, ThemeButton, Skeleton } from "@/app/components";
 import HorizontalBarChart from "@/app/components/charts/HorizontalBarChart";
@@ -13,6 +14,7 @@ import {
   AccountFilledIcon,
   ArrowDownIcon,
   PackageIcon,
+  SearchIcon,
 } from "@/icons";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import React, { useEffect, useMemo, useState } from "react";
@@ -251,7 +253,18 @@ const Page = () => {
 
   const rangeLabel = (start: Date, end: Date) =>
     isSameDay(start, end) ? fmt(start) : `${fmt(start)} – ${fmt(end)}`;
-
+  const orderStatuses = [
+    { label: "All Status", value: "" ,color:"" },
+    { label: "Delivered", value: "DELIVERED" ,color:"before:bg-green-700"},
+    { label: "paid", value: "PAID" ,color:"before:bg-green-700"},
+    { label: "Processing", value: "PROCESSING" ,color:"before:bg-amber-700"},
+    { label: "Pending", value: "PENDING" ,color:"before:bg-red-700"},
+    { label: "pending_payment", value: "pending_payment" ,color:"before:bg-orange-700"},
+    { label: "Shipped", value: "SHIPPED" ,color:"before:bg-indigo-700"},
+    { label: "cancelled", value: "cancelled" ,color:"before:bg-gray-700"},
+    { label: "canceled", value: "canceled" ,color:"before:bg-red-700"},
+  ];
+  const [orderStatus, setorderStatus] = useState("");
   const customLabel = rangeLabel(range.startDate, range.endDate);
 
   const handlePageChange = (selected: number) => {
@@ -542,8 +555,62 @@ const Page = () => {
             />
           </span>
           <h2 className="text-black whitespace-nowrap font-semibold text-lg sm:text-2xl lg:text-3xl">
-            Paid Orders
+           Recent Orders
           </h2>
+            {data?.doctorOrders.count ? (
+              <span className="text-primary border border-gray-1000 rounded-full px-2 py-0.5 font-medium">
+                {data.doctorOrders.count}
+              </span>
+            ) : null}
+         
+        </div>
+         <div className="flex flex-col sm:flex-row w-full lg:w-auto items-stretch sm:items-center gap-2 lg:gap-3">
+         
+          <div className="sm:bg-white rounded-full  flex-col sm:flex-row w-full flex items-center gap-1 md:gap-2 p-0 md:px-2.5 md:py-2 lg:shadow lg:w-fit">
+            <div className="flex items-center relative w-full gap-2 p-1 sm:p-0 rounded-full bg-white sm:bg-transparent shadow-table sm:shadow-none">
+              <span className="absolute left-3">
+                <SearchIcon
+                  height={isMobile ? "16" : "20"}
+                  width={isMobile ? "16" : "20"}
+                />
+              </span>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search"
+                className="ps-8 md:ps-10 pe-3 md:pe-4 py-1.5  text-base md:py-2 focus:bg-white bg-gray-100 w-full md:min-w-56 outline-none focus:ring focus:ring-gray-200 rounded-full"
+              />
+              <Menu>
+              <MenuButton className="inline-flex min-w-30 whitespace-nowrap py-1.5 md:w-fit w-full md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline justify-between data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+                  {orderStatus || "All Status"} <ArrowDownIcon fill="#717680" />
+              </MenuButton>
+
+              <MenuItems
+                transition
+                anchor="bottom end"
+                className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+              >
+                {orderStatuses.map((status) => (
+                                  <MenuItem key={status.label}>
+                                    <button
+                                      onClick={() => {
+                                        setorderStatus(status.value);
+
+                                      }}
+                                      className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full ${
+                                        status.color ? `before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${status.color}` : ""
+                                      }`}
+                                    >
+                                      {status.label}
+                                    </button>
+                                  </MenuItem>
+                ))}
+              </MenuItems>
+            </Menu>
+
+            </div>
+
+          </div>
         </div>
       </div>
 
@@ -566,6 +633,9 @@ const Page = () => {
           </div>
           <div className="hidden lg:block">
             <h2>Base Price</h2>
+          </div>
+          <div>
+            <h2>Mark-Up</h2>
           </div>
           <div>
             <h2>Net Profit</h2>
@@ -592,31 +662,31 @@ const Page = () => {
         ) : (
           orders.map((order) => (
             <PeptideOrderListView
-              onRowClick={() => {
-                if (!order.patient) {
-                  openClinicOrderDetails(order);
-                  return;
-                }
-                router.push(`/orders/${order.id}`);
-              } }
-              key={order.id}
-              order={{
-                id: parseInt(order.id),
-                orderId: order.displayId || "---",
-                displayId: order.displayId
-                  ? parseInt(order.displayId.toString())
-                  : parseInt(order.id),
-                customer: order.patient?.fullName || "Clinic Order",
-                imageUrl: order.patient?.imageUrl,
-                customerEmail: order.patient?.email,
-                date: format(new Date(order.createdAt), "MM-dd-yy"),
-                status: order.status,
-                items: order.orderItems.length,
-                total: order.totalPrice,
-                netCost: order.netCost ?? 0,
-                profit: order.profit ?? 0,
-                orderItems: order.orderItems,
-              }}           />
+                  onRowClick={() => {
+                      if (!order.patient) {
+                          openClinicOrderDetails(order);
+                          return;
+                      }
+                      router.push(`/orders/${order.id}`);
+                  } }
+                  key={order.id}
+                  order={{
+                      id: parseInt(order.id),
+                      orderId: order.displayId || "---",
+                      displayId: order.displayId
+                          ? parseInt(order.displayId.toString())
+                          : parseInt(order.id),
+                      customer: order.patient?.fullName || "Clinic Order",
+                      imageUrl: order.patient?.imageUrl,
+                      customerEmail: order.patient?.email,
+                      date: format(new Date(order.createdAt), "MM-dd-yy"),
+                      status: order.status,
+                      items: order.orderItems.length,
+                      total: order.totalPrice,
+                      netCost: order.netCost ?? 0,
+                      profit: order.profit ?? 0,
+                      orderItems: order.orderItems,
+                  }} isShowMarkup ={true}         />
           ))
         )}
       </div>
@@ -649,3 +719,4 @@ const Page = () => {
 };
 
 export default Page;
+

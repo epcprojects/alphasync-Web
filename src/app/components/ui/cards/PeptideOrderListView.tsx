@@ -28,6 +28,7 @@ type PeptideOrderListViewProps = {
   order: Order;
   onViewOrderDetail?: (id: number) => void;
   onRowClick?: () => void;
+  isShowMarkup?: boolean;
 };
 
 const colorPairs = [
@@ -83,6 +84,7 @@ export default function PeptideOrderListView({
   order: order,
   onViewOrderDetail,
   onRowClick,
+  isShowMarkup
 }: PeptideOrderListViewProps) {
   const { bg, text } = getColorPair(order.id) || colorPairs[0];
 
@@ -247,7 +249,14 @@ export default function PeptideOrderListView({
       <div className="text-gray-800 font-normal text-sm lg:block hidden md:text-base">
         ${order.netCost}
       </div>
-
+      {isShowMarkup && (
+        <div className="text-primary font-normal text-sm md:text-base">
+        ${order.profit}
+      </div>
+      )
+        
+      }
+       
       <div className="text-green-600 font-normal text-sm md:text-base">
         ${order.profit}
       </div>

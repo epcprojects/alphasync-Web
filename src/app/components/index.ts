@@ -46,6 +46,7 @@ import ChangePassword from "@/app/components/ChangePassword";
 import ImageUpload from "@/app/components/ImageUpload";
 import Chat from "./ui/chat/Chat";
 import TrainingVideosBlockingPage from "./TrainingVideosBlockingPage";
+import ThemeDropDown from "./ui/inputs/ThemeDropDown";
 import {
   RoleBasedRoute,
   AdminRoute,
@@ -114,4 +115,5 @@ export {
   CustomerRoute,
   DoctorOrAdminRoute,
   TrainingVideosBlockingPage,
+  ThemeDropDown
 };

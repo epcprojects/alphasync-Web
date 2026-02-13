@@ -1,6 +1,6 @@
 import React from "react";
 
-const HeartOutlineIcon = ({ fill = "374151", width = 28, height = 28 }) => {
+const HeartOutlineIcon = ({ fill = "#374151", width = 28, height = 28 }) => {
   return (
     <svg
       width={width}

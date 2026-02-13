@@ -27,7 +27,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
     <div className="flex items-center gap-3 w-full md:gap-12 flex-col">
       {/* Header */}
       <div className="flex items-center flex-col gap-1 md:gap-5 justify-center">
-        {showUserName ||
+        {showUserName &&
           (showWelcome && (
             <h2 className="text-white font-normal text-base md:text-2xl">
               👋 Welcome {username},
