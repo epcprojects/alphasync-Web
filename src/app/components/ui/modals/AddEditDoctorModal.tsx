@@ -35,6 +35,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     email: "",
     medicalLicense: "",
     specialty: "",
+    deaLicense: "No",
     status: "Active",
     clinic: "",
     street1: "",
@@ -214,6 +215,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           email: initialData.email || "",
           medicalLicense: initialData.medicalLicense || "",
           specialty: initialData.specialty || "",
+          deaLicense: (initialData as { deaLicense?: string }).deaLicense === "Yes" ? "Yes" : "No",
           status:
             initialData.status === "ACTIVE"
               ? "Active"
@@ -237,6 +239,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           email: "",
           medicalLicense: "",
           specialty: "",
+          deaLicense: "No",
           status: "Active",
           clinic: "",
           street1: "",
@@ -526,40 +529,74 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           </div>
         </div>
 
-        <div>
-          <label
-            className="mb-1.5 font-medium text-gray-700 text-xs md:text-sm block"
-            htmlFor=""
-          >
-            Status
-          </label>
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                value="Active"
-                name="status"
-                checked={formData.status === "Active"}
-                onChange={(e) => handleChange("status", e.target.value)}
-                className="w-5 h-5 text-primary border-gray-300 focus:ring-primary"
-              />
-              Active
+        <div className="flex items-start flex-col sm:flex-row gap-3 md:gap-5">
+          <div className="w-full">
+            <label
+              className="mb-1.5 font-medium text-gray-700 text-xs md:text-sm block"
+              htmlFor=""
+            >
+              DEA License
             </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                value="Inactive"
-                name="status"
-                checked={formData.status === "Inactive"}
-                onChange={(e) => handleChange("status", e.target.value)}
-                className="w-5 h-5 text-primary border-gray-300 focus:ring-primary"
-              />
-              Inactive
-            </label>
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  value="Yes"
+                  name="deaLicense"
+                  checked={formData.deaLicense === "Yes"}
+                  onChange={(e) => handleChange("deaLicense", e.target.value)}
+                  className="w-5 h-5 text-primary border-gray-300 focus:ring-primary"
+                />
+                Yes
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  value="No"
+                  name="deaLicense"
+                  checked={(formData.deaLicense || "No") === "No"}
+                  onChange={(e) => handleChange("deaLicense", e.target.value)}
+                  className="w-5 h-5 text-primary border-gray-300 focus:ring-primary"
+                />
+                No
+              </label>
+            </div>
           </div>
-          {errors.status && (
-            <p className="text-xs text-red-500 mt-1">{errors.status}</p>
-          )}
+          <div className="w-full">
+            <label
+              className="mb-1.5 font-medium text-gray-700 text-xs md:text-sm block"
+              htmlFor=""
+            >
+              Status
+            </label>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  value="Active"
+                  name="status"
+                  checked={formData.status === "Active"}
+                  onChange={(e) => handleChange("status", e.target.value)}
+                  className="w-5 h-5 text-primary border-gray-300 focus:ring-primary"
+                />
+                Active
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  value="Inactive"
+                  name="status"
+                  checked={formData.status === "Inactive"}
+                  onChange={(e) => handleChange("status", e.target.value)}
+                  className="w-5 h-5 text-primary border-gray-300 focus:ring-primary"
+                />
+                Inactive
+              </label>
+            </div>
+            {errors.status && (
+              <p className="text-xs text-red-500 mt-1">{errors.status}</p>
+            )}
+          </div>
         </div>
 
         <GoogleAutocompleteInput
