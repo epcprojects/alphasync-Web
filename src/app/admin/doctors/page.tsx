@@ -358,7 +358,7 @@ function DoctorContent() {
                     <h2>Phone</h2>
                   </div>
                   <div>
-                    <h2>Medical License</h2>
+                    <h2>NPI Number</h2>
                   </div>
                   <div className="xl:flex hidden">
                     <h2>Status</h2>
@@ -428,7 +428,7 @@ function DoctorContent() {
                     <h2>Phone</h2>
                   </div>
                   <div>
-                    <h2>Medical License</h2>
+                    <h2>NPI Number</h2>
                   </div>
                   <div className="xl:flex hidden">
                     <h2>Status</h2>
@@ -497,7 +497,7 @@ function DoctorContent() {
                     <h2>Phone</h2>
                   </div>
                   <div>
-                    <h2>Medical License</h2>
+                    <h2>NPI Number</h2>
                   </div>
                   <div className="xl:flex hidden">
                     <h2>Status</h2>

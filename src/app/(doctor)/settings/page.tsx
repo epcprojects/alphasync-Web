@@ -312,7 +312,7 @@ const Page = () => {
         /^\(\d{3}\)\s\d{3}-\d{4}$/,
         "Phone number must be in format (512) 312-3123"
       ),
-    medicalLicense: Yup.string().required("Medical license is required"),
+    medicalLicense: Yup.string().required("NPI Number is required"),
     specialty: Yup.string().required("Specialty is required"),
     street1: Yup.string().required("Street address is required"),
     street2: Yup.string().optional(),
@@ -692,7 +692,7 @@ const Page = () => {
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
                           >
-                            Medical License
+                            NPI Number
                           </label>
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">

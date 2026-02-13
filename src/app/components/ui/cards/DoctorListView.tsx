@@ -143,7 +143,7 @@ export default function DoctorListView({
         <div className="flex items-end sm:items-center gap-1 w-full">
           <div className="flex items-start flex-col gap-1 w-full">
             <span className="text-black whitespace-nowrap font-medium text-sm block">
-              Medical License:
+              NPI Number:
             </span>
             <span className="text-gray-800 text-sm font-normal block">
               {doctor.medicalLicense ?? "—"}

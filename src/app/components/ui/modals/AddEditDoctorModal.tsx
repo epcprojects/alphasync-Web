@@ -57,7 +57,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
         "Phone number must be in format (512) 312-3123"
       ),
     email: Yup.string().email("Invalid email").required("Email is required"),
-    medicalLicense: Yup.string().required("Medical License is required"),
+    medicalLicense: Yup.string().required("NPI Number is required"),
     specialty: Yup.string().required("Specialty is required"),
     status: Yup.string().oneOf(["Active", "Inactive"]).required(),
     street1: Yup.string().required("Street address is required"),
@@ -476,11 +476,23 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           value={formData.email}
         />
 
+        <ThemeInput
+          label="Clinic"
+          placeholder="Enter clinic name"
+          name="clinic"
+          error={!!errors.clinic}
+          errorMessage={errors.clinic}
+          id="clinic"
+          onChange={(e) => handleChange("clinic", e.target.value)}
+          type="text"
+          value={formData.clinic}
+        />
+
         <div className="flex items-start flex-col sm:flex-row gap-3 md:gap-5">
           <div className="w-full">
             <ThemeInput
               required
-              label="Medical License"
+              label="NPI Number"
               placeholder="Enter license number"
               name="medicalLicense"
               error={!!errors.medicalLicense}
@@ -513,18 +525,6 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
             )}
           </div>
         </div>
-
-        <ThemeInput
-          label="Clinic"
-          placeholder="Enter clinic name"
-          name="clinic"
-          error={!!errors.clinic}
-          errorMessage={errors.clinic}
-          id="clinic"
-          onChange={(e) => handleChange("clinic", e.target.value)}
-          type="text"
-          value={formData.clinic}
-        />
 
         <div>
           <label

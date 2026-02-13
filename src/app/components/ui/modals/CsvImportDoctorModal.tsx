@@ -207,7 +207,7 @@ const CsvImportDoctorModal: React.FC<CsvImportDoctorModalProps> = ({
             <ul className="text-sm text-blue-800 space-y-1">
               <li>
                 • CSV file must contain columns: email, full_name, phone_no,
-                medical_license, specialty, status
+                npi_number, specialty, status
               </li>
               <li>
                 • Status values should be either &quot;ACTIVE&quot; or
