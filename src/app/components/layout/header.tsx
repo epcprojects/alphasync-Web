@@ -13,14 +13,12 @@ import { clearUser } from "@/lib/store/slices/authSlice";
 import { useRouter } from "next/navigation";
 import { useApolloClient } from "@apollo/client";
 import dynamic from "next/dynamic";
-// import CartPopover from "../ui/CartPopover";
 const CartPopover = dynamic(() => import("../ui/CartPopover"), { ssr: false });
 const Notifications = dynamic(() => import("../ui/Notifications"), { ssr: false });
 
 interface MenuItemType {
   label: string;
   href: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: React.ComponentType<any>;
 }
 

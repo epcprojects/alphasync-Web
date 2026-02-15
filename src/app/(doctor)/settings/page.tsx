@@ -7,6 +7,7 @@ import {
   ImageUpload,
   GoogleAutocompleteInput,
 } from "@/app/components";
+import MedicalLicensesSection from "@/app/components/medicalLicensesComponent";
 import SelectGroupDropdown from "@/app/components/ui/dropdowns/selectgroupDropdown";
 import {
   AlertIcon,
@@ -14,8 +15,10 @@ import {
   MailIcon,
   MessageSquareIcon,
   PackageOutlineIcon,
+  PlusIcon,
   ReminderIcon,
   SecurityLock,
+  TrashBinIcon,
   UserIcon,
 } from "@/icons";
 import {
@@ -122,10 +125,10 @@ const Page = () => {
       },
       onError: (error) => {
         showErrorToast(
-          error.message || "Failed to update order updates notification"
+          error.message || "Failed to update order updates notification",
         );
       },
-    }
+    },
   );
 
   const [updateLowStockAlerts] = useMutation(
@@ -136,10 +139,10 @@ const Page = () => {
       },
       onError: (error) => {
         showErrorToast(
-          error.message || "Failed to update low stock alerts notification"
+          error.message || "Failed to update low stock alerts notification",
         );
       },
-    }
+    },
   );
 
   // Handler for toggle changes
@@ -191,7 +194,7 @@ const Page = () => {
       onError: (error) => {
         showErrorToast(error.message || "Failed to update profile");
       },
-    }
+    },
   );
 
   const [removeImage] = useMutation(REMOVE_IMAGE, {
@@ -248,14 +251,14 @@ const Page = () => {
       showSuccessToast(
         value
           ? "Two-factor authentication enabled"
-          : "Two-factor authentication disabled"
+          : "Two-factor authentication disabled",
       );
     } catch (error) {
       setIsTwoFaEnabled(previousValue);
       showErrorToast(
         error instanceof Error
           ? error.message
-          : "Failed to update two-factor authentication"
+          : "Failed to update two-factor authentication",
       );
     }
   };
@@ -310,7 +313,7 @@ const Page = () => {
       .required("Phone number is required")
       .matches(
         /^\(\d{3}\)\s\d{3}-\d{4}$/,
-        "Phone number must be in format (512) 312-3123"
+        "Phone number must be in format (512) 312-3123",
       ),
     medicalLicense: Yup.string().required("Medical license is required"),
     specialty: Yup.string().required("Specialty is required"),
@@ -341,6 +344,18 @@ const Page = () => {
       then: (schema) => schema.required("Shipping postal code is required"),
       otherwise: (schema) => schema.optional(),
     }),
+    npiNumber: Yup.string().required("NPI number is required"),
+    medicalLicenses: Yup.array()
+      .of(
+        Yup.object().shape({
+          deaLicense: Yup.string().required("DEA license is required"),
+          states: Yup.string().required("State is required"),
+          expirationDate: Yup.string().required("Expiration date is required"),
+          // optional file validation
+          licenseDocument: Yup.mixed().nullable(),
+        }),
+      )
+      .min(1, "At least one license is required"),
   });
 
   // Format phone number to (XXX) XXX-XXXX format
@@ -359,7 +374,7 @@ const Page = () => {
     }
     return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(
       3,
-      6
+      6,
     )}-${limitedNumbers.slice(6)}`;
   };
 
@@ -446,7 +461,14 @@ const Page = () => {
     },
     { name: "physiotherapy", displayName: "Physiotherapy" },
   ];
-
+  const States = [
+    {
+      label: "California",
+      value: "California",
+    },
+    { label: "Texas", value: "Texas" },
+    { label: "Florida", value: "Florida" },
+  ];
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="bg-white rounded-xl ">
@@ -533,13 +555,21 @@ const Page = () => {
                     city: user?.city ?? "",
                     state: user?.state ?? "",
                     postalCode: user?.postalCode ?? "",
-                    sameAsShippingAddress:
-                      user?.sameAsBillingAddress ?? true,
+                    sameAsShippingAddress: user?.sameAsBillingAddress ?? true,
                     shippingStreet1: user?.shippingStreet1 ?? "",
                     shippingStreet2: user?.shippingStreet2 ?? "",
                     shippingCity: user?.shippingCity ?? "",
                     shippingState: user?.shippingState ?? "",
                     shippingPostalCode: user?.shippingPostalCode ?? "",
+                    npiNumber: "",
+                    medicalLicenses: [
+                      {
+                        deaLicense: "",
+                        states: "",
+                        expirationDate: "",
+                        licenseDocument: null,
+                      },
+                    ],
                   }}
                   validationSchema={profileSchema}
                   onSubmit={async (values) => {
@@ -671,7 +701,7 @@ const Page = () => {
                             value={values.phoneNo}
                             onChange={(e) => {
                               const formatted = formatPhoneNumber(
-                                e.target.value
+                                e.target.value,
                               );
                               setFieldValue("phoneNo", formatted);
                             }}
@@ -680,30 +710,6 @@ const Page = () => {
                           />
                           <ErrorMessage
                             name="phoneNo"
-                            component="div"
-                            className="text-red-500 text-xs"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
-                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
-                          <label
-                            htmlFor=""
-                            className="text-xs md:text-sm text-gray-700 font-semibold"
-                          >
-                            Medical License
-                          </label>
-                        </div>
-                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
-                          <ThemeInput
-                            type="text"
-                            name="medicalLicense"
-                            value={values.medicalLicense}
-                            onChange={handleChange}
-                          />
-                          <ErrorMessage
-                            name="medicalLicense"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -958,13 +964,13 @@ const Page = () => {
                                 onAddressSelect={(address) => {
                                   setFieldValue(
                                     "shippingStreet1",
-                                    address.street1
+                                    address.street1,
                                   );
                                   setFieldValue("shippingCity", address.city);
                                   setFieldValue("shippingState", address.state);
                                   setFieldValue(
                                     "shippingPostalCode",
-                                    address.postalCode
+                                    address.postalCode,
                                   );
                                 }}
                                 placeholder="Enter shipping street address"
@@ -1077,6 +1083,92 @@ const Page = () => {
                               />
                             </div>
                           </div>
+                          <MedicalLicensesSection
+                            values={values}
+                            handleChange={handleChange}
+                            setFieldValue={setFieldValue}
+                            States={States}
+                          />
+                          {/* <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
+                            <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                              <label
+                                htmlFor=""
+                                className="text-xs md:text-sm text-gray-700 font-semibold"
+                              >
+                               Medical Licenses
+                              </label>
+                            </div>
+                            <div className="col-span-12 space-y-5 md:col-span-8 lg:col-span-8">
+                              <ThemeInput
+                                label="NPI Number"
+                                type="text"
+                                name="npiNumber"
+                                value={values.npiNumber}
+                                onChange={handleChange}
+                              />
+                              <ErrorMessage
+                                name="npiNumber"
+                                component="div"
+                                className="text-red-500 text-xs"
+                              />
+                              <div className="bg-gray-100 p-4 flex flex-col gap-4 rounded-xl">
+                                <div className="grid grid-cols-3 gap-5">
+                                  <ThemeInput
+                                    label="DEA License"
+                                    type="text"
+                                    name="DEA License"
+                                    className="bg-white"
+                                    value={values.deaLicense}
+                                    onChange={handleChange}
+                                  />
+                                  <ThemeDropDown
+                                    label="States"
+                                    bgClass="bg-white"
+                                    options={States}
+                                    value={values.states}
+                                    onChange={(value) =>
+                                      setFieldValue("states", value)
+                                    }
+                                  />
+                                  <ThemeInput
+                                    label="Expiration Date"
+                                    type="text"
+                                    name="expirationDate"
+                                    className="bg-white"
+                                    value={values.expirationDate}
+                                    onChange={handleChange}
+                                  />
+                                </div>
+                                <div>
+                                  <ThemeInput
+                                    label="Upload License Document"
+                                    type="file"
+                                    name="licenseDocument"
+                                    className="bg-white"
+                                    onChange={(
+                                      event: React.ChangeEvent<HTMLInputElement>,
+                                    ) => {
+                                      const file =
+                                        event.currentTarget.files?.[0];
+                                      setFieldValue("licenseDocument", file);
+                                    }}
+                                  />
+                                </div>
+                                <div className="flex justify-end">
+                                <div className="flex gap-1.5">
+                                    <TrashBinIcon/>
+                                    <span className="text-red-500 font-medium">
+                                      Remove
+                                    </span>
+                                  </div>
+                                  </div>
+                              </div>
+                              <div className = "flex flex-row gap-1.5">
+                                <PlusIcon fill="#2862A9"/>
+                                <span className="text-primary">Add New</span>
+                              </div>
+                            </div>
+                          </div> */}
                         </>
                       )}
 
@@ -1133,8 +1225,8 @@ const Page = () => {
                         {twoFaUpdating
                           ? "Updating..."
                           : isTwoFaEnabled
-                          ? "Enabled"
-                          : "Disabled"}
+                            ? "Enabled"
+                            : "Disabled"}
                       </p>
                     </div>
                   </div>

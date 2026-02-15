@@ -20,7 +20,7 @@ interface DropdownProps {
   showSearch?: boolean;
   searchPlaceholder?: string;
   emptyText?: string;
-
+  bgClass?:string;
   maxMenuHeight?: number;
 
   error?: boolean;
@@ -40,7 +40,7 @@ const Dropdown = ({
   searchPlaceholder = "Search...",
   emptyText = "No results found",
   maxMenuHeight = 260,
-
+  bgClass,
   error = false,
   errorMessage = "",
 
@@ -74,7 +74,7 @@ const Dropdown = ({
 
       <Menu as="div" className="relative w-full flex">
         <MenuButton
-          className={`w-full h-11 p-2 md:px-3.5 md:py-2.5 border focus:rin-0  justify-between flex gap-2 items-center rounded-lg outline-none text-slate-900 placeholder:text-slate-400 placeholder:font-normal 
+          className={`w-full h-11 p-2 md:px-3.5 md:py-2.5 ${bgClass || ""}  border focus:rin-0  justify-between flex gap-2 items-center rounded-lg outline-none text-slate-900 placeholder:text-slate-400 placeholder:font-normal 
               ${
                 error
                   ? "border-red-500 focus:ring-red-200"
