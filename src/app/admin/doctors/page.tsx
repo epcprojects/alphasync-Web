@@ -71,6 +71,7 @@ function DoctorContent() {
     { label: "All Status", value: null },
     { label: "Active", value: "ACTIVE" },
     { label: "Inactive", value: "INACTIVE" },
+    { label: 'Pending', value: "PENDING" }
   ];
 
   const itemsPerPage = 10;
@@ -78,10 +79,12 @@ function DoctorContent() {
 
   const [currentPage, setCurrentPage] = useState(0);
 
-  // Sync status when switching tabs: Active tab → "Active", All tab → "All Status"
+  // Sync status when switching tabs: Active tab → "Active", Pending tab → "Pending", All tab → "All Status"
   useEffect(() => {
     if (selectedTabIndex === 1) {
       setSelectedStatus("Active");
+    } else if (selectedTabIndex === 2) {
+      setSelectedStatus("Pending");
     } else if (selectedTabIndex === 0) {
       setSelectedStatus("All Status");
     }
@@ -139,9 +142,11 @@ function DoctorContent() {
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
     setCurrentPage(0);
-    // Sync tab with status: Active → Active Doctors tab, others → All Doctors tab
+    // Sync tab with status: Active → Active Doctors tab, Pending → Pending Doctors tab, others → All Doctors tab
     if (status === "Active") {
       setSelectedTabIndex(1);
+    } else if (status === "Pending") {
+      setSelectedTabIndex(2);
     } else {
       setSelectedTabIndex(0);
     }
