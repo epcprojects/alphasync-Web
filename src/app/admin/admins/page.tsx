@@ -66,6 +66,7 @@ function AdminsContent() {
     { label: "All Status", value: null },
     { label: "Active", value: "ACTIVE" },
     { label: "Inactive", value: "INACTIVE" },
+    { label: 'Pending', value: "PENDING" }
   ];
 
   const itemsPerPage = 10;
@@ -115,6 +116,19 @@ function AdminsContent() {
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
     setCurrentPage(0);
+    // Sync tab with filter: Pending → Pending Admins, All Status → All Admins
+    if (status === "Pending") {
+      setSelectedTabIndex(1);
+    } else if (status === "All Status") {
+      setSelectedTabIndex(0);
+    }
+  };
+
+  const handleTabChange = (index: number) => {
+    setSelectedTabIndex(index);
+    setCurrentPage(0);
+    // Sync filter with tab: Pending Admins → Pending, All Admins → All Status
+    setSelectedStatus(index === 1 ? "Pending" : "All Status");
   };
 
   const handleConfirmDelete = async () => {
@@ -282,7 +296,7 @@ function AdminsContent() {
       <div className="bg-white rounded-xl shadow-table">
         <TabGroup
           selectedIndex={selectedTabIndex}
-          onChange={setSelectedTabIndex}
+          onChange={handleTabChange}
         >
           <TabList className="flex items-center border-b border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-6">
             {["All Admins", "Pending Admins"].map((tab, index) => (

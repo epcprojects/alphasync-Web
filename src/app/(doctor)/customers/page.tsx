@@ -70,6 +70,7 @@ function CustomerContent() {
     { label: "All Status", value: null },
     { label: "Active", value: "ACTIVE" },
     { label: "Inactive", value: "INACTIVE" },
+    { label: "Pending", value: "PENDING" }
   ];
 
   const itemsPerPage = 10;
@@ -112,6 +113,19 @@ function CustomerContent() {
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
     setCurrentPage(0);
+    // Sync tab with filter: Pending → Pending Patients, All Status → All Patients
+    if (status === "Pending") {
+      setSelectedTabIndex(1);
+    } else if (status === "All Status") {
+      setSelectedTabIndex(0);
+    }
+  };
+
+  const handleTabChange = (index: number) => {
+    setSelectedTabIndex(index);
+    setCurrentPage(0);
+    // Sync filter with tab: Pending Patients → Pending, All Patients → All Status
+    setSelectedStatus(index === 1 ? "Pending" : "All Status");
   };
 
   const handleConfirmDelete = async () => {
@@ -293,7 +307,7 @@ function CustomerContent() {
       <div className="sm:bg-white rounded-xl sm:shadow-table">
         <TabGroup
           selectedIndex={selectedTabIndex}
-          onChange={setSelectedTabIndex}
+          onChange={handleTabChange}
         >
           <TabList className="flex items-center border-b bg-white rounded-t-xl mb-2 sm:mb-0 border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-4">
             {["All Patients", "Pending Patients"].map((tab, index) => (
