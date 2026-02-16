@@ -10,7 +10,6 @@ export const userpayload = `
         id
         imageUrl
         lastSignInAt
-        medicalLicense
         phoneNo
         rememberMe
         revokeAccess
@@ -43,6 +42,17 @@ export const userpayload = `
             shippingStreet2
             shippingStreet1
        hasViewedAllVideos
+       deaLicenses {
+        createdAt
+        deaLicense
+        expirationDate
+        id
+        licenseUrl
+        state
+        status
+        updatedAt
+      }
+      npiNumber
 `;
 
 export interface UserAttributes {
@@ -58,9 +68,20 @@ export interface UserAttributes {
   clinic?: string;
   lastSignInAt?: string;
   medicalLicense?: string;
+  npiNumber?: string;
   deaLicense?: string;
   hasDeaLicense?: string;
   deaLicenseNumber?: string;
+  deaLicenses?: Array<{
+    id?: string | number;
+    deaLicense?: string;
+    state?: string;
+    expirationDate?: string;
+    licenseUrl?: string;
+    status?: string;
+    createdAt?: string;
+    updatedAt?: string;
+  }>;
   phoneNo?: string;
   rememberMe?: boolean;
   revokeAccess?: boolean;

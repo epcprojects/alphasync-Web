@@ -47,7 +47,8 @@ export const CREATE_INVITATION = gql`
     $lastName: String
     $userType: UserTypeEnum
     $phoneNo: String
-    $medicalLicense: String
+    $npiNumber: String
+    $deaLicensesAttributes: [DeaLicenseAttributes!]
     $status: UserStatusEnum
     $specialty: String
     $image: Upload
@@ -69,7 +70,8 @@ export const CREATE_INVITATION = gql`
           image: $image
           userType: $userType
           phoneNo: $phoneNo
-          medicalLicense: $medicalLicense
+          npiNumber: $npiNumber
+          deaLicensesAttributes: $deaLicensesAttributes
           status: $status
           street1: $street1
           street2: $street2
@@ -82,6 +84,17 @@ export const CREATE_INVITATION = gql`
       }
     ) {
       id
+      npiNumber
+      deaLicenses {
+        createdAt
+        deaLicense
+        expirationDate
+        id
+        licenseUrl
+        state
+        status
+        updatedAt
+      }
     }
   }
 `;
@@ -110,7 +123,7 @@ export const UPDATE_USER = gql`
     $lastName: String
     $userType: UserTypeEnum
     $phoneNo: String
-    $medicalLicense: String
+    $npiNumber: String
     $status: UserStatusEnum
     $specialty: String
     $clinic: String
@@ -122,6 +135,7 @@ export const UPDATE_USER = gql`
     $state: String
     $postalCode: String
     $address: String
+    $deaLicensesAttributes: [DeaLicenseAttributes!]
   ) {
     updateUser(
       input: {
@@ -136,7 +150,7 @@ export const UPDATE_USER = gql`
           image: $image
           userType: $userType
           phoneNo: $phoneNo
-          medicalLicense: $medicalLicense
+          npiNumber: $npiNumber
           status: $status
           addressVerified: $addressVerified
           street1: $street1
@@ -145,6 +159,7 @@ export const UPDATE_USER = gql`
           state: $state
           postalCode: $postalCode
           address: $address
+          deaLicensesAttributes: $deaLicensesAttributes
         }
       }
     ) {
