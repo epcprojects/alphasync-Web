@@ -2,7 +2,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import AppModal from "./AppModal";
-import { DoctorIcon, CrossIcon } from "@/icons";
+import { DoctorIcon, CrossIcon, PlusIcon, TrashBinIcon } from "@/icons";
 import { ImageUpload, GoogleAutocompleteInput, Dropdown } from "@/app/components";
 import ThemeInput from "../inputs/ThemeInput";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
@@ -51,6 +51,10 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [deaLicenseDocument, setDeaLicenseDocument] = useState<File | null>(null);
   const deaLicenseFileInputRef = React.useRef<HTMLInputElement>(null);
+  const [deaLicenseEntries, setDeaLicenseEntries] = useState<
+    Array<{ deaLicenseNumber: string; deaLicenseState: string; deaLicenseExpirationDate: string; deaLicenseDocument: File | null }>
+  >([]);
+  const deaLicenseEntryFileRefs = React.useRef<(HTMLInputElement | null)[]>([]);
   const isMobile = useIsMobile();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isFormValid, setIsFormValid] = useState(false);
@@ -196,6 +200,43 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     setSelectedImage(file);
   };
 
+  const addDeaLicenseEntry = () => {
+    setDeaLicenseEntries((prev) => [
+      ...prev,
+      { deaLicenseNumber: "", deaLicenseState: "", deaLicenseExpirationDate: "", deaLicenseDocument: null },
+    ]);
+  };
+
+  const updateDeaLicenseEntry = (
+    index: number,
+    field: "deaLicenseNumber" | "deaLicenseState" | "deaLicenseExpirationDate" | "deaLicenseDocument",
+    value: string | File | null
+  ) => {
+    setDeaLicenseEntries((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const removeDeaLicenseEntry = (index: number) => {
+    setDeaLicenseEntries((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeFirstDeaLicenseChunk = () => {
+    if (deaLicenseEntries.length === 0) return;
+    const first = deaLicenseEntries[0];
+    setFormData((prev) => ({
+      ...prev,
+      deaLicenseNumber: first.deaLicenseNumber,
+      deaLicenseState: first.deaLicenseState,
+      deaLicenseExpirationDate: first.deaLicenseExpirationDate,
+    }));
+    setDeaLicenseDocument(first.deaLicenseDocument);
+    setDeaLicenseEntries((prev) => prev.slice(1));
+    if (deaLicenseFileInputRef.current) deaLicenseFileInputRef.current.value = "";
+  };
+
   const validateDeaLicenseField = async (field: "deaLicenseNumber" | "deaLicenseState" | "deaLicenseExpirationDate") => {
     if (formData.hasDeaLicense !== "Yes") return;
     try {
@@ -216,6 +257,28 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   const validateForm = async () => {
     try {
       await schema.validate(formData, { abortEarly: false });
+      const newErrors: Record<string, string> = {};
+
+      if (formData.hasDeaLicense === "Yes") {
+        if (!deaLicenseDocument) {
+          newErrors.deaLicenseDocument = "License document is required";
+        }
+        deaLicenseEntries.forEach((entry, index) => {
+          if (!entry.deaLicenseNumber) newErrors[`deaLicenseEntries.${index}.deaLicenseNumber`] = "DEA License number is required";
+          if (!entry.deaLicenseState) newErrors[`deaLicenseEntries.${index}.deaLicenseState`] = "DEA License state is required";
+          if (!entry.deaLicenseExpirationDate) newErrors[`deaLicenseEntries.${index}.deaLicenseExpirationDate`] = "DEA License expiration date is required";
+          if (!entry.deaLicenseDocument) newErrors[`deaLicenseEntries.${index}.deaLicenseDocument`] = "License document is required";
+        });
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        const firstErrorPath = Object.keys(newErrors)[0];
+        const el = document.getElementById(firstErrorPath === "deaLicenseDocument" ? "deaLicenseDocument" : firstErrorPath);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return false;
+      }
+
       setErrors({});
       return true;
     } catch (err: any) {
@@ -223,11 +286,23 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       err.inner.forEach((e: any) => {
         if (e.path) newErrors[e.path] = e.message;
       });
+
+      if (formData.hasDeaLicense === "Yes") {
+        if (!deaLicenseDocument) newErrors.deaLicenseDocument = "License document is required";
+        deaLicenseEntries.forEach((entry, index) => {
+          if (!entry.deaLicenseNumber) newErrors[`deaLicenseEntries.${index}.deaLicenseNumber`] = "DEA License number is required";
+          if (!entry.deaLicenseState) newErrors[`deaLicenseEntries.${index}.deaLicenseState`] = "DEA License state is required";
+          if (!entry.deaLicenseExpirationDate) newErrors[`deaLicenseEntries.${index}.deaLicenseExpirationDate`] = "DEA License expiration date is required";
+          if (!entry.deaLicenseDocument) newErrors[`deaLicenseEntries.${index}.deaLicenseDocument`] = "License document is required";
+        });
+      }
+
       setErrors(newErrors);
-      const firstErrorPath = err.inner?.[0]?.path;
-      if (firstErrorPath) {
+      const firstErrorPath = err.inner?.[0]?.path || Object.keys(newErrors)[0];
+      const scrollId = firstErrorPath === "deaLicenseDocument" ? "deaLicenseDocument" : firstErrorPath;
+      if (scrollId) {
         setTimeout(() => {
-          const el = document.getElementById(firstErrorPath);
+          const el = document.getElementById(scrollId);
           el?.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 100);
       }
@@ -344,6 +419,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       }
       setSelectedImage(null);
       setDeaLicenseDocument(null);
+      setDeaLicenseEntries([]);
       setErrors({});
       setSpecialtySearchTerm("");
     }
@@ -381,10 +457,18 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     if (hasDeaLicense === "Yes" && !deaLicenseNumber) emptyFields.push("deaLicenseNumber");
     if (hasDeaLicense === "Yes" && !deaLicenseState) emptyFields.push("deaLicenseState");
     if (hasDeaLicense === "Yes" && !deaLicenseExpirationDate) emptyFields.push("deaLicenseExpirationDate");
+    if (hasDeaLicense === "Yes" && !deaLicenseDocument) emptyFields.push("deaLicenseDocument");
     if (!street1) emptyFields.push("street1");
     if (!city) emptyFields.push("city");
     if (!state) emptyFields.push("state");
     if (!postalCode) emptyFields.push("postalCode");
+
+    if (hasDeaLicense === "Yes") {
+      const entryIncomplete = deaLicenseEntries.some(
+        (e) => !e.deaLicenseNumber || !e.deaLicenseState || !e.deaLicenseExpirationDate || !e.deaLicenseDocument
+      );
+      if (entryIncomplete) emptyFields.push("deaLicenseEntry");
+    }
 
     if (emptyFields.length > 0) {
       console.log("⚠️ Form invalid - Empty fields:", emptyFields);
@@ -394,7 +478,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       console.log("✅ Form is valid - All fields filled");
       setIsFormValid(true);
     }
-  }, [formData]);
+  }, [formData, deaLicenseDocument, deaLicenseEntries]);
 
   // Debug button state
   useEffect(() => {
@@ -791,9 +875,9 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
             </div>
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4" id="deaLicenseDocument">
               <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                Upload License Document
+                Upload License Document <span className="text-red-600">*</span>
               </label>
               <div className="flex items-center rounded-lg border border-lightGray bg-white overflow-hidden">
                 <button
@@ -825,9 +909,174 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
                 type="file"
                 className="hidden"
                 accept=".pdf,application/pdf"
-                onChange={(e) => setDeaLicenseDocument(e.target.files?.[0] || null)}
+                onChange={(e) => {
+                  setDeaLicenseDocument(e.target.files?.[0] || null);
+                  if (errors.deaLicenseDocument) {
+                    setErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.deaLicenseDocument;
+                      return next;
+                    });
+                  }
+                }}
               />
+              {errors.deaLicenseDocument && (
+                <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">
+                  {errors.deaLicenseDocument}
+                </p>
+              )}
             </div>
+
+            {deaLicenseEntries.length > 0 && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={removeFirstDeaLicenseChunk}
+                  className="flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 font-medium"
+                  aria-label="Remove license entry"
+                >
+                  <TrashBinIcon width="12" height="12" fill="currentColor" />
+                  Remove
+                </button>
+              </div>
+            )}
+
+            {deaLicenseEntries.map((entry, index) => {
+              const entryError = (f: string) => errors[`deaLicenseEntries.${index}.${f}`];
+              const clearEntryError = (f: string) => {
+                const key = `deaLicenseEntries.${index}.${f}`;
+                if (errors[key]) {
+                  setErrors((prev) => {
+                    const next = { ...prev };
+                    delete next[key];
+                    return next;
+                  });
+                }
+              };
+              return (
+              <div key={index} className="space-y-4 mt-4">
+                <div className="flex items-start flex-col sm:flex-row gap-3 md:gap-5">
+                  <div className="w-full">
+                    <ThemeInput
+                      required
+                      label="DEA License"
+                      placeholder="Enter DEA License number"
+                      value={entry.deaLicenseNumber}
+                      onChange={(e) => {
+                        updateDeaLicenseEntry(index, "deaLicenseNumber", e.target.value);
+                        clearEntryError("deaLicenseNumber");
+                      }}
+                      error={!!entryError("deaLicenseNumber")}
+                      type="text"
+                    />
+                    {entryError("deaLicenseNumber") && (
+                      <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">{entryError("deaLicenseNumber")}</p>
+                    )}
+                  </div>
+                  <div className="w-full">
+                    <Dropdown
+                      label="State"
+                      placeholder="Select state"
+                      options={US_STATES}
+                      value={entry.deaLicenseState}
+                      onChange={(value) => {
+                        updateDeaLicenseEntry(index, "deaLicenseState", value);
+                        clearEntryError("deaLicenseState");
+                      }}
+                      required
+                      showSearch
+                      searchPlaceholder="Search states..."
+                      error={!!entryError("deaLicenseState")}
+                    />
+                    {entryError("deaLicenseState") && (
+                      <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">{entryError("deaLicenseState")}</p>
+                    )}
+                  </div>
+                  <div className="w-full">
+                    <ThemeInput
+                      required
+                      label="DEA License Expiration"
+                      type="text"
+                      value={entry.deaLicenseExpirationDate}
+                      onChange={(e) => {
+                        updateDeaLicenseEntry(index, "deaLicenseExpirationDate", formatDate(e.target.value));
+                        clearEntryError("deaLicenseExpirationDate");
+                      }}
+                      placeholder="MM-DD-YYYY (e.g., 01-15-2026)"
+                      maxLength={10}
+                      error={!!entryError("deaLicenseExpirationDate")}
+                    />
+                    {entryError("deaLicenseExpirationDate") && (
+                      <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">{entryError("deaLicenseExpirationDate")}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Upload License Document <span className="text-red-600">*</span></label>
+                  <div className="flex items-center rounded-lg border border-lightGray bg-white overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => deaLicenseEntryFileRefs.current[index]?.click()}
+                      className="cursor-pointer px-4 py-2.5 text-sm font-medium text-gray-700 border-r border-lightGray hover:bg-gray-50"
+                    >
+                      Choose file
+                    </button>
+                    <span className="flex-1 px-4 py-2.5 text-sm text-gray-900 truncate">
+                      {entry.deaLicenseDocument?.name || "No file chosen"}
+                    </span>
+                    {entry.deaLicenseDocument && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateDeaLicenseEntry(index, "deaLicenseDocument", null);
+                          const input = deaLicenseEntryFileRefs.current[index];
+                          if (input) input.value = "";
+                          clearEntryError("deaLicenseDocument");
+                        }}
+                        className="cursor-pointer p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                        aria-label="Remove file"
+                      >
+                        <CrossIcon width="18" height="18" fill="currentColor" />
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    ref={(el) => { deaLicenseEntryFileRefs.current[index] = el; }}
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => {
+                      updateDeaLicenseEntry(index, "deaLicenseDocument", e.target.files?.[0] || null);
+                      clearEntryError("deaLicenseDocument");
+                    }}
+                  />
+                  {entryError("deaLicenseDocument") && (
+                    <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">{entryError("deaLicenseDocument")}</p>
+                  )}
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => removeDeaLicenseEntry(index)}
+                    className="cursor-pointer flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 font-medium"
+                    aria-label="Remove license entry"
+                  >
+                    <TrashBinIcon width="12" height="12" fill="currentColor" />
+                    Remove
+                  </button>
+                </div>
+              </div>
+            );
+            })}
+
+            <button
+              type="button"
+              onClick={addDeaLicenseEntry}
+              className="mt-4 flex items-center gap-2 text-primary font-medium hover:underline cursor-pointer"
+            >
+              <PlusIcon width="20" height="20" />
+              Add New
+            </button>
         </div>
         )}
 
