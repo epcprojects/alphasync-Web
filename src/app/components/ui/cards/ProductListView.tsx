@@ -24,6 +24,9 @@ type ProductListViewProps = {
   onRowClick?: () => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
+  /** When true, disables Add to Shop / Change Customer Price (e.g. only RFO products can be ordered) */
+  orderButtonDisabled?: boolean;
+  orderButtonDisabledTooltip?: string;
 };
 
 export default function ProductListView({
@@ -33,6 +36,8 @@ export default function ProductListView({
   onRowClick,
   onRemoveFromSale,
   customPrice,
+  orderButtonDisabled = false,
+  orderButtonDisabledTooltip = "Only RFO products can be added to your shop.",
 }: ProductListViewProps) {
   const productId = product.originalId || String(product.id);
   const isMarkedUp = customPrice != null && customPrice !== undefined;
@@ -135,13 +140,21 @@ export default function ProductListView({
           </Tooltip>
         )}
 
-        <Tooltip content={isMarkedUp ? "Change Customer Price" : "Add to Shop"}>
+        <Tooltip
+          content={
+            orderButtonDisabled
+              ? orderButtonDisabledTooltip
+              : isMarkedUp
+                ? "Change Customer Price"
+                : "Add to Shop"
+          }
+        >
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onBtnClick?.(product.id);
+              if (!orderButtonDisabled) onBtnClick?.(product.id);
             }}
-            disabled={!onBtnClick}
+            disabled={!onBtnClick || orderButtonDisabled}
             className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label={isMarkedUp ? "Change Customer Price" : "Add to Shop"}
             type="button"

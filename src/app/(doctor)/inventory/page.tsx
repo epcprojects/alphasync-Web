@@ -519,11 +519,14 @@ function InventoryContent() {
                 const isMarkedUp =
                   originalProduct?.customPrice != null &&
                   originalProduct?.customPrice !== undefined;
+                // Only Alpha BioMed (RFO) products can be added to shop / ordered
+                const canOrder = originalProduct?.vendor === "Alpha BioMed";
                 return (
                   <ProductCard
                     key={product.originalId}
                     product={product}
                     customPrice={originalProduct?.customPrice}
+                    orderButtonDisabled={!canOrder}
                     onBtnClick={() => {
                       // Not marked up -> Add to Shop
                       // Marked up -> Change Customer Price
@@ -568,6 +571,8 @@ function InventoryContent() {
                 const originalProduct = productsData?.allProducts.allData?.find(
                   (p) => p.id === product.originalId,
                 );
+                // Only Alpha BioMed (RFO) products can be added to shop / ordered
+                const canOrder = originalProduct?.vendor === "Alpha BioMed";
 
                 return (
                   <ProductListView
@@ -577,6 +582,7 @@ function InventoryContent() {
                     }
                     product={product}
                     customPrice={originalProduct?.customPrice}
+                    orderButtonDisabled={!canOrder}
                     onToggleFavourite={() => {
                       handleToggleFavorite(product.originalId);
                     }}

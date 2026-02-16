@@ -31,6 +31,9 @@ interface ProductCardProps {
   onCardClick?: () => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
+  /** When true, disables Add to Shop / Change Customer Price (e.g. only RFO products can be ordered) */
+  orderButtonDisabled?: boolean;
+  orderButtonDisabledTooltip?: string;
 }
 
 export default function ProductCard({
@@ -39,6 +42,8 @@ export default function ProductCard({
   onCardClick,
   onRemoveFromSale,
   customPrice,
+  orderButtonDisabled = false,
+  orderButtonDisabledTooltip = "Only RFO products can be added to your shop.",
 }: ProductCardProps) {
   const productId = product.originalId || String(product.id);
   const isMarkedUp = customPrice != null && customPrice !== undefined;
@@ -105,20 +110,37 @@ export default function ProductCard({
                     </button>
                   </Tooltip>
                 )}
-                <ThemeButton
-                  label={
-                    isMarkedUp ? "Change Customer Price" : "Add to Shop"
-                  }
-                  icon={<InventoryIcon fill="#2862A9" />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onBtnClick?.(product.id);
-                  }}
-                  variant="outline"
-                  className="flex-1"
-                  heightClass="h-10 md:h-11"
-                  disabled={false}
-                />
+                {orderButtonDisabled ? (
+                  <Tooltip content={orderButtonDisabledTooltip}>
+                    <span className="flex-1 flex">
+                      <ThemeButton
+                        label={
+                          isMarkedUp ? "Change Customer Price" : "Add to Shop"
+                        }
+                        icon={<InventoryIcon fill="#2862A9" />}
+                        variant="outline"
+                        className="flex-1 pointer-events-none"
+                        heightClass="h-10 md:h-11"
+                        disabled
+                      />
+                    </span>
+                  </Tooltip>
+                ) : (
+                  <ThemeButton
+                    label={
+                      isMarkedUp ? "Change Customer Price" : "Add to Shop"
+                    }
+                    icon={<InventoryIcon fill="#2862A9" />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onBtnClick?.(product.id);
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                    heightClass="h-10 md:h-11"
+                    disabled={false}
+                  />
+                )}
 
                 <h2 className="text-gray-950 font-semibold text-sm md:text-lg lg:text-xl min-w-16 text-end">
                   {product.price}
