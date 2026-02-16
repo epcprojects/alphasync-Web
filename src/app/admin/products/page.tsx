@@ -386,13 +386,13 @@ function ProductsContent() {
 
       <div className="space-y-4">
         <div className="hidden sm:grid grid-cols-12 text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table">
-          <div className="col-span-3">
+          <div className="col-span-4">
             <h2>Product</h2>
           </div>
           <div className="col-span-2">
             <h2>Category</h2>
           </div>
-          <div className="col-span-2">
+          <div className="col-span-1">
             <h2>Form</h2>
           </div>
           <div className="col-span-2">
@@ -431,7 +431,7 @@ function ProductsContent() {
                 className="flex flex-col md:grid md:grid-cols-12 gap-2 mb-2 md:gap-4 px-3 py-4 bg-white rounded-xl shadow-table hover:shadow-lg transition-shadow cursor-pointer"
               >
                 {/* Product */}
-                <div className="md:col-span-3 flex items-center gap-3">
+                <div className="md:col-span-4 flex items-center gap-3">
                   <ProductImage
                     width={60}
                     height={60}
@@ -457,7 +457,7 @@ function ProductsContent() {
                 </div>
 
                 {/* Form */}
-                <div className="md:col-span-2 flex justify-between md:justify-start items-center">
+                <div className="md:col-span-1 flex justify-between md:justify-start items-center">
                   <span className="text-xs text-gray-500 md:hidden">Form</span>
                   <span className="text-sm text-gray-700">
                     {product.productForm}
