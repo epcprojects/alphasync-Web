@@ -20,7 +20,7 @@ import {
 import { useQuery, useMutation } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useRouter } from "next/navigation";
-import { ALL_PRODUCTS_INVENTORY, ALL_VENDORS } from "@/lib/graphql/queries";
+import { ALL_PRODUCTS_INVENTORY, ALL_VENDORS, ALL_CATEGORIES } from "@/lib/graphql/queries";
 import Tooltip from "@/app/components/ui/tooltip";
 import { SYNC_PRODUCTS, EXPORT_PRODUCTS } from "@/lib/graphql/mutations";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
@@ -85,9 +85,16 @@ function ProductsContent() {
 
   // GraphQL query to fetch vendors
   const { data: vendorsData } = useQuery<{ allVendors: string[] }>(ALL_VENDORS, {
-    fetchPolicy: "network-only",
+    fetchPolicy: "cache-and-network",
   });
   const vendors = vendorsData?.allVendors ?? [];
+
+  // GraphQL query to fetch categories
+  const { data: categoriesData } = useQuery<{ allCategories: string[] }>(
+    ALL_CATEGORIES,
+    { fetchPolicy: "cache-and-network" }
+  );
+  const categories = categoriesData?.allCategories ?? [];
 
   // Display "RFO" for "Alpha BioMed" on frontend; send actual value to backend
   const getVendorDisplayName = (vendor: string) =>
@@ -216,14 +223,6 @@ function ProductsContent() {
     }
   };
 
-  const orderStatuses = [
-    { label: "All Categories", value: null },
-    { label: "Blood", value: "Blood" },
-    { label: "Immunity", value: "Immunity" },
-    { label: "Recovery", value: "Recovery" },
-    { label: "Vial", value: "Vial" },
-  ];
-
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
@@ -284,25 +283,30 @@ function ProductsContent() {
           <div className="flex items-center gap-1 p-1 rounded-full sm:bg-transparent sm:p-0 sm:shadow-none bg-white w-full shadow-table">
             <Menu>
               <MenuButton className="inline-flex py-2 px-3 cursor-pointer whitespace-nowrap bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-                {orderStatuses.find((s) => s.value === selectedCategory)
-                  ?.label || "All Categories"}
+                {selectedCategory ?? "All Categories"}
                 <ArrowDownIcon fill="#717680" />
               </MenuButton>
 
               <MenuItems
                 transition
                 anchor="bottom end"
-                className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+                className={`min-w-32 md:min-w-44 z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0 h-60! overflow-y-auto`}
               >
-                {orderStatuses.map((status) => (
-                  <MenuItem key={status.label}>
+                <MenuItem>
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className="flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full"
+                  >
+                    All Categories
+                  </button>
+                </MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category}>
                     <button
-                      onClick={() => {
-                        setSelectedCategory(status.value);
-                      }}
-                      className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full`}
+                      onClick={() => setSelectedCategory(category)}
+                      className="flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full"
                     >
-                      {status.label}
+                      {category}
                     </button>
                   </MenuItem>
                 ))}
@@ -318,7 +322,7 @@ function ProductsContent() {
               <MenuItems
                 transition
                 anchor="bottom end"
-                className={`min-w-32 md:min-w-44 z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+                className={`min-w-32 md:min-w-44 z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0 max-h-60 overflow-y-auto`}
               >
                 <MenuItem>
                   <button
