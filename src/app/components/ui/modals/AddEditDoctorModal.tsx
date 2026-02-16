@@ -2,8 +2,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import AppModal from "./AppModal";
-import { DoctorIcon } from "@/icons";
-import { ImageUpload, GoogleAutocompleteInput } from "@/app/components";
+import { DoctorIcon, CrossIcon } from "@/icons";
+import { ImageUpload, GoogleAutocompleteInput, Dropdown } from "@/app/components";
 import ThemeInput from "../inputs/ThemeInput";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
 import * as Yup from "yup";
@@ -11,6 +11,7 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useMutation } from "@apollo/client/react";
 import { CREATE_INVITATION, UPDATE_USER } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
+import { US_STATES } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface AddEditDoctorModalProps {
@@ -35,7 +36,10 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     email: "",
     medicalLicense: "",
     specialty: "",
-    deaLicense: "No",
+    hasDeaLicense: "No",
+    deaLicenseNumber: "",
+    deaLicenseState: "",
+    deaLicenseExpirationDate: "",
     status: "Active",
     clinic: "",
     street1: "",
@@ -45,6 +49,8 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     postalCode: "",
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [deaLicenseDocument, setDeaLicenseDocument] = useState<File | null>(null);
+  const deaLicenseFileInputRef = React.useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isFormValid, setIsFormValid] = useState(false);
@@ -61,6 +67,49 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     medicalLicense: Yup.string().required("NPI Number is required"),
     specialty: Yup.string().required("Specialty is required"),
     status: Yup.string().oneOf(["Active", "Inactive"]).required(),
+    hasDeaLicense: Yup.string().oneOf(["Yes", "No"]).required(),
+    deaLicenseNumber: Yup.string().when("hasDeaLicense", {
+      is: "Yes",
+      then: (schema) => schema.required("DEA License number is required"),
+      otherwise: (schema) => schema.optional(),
+    }),
+    deaLicenseState: Yup.string().when("hasDeaLicense", {
+      is: "Yes",
+      then: (schema) => schema.required("DEA License state is required"),
+      otherwise: (schema) => schema.optional(),
+    }),
+    deaLicenseExpirationDate: Yup.string().when("hasDeaLicense", {
+      is: "Yes",
+      then: (schema) =>
+        schema
+          .required("DEA License expiration date is required")
+          .matches(
+            /^\d{2}-\d{2}-\d{4}$/,
+            "Date must be in format MM-DD-YYYY (e.g., 01-15-1990)"
+          )
+          .test("valid-date", "Please enter a valid date", (value) => {
+            if (!value) return false;
+            const [month, day, year] = value.split("-").map(Number);
+            const date = new Date(year, month - 1, day);
+            return (
+              date instanceof Date &&
+              !isNaN(date.getTime()) &&
+              date.getMonth() === month - 1 &&
+              date.getDate() === day &&
+              date.getFullYear() === year
+            );
+          })
+          .test("future-date", "Expiration date must be in the future", (value) => {
+            if (!value) return false;
+            const [month, day, year] = value.split("-").map(Number);
+            const date = new Date(year, month - 1, day);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            date.setHours(0, 0, 0, 0);
+            return date > today;
+          }),
+      otherwise: (schema) => schema.optional(),
+    }),
     street1: Yup.string().required("Street address is required"),
     street2: Yup.string().optional(),
     city: Yup.string().required("City is required"),
@@ -94,6 +143,18 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
   });
 
   const loading = createLoading || updateLoading;
+
+  // Format date to MM-DD-YYYY format
+  const formatDate = (value: string): string => {
+    const numbers = value.replace(/\D/g, "");
+    const limitedNumbers = numbers.slice(0, 8);
+    if (limitedNumbers.length === 0) return "";
+    if (limitedNumbers.length <= 2) return limitedNumbers;
+    if (limitedNumbers.length <= 4) {
+      return `${limitedNumbers.slice(0, 2)}-${limitedNumbers.slice(2)}`;
+    }
+    return `${limitedNumbers.slice(0, 2)}-${limitedNumbers.slice(2, 4)}-${limitedNumbers.slice(4)}`;
+  };
 
   // Format phone number to (XXX) XXX-XXXX format
   const formatPhoneNumber = (value: string): string => {
@@ -135,6 +196,23 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     setSelectedImage(file);
   };
 
+  const validateDeaLicenseField = async (field: "deaLicenseNumber" | "deaLicenseState" | "deaLicenseExpirationDate") => {
+    if (formData.hasDeaLicense !== "Yes") return;
+    try {
+      await schema.validateAt(field, formData);
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    } catch (err: unknown) {
+      setErrors((prev) => ({
+        ...prev,
+        [field]: (err as { message?: string })?.message || "Invalid value",
+      }));
+    }
+  };
+
   const validateForm = async () => {
     try {
       await schema.validate(formData, { abortEarly: false });
@@ -146,6 +224,13 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
         if (e.path) newErrors[e.path] = e.message;
       });
       setErrors(newErrors);
+      const firstErrorPath = err.inner?.[0]?.path;
+      if (firstErrorPath) {
+        setTimeout(() => {
+          const el = document.getElementById(firstErrorPath);
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
+      }
       return false;
     }
   };
@@ -155,8 +240,9 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
 
     if (valid) {
       try {
+        const { hasDeaLicense: _h, deaLicenseNumber: _n, deaLicenseState: _s, deaLicenseExpirationDate: _e, ...formDataForApi } = formData;
         const variables = {
-          ...formData,
+          ...formDataForApi,
           fullName: `${formData.firstName} ${formData.lastName}`.trim(),
           status: formData.status.toUpperCase(),
           image: selectedImage,
@@ -215,7 +301,10 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           email: initialData.email || "",
           medicalLicense: initialData.medicalLicense || "",
           specialty: initialData.specialty || "",
-          deaLicense: (initialData as { deaLicense?: string }).deaLicense === "Yes" ? "Yes" : "No",
+          hasDeaLicense: "No",
+          deaLicenseNumber: "",
+          deaLicenseState: "",
+          deaLicenseExpirationDate: "",
           status:
             initialData.status === "ACTIVE"
               ? "Active"
@@ -239,7 +328,10 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           email: "",
           medicalLicense: "",
           specialty: "",
-          deaLicense: "No",
+          hasDeaLicense: "No",
+          deaLicenseNumber: "",
+          deaLicenseState: "",
+          deaLicenseExpirationDate: "",
           status: "Active",
           clinic: "",
           street1: "",
@@ -251,6 +343,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
         setSelectedUser("");
       }
       setSelectedImage(null);
+      setDeaLicenseDocument(null);
       setErrors({});
       setSpecialtySearchTerm("");
     }
@@ -265,6 +358,10 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       medicalLicense,
       specialty,
       status,
+      hasDeaLicense,
+      deaLicenseNumber,
+      deaLicenseState,
+      deaLicenseExpirationDate,
       street1,
       city,
       state,
@@ -280,6 +377,10 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     if (!medicalLicense) emptyFields.push("medicalLicense");
     if (!specialty) emptyFields.push("specialty");
     if (!status) emptyFields.push("status");
+    if (!hasDeaLicense) emptyFields.push("hasDeaLicense");
+    if (hasDeaLicense === "Yes" && !deaLicenseNumber) emptyFields.push("deaLicenseNumber");
+    if (hasDeaLicense === "Yes" && !deaLicenseState) emptyFields.push("deaLicenseState");
+    if (hasDeaLicense === "Yes" && !deaLicenseExpirationDate) emptyFields.push("deaLicenseExpirationDate");
     if (!street1) emptyFields.push("street1");
     if (!city) emptyFields.push("city");
     if (!state) emptyFields.push("state");
@@ -542,9 +643,9 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
                 <input
                   type="radio"
                   value="Yes"
-                  name="deaLicense"
-                  checked={formData.deaLicense === "Yes"}
-                  onChange={(e) => handleChange("deaLicense", e.target.value)}
+                  name="hasDeaLicense"
+                  checked={formData.hasDeaLicense === "Yes"}
+                  onChange={(e) => handleChange("hasDeaLicense", e.target.value)}
                   className="w-5 h-5 text-primary border-gray-300 focus:ring-primary"
                 />
                 Yes
@@ -553,9 +654,9 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
                 <input
                   type="radio"
                   value="No"
-                  name="deaLicense"
-                  checked={(formData.deaLicense || "No") === "No"}
-                  onChange={(e) => handleChange("deaLicense", e.target.value)}
+                  name="hasDeaLicense"
+                  checked={(formData.hasDeaLicense || "No") === "No"}
+                  onChange={(e) => handleChange("hasDeaLicense", e.target.value)}
                   className="w-5 h-5 text-primary border-gray-300 focus:ring-primary"
                 />
                 No
@@ -598,6 +699,137 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
             )}
           </div>
         </div>
+
+        {formData.hasDeaLicense === "Yes" && (
+        <div className="bg-gray-100 p-3 rounded-lg space-y-4">
+          <div className="flex items-start flex-col sm:flex-row gap-3 md:gap-5">
+            <div className="w-full" id="deaLicenseNumber">
+              <ThemeInput
+                required={formData.hasDeaLicense === "Yes"}
+                label="DEA License"
+                placeholder="Enter DEA License number"
+                name="deaLicenseNumber"
+                error={!!errors.deaLicenseNumber}
+                id="deaLicenseNumber-input"
+                onChange={(e) => {
+                  handleChange("deaLicenseNumber", e.target.value);
+                  if (errors.deaLicenseNumber) {
+                    setErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.deaLicenseNumber;
+                      return next;
+                    });
+                  }
+                }}
+                onBlur={() => validateDeaLicenseField("deaLicenseNumber")}
+                type="text"
+                value={formData.deaLicenseNumber}
+              />
+              {errors.deaLicenseNumber && (
+                <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">
+                  {errors.deaLicenseNumber}
+                </p>
+              )}
+            </div>
+            <div className="w-full" id="deaLicenseState">
+              <Dropdown
+                label="State"
+                placeholder="Select state"
+                options={US_STATES}
+                value={formData.deaLicenseState}
+                onChange={(value) => {
+                  handleChange("deaLicenseState", value);
+                  if (errors.deaLicenseState) {
+                    setErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.deaLicenseState;
+                      return next;
+                    });
+                  }
+                }}
+                required={formData.hasDeaLicense === "Yes"}
+                error={!!errors.deaLicenseState}
+                showSearch
+                searchPlaceholder="Search states..."
+              />
+              {errors.deaLicenseState && (
+                <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">
+                  {errors.deaLicenseState}
+                </p>
+              )}
+            </div>
+            <div className="w-full" id="deaLicenseExpirationDate">
+              <ThemeInput
+                required={formData.hasDeaLicense === "Yes"}
+                label="DEA License Expiration"
+                type="text"
+                name="deaLicenseExpirationDate"
+                value={formData.deaLicenseExpirationDate}
+                className="bg-white!"
+                onChange={(e) => {
+                  const formatted = formatDate(e.target.value);
+                  handleChange("deaLicenseExpirationDate", formatted);
+                  if (errors.deaLicenseExpirationDate) {
+                    setErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.deaLicenseExpirationDate;
+                      return next;
+                    });
+                  }
+                }}
+                onBlur={() => validateDeaLicenseField("deaLicenseExpirationDate")}
+                placeholder="MM-DD-YYYY (e.g., 01-15-2026)"
+                maxLength={10}
+                error={!!errors.deaLicenseExpirationDate}
+                id="deaLicenseExpirationDate-input"
+              />
+              {errors.deaLicenseExpirationDate && (
+                <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">
+                  {errors.deaLicenseExpirationDate}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                Upload License Document
+              </label>
+              <div className="flex items-center rounded-lg border border-lightGray bg-white overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => deaLicenseFileInputRef.current?.click()}
+                  className="px-4 py-2.5 text-sm font-medium text-gray-700 border-r border-lightGray hover:bg-gray-50"
+                >
+                  Choose file
+                </button>
+                <span className="flex-1 px-4 py-2.5 text-sm text-gray-900 truncate">
+                  {deaLicenseDocument?.name || "No file chosen"}
+                </span>
+                {deaLicenseDocument && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeaLicenseDocument(null);
+                      if (deaLicenseFileInputRef.current) deaLicenseFileInputRef.current.value = "";
+                    }}
+                    className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                    aria-label="Remove file"
+                  >
+                    <CrossIcon width="18" height="18" fill="currentColor" />
+                  </button>
+                )}
+              </div>
+              <input
+                ref={deaLicenseFileInputRef}
+                type="file"
+                className="hidden"
+                accept=".pdf,application/pdf"
+                onChange={(e) => setDeaLicenseDocument(e.target.files?.[0] || null)}
+              />
+            </div>
+        </div>
+        )}
 
         <GoogleAutocompleteInput
           required

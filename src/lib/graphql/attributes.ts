@@ -58,6 +58,9 @@ export interface UserAttributes {
   clinic?: string;
   lastSignInAt?: string;
   medicalLicense?: string;
+  deaLicense?: string;
+  hasDeaLicense?: string;
+  deaLicenseNumber?: string;
   phoneNo?: string;
   rememberMe?: boolean;
   revokeAccess?: boolean;

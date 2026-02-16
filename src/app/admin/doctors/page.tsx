@@ -51,6 +51,8 @@ interface DoctorFormData {
   email?: string;
   medicalLicense?: string;
   specialty?: string;
+  hasDeaLicense?: string;
+  deaLicenseNumber?: string;
   status?: string;
 }
 
