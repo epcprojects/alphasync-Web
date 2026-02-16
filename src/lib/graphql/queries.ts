@@ -88,6 +88,12 @@ export const ALL_VENDORS = gql`
   }
 `;
 
+export const ALL_CATEGORIES = gql`
+  query AllCategories {
+    allCategories
+  }
+`;
+
 export const ALL_PRODUCTS_INVENTORY = gql`
   query AllProducts(
     $search: String
