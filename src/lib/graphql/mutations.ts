@@ -855,6 +855,7 @@ export const EXPORT_PRODUCTS = gql`
     $search: String
     $productType: String
     $category: String
+    $vendor: String
     $inStockOnly: Boolean
     $favoriteProducts: Boolean
     $markedUp: Boolean
@@ -866,6 +867,7 @@ export const EXPORT_PRODUCTS = gql`
         search: $search
         productType: $productType
         category: $category
+        vendor: $vendor
         inStockOnly: $inStockOnly
         favoriteProducts: $favoriteProducts
         markedUp: $markedUp
