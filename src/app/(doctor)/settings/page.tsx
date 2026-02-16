@@ -614,6 +614,7 @@ const Page = () => {
                           ? values.postalCode || null
                           : values.shippingPostalCode || null,
                         ...(selectedImage && { image: selectedImage }),
+                        
                       };
 
                       await updateDoctor({ variables });
@@ -1083,12 +1084,7 @@ const Page = () => {
                               />
                             </div>
                           </div>
-                          <MedicalLicensesSection
-                            values={values}
-                            handleChange={handleChange}
-                            setFieldValue={setFieldValue}
-                            States={States}
-                          />
+
                           {/* <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
                             <div className="col-span-12 md:col-span-4 lg:col-span-3">
                               <label
@@ -1171,7 +1167,12 @@ const Page = () => {
                           </div> */}
                         </>
                       )}
-
+                      <MedicalLicensesSection
+                        values={values}
+                        handleChange={handleChange}
+                        setFieldValue={setFieldValue}
+                        States={States}
+                      />
                       <div className="flex pt-3 md:pt-6 justify-end">
                         <ThemeButton
                           label={updateLoading ? "Saving..." : "Save Changes"}

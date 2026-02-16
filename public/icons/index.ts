@@ -115,6 +115,17 @@ import DisableProfileIcon from "./DisableProfileIcon";
 import PlusProfileIcon from "./PlusProfileIcon";
 import DollarCircleIcon from "./DollarCircleIcon";
 import CoinsIcon from "./CoinsIcon";
+import AdminManagersIcon from "./AdminManagersIcon";
+import AdminManagersFilledIcon from "./AdminManagersFilledIcon";
+import ViewEyeIcon from "./ViewEyeIcon";
+import ViewDoctorIcon from "./ViewDoctorIcon";
+import DisableAdminProfileIcon from "./DisableAdminProfileIcon";
+import KeyLeftIcon from "./KeyLeftIcon";
+import AssignDoctorIcon from "./AssignDoctorIcon";
+import OrdersFilledIcon from "./OrdersFilledIcon";
+import PdfIcon from "./PdfIcon";
+import FileDownloadIcon from "./FileDownloadIcon";
+import EyeViewIcon from "./EyeViewIcon";
 export {
     ShoppingCartRemoveIcon,
     MoreIcon,
@@ -232,5 +243,16 @@ export {
     DisableProfileIcon,
     PlusProfileIcon,
     DollarCircleIcon,
-    CoinsIcon
+    CoinsIcon,
+    AdminManagersIcon,
+    AdminManagersFilledIcon,
+    ViewEyeIcon,
+    ViewDoctorIcon,
+    DisableAdminProfileIcon,
+    KeyLeftIcon,
+    AssignDoctorIcon,
+    OrdersFilledIcon,
+    PdfIcon,
+    EyeViewIcon,
+    FileDownloadIcon,
 };

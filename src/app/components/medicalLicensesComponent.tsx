@@ -37,14 +37,14 @@ const MedicalLicensesSection: React.FC<Props> = ({
   const list: MedicalLicenseItem[] = values.medicalLicenses ?? [emptyLicense()];
 
   return (
-    <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
+    <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-start py-3 md:py-6 border-b border-b-gray-200">
       <div className="col-span-12 md:col-span-4 lg:col-span-3">
         <label className="text-xs md:text-sm text-gray-700 font-semibold">
           Medical Licenses
         </label>
       </div>
 
-      <div className="col-span-12 space-y-5 md:col-span-8 lg:col-span-8">
+      <div className="col-span-12 space-y-5 md:col-span-8 lg:col-span-9">
         {/* NPI is outside array (single field) */}
         <ThemeInput
           label="NPI Number"

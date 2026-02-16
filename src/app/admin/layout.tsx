@@ -9,6 +9,9 @@ import {
   DashboardIcon,
   SettingsIcon,
   AdminIcon,
+  AdminManagersIcon,
+  AdminManagersFilledIcon,
+  OrdersIcon,
 } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
@@ -54,9 +57,19 @@ const menuItems = [
     icon: AdminIcon,
   },
   {
+        label: "Managers",
+    href: "/admin/managers",
+    icon: AdminManagersIcon,
+  },
+  {
     label: "Products",
     href: "/admin/products",
     icon: ShoppingCartIcon,
+  },
+  {
+    label: "Orders",
+    href: "/admin/orders",
+    icon: OrdersIcon,
   },
   {
     label: "Training Videos",
@@ -70,7 +83,9 @@ const headings: Record<string, string> = {
   "/admin/dashboard": "Admin Dashboard",
   "/admin/doctors": "Trusted Peptide Solutions",
   "/admin/admins": "Admin Management",
+  "/admin/managers":"Trusted Peptide Solutions",
   "/admin/products": "Product Management",
+  "/admin/orders": "Orders",
   "/admin/training-videos": "Training Videos",
   "/admin/settings": "Settings",
 };
@@ -80,6 +95,7 @@ const noStatsRoutes = [
   "/admin/dashboard",
   "/admin/admins",
   "/admin/training-videos",
+  "/admin/orders"
 ];
 
 const numberFormatter = new Intl.NumberFormat("en-US");
@@ -167,6 +183,53 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       bgColor: "bg-orange-400",
     },
   ];
+  const ManagerStats = [
+             {
+      label: "Total Manager",
+      value: "0",
+      icon: (
+        <AdminManagersFilledIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-purple-500",
+    },
+    {
+      label: "Active Manager",
+      value: "0",
+      icon: (
+        <AdminManagersFilledIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-emerald-400",
+    },
+    {
+      label: "Inactive Manager",
+      value: "0",
+      icon: (
+        <AdminManagersFilledIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-pink-400",
+    },
+    {
+      label: "New This Month",
+      value: "0",
+      icon: (
+        <AdminManagersFilledIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-orange-400",
+    },
+  ];
+  const isManagerPage = /^\/admin\/managers/.test(pathname);
 
   return (
     <AdminRoute>
@@ -176,11 +239,12 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
           {!hideStats && (
             <DashboardStats
-              showUserName={pathname.startsWith("/orders") ? false : true}
+            showUserName={true}
+              // showUserName={pathname.startsWith("/orders") ? false : true}
               username={user?.fullName || "----"}
               heading={heading}
-              stats={stats}
-              showWelcome={showWelcome}
+              stats={isManagerPage ? ManagerStats : stats}
+              showWelcome={true}
             />
           )}
           {hideStats && (
@@ -202,6 +266,6 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         </div>
         <main className="px-2  pb-2">{children}</main>
       </div>
-    </AdminRoute>
+  </AdminRoute>
   );
 }
