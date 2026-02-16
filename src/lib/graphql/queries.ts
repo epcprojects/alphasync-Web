@@ -132,6 +132,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
         images
         inStock
         isFavorited
+        category
         priceRange
         primaryImage
         productType
@@ -151,7 +152,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
           endCount
           startCount
           tieredPrice
-        }  
+        }
       }
       count
       nextPage

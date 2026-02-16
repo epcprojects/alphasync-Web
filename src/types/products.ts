@@ -18,6 +18,7 @@ export interface AllProductsResponse {
       priceRange?: string;
       primaryImage?: string;
       productType?: string;
+      category?: string;
       shopifyId?: string;
       totalInventory?: number;
       vendor?: string;
@@ -119,7 +120,7 @@ export const transformGraphQLProduct = (
     originalId: product.id, // Store the original GraphQL ID
     title: product.title,
     description: product.description || "",
-    category: product.productType || "Peptide",
+    category: product.category || "---",
     stock: product.inStock ?? false,
     price: `$${priceValue.toFixed(2)}`,
     image: normalizedPrimaryImage,
