@@ -25,7 +25,7 @@ interface AdminDashboardResponse {
   adminDashboard: {
     totalDoctors: number;
     activeDoctors: number;
-    inactiveDoctors: number;
+    pendingDoctors: number;
     newDoctorsThisMonth: number;
   };
 }
@@ -149,10 +149,10 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       bgColor: "bg-emerald-400",
     },
     {
-      label: "Inactive Doctors",
+      label: "Pending Doctors",
       value: dashboardLoading
         ? "..."
-        : formatNumber(dashboardData?.adminDashboard?.inactiveDoctors),
+        : formatNumber(dashboardData?.adminDashboard?.pendingDoctors),
       icon: (
         <DashDoctor
           height={isMobile ? "16" : "32"}

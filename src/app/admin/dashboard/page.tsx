@@ -87,7 +87,7 @@ interface AdminDashboardResponse {
     salesAmountThisMonth: number;
     salesAmountPastMonth: number;
     newDoctorsThisMonth: number;
-    inactiveDoctors: number;
+    pendingDoctors: number;
     activeDoctors: number;
     topSellingProducts: TopSellingProduct[];
     topPerformingDoctors: TopPerformingDoctor[];
@@ -211,10 +211,10 @@ function DashboardContent() {
       bgColor: "bg-emerald-400",
     },
     {
-      label: "Inactive Doctors",
+      label: "Pending Doctors",
       value: dashboardLoading
         ? "..."
-        : formatNumber(dashboardData?.adminDashboard?.inactiveDoctors),
+        : formatNumber(dashboardData?.adminDashboard?.pendingDoctors),
       icon: (
         <DashDoctor
           height={isMobile ? "16" : "32"}
