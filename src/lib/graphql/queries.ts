@@ -82,6 +82,12 @@ export const ALL_PRODUCTS = gql`
     }
   }
 `;
+export const ALL_VENDORS = gql`
+  query AllVendors {
+    allVendors
+  }
+`;
+
 export const ALL_PRODUCTS_INVENTORY = gql`
   query AllProducts(
     $search: String
@@ -89,6 +95,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
     $perPage: Int
     $inStockOnly: Boolean
     $category: String
+    $vendor: String
     $favoriteProducts: Boolean
     $patientId: ID
     $markedUp: Boolean
@@ -100,6 +107,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
       perPage: $perPage
       inStockOnly: $inStockOnly
       category: $category
+      vendor: $vendor
       favoriteProducts: $favoriteProducts
       patientId: $patientId
       markedUp: $markedUp

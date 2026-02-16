@@ -20,7 +20,7 @@ import {
 import { useQuery, useMutation } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useRouter } from "next/navigation";
-import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
+import { ALL_PRODUCTS_INVENTORY, ALL_VENDORS } from "@/lib/graphql/queries";
 import Tooltip from "@/app/components/ui/tooltip";
 import { SYNC_PRODUCTS, EXPORT_PRODUCTS } from "@/lib/graphql/mutations";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
@@ -49,6 +49,7 @@ function ProductsContent() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [showOutOfStock, setShowOutOfStock] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedVendor, setSelectedVendor] = useState<string | null>(null);
   const [showEditModal, setEditModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<
     AllProductsResponse["allProducts"]["allData"][0] | null
@@ -77,6 +78,21 @@ function ProductsContent() {
     setCurrentPage(0);
   }, [selectedCategory]);
 
+  // Reset to first page when vendor filter changes
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [selectedVendor]);
+
+  // GraphQL query to fetch vendors
+  const { data: vendorsData } = useQuery<{ allVendors: string[] }>(ALL_VENDORS, {
+    fetchPolicy: "network-only",
+  });
+  const vendors = vendorsData?.allVendors ?? [];
+
+  // Display "RFO" for "Alpha BioMed" on frontend; send actual value to backend
+  const getVendorDisplayName = (vendor: string) =>
+    vendor === "Alpha BioMed" ? "RFO" : vendor;
+
   // GraphQL query to fetch products
   const { data, loading, error, refetch } = useQuery<AllProductsResponse>(
     ALL_PRODUCTS_INVENTORY,
@@ -88,12 +104,12 @@ function ProductsContent() {
         inStockOnly: showOutOfStock ? false : undefined,
         category:
           selectedCategory === null ? null : selectedCategory || undefined,
+        vendor: selectedVendor || undefined, // backend value (e.g. "Alpha BioMed"), not "RFO"
       },
       fetchPolicy: "network-only",
     },
   );
 
-  console.log("data", data);
   // GraphQL mutation for syncing products
   const [syncProducts] = useMutation<SyncProductsResponse>(SYNC_PRODUCTS);
 
@@ -145,6 +161,7 @@ function ProductsContent() {
           search: debouncedSearch || null,
           productType: null,
           category: selectedCategory || null,
+          vendor: selectedVendor || null,
           inStockOnly: showOutOfStock ? false : undefined,
           favoriteProducts: undefined,
           markedUp: undefined,
@@ -286,6 +303,38 @@ function ProductsContent() {
                       className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full`}
                     >
                       {status.label}
+                    </button>
+                  </MenuItem>
+                ))}
+              </MenuItems>
+            </Menu>
+
+            <Menu>
+              <MenuButton className="inline-flex py-2 px-3 cursor-pointer whitespace-nowrap bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm md:text-sm font-medium shadow-inner focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+                {selectedVendor ? getVendorDisplayName(selectedVendor) : "All Vendors"}
+                <ArrowDownIcon fill="#717680" />
+              </MenuButton>
+
+              <MenuItems
+                transition
+                anchor="bottom end"
+                className={`min-w-32 md:min-w-44 z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+              >
+                <MenuItem>
+                  <button
+                    onClick={() => setSelectedVendor(null)}
+                    className="flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full"
+                  >
+                    All Vendors
+                  </button>
+                </MenuItem>
+                {vendors.map((vendor) => (
+                  <MenuItem key={vendor}>
+                    <button
+                      onClick={() => setSelectedVendor(vendor)}
+                      className="flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full"
+                    >
+                      {getVendorDisplayName(vendor)}
                     </button>
                   </MenuItem>
                 ))}
