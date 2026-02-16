@@ -625,7 +625,7 @@ export const ADMIN_DASHBOARD = gql`
       salesAmountThisMonth
       salesAmountPastMonth
       newDoctorsThisMonth
-      inactiveDoctors
+      pendingDoctors
       activeDoctors
       topSellingProducts {
         productId
