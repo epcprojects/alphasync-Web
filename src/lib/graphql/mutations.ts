@@ -122,6 +122,7 @@ export const UPDATE_USER = gql`
     $state: String
     $postalCode: String
     $address: String
+    $deaLicensesAttributes: [DeaLicenseAttributes!]
   ) {
     updateUser(
       input: {
@@ -145,6 +146,7 @@ export const UPDATE_USER = gql`
           state: $state
           postalCode: $postalCode
           address: $address
+          deaLicensesAttributes: $deaLicensesAttributes
         }
       }
     ) {
