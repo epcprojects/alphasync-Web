@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import CustomToastContainer from "./components/ToastContainer";
+import SupportButton from "./components/SupportButton";
 import { GraphQLProvider } from "../lib/graphql/GraphQLProvider";
 import { ReduxProvider } from "@/lib/store/ReduxProvider";
 import Script from "next/script";
@@ -54,6 +55,7 @@ export default function RootLayout({
           <ReduxProvider>
             {children}
             <CustomToastContainer />
+            <SupportButton />
           </ReduxProvider>
         </GraphQLProvider>
         <Script
