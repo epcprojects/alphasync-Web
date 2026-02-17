@@ -600,6 +600,7 @@ function InventoryContent() {
                     customPrice={originalProduct?.customPrice}
                     orderButtonDisabled={!canOrder}
                     vendor={originalProduct?.vendor}
+                    pendingApproval={!canOrder}
                     onBtnClick={() => {
                       // Not marked up -> Add to My Store
                       // Marked up -> Change Customer Price
@@ -658,6 +659,7 @@ function InventoryContent() {
                     customPrice={originalProduct?.customPrice}
                     orderButtonDisabled={!canOrder}
                     vendor={originalProduct?.vendor}
+                    pendingApproval={!canOrder}
                     onToggleFavourite={() => {
                       handleToggleFavorite(product.originalId);
                     }}
@@ -721,6 +723,7 @@ function InventoryContent() {
                           customPrice={originalProduct?.customPrice}
                           orderButtonDisabled={!canOrder}
                           vendor={originalProduct?.vendor}
+                          pendingApproval={!canOrder}
                           onBtnClick={() => {
                             if (!originalProduct) {
                               showErrorToast("Product information is missing");
@@ -768,6 +771,7 @@ function InventoryContent() {
                           customPrice={originalProduct?.customPrice}
                           orderButtonDisabled={!canOrder}
                           vendor={originalProduct?.vendor}
+                          pendingApproval={!canOrder}
                           onToggleFavourite={() => handleToggleFavorite(product.originalId)}
                           onBtnClick={() => {
                             if (!originalProduct) {

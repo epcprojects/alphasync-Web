@@ -29,6 +29,8 @@ type ProductListViewProps = {
   orderButtonDisabledTooltip?: string;
   /** When not "Alpha BioMed", rx-placeholder is used as image fallback */
   vendor?: string | null;
+  /** When true, show "Pending approval" text (e.g. for non–Alpha BioMed products) */
+  pendingApproval?: boolean;
 };
 
 export default function ProductListView({
@@ -40,6 +42,7 @@ export default function ProductListView({
   customPrice,
   orderButtonDisabled = false,
   vendor,
+  pendingApproval = false,
   // orderButtonDisabledTooltip = "Only RUO products can be added to your shop.",
 }: ProductListViewProps) {
   const productId = product.originalId || String(product.id);
@@ -62,6 +65,11 @@ export default function ProductListView({
           />
         </div>
         <div>
+          {pendingApproval && (
+            <span className="inline-block rounded-full bg-amber-100 border border-amber-300 py-0.5 px-2 text-amber-800 font-medium text-xs mb-1">
+              Pending approval
+            </span>
+          )}
           <h3 className="font-semibold sm:line-clamp-1 text-gray-800 text-sm md:text-base">
             {product.title}
           </h3>
