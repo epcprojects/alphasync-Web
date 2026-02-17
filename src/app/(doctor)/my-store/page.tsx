@@ -17,7 +17,7 @@ import type { AllProductsResponse } from "@/types/products";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { addItem } from "@/lib/store/slices/cartSlice";
 import { ADD_TO_CART, MARK_PRODUCT_NOT_FOR_SALE } from "@/lib/graphql/mutations";
-import { showErrorToast } from "@/lib/toast";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 const Page = () => {
   const isMobile = useIsMobile();
@@ -254,6 +254,7 @@ const Page = () => {
                       quantity: payload.qty,
                     },
                   });
+                  showSuccessToast("Added to cart");
                 }}
                 onCardClick={() => {
                   router.push(`/inventory/${product.originalId}`);
