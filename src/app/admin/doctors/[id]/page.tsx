@@ -1,69 +1,149 @@
 "use client";
+
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { KeyLeftIcon } from "@/icons";
 import React from "react";
-import { DoctorProfileHeaderCard } from "@/app/components";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useQuery } from "@apollo/client/react";
+import { DoctorProfileHeaderCard, Loader } from "@/app/components";
 import DoctorProfileLicensesCard, {
   itemsArray,
 } from "@/app/components/ui/cards/DoctorProfileLicensesCard";
+import { FETCH_CUSTOMER } from "@/lib/graphql/queries";
+import { UserAttributes } from "@/lib/graphql/attributes";
+
+interface FetchUserResponse {
+  fetchUser: {
+    user: UserAttributes;
+  };
+}
+
+function getDocNameFromUrl(url: string | undefined): string {
+  if (!url) return "License document";
+  const path = url.split("?")[0];
+  const segments = path.split("/").filter(Boolean);
+  const last = segments[segments.length - 1];
+  return last || "License document";
+}
+
+function formatExpirationDate(dateStr: string | undefined): string {
+  if (!dateStr) return "—";
+  const parts = dateStr.split(/[-/]/);
+  if (parts.length === 3) {
+    const [a, b, c] = parts;
+    if (a?.length === 4) return `${b}-${c}-${a}`;
+    return `${a}-${b}-${c}`;
+  }
+  return dateStr;
+}
+
+function formatDob(dateStr: string | undefined): string {
+  if (!dateStr) return "—";
+  const parts = dateStr.split(/[-/]/);
+  if (parts.length === 3) {
+    const [a, b, c] = parts;
+    if (a?.length === 4) return `${b}/${c}/${a}`;
+    return `${a}/${b}/${c}`;
+  }
+  return dateStr;
+}
 
 const Page = () => {
   const isMobile = useIsMobile();
+  const params = useParams();
+  const router = useRouter();
+  const id = params?.id as string | undefined;
 
-  const licenceItemsArray: itemsArray[] = [
-    {
-      deaLicenseText: "CS4861375",
-      stateText: "California",
-      expirationDateText: "14-08-2030",
-      documentName: "MD-123456.pdf",
-      documentSize: "200 KB",
-      buttonsState: "pending",
-      documentFormat: "pdf",
-      onConfirm: () => console.log("Approved"),
-      onCancel: () => console.log("Disapproved"),
-      ondownload: () => console.log("Downloaded"),
-      onView: () => console.log("Viewed"),
-    },
-    {
-      deaLicenseText: "CS4861375",
-      stateText: "California",
-      expirationDateText: "14-08-2030",
-      documentName: "MD-123456.pdf",
-      documentSize: "200 KB",
-      buttonsState: "approved",
-      documentFormat: "pdf",
-      onConfirm: () => console.log("Approved"),
-      onCancel: () => console.log("Disapproved"),
-      ondownload: () => console.log("Downloaded"),
-      onView: () => console.log("Viewed"),
-    },
-    {
-      deaLicenseText: "CS4861375",
-      stateText: "California",
-      expirationDateText: "14-08-2030",
-      documentName: "MD-123456.pdf",
-      documentSize: "200 KB",
-      buttonsState: "disapproved",
-      documentFormat: "pdf",
-      onConfirm: () => console.log("Approved"),
-      onCancel: () => console.log("Disapproved"),
-      ondownload: () => console.log("Downloaded"),
-      onView: () => console.log("Viewed"),
-    },
-  ];
+  const { data, loading, error } = useQuery<FetchUserResponse>(FETCH_CUSTOMER, {
+    variables: { id: id ?? "" },
+    skip: !id,
+    fetchPolicy: "network-only",
+  });
+
+  const user = data?.fetchUser?.user;
+
+  const licenceItemsArray: itemsArray[] =
+    (user?.deaLicenses ?? []).map((lic) => {
+      const licenseUrl = lic.licenseUrl
+        ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ?? ""}/${lic.licenseUrl}`
+        : undefined;
+      return {
+        deaLicenseText: lic.deaLicense ?? "—",
+        stateText: lic.state ?? "—",
+        expirationDateText: formatExpirationDate(lic.expirationDate),
+        documentName: getDocNameFromUrl(lic.licenseUrl),
+        documentSize: "PDF",
+        buttonsState: "approved" as const,
+        documentFormat: "pdf",
+        onView: licenseUrl
+          ? () => window.open(licenseUrl, "_blank", "noopener,noreferrer")
+          : undefined,
+        ondownload: licenseUrl
+          ? () => {
+              const link = document.createElement("a");
+              link.href = licenseUrl;
+              link.download = getDocNameFromUrl(lic.licenseUrl);
+              link.target = "_blank";
+              link.rel = "noopener noreferrer";
+              link.click();
+            }
+          : undefined,
+      };
+    }) ?? [];
+
+  if (!id) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <p className="text-gray-600">Invalid doctor ID.</p>
+        <Link href="/admin/doctors" className="text-primary hover:underline">
+          Back to Doctors
+        </Link>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto min-h-[200px] items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <p className="text-red-600">
+          {error?.message ?? "Doctor not found."}
+        </p>
+        <Link href="/admin/doctors" className="text-primary hover:underline">
+          Back to Doctors
+        </Link>
+      </div>
+    );
+  }
+
+  const specialtyDisplay = user.specialty
+    ? user.specialty.replace(/_/g, " ")
+    : "—";
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
         <div className="flex items-center gap-2 md:gap-4">
-          <span className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] md:w-11 md:h-11">
+          <Link
+            href="/admin/doctors"
+            className="flex items-center justify-center rounded-full shrink-0 bg-white w-8 h-8 shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.1),_0px_2px_4px_-1px_rgba(0,0,0,0.06)] md:w-11 md:h-11 hover:bg-gray-50"
+            aria-label="Back to doctors"
+          >
             <KeyLeftIcon
               height={isMobile ? "16" : "24"}
               width={isMobile ? "16" : "24"}
             />
-          </span>
-          <div className="">
-            <h2 className="lg:w-full text-black font-semibold text-base md:text-xl ">
+          </Link>
+          <div>
+            <h2 className="lg:w-full text-black font-semibold text-base md:text-xl">
               Doctor Profile
             </h2>
           </div>
@@ -71,15 +151,20 @@ const Page = () => {
       </div>
       <div className="bg-white rounded-xl">
         <DoctorProfileHeaderCard
-          name={"John Smitt"}
-          email={"john.smith@email.com"}
-          phone={"(555) 123-4567"}
-          statusActive={true}
-          speciality={"Cardiology"}
-          npiNumber={"MD123456"}
-          dob={"12/09/2003"}
-          oneditProfile={() => console.log("on edit")}
-          ondeleteProfile={() => console.log("on delete")}
+          name={user.fullName ?? "—"}
+          email={user.email ?? "—"}
+          phone={user.phoneNo ?? "—"}
+          statusActive={user.status?.toUpperCase() === "ACTIVE"}
+          speciality={specialtyDisplay}
+          npiNumber={user.npiNumber ?? "—"}
+          dob={formatDob(user.dateOfBirth)}
+          imageUrl={
+            user.imageUrl
+              ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ?? ""}/${user.imageUrl}`
+              : undefined
+          }
+          oneditProfile={() => {}}
+          ondeleteProfile={() => {}}
         />
 
         <div className="p-3 lg:p-6">
@@ -88,12 +173,16 @@ const Page = () => {
               Medical Licenses
             </p>
             <div className="flex flex-col lg:col-span-9 gap-5">
-              {licenceItemsArray.map((item, index) => (
-                <DoctorProfileLicensesCard
-                  licenseItemsArray={item}
-                  key={index}
-                />
-              ))}
+              {licenceItemsArray.length === 0 ? (
+                <p className="text-gray-500 text-sm">No DEA licenses on file.</p>
+              ) : (
+                licenceItemsArray.map((item, index) => (
+                  <DoctorProfileLicensesCard
+                    licenseItemsArray={item}
+                    key={index}
+                  />
+                ))
+              )}
             </div>
           </div>
         </div>

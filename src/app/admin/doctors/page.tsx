@@ -129,6 +129,12 @@ function DoctorContent() {
     setCurrentPage(selectedPage);
   };
 
+  const router = useRouter();
+
+  const handleDoctorClick = (doctor: UserAttributes) => {
+    if (doctor?.id != null) router.push(`/admin/doctors/${doctor.id}`);
+  };
+
   const handleEdit = (doctor: DoctorFormData) => {
     setEditDoctor(doctor);
     setIsModalOpen(true);
@@ -247,7 +253,6 @@ function DoctorContent() {
   };
 
   const isMobile = useIsMobile();
-  const router = useRouter();
 
   // Show error state
 
@@ -398,6 +403,7 @@ function DoctorContent() {
                       <DoctorListView
                         key={doctor.id}
                         doctor={doctor}
+                        onDoctorClick={handleDoctorClick}
                         onEditDoctor={() => handleEdit(doctor)}
                         onDeleteDoctor={() => handleDelete(doctor)}
                         onResendInvitation={() =>
@@ -467,6 +473,7 @@ function DoctorContent() {
                       <DoctorListView
                         key={doctor.id}
                         doctor={doctor}
+                        onDoctorClick={handleDoctorClick}
                         onEditDoctor={() => handleEdit(doctor)}
                         onDeleteDoctor={() => handleDelete(doctor)}
                         onResendInvitation={() =>
@@ -536,6 +543,7 @@ function DoctorContent() {
                       <DoctorListView
                         key={doctor.id}
                         doctor={doctor}
+                        onDoctorClick={handleDoctorClick}
                         onEditDoctor={() => handleEdit(doctor)}
                         onDeleteDoctor={() => handleDelete(doctor)}
                         onResendInvitation={() =>
