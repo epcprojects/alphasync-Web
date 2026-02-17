@@ -217,10 +217,10 @@ const Page = () => {
     return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6)}`;
   };
 
-  // Mark that we've shown the profile-complete page once (so we don't redirect them again if they leave without adding DEA)
+  // Consume first-login flag so we don't redirect them to profile-complete again (only on first login from link)
   useEffect(() => {
     if (user?.id && user?.userType?.toLowerCase() === "doctor") {
-      Cookies.set("profile_complete_shown", "1", { expires: 365 });
+      Cookies.remove("show_profile_complete");
     }
   }, [user?.id, user?.userType]);
 

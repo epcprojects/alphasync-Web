@@ -12,6 +12,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
+import Cookies from "js-cookie";
 import { ACCEPT_INVITATION } from "@/lib/graphql/mutations";
 import { showErrorToast } from "@/lib/toast";
 
@@ -69,6 +70,13 @@ function Content() {
       return "/login?type=patient";
     }
     return "/login";
+  };
+
+  const goToLogin = () => {
+    if (isDoctor) {
+      Cookies.set("show_profile_complete", "1", { expires: 1 / 24 });
+    }
+    router.push(getLoginRedirect());
   };
 
   // Auto-run mutation when doctor=false and admin=false - only once
@@ -218,7 +226,7 @@ function Content() {
               </div>
               <ThemeButton
                 label="Go to Login"
-                onClick={() => router.push(getLoginRedirect())}
+                onClick={goToLogin}
                 heightClass="h-11"
                 className="w-full"
               />
@@ -241,7 +249,7 @@ function Content() {
         onClose={() => setIsModalOpen(false)}
         onClick={() => {
           setIsModalOpen(false);
-          router.push(getLoginRedirect());
+          goToLogin();
         }}
         buttonLabel="Login Now"
         email={""}
