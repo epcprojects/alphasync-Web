@@ -18,15 +18,16 @@ const formatPrice = (value: number | string): string => {
 
 const formatDate = (dateString: string | null | undefined) => {
   if (!dateString) return "—";
-  return new Date(dateString).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "UTC",
-    timeZoneName: "short",
-  });
+  const d = new Date(dateString.endsWith("Z") ? dateString : `${dateString.replace(/Z?$/, "")}Z`);
+  if (Number.isNaN(d.getTime())) return "—";
+  const month = d.toLocaleString("en-US", { month: "short" });
+  const day = d.getDate();
+  const year = d.getFullYear();
+  const h = d.getHours();
+  const h12 = h % 12 || 12;
+  const ampm = h < 12 ? "AM" : "PM";
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${month} ${day}, ${year} at ${h12}:${min} ${ampm}`;
 };
 
 /** Order details passed from admin orders list (from ADMIN_ORDERS query). */
