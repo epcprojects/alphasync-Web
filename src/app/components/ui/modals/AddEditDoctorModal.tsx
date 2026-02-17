@@ -3,11 +3,7 @@
 import React, { useEffect, useState } from "react";
 import AppModal, { ModalPosition } from "./AppModal";
 import { DoctorIcon } from "@/icons";
-import {
-  ImageUpload,
-  GoogleAutocompleteInput,
-  MedicalLicensesSection,
-} from "@/app/components";
+import { ImageUpload, GoogleAutocompleteInput, Dropdown } from "@/app/components";
 import ThemeInput from "../inputs/ThemeInput";
 import SelectGroupDropdown from "../dropdowns/selectgroupDropdown";
 import * as Yup from "yup";
@@ -15,6 +11,7 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useMutation } from "@apollo/client/react";
 import { CREATE_INVITATION, UPDATE_USER } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
+import { US_STATES } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface AddEditDoctorModalProps {
@@ -649,7 +646,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
         <div>
           <MedicalLicensesSection
             handleChange={() => {}}
-            States={[]}
+            States={US_STATES}
             setFieldValue={() => {}}
             values={[]}
           />

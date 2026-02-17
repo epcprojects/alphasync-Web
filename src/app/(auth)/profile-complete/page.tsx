@@ -11,6 +11,7 @@ import {
 } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { US_STATES } from "@/lib/constants";
 import { Switch } from "@headlessui/react";
 import React, { useState } from "react";
 
@@ -330,7 +331,7 @@ const Page = () => {
             </div>
 
             <MedicalLicensesSection
-              States={[]}
+              States={US_STATES}
               handleChange={() => {}}
               setFieldValue={() => {}}
               values={[]}

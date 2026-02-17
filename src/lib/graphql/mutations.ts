@@ -242,6 +242,7 @@ export const UPDATE_DOCTOR = gql`
     $shippingCity: String
     $shippingStreet2: String
     $shippingStreet1:String
+    $deaLicensesAttributes: [DeaLicenseAttributes!]
   ) {
     updateUser(
       input: {
@@ -268,6 +269,7 @@ export const UPDATE_DOCTOR = gql`
           shippingCity: $shippingCity
           shippingStreet2: $shippingStreet2
           shippingStreet1: $shippingStreet1
+          deaLicensesAttributes: $deaLicensesAttributes
         }
       }
     ) {
