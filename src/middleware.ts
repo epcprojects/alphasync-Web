@@ -15,15 +15,15 @@ export function middleware(request: NextRequest) {
   let userType: string | null = null;
   let isAddressVerified = false;
 
-  // if (userCookie) {
-  //   try {
-  //     parsedUser = JSON.parse(userCookie);
-  //     userType = parsedUser?.userType?.toLowerCase() || null;
-  //     isAddressVerified = Boolean(parsedUser?.addressVerified);
-  //   } catch (err) {
-  //     console.error("Invalid user cookie:", err);
-  //   }
-  // }
+  if (userCookie) {
+    try {
+      parsedUser = JSON.parse(userCookie);
+      userType = parsedUser?.userType?.toLowerCase() || null;
+      isAddressVerified = Boolean(parsedUser?.addressVerified);
+    } catch (err) {
+      console.error("Invalid user cookie:", err);
+    }
+  }
 
   // Public routes (accessible without login)
   const publicRoutes = [
@@ -46,7 +46,6 @@ export function middleware(request: NextRequest) {
     "/admin/dashboard",
   ];
   const doctorRoutes = [
-    "/shop",
     "/inventory",
     "/customers",
     "/orders",
@@ -69,85 +68,85 @@ export function middleware(request: NextRequest) {
   // All protected routes
   const protectedRoutes = [...adminRoutes, ...doctorRoutes, ...customerRoutes];
 
-  // // 1️⃣ If token not present and user tries to access protected route
-  // if (!token && protectedRoutes.some((route) => pathname.startsWith(route))) {
-  //   return NextResponse.redirect(new URL("/login", request.url));
-  // }
+  // 1️⃣ If token not present and user tries to access protected route
+  if (!token && protectedRoutes.some((route) => pathname.startsWith(route))) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
 
-  // // 2️⃣ If token exists and user tries to access public routes (e.g. login)
-  // if (token && isPublicRoute) {
-  //   if (
-  //     (userType === "customer" || userType === "patient") &&
-  //     !isAddressVerified
-  //   ) {
-  //     return NextResponse.redirect(new URL("/verify-info", request.url));
-  //   }
+  // 2️⃣ If token exists and user tries to access public routes (e.g. login)
+  if (token && isPublicRoute) {
+    if (
+      (userType === "customer" || userType === "patient") &&
+      !isAddressVerified
+    ) {
+      return NextResponse.redirect(new URL("/verify-info", request.url));
+    }
 
-  //   // Redirect logged-in user to their dashboard
-  //   if (userType === "admin") {
-  //     return NextResponse.redirect(new URL("/admin/doctors", request.url));
-  //   } else if (userType === "doctor") {
-  //     return NextResponse.redirect(new URL("/shop", request.url));
-  //   } else if (userType === "customer" || userType === "patient") {
-  //     return NextResponse.redirect(new URL("/pending-payments", request.url));
-  //   } else {
-  //     return NextResponse.redirect(new URL("/pending-payments", request.url));
-  //   }
-  // }
+    // Redirect logged-in user to their dashboard
+    if (userType === "admin") {
+      return NextResponse.redirect(new URL("/admin/doctors", request.url));
+    } else if (userType === "doctor") {
+      return NextResponse.redirect(new URL("/inventory", request.url));
+    } else if (userType === "customer" || userType === "patient") {
+      return NextResponse.redirect(new URL("/pending-payments", request.url));
+    } else {
+      return NextResponse.redirect(new URL("/pending-payments", request.url));
+    }
+  }
 
-  // // 3️⃣ Role-based access control for protected routes
-  // if (token && protectedRoutes.some((route) => pathname.startsWith(route))) {
-  //   if (
-  //     (userType === "customer" || userType === "patient") &&
-  //     !isAddressVerified &&
-  //     !pathname.startsWith("/verify-info")
-  //   ) {
-  //     return NextResponse.redirect(new URL("/verify-info", request.url));
-  //   }
+  // 3️⃣ Role-based access control for protected routes
+  if (token && protectedRoutes.some((route) => pathname.startsWith(route))) {
+    if (
+      (userType === "customer" || userType === "patient") &&
+      !isAddressVerified &&
+      !pathname.startsWith("/verify-info")
+    ) {
+      return NextResponse.redirect(new URL("/verify-info", request.url));
+    }
 
-  //   // Check if user is trying to access routes they're not authorized for
-  //   if (
-  //     userType === "admin" &&
-  //     doctorRoutes.some((route) => pathname.startsWith(route))
-  //   ) {
-  //     return NextResponse.redirect(new URL("/admin/doctors", request.url));
-  //   }
+    // Check if user is trying to access routes they're not authorized for
+    if (
+      userType === "admin" &&
+      doctorRoutes.some((route) => pathname.startsWith(route))
+    ) {
+      return NextResponse.redirect(new URL("/admin/doctors", request.url));
+    }
 
-  //   if (
-  //     userType === "admin" &&
-  //     customerRoutes.some((route) => pathname.startsWith(route))
-  //   ) {
-  //     return NextResponse.redirect(new URL("/admin/doctors", request.url));
-  //   }
+    if (
+      userType === "admin" &&
+      customerRoutes.some((route) => pathname.startsWith(route))
+    ) {
+      return NextResponse.redirect(new URL("/admin/doctors", request.url));
+    }
 
-  //   if (
-  //     userType === "doctor" &&
-  //     adminRoutes.some((route) => pathname.startsWith(route))
-  //   ) {
-  //     return NextResponse.redirect(new URL("/shop", request.url));
-  //   }
+    if (
+      userType === "doctor" &&
+      adminRoutes.some((route) => pathname.startsWith(route))
+    ) {
+      return NextResponse.redirect(new URL("/inventory", request.url));
+    }
 
-  //   if (
-  //     userType === "doctor" &&
-  //     customerRoutes.some((route) => pathname.startsWith(route))
-  //   ) {
-  //     return NextResponse.redirect(new URL("/shop", request.url));
-  //   }
+    if (
+      userType === "doctor" &&
+      customerRoutes.some((route) => pathname.startsWith(route))
+    ) {
+      return NextResponse.redirect(new URL("/inventory", request.url));
+    }
 
-  //   if (
-  //     (userType === "customer" || userType === "patient") &&
-  //     adminRoutes.some((route) => pathname.startsWith(route))
-  //   ) {
-  //     return NextResponse.redirect(new URL("/pending-payments", request.url));
-  //   }
+    if (
+      (userType === "customer" || userType === "patient") &&
+      adminRoutes.some((route) => pathname.startsWith(route))
+    ) {
+      return NextResponse.redirect(new URL("/pending-payments", request.url));
+    }
 
-  //   if (
-  //     (userType === "customer" || userType === "patient") &&
-  //     doctorRoutes.some((route) => pathname.startsWith(route))
-  //   ) {
-  //     return NextResponse.redirect(new URL("/pending-payments", request.url));
-  //   }
-  // }
+    if (
+      (userType === "customer" || userType === "patient") &&
+      doctorRoutes.some((route) => pathname.startsWith(route))
+    ) {
+      return NextResponse.redirect(new URL("/pending-payments", request.url));
+    }
+  }
 
   // 4️⃣ Otherwise, allow access
   return NextResponse.next();
@@ -161,7 +160,6 @@ export const config = {
     "/forgot",
     "/new-password",
     "/accept-invitation",
-    "/shop/:path*",
     "/inventory/:path*",
     "/admin/:path*",
     "/customers/:path*",

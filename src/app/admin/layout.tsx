@@ -232,40 +232,40 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const isManagerPage = /^\/admin\/managers/.test(pathname);
 
   return (
-    // <AdminRoute>
-    <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
-      <div className="px-2 py-3 md:p-4 lg:p-5 md:pb-6 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-[20px] !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
-        <Header menuItems={menuItems} />
+    <AdminRoute>
+      <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
+        <div className="px-2 py-3 md:p-4 lg:p-5 md:pb-6 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-[20px] !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
+          <Header menuItems={menuItems} />
 
-        {!hideStats && (
-          <DashboardStats
-            showUserName={true}
-            // showUserName={pathname.startsWith("/orders") ? false : true}
-            username={user?.fullName || "----"}
-            heading={heading}
-            stats={isManagerPage ? ManagerStats : stats}
-            showWelcome={true}
-          />
-        )}
-        {hideStats && (
-          <div className="flex items-center flex-col">
-            {hideStats && (
-              <>
-                {showWelcome && (
-                  <h2 className="text-white font-normal mb-4 text-base md:text-2xl">
-                    👋 Welcome {user?.fullName || "----"},
+          {!hideStats && (
+            <DashboardStats
+              showUserName={true}
+              // showUserName={pathname.startsWith("/orders") ? false : true}
+              username={user?.fullName || "----"}
+              heading={heading}
+              stats={isManagerPage ? ManagerStats : stats}
+              showWelcome={true}
+            />
+          )}
+          {hideStats && (
+            <div className="flex items-center flex-col">
+              {hideStats && (
+                <>
+                  {showWelcome && (
+                    <h2 className="text-white font-normal mb-4 text-base md:text-2xl">
+                      👋 Welcome {user?.fullName || "----"},
+                    </h2>
+                  )}
+                  <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
+                    {heading}
                   </h2>
-                )}
-                <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
-                  {heading}
-                </h2>
-              </>
-            )}
-          </div>
-        )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        <main className="px-2  pb-2">{children}</main>
       </div>
-      <main className="px-2  pb-2">{children}</main>
-    </div>
-    // </AdminRoute>
+    </AdminRoute>
   );
 }

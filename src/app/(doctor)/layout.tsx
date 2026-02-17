@@ -1,7 +1,12 @@
 "use client";
 import React, { ReactNode } from "react";
 import { useQuery, useMutation } from "@apollo/client";
-import { DashboardStats, Header, DoctorRoute, TrainingVideosBlockingPage } from "../components";
+import {
+  DashboardStats,
+  Header,
+  DoctorRoute,
+  TrainingVideosBlockingPage,
+} from "../components";
 import {
   SyrupIcon,
   InventoryIcon,
@@ -55,7 +60,7 @@ const menuItems = [
   { label: "Customers", href: "/customers", icon: CustomerIcon },
   { label: "Orders", href: "/orders", icon: OrdersIcon },
   { label: "Training Videos", href: "/training-videos", icon: DashboardIcon },
-  {label: "Organization", href:"/organization", icon: OrganizationIcon},
+  { label: "Organization", href: "/organization", icon: OrganizationIcon },
   // { label: "My Clinic", href: "/clinic", icon: DeliveryBoxIcon },
 
   {
@@ -78,7 +83,7 @@ const headings: Record<string, string> = {
   "/settings": "Settings",
   "/notifications": "Notifications",
   "/accounting": "Peptide Accounting",
-  "/organization": "Elevated Healthcare Solutions"
+  "/organization": "Elevated Healthcare Solutions",
 };
 
 const subHeadings: Record<string, string> = {
@@ -123,7 +128,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
   const pathname = usePathname();
-  
+
   // Check if doctor hasn't viewed all videos (allow access to training-videos page)
   const isDoctor = user?.userType?.toLowerCase() === "doctor";
   const hasNotViewedAllVideos = isDoctor && user?.hasViewedAllVideos === false;
@@ -231,7 +236,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
               setUser({
                 ...user,
                 hasViewedAllVideos: true,
-              })
+              }),
             );
           }
         }
@@ -239,7 +244,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       onError: (error) => {
         console.error("Failed to mark all videos as viewed:", error);
       },
-    }
+    },
   );
 
   const accountStats = [

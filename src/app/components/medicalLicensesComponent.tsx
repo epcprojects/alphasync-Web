@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -37,16 +38,16 @@ const MedicalLicensesSection: React.FC<Props> = ({
   const list: MedicalLicenseItem[] = values.medicalLicenses ?? [emptyLicense()];
 
   return (
-    <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-start py-3 md:py-6 border-b border-b-gray-200">
-      <div className="col-span-12 md:col-span-4 lg:col-span-3">
+    <div className="gap-1.5 lg:gap-8 items-start py-3 md:py-6 border-b border-b-gray-200">
+      {/* <div className="col-span-12 md:col-span-4 lg:col-span-3">
         <label className="text-xs md:text-sm text-gray-700 font-semibold">
           Medical Licenses
         </label>
-      </div>
+      </div> */}
 
-      <div className="col-span-12 space-y-5 md:col-span-8 lg:col-span-9">
+      <div className="space-y-5 ">
         {/* NPI is outside array (single field) */}
-        <ThemeInput
+        {/* <ThemeInput
           label="NPI Number"
           type="text"
           name="npiNumber"
@@ -57,7 +58,7 @@ const MedicalLicensesSection: React.FC<Props> = ({
           name="npiNumber"
           component="div"
           className="text-red-500 text-xs"
-        />
+        /> */}
 
         <FieldArray name="medicalLicenses">
           {({ push, remove }) => (
@@ -78,14 +79,16 @@ const MedicalLicensesSection: React.FC<Props> = ({
                           type="text"
                           name={`${base}.deaLicense`}
                           className="bg-white"
-                          value={values.medicalLicenses?.[index]?.deaLicense || ""}
+                          value={
+                            values.medicalLicenses?.[index]?.deaLicense || ""
+                          }
                           onChange={handleChange}
                         />
-                        <ErrorMessage
+                        {/* <ErrorMessage
                           name={`${base}.deaLicense`}
                           component="div"
                           className="text-red-500 text-xs"
-                        />
+                        /> */}
                       </div>
 
                       <div>
@@ -94,13 +97,15 @@ const MedicalLicensesSection: React.FC<Props> = ({
                           bgClass="bg-white"
                           options={States}
                           value={values.medicalLicenses?.[index]?.states || ""}
-                          onChange={(value) => setFieldValue(`${base}.states`, value)}
+                          onChange={(value) =>
+                            setFieldValue(`${base}.states`, value)
+                          }
                         />
-                        <ErrorMessage
+                        {/* <ErrorMessage
                           name={`${base}.states`}
                           component="div"
                           className="text-red-500 text-xs"
-                        />
+                        /> */}
                       </div>
 
                       <div>
@@ -110,15 +115,16 @@ const MedicalLicensesSection: React.FC<Props> = ({
                           name={`${base}.expirationDate`}
                           className="bg-white"
                           value={
-                            values.medicalLicenses?.[index]?.expirationDate || ""
+                            values.medicalLicenses?.[index]?.expirationDate ||
+                            ""
                           }
                           onChange={handleChange}
                         />
-                        <ErrorMessage
+                        {/* <ErrorMessage
                           name={`${base}.expirationDate`}
                           component="div"
                           className="text-red-500 text-xs"
-                        />
+                        /> */}
                       </div>
                     </div>
 
@@ -128,16 +134,18 @@ const MedicalLicensesSection: React.FC<Props> = ({
                         type="file"
                         name={`${base}.licenseDocument`}
                         className="bg-white"
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                        onChange={(
+                          event: React.ChangeEvent<HTMLInputElement>,
+                        ) => {
                           const file = event.currentTarget.files?.[0] ?? null;
                           setFieldValue(`${base}.licenseDocument`, file);
                         }}
                       />
-                      <ErrorMessage
+                      {/* <ErrorMessage
                         name={`${base}.licenseDocument`}
                         component="div"
                         className="text-red-500 text-xs"
-                      />
+                      /> */}
                     </div>
 
                     {canRemove && (
@@ -148,7 +156,9 @@ const MedicalLicensesSection: React.FC<Props> = ({
                           className="flex gap-1.5 items-center"
                         >
                           <TrashBinIcon />
-                          <span className="text-red-500 font-medium">Remove</span>
+                          <span className="text-red-500 font-medium">
+                            Remove
+                          </span>
                         </button>
                       </div>
                     )}
@@ -159,7 +169,7 @@ const MedicalLicensesSection: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={() => push(emptyLicense())}
-                className="flex flex-row gap-1.5 items-center"
+                className="flex flex-row gap-1.5 items-center cursor-pointer"
               >
                 <PlusIcon fill="#2862A9" />
                 <span className="text-primary font-medium">Add New</span>

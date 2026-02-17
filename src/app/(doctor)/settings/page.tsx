@@ -614,7 +614,6 @@ const Page = () => {
                           ? values.postalCode || null
                           : values.shippingPostalCode || null,
                         ...(selectedImage && { image: selectedImage }),
-                        
                       };
 
                       await updateDoctor({ variables });
@@ -711,6 +710,30 @@ const Page = () => {
                           />
                           <ErrorMessage
                             name="phoneNo"
+                            component="div"
+                            className="text-red-500 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:py-6 border-b border-b-gray-200">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Medical License
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8">
+                          <ThemeInput
+                            type="text"
+                            name="medicalLicense"
+                            value={values.medicalLicense}
+                            onChange={handleChange}
+                          />
+                          <ErrorMessage
+                            name="medicalLicense"
                             component="div"
                             className="text-red-500 text-xs"
                           />
@@ -1086,12 +1109,37 @@ const Page = () => {
                           </div>
                         </>
                       )}
-                      <MedicalLicensesSection
-                        values={values}
-                        handleChange={handleChange}
-                        setFieldValue={setFieldValue}
-                        States={States}
-                      />
+
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:pt-6 ">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            Medical Licenses
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8 flex items-center gap-2">
+                          <Switch
+                            checked={true}
+                            onChange={(checked) => {}}
+                            className="group inline-flex cursor-pointer h-6 w-11 items-center rounded-full bg-gray-200 transition data-checked:bg-gradient-to-r data-checked:from-[#3C85F5] data-checked:to-[#1A407A]"
+                          >
+                            <span className="size-4 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-6" />
+                          </Switch>{" "}
+                          Yes
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-12 ">
+                        <div className="col-span-9 col-start-4">
+                          <MedicalLicensesSection
+                            values={values}
+                            handleChange={handleChange}
+                            setFieldValue={setFieldValue}
+                            States={States}
+                          />
+                        </div>
+                      </div>
                       <div className="flex pt-3 md:pt-6 justify-end">
                         <ThemeButton
                           label={updateLoading ? "Saving..." : "Save Changes"}

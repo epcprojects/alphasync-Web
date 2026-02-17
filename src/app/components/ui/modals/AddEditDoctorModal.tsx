@@ -12,6 +12,7 @@ import { useMutation } from "@apollo/client/react";
 import { CREATE_INVITATION, UPDATE_USER } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import MedicalLicensesSection from "../../medicalLicensesComponent";
 
 interface AddEditDoctorModalProps {
   isOpen: boolean;
@@ -393,7 +394,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       onConfirm={handleConfirm}
       confirmLabel={initialData ? "Save" : "Add New"}
       icon={<DoctorIcon />}
-      size="large"
+      size="extraLarge"
       outSideClickClose={false}
       confimBtnDisable={!isFormValid || loading}
       onCancel={handleCancel}
@@ -640,6 +641,15 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
               value={formData.postalCode}
             />
           </div>
+        </div>
+
+        <div>
+          <MedicalLicensesSection
+            handleChange={() => {}}
+            States={[]}
+            setFieldValue={() => {}}
+            values={[]}
+          />
         </div>
       </div>
     </AppModal>
