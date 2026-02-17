@@ -161,15 +161,15 @@ const DoctorProfileHeaderCard: React.FC<DoctorProfileHeaderCardProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center  absolute top-10 end-6 gap-1.5 md:gap-3">
-          <button
+        {/* <div className="flex items-center  absolute top-10 end-6 gap-1.5 md:gap-3">
+          {ondeleteProfile && <button
             onClick={() => {
               ondeleteProfile();
             }}
             className="flex  md:h-8 md:w-8 h-7 w-7  text-gray-700 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
           >
             <PencilEditIcon fill="currentColor" />
-          </button>
+          </button>}
           <button
             onClick={() => {
               ondeleteProfile();
@@ -178,7 +178,7 @@ const DoctorProfileHeaderCard: React.FC<DoctorProfileHeaderCardProps> = ({
           >
             <TrashBinIcon fill="currentColor" />
           </button>
-        </div>
+        </div> */}
       </div>
     </>
   );
