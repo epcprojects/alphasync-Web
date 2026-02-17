@@ -94,7 +94,8 @@ function OTPContent() {
         showSuccessToast("Logged in successfully!");
 
         if (storedData?.userType === "DOCTOR") {
-          window.location.href = "/shop";
+          const hasDeaLicenses = (user?.deaLicenses?.length ?? 0) > 0;
+          window.location.href = hasDeaLicenses ? "/shop" : "/profile-complete";
         } else if (storedData?.userType === "PATIENT") {
           if (user?.addressVerified) {
             window.location.href = "/pending-payments";

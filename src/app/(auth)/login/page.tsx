@@ -42,8 +42,9 @@ function LoginContext() {
         Cookies.set("auth_token", token, { expires: 7 });
         Cookies.set("user_data", JSON.stringify(user), { expires: 7 });
         const userType = user?.userType?.toLowerCase();
-         if (userType === "doctor") {
-          window.location.href = "/shop";
+        if (userType === "doctor") {
+          const hasDeaLicenses = (user?.deaLicenses?.length ?? 0) > 0;
+          window.location.href = hasDeaLicenses ? "/shop" : "/profile-complete";
         } else if (userType === "customer" || userType === "patient") {
           window.location.href = user?.addressVerified ? "/pending-payments" : "/verify-info";
         } else {
