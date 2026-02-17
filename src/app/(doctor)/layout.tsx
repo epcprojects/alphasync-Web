@@ -124,17 +124,16 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  // Redirect doctor with no DEA licenses to profile-complete only once; if they've already seen it, leave them alone
+  // Redirect to profile-complete only when doctor is coming from accept-invitation (link)
   const isDoctor = user?.userType?.toLowerCase() === "doctor";
-  const hasDeaLicenses = (user?.deaLicenses?.length ?? 0) > 0;
-  const [profileCompleteShown, setProfileCompleteShown] = useState<boolean | null>(null);
+  const [fromInvitation, setFromInvitation] = useState<boolean | null>(null);
 
   useEffect(() => {
-    setProfileCompleteShown(Cookies.get("profile_complete_shown") === "1");
+    setFromInvitation(Cookies.get("show_profile_complete") === "1");
   }, []);
 
   const shouldRedirectToProfileComplete =
-    !!(user?.id && isDoctor && !hasDeaLicenses && profileCompleteShown === false);
+    !!(user?.id && isDoctor && fromInvitation === true);
 
   useEffect(() => {
     if (!shouldRedirectToProfileComplete) return;
@@ -164,10 +163,11 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     }
   );
 
-  // Don't render doctor UI when redirecting to profile-complete or while checking cookie — show loader
-  const noDeaAndCheckingOrRedirecting =
-    user?.id && isDoctor && !hasDeaLicenses && (profileCompleteShown === null || profileCompleteShown === false);
-  if (noDeaAndCheckingOrRedirecting) {
+  const hasDeaLicenses = (user?.deaLicenses?.length ?? 0) > 0;
+  // Show loader when redirecting to profile-complete or while checking invitation cookie
+  const checkingOrRedirectingToProfileComplete =
+    user?.id && isDoctor && (fromInvitation === null || fromInvitation === true);
+  if (checkingOrRedirectingToProfileComplete) {
     return (
       <DoctorRoute>
         <div className="flex min-h-screen items-center justify-center">

@@ -26,10 +26,8 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  const doctorHasNoDeaLicenses =
-    userType === "doctor" && (parsedUser?.deaLicenses?.length ?? 0) === 0;
-  const profileCompleteShownCookie = request.cookies.get("profile_complete_shown")?.value;
-  const hasBeenShownProfileComplete = profileCompleteShownCookie === "1";
+  const showProfileCompleteCookie = request.cookies.get("show_profile_complete")?.value;
+  const fromInvitation = showProfileCompleteCookie === "1";
   const profileCompleteUrl = new URL("/profile-complete", request.url);
 
   // Public routes (accessible without login)
@@ -96,9 +94,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/admin/doctors", request.url));
     } else if (userType === "doctor") {
       return NextResponse.redirect(
-        doctorHasNoDeaLicenses && !hasBeenShownProfileComplete
-          ? profileCompleteUrl
-          : new URL("/my-store", request.url)
+        fromInvitation ? profileCompleteUrl : new URL("/my-store", request.url)
       );
     } else if (userType === "customer" || userType === "patient") {
       return NextResponse.redirect(new URL("/pending-payments", request.url));
@@ -153,12 +149,11 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/pending-payments", request.url));
     }
 
-    // Doctor without DEA licenses: only redirect to profile-complete if we haven't shown it yet (show once)
+    // Doctor coming from accept-invitation: redirect to profile-complete
     if (
       userType === "doctor" &&
       doctorRoutes.some((route) => pathname.startsWith(route)) &&
-      doctorHasNoDeaLicenses &&
-      !hasBeenShownProfileComplete
+      fromInvitation
     ) {
       return NextResponse.redirect(profileCompleteUrl);
     }
