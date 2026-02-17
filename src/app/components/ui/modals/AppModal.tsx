@@ -89,9 +89,14 @@ const AppModal: React.FC<AppModalProps> = ({
   const baseWrapperClasses =
     "fixed inset-0 z-[100] bg-black/50 backdrop-blur-xs flex";
 
+  const rightModalWidth =
+    position === ModalPosition.RIGHT && size === "extraLarge"
+      ? "md:w-[800px]"
+      : "md:w-[600px]";
+
   const modalClasses =
     position === ModalPosition.RIGHT
-      ? `${baseModalClasses} w-full md:w-[600px] md:rounded-xl overflow-hidden`
+      ? `${baseModalClasses} w-full ${rightModalWidth} md:rounded-xl overflow-hidden`
       : `${baseModalClasses} sm:h-fit relative w-full sm:max-h-[90dvh]  md:m-auto container md:mx-4 ${sizeClasses[size]}`;
 
   const wrapperClasses =

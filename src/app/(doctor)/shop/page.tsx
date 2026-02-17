@@ -18,6 +18,7 @@ import { useAppDispatch } from "@/lib/store/hooks";
 import { addItem } from "@/lib/store/slices/cartSlice";
 import { ADD_TO_CART, MARK_PRODUCT_NOT_FOR_SALE } from "@/lib/graphql/mutations";
 import { showErrorToast } from "@/lib/toast";
+import EmptyResult from "@/app/components/ui/EmptyResult/EmptyResult";
 
 const Page = () => {
   const isMobile = useIsMobile();
@@ -204,30 +205,24 @@ const Page = () => {
           ))}
         </div>
       ) : shopProducts.length === 0 ? (
-        <div className="h-full bg-white py-20 flex flex-col justify-center items-center gap-7 text-center rounded-xl">
-          <ShoppingCartRemoveIcon />
-          <div className="space-y-3">
-            <h2 className="font-semibold text-2xl text-gray-900">
-              Your shop is empty.
-            </h2>
-
-              <p className="font-medium text-lg text-gray-800">
-                Head to{" "}
-                <Link
+        <EmptyResult title={"Your shop is empty."} description={(
+           <p className="font-medium text-lg text-gray-800">
+              Head to{" "}
+               <Link
                   className="text-primary hover:underline underline-offset-2"
-                  href="/inventory"
-                >
-                  Inventory
-                </Link>
-                , mark up an item, and start selling.
-              </p>
-            </div>
-            <ThemeButton
-              label="Add Products"
-              icon={<PlusIcon />}
-              onClick={() => router.push("/inventory")}
-            />
-          </div>
+                 href="/inventory"
+               >
+                Inventory
+              </Link>
+              , mark up an item, and start selling.
+             </p>
+        )}
+        icon={<ShoppingCartRemoveIcon />}
+        buttonLabel="Add Products"
+        buttonOnClick={()=>router.push("/inventory")}
+       
+        />
+
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-6">

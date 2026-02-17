@@ -5,19 +5,20 @@ import Image from "next/image";
 import { Images } from "@/app/ui/images";
 import { ProfileIcon, LogoutIcon, RequestIcon, AccountingIcon } from "@/icons";
 import HeaderMenuNavItems from "./HeaderMenuNavItems";
-import Notifications from "../ui/Notifications";
+
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import Cookies from "js-cookie";
 import { clearUser } from "@/lib/store/slices/authSlice";
 import { useRouter } from "next/navigation";
 import { useApolloClient } from "@apollo/client";
-import CartPopover from "../ui/CartPopover";
+import dynamic from "next/dynamic";
+const CartPopover = dynamic(() => import("../ui/CartPopover"), { ssr: false });
+const Notifications = dynamic(() => import("../ui/Notifications"), { ssr: false });
 
 interface MenuItemType {
   label: string;
   href: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: React.ComponentType<any>;
 }
 
@@ -82,6 +83,9 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
 
   const isDoctorHeader = menuItems.some((item) =>
     item.label.includes("Inventory"),
+  );
+  const  isManagerHeader = menuItems.some((item) =>
+    item.label.includes("Accounting"),
   );
   const user = useAppSelector((state) => state.auth.user);
   const INITIAL_AVATAR = "/images/arinaProfile.png";
@@ -187,7 +191,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
           </div>
 
           <div className="items-center  gap-2.5 flex ">
-            {isDoctorHeader && <CartPopover />}
+            {isDoctorHeader || isManagerHeader && <CartPopover />}
 
             {hasPendingPayment && (
               <Link

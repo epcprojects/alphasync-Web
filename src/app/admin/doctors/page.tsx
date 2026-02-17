@@ -24,6 +24,7 @@ import { useQuery, useMutation } from "@apollo/client/react";
 
 import DoctorListView from "@/app/components/ui/cards/DoctorListView";
 import AddEditDoctorModal from "@/app/components/ui/modals/AddEditDoctorModal";
+import AddDoctorModal from "@/app/components/ui/modals/AddDoctorModal";
 import CsvImportDoctorModal from "@/app/components/ui/modals/CsvImportDoctorModal";
 import DoctorDeleteModal from "@/app/components/ui/modals/DoctorDeleteModal";
 import ResendInvitationModal from "@/app/components/ui/modals/ResendInvitationModal";
@@ -57,6 +58,7 @@ interface DoctorFormData {
 function DoctorContent() {
   const [search, setSearch] = useState("");
   const [isModalOpne, setIsModalOpen] = useState(false);
+  const [isAddModalOpne, setAddIsModalOpen] = useState(false);
   const [isCsvImportModalOpen, setIsCsvImportModalOpen] = useState(false);
   const [isDeleteModalOpne, setIsDeleteModalOpen] = useState(false);
   const [isResendModalOpen, setIsResendModalOpen] = useState(false);
@@ -101,9 +103,7 @@ function DoctorContent() {
             ? undefined
             : selectedStatus.toUpperCase(),
         pendingInvites:
-          selectedTabIndex === 0
-            ? undefined
-            : selectedTabIndex === 2,
+          selectedTabIndex === 0 ? undefined : selectedTabIndex === 2,
         page: currentPage + 1,
         perPage: itemsPerPage,
       },
@@ -116,7 +116,8 @@ function DoctorContent() {
     useMutation(MODIFY_ACCESSS_USER);
 
   // GraphQL mutation for exporting doctors
-  const [exportDoctors, { loading: exportLoading }] = useMutation(EXPORT_DOCTORS);
+  const [exportDoctors, { loading: exportLoading }] =
+    useMutation(EXPORT_DOCTORS);
 
   // Transform GraphQL data to match Doctor interface
   const doctors = data?.allDoctors.allData;
@@ -220,19 +221,21 @@ function DoctorContent() {
           // If decoding fails, assume it's already plain text
           csvContent = data.exportDoctors.csvData;
         }
-        
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+        const blob = new Blob([csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
-        
+
         link.setAttribute("href", url);
         link.setAttribute("download", data.exportDoctors.fileName);
         link.style.visibility = "hidden";
-        
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         URL.revokeObjectURL(url);
         showSuccessToast("Doctors exported successfully");
       } else {
@@ -312,7 +315,6 @@ function DoctorContent() {
             <ThemeButton
               label="Export"
               size={isMobile ? "small" : "medium"}
-             
               onClick={handleExportDoctors}
               heightClass="h-9 sm:h-auto"
               disabled={exportLoading}
@@ -322,7 +324,7 @@ function DoctorContent() {
               label="Add New"
               size={isMobile ? "small" : "medium"}
               icon={<PlusIcon />}
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => setAddIsModalOpen(true)}
               heightClass="h-9 sm:h-auto"
             />
           </div>
@@ -336,15 +338,17 @@ function DoctorContent() {
           onChange={setSelectedTabIndex}
         >
           <TabList className="flex items-center border-b bg-white rounded-t-xl mb-2 sm:mb-0 border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-4">
-            {["All Doctors", "Active Doctors", "Pending Doctors"].map((tab, index) => (
-              <Tab
-                key={index}
-                as="button"
-                className="flex items-center gap-1 md:gap-2 w-full justify-center hover:bg-gray-50 whitespace-nowrap md:text-base text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-1.5 py-2.5 md:py-4 md:px-6"
-              >
-                {tab}
-              </Tab>
-            ))}
+            {["All Doctors", "Active Doctors", "Pending Doctors"].map(
+              (tab, index) => (
+                <Tab
+                  key={index}
+                  as="button"
+                  className="flex items-center gap-1 md:gap-2 w-full justify-center hover:bg-gray-50 whitespace-nowrap md:text-base text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-1.5 py-2.5 md:py-4 md:px-6"
+                >
+                  {tab}
+                </Tab>
+              ),
+            )}
           </TabList>
           <TabPanels>
             <TabPanel>
@@ -570,6 +574,16 @@ function DoctorContent() {
           refetch(); // Refetch data after adding/editing
         }}
         initialData={editDoctor}
+      />
+
+      <AddDoctorModal
+        isOpen={isAddModalOpne}
+        onClose={() => {
+          setAddIsModalOpen(false);
+        }}
+        onConfirm={() => {
+          setAddIsModalOpen(false);
+        }}
       />
 
       <CsvImportDoctorModal

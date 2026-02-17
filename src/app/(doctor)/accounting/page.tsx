@@ -598,7 +598,7 @@ const Page = () => {
                   return;
                 }
                 router.push(`/orders/${order.id}`);
-              }}
+              } }
               key={order.id}
               order={{
                 id: parseInt(order.id),
@@ -616,8 +616,7 @@ const Page = () => {
                 netCost: order.netCost ?? 0,
                 profit: order.profit ?? 0,
                 orderItems: order.orderItems,
-              }}
-            />
+              }}           />
           ))
         )}
       </div>

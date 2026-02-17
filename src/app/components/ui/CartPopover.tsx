@@ -66,7 +66,7 @@ export default function CartPopover() {
           >
             <ShoppingCartIcon fill="white" />
             {count > 0 ? (
-              <span className="absolute -right-1 -top-1 inline-flex lg:h-5 h-3.5 w-3.5 lg:min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[11px] lg:text-xs font-semibold text-white">
+              <span key={"1"} className="absolute -right-1 -top-1 inline-flex lg:h-5 h-3.5 w-3.5 lg:min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[11px] lg:text-xs font-semibold text-white">
                 {count}
               </span>
             ) : null}
