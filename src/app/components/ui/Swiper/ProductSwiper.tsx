@@ -17,6 +17,8 @@ interface ProductView {
   imagePath?: string;
   thumbnailPath?: string;
   component?: React.ReactNode;
+  /** When not "Alpha BioMed", rx-placeholder is used as image fallback */
+  vendor?: string | null;
 }
 
 interface ProductSwiperProps {
@@ -67,6 +69,7 @@ const ProductSwiper: React.FC<ProductSwiperProps> = ({ productViews = [] }) => {
                         alt={view.title}
                         width={1080}
                         height={1080}
+                        vendor={view.vendor}
                       />
                     </div>
                   </div>
@@ -114,7 +117,7 @@ const ProductSwiper: React.FC<ProductSwiperProps> = ({ productViews = [] }) => {
                     alt={`${view.title} thumbnail`}
                     width={400}
                     height={400}
-                    fallbackSrc="/images/products/placeholder.png"
+                    vendor={view.vendor}
                     className={`${
                       activeIndex !== index && "opacity-50"
                     } !relative h-full w-full object-contain`}

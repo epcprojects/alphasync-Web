@@ -114,6 +114,7 @@ export default function CartPopover() {
                               alt={item.name}
                               width={70}
                               height={70}
+                              vendor={item.vendor}
                               className="object-cover h-full w-full"
                             />
                           </div>

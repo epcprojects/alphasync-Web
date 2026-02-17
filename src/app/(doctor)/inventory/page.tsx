@@ -80,6 +80,7 @@ function InventoryContent() {
     price?: number;
     customPrice?: number | null;
     imageUrl?: string | null;
+    vendor?: string | null;
   } | null>(null);
 
   const router = useRouter();
@@ -598,6 +599,7 @@ function InventoryContent() {
                     product={product}
                     customPrice={originalProduct?.customPrice}
                     orderButtonDisabled={!canOrder}
+                    vendor={originalProduct?.vendor}
                     onBtnClick={() => {
                       // Not marked up -> Add to My Store
                       // Marked up -> Change Customer Price
@@ -613,6 +615,7 @@ function InventoryContent() {
                         price: firstVariant?.price ?? 0,
                         customPrice: originalProduct.customPrice ?? null,
                         imageUrl: originalProduct.primaryImage ?? null,
+                        vendor: originalProduct.vendor,
                       });
                       setShowPriceModal(true);
                     }}
@@ -654,6 +657,7 @@ function InventoryContent() {
                     product={product}
                     customPrice={originalProduct?.customPrice}
                     orderButtonDisabled={!canOrder}
+                    vendor={originalProduct?.vendor}
                     onToggleFavourite={() => {
                       handleToggleFavorite(product.originalId);
                     }}
@@ -670,6 +674,7 @@ function InventoryContent() {
                         price: firstVariant?.price ?? 0,
                         customPrice: originalProduct.customPrice ?? null,
                         imageUrl: originalProduct.primaryImage ?? null,
+                        vendor: originalProduct.vendor,
                       });
                       setShowPriceModal(true);
                     }}
@@ -715,6 +720,7 @@ function InventoryContent() {
                           product={product}
                           customPrice={originalProduct?.customPrice}
                           orderButtonDisabled={!canOrder}
+                          vendor={originalProduct?.vendor}
                           onBtnClick={() => {
                             if (!originalProduct) {
                               showErrorToast("Product information is missing");
@@ -728,6 +734,7 @@ function InventoryContent() {
                               price: firstVariant?.price ?? 0,
                               customPrice: originalProduct.customPrice ?? null,
                               imageUrl: originalProduct.primaryImage ?? null,
+                              vendor: originalProduct.vendor,
                             });
                             setShowPriceModal(true);
                           }}
@@ -760,6 +767,7 @@ function InventoryContent() {
                           product={product}
                           customPrice={originalProduct?.customPrice}
                           orderButtonDisabled={!canOrder}
+                          vendor={originalProduct?.vendor}
                           onToggleFavourite={() => handleToggleFavorite(product.originalId)}
                           onBtnClick={() => {
                             if (!originalProduct) {
@@ -774,6 +782,7 @@ function InventoryContent() {
                               price: firstVariant?.price ?? 0,
                               customPrice: originalProduct.customPrice ?? null,
                               imageUrl: originalProduct.primaryImage ?? null,
+                              vendor: originalProduct.vendor,
                             });
                             setShowPriceModal(true);
                           }}
@@ -826,6 +835,7 @@ function InventoryContent() {
               imageUrl: selectedProduct.imageUrl,
               basePrice: selectedProduct.price ?? 0,
               customPrice: selectedProduct.customPrice ?? null,
+              vendor: selectedProduct.vendor,
             }
             : null
         }

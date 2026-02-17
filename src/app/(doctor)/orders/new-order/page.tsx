@@ -307,6 +307,7 @@ const Page = () => {
     }
 
     let imageSrc = "";
+    let vendor: string | undefined;
     try {
       const { data } = await apolloClient.query<FetchProductResponse>({
         query: FETCH_PRODUCT,
@@ -314,6 +315,7 @@ const Page = () => {
         fetchPolicy: "cache-first",
       });
       imageSrc = getProductImageSrc(data?.fetchProduct);
+      vendor = data?.fetchProduct?.vendor ?? undefined;
     } catch {
       // Best effort. Cart can still render without image.
     }
@@ -344,6 +346,7 @@ const Page = () => {
         price: priceToUse,
         qty,
         imageSrc,
+        vendor,
       }),
     );
 

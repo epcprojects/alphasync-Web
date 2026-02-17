@@ -27,6 +27,8 @@ type ProductListViewProps = {
   /** When true, disables Add to My Store / Change Customer Price (e.g. only RUO products can be ordered) */
   orderButtonDisabled?: boolean;
   orderButtonDisabledTooltip?: string;
+  /** When not "Alpha BioMed", rx-placeholder is used as image fallback */
+  vendor?: string | null;
 };
 
 export default function ProductListView({
@@ -37,6 +39,7 @@ export default function ProductListView({
   onRemoveFromSale,
   customPrice,
   orderButtonDisabled = false,
+  vendor,
   // orderButtonDisabledTooltip = "Only RUO products can be added to your shop.",
 }: ProductListViewProps) {
   const productId = product.originalId || String(product.id);
@@ -54,6 +57,7 @@ export default function ProductListView({
             height={36}
             src={product.image}
             alt={product.title}
+            vendor={vendor}
             className="w-full h-full border rounded-lg border-gray-200"
           />
         </div>

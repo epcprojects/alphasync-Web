@@ -7,6 +7,7 @@ export type CartItem = {
   price: number; // unit price
   qty: number;
   imageSrc: string;
+  vendor?: string | null;
 };
 
 export type ServerCart = {
@@ -23,6 +24,7 @@ export type ServerCart = {
       title?: string;
       primaryImage?: string | null;
       images?: Array<string | null> | null;
+      vendor?: string | null;
     } | null;
   }> | null;
 } | null;
@@ -72,6 +74,7 @@ const cartSlice = createSlice({
             price: Number(ci.markedUpPrice ?? 0),
             qty: Number(ci.quantity ?? 1),
             imageSrc,
+            vendor: product?.vendor ?? undefined,
           },
         ];
       });

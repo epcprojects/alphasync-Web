@@ -19,6 +19,7 @@ interface ModalProps {
     imageUrl?: string | null;
     basePrice: number; // base/clinic price
     customPrice?: number | null;
+    vendor?: string | null;
   } | null;
 }
 
@@ -133,6 +134,7 @@ const PriceModal: React.FC<ModalProps> = ({ isOpen, onClose, onSuccess, product 
             alt={product?.title ?? "Product"}
             width={112}
             height={112}
+            vendor={product?.vendor}
             className="rounded-lg object-cover h-28 w-28"
           />
           <h2 className="text-gray-900 text-lg font-medium">
