@@ -5,13 +5,15 @@ import { KeyLeftIcon } from "@/icons";
 import React from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "@apollo/client/react";
+import { useQuery, useMutation } from "@apollo/client/react";
 import { DoctorProfileHeaderCard, Loader } from "@/app/components";
 import DoctorProfileLicensesCard, {
   itemsArray,
 } from "@/app/components/ui/cards/DoctorProfileLicensesCard";
 import { FETCH_CUSTOMER } from "@/lib/graphql/queries";
+import { APPROVE_DEA_LICENSE, REJECT_DEA_LICENSE } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
 interface FetchUserResponse {
   fetchUser: {
@@ -49,19 +51,62 @@ function formatDob(dateStr: string | undefined): string {
   return dateStr;
 }
 
+/** Map API DEA license status to card buttonsState */
+function mapLicenseStatus(
+  status: string | undefined
+): "approved" | "disapproved" | "pending" {
+  const s = (status ?? "pending").toLowerCase();
+  if (s === "approved") return "approved";
+  if (s === "rejected") return "disapproved";
+  return "pending";
+}
+
 const Page = () => {
   const isMobile = useIsMobile();
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string | undefined;
 
-  const { data, loading, error } = useQuery<FetchUserResponse>(FETCH_CUSTOMER, {
-    variables: { id: id ?? "" },
-    skip: !id,
-    fetchPolicy: "network-only",
+  const { data, loading, error, refetch } = useQuery<FetchUserResponse>(
+    FETCH_CUSTOMER,
+    {
+      variables: { id: id ?? "" },
+      skip: !id,
+      fetchPolicy: "network-only",
+    }
+  );
+
+  const [approveDeaLicense] = useMutation(APPROVE_DEA_LICENSE, {
+    onCompleted: () => {
+      refetch();
+      showSuccessToast("DEA license approved");
+    },
+    onError: (e) => showErrorToast(e.message),
+  });
+
+  const [rejectDeaLicense] = useMutation(REJECT_DEA_LICENSE, {
+    onCompleted: () => {
+      refetch();
+      showSuccessToast("DEA license rejected");
+    },
+    onError: (e) => showErrorToast(e.message),
   });
 
   const user = data?.fetchUser?.user;
+
+  const handleApproveLicense = (deaLicenseId: string | number | undefined) => {
+    if (deaLicenseId == null) return;
+    approveDeaLicense({
+      variables: { deaLicenseId: String(deaLicenseId) },
+    });
+  };
+
+  const handleRejectLicense = (deaLicenseId: string | number | undefined) => {
+    if (deaLicenseId == null) return;
+    rejectDeaLicense({
+      variables: { deaLicenseId: String(deaLicenseId) },
+    });
+  };
 
   const licenceItemsArray: itemsArray[] =
     (user?.deaLicenses ?? []).map((lic) => {
@@ -74,8 +119,10 @@ const Page = () => {
         expirationDateText: formatExpirationDate(lic.expirationDate),
         documentName: getDocNameFromUrl(lic.licenseUrl),
         documentSize: "PDF",
-        buttonsState: "approved" as const,
+        buttonsState: mapLicenseStatus(lic.status),
         documentFormat: "pdf",
+        onConfirm: () => handleApproveLicense(lic.id),
+        onCancel: () => handleRejectLicense(lic.id),
         onView: licenseUrl
           ? () => window.open(licenseUrl, "_blank", "noopener,noreferrer")
           : undefined,

@@ -281,6 +281,23 @@ export const UPDATE_DOCTOR = gql`
     }
   }
 `;
+
+export const APPROVE_DEA_LICENSE = gql`
+  mutation ApproveDeaLicense($deaLicenseId: ID!) {
+    approveDeaLicense(input: { deaLicenseId: $deaLicenseId }) {
+      success
+    }
+  }
+`;
+
+export const REJECT_DEA_LICENSE = gql`
+  mutation RejectDeaLicense($deaLicenseId: ID!) {
+    rejectDeaLicense(input: { deaLicenseId: $deaLicenseId }) {
+      success
+    }
+  }
+`;
+
 export const UPDATE_PASSWORD = gql`
   mutation UpdatePassword(
     $currentPassword: String!

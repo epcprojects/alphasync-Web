@@ -49,6 +49,7 @@ export const userpayload = `
          state
          expirationDate
          licenseUrl
+         status
        }
 `;
 
@@ -103,6 +104,7 @@ export interface UserAttributes {
     state?: string;
     expirationDate?: string;
     licenseUrl?: string;
+    status?: string;
   }>;
   cart?: {
     id?: string;

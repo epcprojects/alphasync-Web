@@ -84,54 +84,41 @@ const DoctorProfileLicensesCard = ({ licenseItemsArray }: Props) => {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-4 justify-end">
-          <Button
-            className={
-              licenseItemsArray.buttonsState === "pending" ||
-              licenseItemsArray.buttonsState === "approved"
-                ? `bg-green-500 min-w-39 text-white py-2.5 cursor-pointer px-6 flex flex-row items-center justify-center gap-3  rounded-full
-                `
-                : `bg-red-500 min-w-39 text-white py-2.5 px-6 flex flex-row items-center justify-center gap-3  rounded-full`
-            }
-            onClick={() =>
-              licenseItemsArray.onConfirm && licenseItemsArray.onConfirm()
-            }
-          >
-            {licenseItemsArray.buttonsState === "pending" ? (
-              <>
-                <TickIcon /> <p className="text-sm font-semibold">Approve</p>
-              </>
-            ) : licenseItemsArray.buttonsState === "approved" ? (
-              <>
-                <TickIcon /> <p className="text-sm font-semibold">Approved</p>
-              </>
-            ) : (
-              <>
-                <CrossIcon fill="white" />
-                <p className="text-sm font-semibold">Disapproved</p>
-              </>
-            )}
-          </Button>
+        <div className="flex flex-col lg:flex-row gap-4 justify-end items-center">
+          {licenseItemsArray.buttonsState === "pending" ? (
+            <Button
+              className="bg-green-500 min-w-39 text-white py-2.5 cursor-pointer px-6 flex flex-row items-center justify-center gap-3 rounded-full"
+              onClick={() =>
+                licenseItemsArray.onConfirm && licenseItemsArray.onConfirm()
+              }
+            >
+              <TickIcon /> <p className="text-sm font-semibold">Approve</p>
+            </Button>
+          ) : (
+            <span
+              className={
+                licenseItemsArray.buttonsState === "approved"
+                  ? "text-sm font-medium text-green-600"
+                  : "text-sm font-medium text-red-600"
+              }
+            >
+              {licenseItemsArray.buttonsState === "approved"
+                ? "Approved"
+                : "Disapproved"}
+            </span>
+          )}
 
-          <Button
-            className={
-              licenseItemsArray.buttonsState === "pending"
-                ? `bg-red-500 min-w-39 text-white py-2.5 px-6 cursor-pointer flex flex-row items-center justify-center gap-3  rounded-full`
-                : `border border-gray-300 bg-white min-w-39 text-gray-700 py-2.5 px-6 flex flex-row items-center justify-center gap-3  rounded-full`
-            }
-            onClick={() =>
-              licenseItemsArray.onCancel && licenseItemsArray.onCancel()
-            }
-          >
-            {licenseItemsArray.buttonsState === "pending" ? (
-              <>
-                <CrossIcon fill="white" />
-                <p className="text-sm font-semibold">Disapprove</p>
-              </>
-            ) : (
-              <p className="text-sm font-semibold">Reset</p>
-            )}
-          </Button>
+          {licenseItemsArray.buttonsState === "pending" && (
+            <Button
+              className="bg-red-500 min-w-39 text-white py-2.5 px-6 cursor-pointer flex flex-row items-center justify-center gap-3 rounded-full"
+              onClick={() =>
+                licenseItemsArray.onCancel && licenseItemsArray.onCancel()
+              }
+            >
+              <CrossIcon fill="white" />
+              <p className="text-sm font-semibold">Disapprove</p>
+            </Button>
+          )}
         </div>
       </div>
     </div>
