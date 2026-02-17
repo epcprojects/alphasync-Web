@@ -24,7 +24,7 @@ type ProductListViewProps = {
   onRowClick?: () => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
-  /** When true, disables Add to Shop / Change Customer Price (e.g. only RFO products can be ordered) */
+  /** When true, disables Add to Shop / Change Customer Price (e.g. only RUO products can be ordered) */
   orderButtonDisabled?: boolean;
   orderButtonDisabledTooltip?: string;
 };
@@ -37,7 +37,7 @@ export default function ProductListView({
   onRemoveFromSale,
   customPrice,
   orderButtonDisabled = false,
-  orderButtonDisabledTooltip = "Only RFO products can be added to your shop.",
+  // orderButtonDisabledTooltip = "Only RUO products can be added to your shop.",
 }: ProductListViewProps) {
   const productId = product.originalId || String(product.id);
   const isMarkedUp = customPrice != null && customPrice !== undefined;
@@ -142,9 +142,8 @@ export default function ProductListView({
 
         <Tooltip
           content={
-            orderButtonDisabled
-              ? orderButtonDisabledTooltip
-              : isMarkedUp
+            // orderButtonDisabled ? orderButtonDisabledTooltip :
+            isMarkedUp
                 ? "Change Customer Price"
                 : "Add to Shop"
           }

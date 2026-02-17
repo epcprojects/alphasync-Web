@@ -409,7 +409,7 @@ function InventoryContent() {
                 <MenuItems
                   transition
                   anchor="bottom end"
-                  className={`min-w-32 md:min-w-44 z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0 max-h-60 overflow-y-auto`}
+                  className={`min-w-32 md:min-w-44 z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0 h-60 overflow-y-auto`}
                 >
                   <MenuItem>
                     <button
@@ -519,7 +519,7 @@ function InventoryContent() {
                 const isMarkedUp =
                   originalProduct?.customPrice != null &&
                   originalProduct?.customPrice !== undefined;
-                // Only Alpha BioMed (RFO) products can be added to shop / ordered
+                // Only Alpha BioMed (RUO) products can be added to shop / ordered
                 const canOrder = originalProduct?.vendor === "Alpha BioMed";
                 return (
                   <ProductCard
@@ -571,7 +571,7 @@ function InventoryContent() {
                 const originalProduct = productsData?.allProducts.allData?.find(
                   (p) => p.id === product.originalId,
                 );
-                // Only Alpha BioMed (RFO) products can be added to shop / ordered
+                // Only Alpha BioMed (RUO) products can be added to shop / ordered
                 const canOrder = originalProduct?.vendor === "Alpha BioMed";
 
                 return (
