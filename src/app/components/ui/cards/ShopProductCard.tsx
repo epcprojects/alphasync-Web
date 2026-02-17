@@ -87,7 +87,7 @@ export default function ShopProductCard({
     >
       <button
         className="absolute top-4 end-4 text-gray-700 hover:bg-gray-100 rounded-full border border-gray-200 h-8 w-8 md:h-11 md:w-11 flex items-center justify-center cursor-pointer"
-        aria-label="Remove from shop"
+        aria-label="Remove from My Store"
         type="button"
         disabled={!!removingFromShop}
         onClick={handleRemoveFromShop}

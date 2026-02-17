@@ -338,7 +338,7 @@ function InventoryContent() {
             <Tooltip
               autoShowOnceKey={userEmail}
               side="bottom"
-              content="Click Add to Shop, enter your selling price, and click Save. The product will be added to your shop."
+              content="Click Add to My Store, enter your selling price, and click Save. The product will be added to your Store."
             >
               <InfoFilledIcon />
             </Tooltip>
@@ -528,7 +528,7 @@ function InventoryContent() {
                     customPrice={originalProduct?.customPrice}
                     orderButtonDisabled={!canOrder}
                     onBtnClick={() => {
-                      // Not marked up -> Add to Shop
+                      // Not marked up -> Add to My Store
                       // Marked up -> Change Customer Price
                       if (!originalProduct) {
                         showErrorToast("Product information is missing");

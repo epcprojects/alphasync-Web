@@ -31,7 +31,7 @@ interface ProductCardProps {
   onCardClick?: () => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
-  /** When true, disables Add to Shop / Change Customer Price (e.g. only RUO products can be ordered) */
+  /** When true, disables Add to  / Change Customer Price (e.g. only RUO products can be ordered) */
   orderButtonDisabled?: boolean;
   orderButtonDisabledTooltip?: string;
 }
@@ -115,7 +115,7 @@ export default function ProductCard({
                     <span className="flex-1 flex">
                       <ThemeButton
                         label={
-                          isMarkedUp ? "Change Customer Price" : "Add to Shop"
+                        isMarkedUp ? "Change Customer Price" : "Add to My Store"
                         }
                         icon={<InventoryIcon fill="#2862A9" />}
                         variant="outline"
@@ -128,7 +128,7 @@ export default function ProductCard({
                 ) : (
                   <ThemeButton
                     label={
-                      isMarkedUp ? "Change Customer Price" : "Add to Shop"
+                        isMarkedUp ? "Change Customer Price" : "Add to My Store"
                     }
                     icon={<InventoryIcon fill="#2862A9" />}
                     onClick={(e) => {

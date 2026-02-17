@@ -24,7 +24,7 @@ type ProductListViewProps = {
   onRowClick?: () => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
-  /** When true, disables Add to Shop / Change Customer Price (e.g. only RUO products can be ordered) */
+  /** When true, disables Add to My Store / Change Customer Price (e.g. only RUO products can be ordered) */
   orderButtonDisabled?: boolean;
   orderButtonDisabledTooltip?: string;
 };
@@ -145,7 +145,7 @@ export default function ProductListView({
             // orderButtonDisabled ? orderButtonDisabledTooltip :
             isMarkedUp
                 ? "Change Customer Price"
-                : "Add to Shop"
+              : "Add to My Store"
           }
         >
           <button
@@ -155,7 +155,7 @@ export default function ProductListView({
             }}
             disabled={!onBtnClick || orderButtonDisabled}
             className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label={isMarkedUp ? "Change Customer Price" : "Add to Shop"}
+            aria-label={isMarkedUp ? "Change Customer Price" : "Add to My Store"}
             type="button"
           >
             <InventoryIcon fill="#2862A9" width="16" height="16" />

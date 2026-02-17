@@ -46,7 +46,7 @@ export function middleware(request: NextRequest) {
     "/admin/dashboard",
   ];
   const doctorRoutes = [
-    "/shop",
+    "/my-store",
     "/inventory",
     "/customers",
     "/orders",
@@ -87,7 +87,7 @@ export function middleware(request: NextRequest) {
     if (userType === "admin") {
       return NextResponse.redirect(new URL("/admin/doctors", request.url));
     } else if (userType === "doctor") {
-      return NextResponse.redirect(new URL("/shop", request.url));
+      return NextResponse.redirect(new URL("/my-store", request.url));
     } else if (userType === "customer" || userType === "patient") {
       return NextResponse.redirect(new URL("/pending-payments", request.url));
     } else {
@@ -124,14 +124,7 @@ export function middleware(request: NextRequest) {
       userType === "doctor" &&
       adminRoutes.some((route) => pathname.startsWith(route))
     ) {
-      return NextResponse.redirect(new URL("/shop", request.url));
-    }
-
-    if (
-      userType === "doctor" &&
-      customerRoutes.some((route) => pathname.startsWith(route))
-    ) {
-      return NextResponse.redirect(new URL("/shop", request.url));
+      return NextResponse.redirect(new URL("/ my-store", request.url));
     }
 
     if (
@@ -161,7 +154,7 @@ export const config = {
     "/forgot",
     "/new-password",
     "/accept-invitation",
-    "/shop/:path*",
+    "/my-store/:path*",
     "/inventory/:path*",
     "/admin/:path*",
     "/customers/:path*",

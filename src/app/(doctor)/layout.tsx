@@ -48,7 +48,7 @@ const poppins_init = Poppins({
 });
 
 const menuItems = [
-  { label: "Shop", href: "/shop", icon: InventoryIcon },
+  { label: "My Store", href: "/my-store", icon: InventoryIcon },
   { label: "Inventory", href: "/inventory", icon: InventoryIcon },
   { label: "Accounting", href: "/accounting", icon: DashboardIcon },
   { label: "Customers", href: "/customers", icon: CustomerIcon },
