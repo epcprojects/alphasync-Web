@@ -24,6 +24,8 @@
     "js-cookie": "^3.0.5",
     "jspdf": "^3.0.4",
     "next": "^15.5.7",
+    "primereact": "^10.9.7",
+    "quill": "^2.0.3",
     "react": "^19.1.2",
     "react-apexcharts": "^1.9.0",
     "react-date-range": "^2.0.1",
@@ -37,6 +39,7 @@
     "react-toastify": "^11.0.5",
     "recharts": "^3.5.1",
     "swiper": "^11.2.10",
+    "typescript": "^5",
     "yup": "^1.7.0"
   },
   "devDependencies": {
@@ -50,7 +53,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "tailwindcss": "^4"
   }
 }

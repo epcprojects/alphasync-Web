@@ -252,6 +252,7 @@ export const FETCH_ORDER = gql`
         product {
           id
           title
+          price
           variants {
             id
             price
@@ -262,6 +263,7 @@ export const FETCH_ORDER = gql`
     }
   }
 `;
+
 export const FETCH_PRODUCT = gql`
   query FetchProduct($id: ID!) {
     fetchProduct(id: $id) {
@@ -641,6 +643,69 @@ export const ADMIN_DASHBOARD = gql`
         doctorId
         doctorName
         onboardedAt
+      }
+    }
+  }
+`;
+
+export const ADMIN_ORDERS = gql`
+  query AdminOrders(
+    $page: Int
+    $perPage: Int
+    $doctorId: ID
+    $myClinic: Boolean
+    $search: String
+  ) {
+    adminOrders(
+      page: $page
+      perPage: $perPage
+      doctorId: $doctorId
+      myClinic: $myClinic
+      search: $search
+    ) {
+      count
+      nextPage
+      prevPage
+      totalPages
+      allData {
+        id
+        displayId
+        createdAt
+        processedAt
+        status
+        myClinic
+        subtotalPrice
+        totalTax
+        totalPrice
+        netCost
+        profit
+        shipmentStatus
+        shipstationOrderId
+        trackingNumber
+        doctor {
+          id
+          email
+          fullName
+          imageUrl
+        }
+        orderItems {
+          id
+          quantity
+          price
+          totalPrice
+          product {
+            id
+            title
+            price
+            primaryImage
+          }
+        }
+        patient {
+          id
+          fullName
+          email
+          imageUrl
+        }
       }
     }
   }

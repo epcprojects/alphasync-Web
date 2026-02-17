@@ -9,8 +9,6 @@ import {
   DashboardIcon,
   SettingsIcon,
   AdminIcon,
-  AdminManagersIcon,
-  AdminManagersFilledIcon,
   OrdersIcon,
 } from "@/icons";
 import { usePathname } from "next/navigation";
