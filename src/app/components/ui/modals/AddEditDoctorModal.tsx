@@ -900,7 +900,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
                       </div>
                     )}
                   </div>
-                  <input ref={deaLicenseFileInputRef} type="file" className="hidden" accept=".pdf,application/pdf" onChange={(e) => { setDeaLicenseDocument(e.target.files?.[0] || null); if (errors.deaLicenseDocument) setErrors((p) => { const n = { ...p }; delete n.deaLicenseDocument; return n; }); }} />
+                  <input ref={deaLicenseFileInputRef} type="file" className="hidden" accept=".pdf,application/pdf,image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp" onChange={(e) => { setDeaLicenseDocument(e.target.files?.[0] || null); if (errors.deaLicenseDocument) setErrors((p) => { const n = { ...p }; delete n.deaLicenseDocument; return n; }); }} />
                   {errors.deaLicenseDocument && <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">{errors.deaLicenseDocument}</p>}
                 </div>
                 {deaLicenseEntries.some((e) => !e.delete) && (
@@ -948,7 +948,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
                             </div>
                           )}
                         </div>
-                        <input ref={(el) => { deaLicenseEntryFileRefs.current[index] = el; }} type="file" className="hidden" accept=".pdf,application/pdf" onChange={(e) => { updateDeaLicenseEntry(index, "deaLicenseDocument", e.target.files?.[0] || null); clearEntryError("deaLicenseDocument"); }} />
+                        <input ref={(el) => { deaLicenseEntryFileRefs.current[index] = el; }} type="file" className="hidden" accept=".pdf,application/pdf,image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp" onChange={(e) => { updateDeaLicenseEntry(index, "deaLicenseDocument", e.target.files?.[0] || null); clearEntryError("deaLicenseDocument"); }} />
                         {entryError("deaLicenseDocument") && <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">{entryError("deaLicenseDocument")}</p>}
                       </div>
                       <div className="flex justify-end">

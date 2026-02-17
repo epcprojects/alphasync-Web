@@ -217,6 +217,13 @@ const Page = () => {
     return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6)}`;
   };
 
+  // Mark that we've shown the profile-complete page once (so we don't redirect them again if they leave without adding DEA)
+  useEffect(() => {
+    if (user?.id && user?.userType?.toLowerCase() === "doctor") {
+      Cookies.set("profile_complete_shown", "1", { expires: 365 });
+    }
+  }, [user?.id, user?.userType]);
+
   useEffect(() => {
     if (!user) {
       router.replace("/login");
@@ -342,10 +349,12 @@ const Page = () => {
     return null;
   };
 
+  const DEA_LICENSE_ACCEPT = ".pdf,application/pdf,image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp";
   const validateLicenseFile = (file: File | null): string | null => {
     if (!file) return null;
     const isPdf = file.type === "application/pdf" || (file.name?.toLowerCase().endsWith(".pdf") ?? false);
-    if (!isPdf) return "License document must be a PDF file";
+    const isImage = /^image\/(jpeg|png|gif|webp)$/.test(file.type) || /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name ?? "");
+    if (!isPdf && !isImage) return "License document must be a PDF or image file (JPEG, PNG, WebP)";
     if (file.size > MAX_LICENSE_FILE_SIZE_BYTES) return `File size must be under ${MAX_LICENSE_FILE_SIZE_MB}MB`;
     return null;
   };
@@ -573,7 +582,7 @@ const Page = () => {
                       </div>
                     )}
                   </div>
-                  <input ref={deaLicenseFileInputRef} type="file" className="hidden" accept=".pdf,application/pdf" onChange={(e) => { const file = e.target.files?.[0] ?? null; setDeaLicenseDocument(file); const err = file ? validateLicenseFile(file) : null; if (err) setDeaErrors((p) => ({ ...p, deaLicenseDocument: err })); else if (deaErrors.deaLicenseDocument) setDeaErrors((p) => { const n = { ...p }; delete n.deaLicenseDocument; return n; }); }} />
+                    <input ref={deaLicenseFileInputRef} type="file" className="hidden" accept={DEA_LICENSE_ACCEPT} onChange={(e) => { const file = e.target.files?.[0] ?? null; setDeaLicenseDocument(file); const err = file ? validateLicenseFile(file) : null; if (err) setDeaErrors((p) => ({ ...p, deaLicenseDocument: err })); else if (deaErrors.deaLicenseDocument) setDeaErrors((p) => { const n = { ...p }; delete n.deaLicenseDocument; return n; }); }} />
                   {deaErrors.deaLicenseDocument && <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">{deaErrors.deaLicenseDocument}</p>}
                 </div>
                 {deaLicenseEntries.map((entry, index) => {
@@ -593,7 +602,7 @@ const Page = () => {
                           <span className="flex-1 px-4 py-2.5 text-sm text-gray-900 truncate">{entry.deaLicenseDocument?.name || (entry.licenseUrl ? getFilenameFromActiveStorageUrl(entry.licenseUrl) : "No file chosen")}</span>
                           {entry.deaLicenseDocument && <button type="button" onClick={() => { updateDeaLicenseEntry(index, "deaLicenseDocument", null); const input = deaLicenseEntryFileRefs.current[index]; if (input) input.value = ""; }} className="p-2.5 text-gray-500 hover:text-gray-700"><CrossIcon width="18" height="18" fill="currentColor" /></button>}
                         </div>
-                        <input ref={(el) => { deaLicenseEntryFileRefs.current[index] = el; }} type="file" className="hidden" accept=".pdf,application/pdf" onChange={(e) => { const file = e.target.files?.[0] ?? null; updateDeaLicenseEntry(index, "deaLicenseDocument", file); const err = file ? validateLicenseFile(file) : null; const key = `deaLicenseEntries.${index}.deaLicenseDocument`; if (err) setDeaErrors((p) => ({ ...p, [key]: err })); else setDeaErrors((p) => { const n = { ...p }; delete n[key]; return n; }); }} />
+                        <input ref={(el) => { deaLicenseEntryFileRefs.current[index] = el; }} type="file" className="hidden" accept={DEA_LICENSE_ACCEPT} onChange={(e) => { const file = e.target.files?.[0] ?? null; updateDeaLicenseEntry(index, "deaLicenseDocument", file); const err = file ? validateLicenseFile(file) : null; const key = `deaLicenseEntries.${index}.deaLicenseDocument`; if (err) setDeaErrors((p) => ({ ...p, [key]: err })); else setDeaErrors((p) => { const n = { ...p }; delete n[key]; return n; }); }} />
                         {entryError("deaLicenseDocument") && <p className="mt-1.5 text-sm font-medium text-red-600" role="alert">{entryError("deaLicenseDocument")}</p>}
                       </div>
                       <div className="flex justify-end">

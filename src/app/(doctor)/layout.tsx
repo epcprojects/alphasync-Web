@@ -1,7 +1,8 @@
 "use client";
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 import { DashboardStats, Header, DoctorRoute, TrainingVideosBlockingPage, Loader } from "../components";
 import {
   SyrupIcon,
@@ -123,10 +124,17 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  // Redirect doctor with no DEA licenses to complete profile first
+  // Redirect doctor with no DEA licenses to profile-complete only once; if they've already seen it, leave them alone
   const isDoctor = user?.userType?.toLowerCase() === "doctor";
   const hasDeaLicenses = (user?.deaLicenses?.length ?? 0) > 0;
-  const shouldRedirectToProfileComplete = !!(user?.id && isDoctor && !hasDeaLicenses);
+  const [profileCompleteShown, setProfileCompleteShown] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    setProfileCompleteShown(Cookies.get("profile_complete_shown") === "1");
+  }, []);
+
+  const shouldRedirectToProfileComplete =
+    !!(user?.id && isDoctor && !hasDeaLicenses && profileCompleteShown === false);
 
   useEffect(() => {
     if (!shouldRedirectToProfileComplete) return;
@@ -156,8 +164,10 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     }
   );
 
-  // Don't render doctor UI when redirecting to profile-complete — show loader to avoid screen blink
-  if (shouldRedirectToProfileComplete) {
+  // Don't render doctor UI when redirecting to profile-complete or while checking cookie — show loader
+  const noDeaAndCheckingOrRedirecting =
+    user?.id && isDoctor && !hasDeaLicenses && (profileCompleteShown === null || profileCompleteShown === false);
+  if (noDeaAndCheckingOrRedirecting) {
     return (
       <DoctorRoute>
         <div className="flex min-h-screen items-center justify-center">
