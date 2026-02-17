@@ -33,7 +33,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     lastName: "",
     phoneNo: "",
     email: "",
-    medicalLicense: "",
+    npiNumber: "",
     specialty: "",
     status: "Active",
     clinic: "",
@@ -57,7 +57,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
         "Phone number must be in format (512) 312-3123"
       ),
     email: Yup.string().email("Invalid email").required("Email is required"),
-    medicalLicense: Yup.string().required("Medical License is required"),
+    npiNumber: Yup.string().required("NPI number is required"),
     specialty: Yup.string().required("Specialty is required"),
     status: Yup.string().oneOf(["Active", "Inactive"]).required(),
     street1: Yup.string().required("Street address is required"),
@@ -212,7 +212,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           lastName: initialData.lastName || lastName,
           phoneNo: initialData.phoneNo || "",
           email: initialData.email || "",
-          medicalLicense: initialData.medicalLicense || "",
+          npiNumber: initialData.npiNumber || "",
           specialty: initialData.specialty || "",
           status:
             initialData.status === "ACTIVE"
@@ -235,7 +235,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           lastName: "",
           phoneNo: "",
           email: "",
-          medicalLicense: "",
+          npiNumber: "",
           specialty: "",
           status: "Active",
           clinic: "",
@@ -259,7 +259,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       lastName,
       phoneNo,
       email,
-      medicalLicense,
+      npiNumber,
       specialty,
       status,
       street1,
@@ -274,7 +274,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     if (!lastName) emptyFields.push("lastName");
     if (!phoneNo) emptyFields.push("phoneNo");
     if (!email) emptyFields.push("email");
-    if (!medicalLicense) emptyFields.push("medicalLicense");
+    if (!npiNumber) emptyFields.push("npiNumber");
     if (!specialty) emptyFields.push("specialty");
     if (!status) emptyFields.push("status");
     if (!street1) emptyFields.push("street1");
@@ -480,15 +480,15 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
           <div className="w-full">
             <ThemeInput
               required
-              label="Medical License"
+              label="NPI number"
               placeholder="Enter license number"
-              name="medicalLicense"
-              error={!!errors.medicalLicense}
-              errorMessage={errors.medicalLicense}
-              id="medicalLicense"
-              onChange={(e) => handleChange("medicalLicense", e.target.value)}
+              name="npiNumber"
+              error={!!errors.npiNumber}
+              errorMessage={errors.npiNumber}
+              id="npiNumber"
+              onChange={(e) => handleChange("npiNumber", e.target.value)}
               type="text"
-              value={formData.medicalLicense}
+              value={formData.npiNumber}
             />
           </div>
 

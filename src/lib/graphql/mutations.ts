@@ -47,7 +47,7 @@ export const CREATE_INVITATION = gql`
     $lastName: String
     $userType: UserTypeEnum
     $phoneNo: String
-    $medicalLicense: String
+    $npiNumber: String
     $status: UserStatusEnum
     $specialty: String
     $image: Upload
@@ -69,7 +69,7 @@ export const CREATE_INVITATION = gql`
           image: $image
           userType: $userType
           phoneNo: $phoneNo
-          medicalLicense: $medicalLicense
+          npiNumber: $npiNumber
           status: $status
           street1: $street1
           street2: $street2
@@ -110,7 +110,7 @@ export const UPDATE_USER = gql`
     $lastName: String
     $userType: UserTypeEnum
     $phoneNo: String
-    $medicalLicense: String
+    $npiNumber: String
     $status: UserStatusEnum
     $specialty: String
     $clinic: String
@@ -136,7 +136,7 @@ export const UPDATE_USER = gql`
           image: $image
           userType: $userType
           phoneNo: $phoneNo
-          medicalLicense: $medicalLicense
+          npiNumber: $npiNumber
           status: $status
           addressVerified: $addressVerified
           street1: $street1
@@ -226,7 +226,7 @@ export const UPDATE_DOCTOR = gql`
     $lastName: String
     $phoneNo: String
     $image: Upload
-    $medicalLicense: String
+    $npiNumber: String
     $specialty: String
     $clinic: String
     $street1: String
@@ -252,7 +252,7 @@ export const UPDATE_DOCTOR = gql`
           lastName: $lastName
           phoneNo: $phoneNo
           image: $image
-          medicalLicense: $medicalLicense
+          npiNumber: $npiNumber
           specialty: $specialty
           clinic: $clinic
           street1: $street1

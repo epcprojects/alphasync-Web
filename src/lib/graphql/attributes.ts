@@ -10,7 +10,7 @@ export const userpayload = `
         id
         imageUrl
         lastSignInAt
-        medicalLicense
+        npiNumber
         phoneNo
         rememberMe
         revokeAccess
@@ -57,7 +57,7 @@ export interface UserAttributes {
   specialty?: string;
   clinic?: string;
   lastSignInAt?: string;
-  medicalLicense?: string;
+  npiNumber?: string;
   phoneNo?: string;
   rememberMe?: boolean;
   revokeAccess?: boolean;

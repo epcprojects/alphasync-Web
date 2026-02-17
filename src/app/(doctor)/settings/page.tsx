@@ -312,7 +312,7 @@ const Page = () => {
         /^\(\d{3}\)\s\d{3}-\d{4}$/,
         "Phone number must be in format (512) 312-3123"
       ),
-    medicalLicense: Yup.string().required("Medical license is required"),
+    npiNumber: Yup.string().required("NPI number is required"),
     specialty: Yup.string().required("Specialty is required"),
     street1: Yup.string().required("Street address is required"),
     street2: Yup.string().optional(),
@@ -525,7 +525,7 @@ const Page = () => {
                       "",
                     email: user?.email ?? "",
                     phoneNo: user?.phoneNo ?? "",
-                    medicalLicense: user?.medicalLicense ?? "",
+                    npiNumber: user?.npiNumber ?? "",
                     specialty: user?.specialty ?? "",
                     clinic: user?.clinic ?? "",
                     street1: user?.street1 ?? "",
@@ -552,7 +552,7 @@ const Page = () => {
                         lastName: values.lastName,
                         email: values.email,
                         phoneNo: values.phoneNo,
-                        medicalLicense: values.medicalLicense,
+                        npiNumber: values.npiNumber,
                         specialty: values.specialty,
                         clinic: values.clinic || null,
                         street1: values.street1 || null,
@@ -692,18 +692,18 @@ const Page = () => {
                             htmlFor=""
                             className="text-xs md:text-sm text-gray-700 font-semibold"
                           >
-                            Medical License
+                            NPI number
                           </label>
                         </div>
                         <div className="col-span-12 md:col-span-8 lg:col-span-8">
                           <ThemeInput
                             type="text"
-                            name="medicalLicense"
-                            value={values.medicalLicense}
+                            name="npiNumber"
+                            value={values.npiNumber}
                             onChange={handleChange}
                           />
                           <ErrorMessage
-                            name="medicalLicense"
+                            name="npiNumber"
                             component="div"
                             className="text-red-500 text-xs"
                           />
