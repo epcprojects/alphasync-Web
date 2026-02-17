@@ -509,9 +509,10 @@ export default function PostDetail() {
                   Dosage
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                  {product.variants?.[0]?.price
+                  {/* {product.variants?.[0]?.price
                     ? `${product.variants[0].price}mg vial`
-                    : "5mg vial"}
+                    : "5mg vial"} */}
+                  --
                 </span>
               </div>
 
@@ -520,7 +521,8 @@ export default function PostDetail() {
                   Active Ingredient
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                  {product?.variants?.[0]?.sku}
+                  {/* {product?.variants?.[0]?.sku} */}
+                  --
                 </span>
               </div>
               {product?.tags && product.tags.length > 0 && (
