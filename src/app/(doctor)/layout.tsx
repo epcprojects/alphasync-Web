@@ -133,6 +133,29 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     router.replace("/profile-complete");
   }, [shouldRedirectToProfileComplete, router]);
 
+  const isMobile = useIsMobile();
+  const {
+    data: dashboardData,
+    loading: dashboardLoading,
+    error: dashboardError,
+  } = useQuery<DoctorDashboardResponse>(DOCTOR_DASHBOARD, {
+    skip: !user?.id || shouldRedirectToProfileComplete,
+    fetchPolicy: "network-only",
+  });
+  const [markAllVideosAsViewed, { loading: markAllLoading }] = useMutation(
+    MARK_ALL_VIDEOS_AS_VIEWED,
+    {
+      onCompleted: (data) => {
+        if (data?.markVideoAsViewed?.success && user) {
+          dispatch(setUser({ ...user, hasViewedAllVideos: true }));
+        }
+      },
+      onError: (error) => {
+        console.error("Failed to mark all videos as viewed:", error);
+      },
+    }
+  );
+
   // Don't render doctor UI when redirecting to profile-complete — show loader to avoid screen blink
   if (shouldRedirectToProfileComplete) {
     return (
@@ -144,8 +167,11 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     );
   }
 
+  if (dashboardError) {
+    console.error("Failed to load doctor dashboard stats:", dashboardError);
+  }
+
   // Check if doctor hasn't viewed all videos (allow access to training-videos page)
-  // Only show training videos flow when doctor has at least one DEA license
   const hasNotViewedAllVideos = isDoctor && hasDeaLicenses && user?.hasViewedAllVideos === false;
   const isTrainingVideosPage = pathname === "/training-videos";
   const shouldShowBlockingPage = hasNotViewedAllVideos && !isTrainingVideosPage;
@@ -166,21 +192,6 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const showSubHeads = showSubHeading.some((route) =>
     pathname.startsWith(route),
   );
-
-  const isMobile = useIsMobile();
-
-  const {
-    data: dashboardData,
-    loading: dashboardLoading,
-    error: dashboardError,
-  } = useQuery<DoctorDashboardResponse>(DOCTOR_DASHBOARD, {
-    skip: !user?.id,
-    fetchPolicy: "network-only",
-  });
-
-  if (dashboardError) {
-    console.error("Failed to load doctor dashboard stats:", dashboardError);
-  }
 
   const hasMyClinic = menuItems.some((item) => item.href.includes("clinic"));
 
@@ -238,29 +249,6 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       bgColor: "bg-orange-400",
     },
   ];
-
-  // Mutation to mark all videos as viewed
-  const [markAllVideosAsViewed, { loading: markAllLoading }] = useMutation(
-    MARK_ALL_VIDEOS_AS_VIEWED,
-    {
-      onCompleted: (data) => {
-        if (data?.markVideoAsViewed?.success) {
-          // Update user in Redux so blocking page disappears
-          if (user) {
-            dispatch(
-              setUser({
-                ...user,
-                hasViewedAllVideos: true,
-              })
-            );
-          }
-        }
-      },
-      onError: (error) => {
-        console.error("Failed to mark all videos as viewed:", error);
-      },
-    }
-  );
 
   const accountStats = [
     {
