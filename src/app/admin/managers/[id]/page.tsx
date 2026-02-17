@@ -1,32 +1,17 @@
 "use client";
-
-import { Pagination, Skeleton, ThemeButton } from "@/app/components";
+import { Pagination } from "@/app/components";
 import { useQuery } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
-    AdminFilledIcon,
-  AdminManagersFilledIcon,
-  ArrowDownIcon,
-  ArrowLeftIcon,
   KeyLeftIcon,
-  NoUserIcon,
-  OrganizationFilledIcon,
-  PlusIcon,
-  SearchIcon,
 } from "@/icons";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import type { AllProductsResponse } from "@/types/products";
-import EmptyResult from "@/app/components/ui/EmptyResult/EmptyResult";
-import OrganizationDatabaseView, { OganizationUser } from "@/app/components/ui/cards/OrganizationDatabaseView";
-import AddEditUserModal from "@/app/components/ui/modals/AddEditUserModal";
-import { Button, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import AddEditManagerModal from "@/app/components/ui/modals/AddEditManagerModal";
-import ManagersDatabaseView, { ManagersType } from "@/app/components/ui/cards/ManagersDatabaseView";
-import CustomerProfileHeaderCard from "@/app/components/ui/cards/CustomerProfileHeaderCard";
+import { ManagersType } from "@/app/components/ui/cards/ManagersDatabaseView";
 import ManagerProfileHeaderCard from "@/app/components/ui/cards/ManagerProfileHeaderCard";
-import DoctorDatabaseView from "@/app/components/ui/cards/DoctorsDatabaseView";
 import ManagerDoctorsDatabaseView from "@/app/components/ui/cards/ManagerDoctorsDatabaseView";
 import AssignDoctorModal from "@/app/components/ui/modals/AssignDoctorModal";
 
@@ -36,11 +21,6 @@ const Page = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [editUser, seteditUser] = useState<ManagersType | null>(null);
  const [showAssignDoctor, setshowAssignDoctor] = useState(false);
-  
-  function handleEdit(user: ManagersType){
-     seteditUser(user);
-      setshowAddEditModal(true);
-  }
   const [showAddEditModal, setshowAddEditModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
@@ -64,13 +44,7 @@ const Page = () => {
       },
       fetchPolicy: "network-only",
     },
-  );
-  const ManagerStatuses = [
-      { label: "All Status", value: "", color: "" },
-      { label: "Active", value: "Active", color: "before:bg-green-500" },
-      { label: "Inactive", value: "Inactive", color: "before:bg-red-500" },
-    ];
-    const [status, setStatus] = useState("");
+  )
 const TEST_DATA = [
     {
       id: 1,
@@ -151,21 +125,6 @@ const TEST_DATA = [
                 ))}
         <Pagination currentPage={1} totalPages={20} onPageChange={() => {}} />
       </div>
-
-      {/* <EmptyResult
-        title={"No managers added yet."}
-        description={
-          <p className="font-medium text-lg text-gray-800">
-            <Button className="text-primary hover:underline underline-offset-2" onClick={()=>setshowAddEditModal(true)}>
-             Create managers 
-            </Button>{" "}
-            to assign doctors and monitor their orders, shops, and accounting.
-          </p>
-        }
-        buttonLabel="Add Manager"
-        buttonOnClick={() => setshowAddEditModal(true)}
-        icon={<NoUserIcon />}
-      /> */}
   <AssignDoctorModal 
       isOpen={showAssignDoctor} onClose={
         () => {

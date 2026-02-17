@@ -5,9 +5,7 @@ import {  useQuery } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
     ArrowDownIcon,
-  DoctorFilledIcon,
   OrdersFilledIcon,
-  OrdersIcon,
   SearchIcon,
 } from "@/icons";
 
@@ -18,7 +16,6 @@ import type { AllProductsResponse } from "@/types/products";
 
 import {  Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
-import DoctorDatabaseView from "@/app/components/ui/cards/DoctorsDatabaseView";
 import OrdersDatabaseView from "@/app/components/ui/cards/OrdersDatabaseView";
 import { id } from "date-fns/locale";
 

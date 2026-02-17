@@ -1,14 +1,12 @@
 "use client";
 
-import { Pagination, Skeleton, ThemeButton } from "@/app/components";
+import { Pagination, ThemeButton } from "@/app/components";
 import { useQuery } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
-  AdminFilledIcon,
   AdminManagersFilledIcon,
   ArrowDownIcon,
   NoUserIcon,
-  OrganizationFilledIcon,
   PlusIcon,
   SearchIcon,
 } from "@/icons";
@@ -17,17 +15,7 @@ import React, { useEffect, useState } from "react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import type { AllProductsResponse } from "@/types/products";
 import EmptyResult from "@/app/components/ui/EmptyResult/EmptyResult";
-import OrganizationDatabaseView, {
-  OganizationUser,
-} from "@/app/components/ui/cards/OrganizationDatabaseView";
-import AddEditUserModal from "@/app/components/ui/modals/AddEditUserModal";
-import {
-  Button,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from "@headlessui/react";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import AddEditManagerModal from "@/app/components/ui/modals/AddEditManagerModal";
 import ManagersDatabaseView, {
   ManagersType,

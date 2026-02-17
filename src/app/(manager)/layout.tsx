@@ -39,8 +39,6 @@ const headings: Record<string, string> = {
 };
 
 const subHeadings: Record<string, string> = {
-  //   "/reminder": "Customers who haven't ordered specific products in 30-45 days",
-  //   "/requests": "Review and manage patient medication requests",
 };
 
 const noStatsRoutes: string[] = [

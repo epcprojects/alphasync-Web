@@ -3,7 +3,7 @@
 import {
   Pagination,
 } from "@/app/components";
-import { useMutation, useQuery } from "@apollo/client/react";
+import {  useQuery } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   ArrowDownIcon,
@@ -11,18 +11,10 @@ import {
   SearchIcon,
 } from "@/icons";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import type { AllProductsResponse } from "@/types/products";
-import { useAppDispatch } from "@/lib/store/hooks";
-import { addItem } from "@/lib/store/slices/cartSlice";
 import {
-  ADD_TO_CART,
-  MARK_PRODUCT_NOT_FOR_SALE,
-} from "@/lib/graphql/mutations";
-import { showErrorToast } from "@/lib/toast";
-import {
-  Button,
   Menu,
   MenuButton,
   MenuItem,
