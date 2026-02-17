@@ -4,7 +4,7 @@ import AppModal from "./AppModal";
 import { useEffect, useState } from "react";
 import { useMutation } from "@apollo/client";
 import { InventoryIcon } from "@/icons";
-import Image from "next/image";
+import ProductImage from "@/app/components/ui/ProductImage";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { UPDATE_PRODUCT_PRICE } from "@/lib/graphql/mutations";
 import { useAppSelector } from "@/lib/store/hooks";
@@ -128,11 +128,13 @@ const PriceModal: React.FC<ModalProps> = ({ isOpen, onClose, onSuccess, product 
     >
       <div className="flex flex-col gap-6">
         <div className="bg-gray-50 border flex items-center gap-3 sm:gap-5 border-gray-200 rounded-xl p-2.5">
-          {product?.imageUrl ? (
-            <Image alt="" src={product.imageUrl} width={112} height={112} />
-          ) : (
-            <div className="h-28 w-28 bg-gray-200 rounded-lg" />
-          )}
+          <ProductImage
+            src={product?.imageUrl}
+            alt={product?.title ?? "Product"}
+            width={112}
+            height={112}
+            className="rounded-lg object-cover h-28 w-28"
+          />
           <h2 className="text-gray-900 text-lg font-medium">
             {product?.title || "Product"}
           </h2>

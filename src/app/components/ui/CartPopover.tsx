@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Fragment, useMemo } from "react";
-import Image from "next/image";
+import ProductImage from "@/app/components/ui/ProductImage";
 import {
   Popover,
   PopoverButton,
@@ -108,13 +108,13 @@ export default function CartPopover() {
                         className="flex items-start border-b pb-4 last:pb-0 border-b-gray-200 last:border-b-0 gap-4"
                       >
                         <div className="space-x-5 flex">
-                          <div className="relative h-17.5 w-17.5 shrink-0 overflow-hidden">
-                            <Image
+                          <div className="relative h-17.5 w-17.5 shrink-0 overflow-hidden rounded-lg">
+                            <ProductImage
                               src={item.imageSrc}
                               alt={item.name}
-                              fill
-                              className="object-cover"
-                              sizes="70px"
+                              width={70}
+                              height={70}
+                              className="object-cover h-full w-full"
                             />
                           </div>
 
