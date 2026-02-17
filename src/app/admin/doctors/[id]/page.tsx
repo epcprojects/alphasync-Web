@@ -10,6 +10,9 @@ import  { ManagersType } from "@/app/components/ui/cards/ManagersDatabaseView";
 import AssignDoctorModal from "@/app/components/ui/modals/AssignDoctorModal";
 import DoctorProfileHeaderCard from "@/app/components/ui/cards/DoctorProfileHeaderCard";
 import DoctorProfileLicensesCard, { itemsArray } from "@/app/components/ui/cards/DoctorProfileLicensesCard";
+import { useQuery } from "@apollo/client";
+import { AllProductsResponse } from "@/types/products";
+import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 
 const Page = () => {
   const isMobile = useIsMobile();
@@ -34,18 +37,18 @@ const Page = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // const { error } = useQuery<AllProductsResponse>(
-  //   ALL_PRODUCTS_INVENTORY,
-  //   {
-  //     variables: {
-  //       search: debouncedSearch || null,
-  //       page: currentPage,
-  //       perPage: itemsPerPage,
-  //       markedUp: true,
-  //     },
-  //     fetchPolicy: "network-only",
-  //   },
-  // );
+  const { error } = useQuery<AllProductsResponse>(
+    ALL_PRODUCTS_INVENTORY,
+    {
+      variables: {
+        search: debouncedSearch || null,
+        page: currentPage,
+        perPage: itemsPerPage,
+        markedUp: true,
+      },
+      fetchPolicy: "network-only",
+    },
+  );
  
   const licenceItemsArray: itemsArray[] = [
     {
@@ -89,15 +92,15 @@ const Page = () => {
     },
   ];
   const router = useRouter();
-  // if (error) {
-  //   return (
-  //     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
-  //       <div className="bg-white rounded-xl border border-red-200 p-6 md:p-12 text-center text-red-500 text-sm">
-  //         Failed to load managers. Please try again.
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (error) {
+    return (
+      <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
+        <div className="bg-white rounded-xl border border-red-200 p-6 md:p-12 text-center text-red-500 text-sm">
+          Failed to load managers. Please try again.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
