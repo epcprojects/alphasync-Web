@@ -1504,7 +1504,7 @@ const Page = () => {
                                 ref={deaLicenseFileInputRef}
                                 type="file"
                                 className="hidden"
-                                accept=".pdf,application/pdf"
+                                accept=".pdf,application/pdf,image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp"
                                 onChange={(e) => {
                                   setDeaLicenseDocument(e.target.files?.[0] || null);
                                   if (deaErrors.deaLicenseDocument) setDeaErrors((prev) => { const next = { ...prev }; delete next.deaLicenseDocument; return next; });
@@ -1643,7 +1643,7 @@ const Page = () => {
                                         ref={(el) => { deaLicenseEntryFileRefs.current[index] = el; }}
                                         type="file"
                                         className="hidden"
-                                        accept=".pdf,application/pdf"
+                                        accept=".pdf,application/pdf,image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp"
                                         onChange={(e) => {
                                           updateDeaLicenseEntry(index, "deaLicenseDocument", e.target.files?.[0] || null);
                                           clearEntryError("deaLicenseDocument");

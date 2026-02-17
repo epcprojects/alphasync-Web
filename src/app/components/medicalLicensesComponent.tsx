@@ -106,7 +106,7 @@ const MedicalLicensesSection: React.FC<Props> = ({
 
                 <div>
                   <ThemeInput
-                    label="Upload License Document"
+                    label="Upload License Document (PDF or image)"
                     type="file"
                     name={`${base}.licenseDocument`}
                     className="bg-white"
