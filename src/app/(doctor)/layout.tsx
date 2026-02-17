@@ -1,7 +1,8 @@
 "use client";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { useQuery, useMutation } from "@apollo/client";
-import { DashboardStats, Header, DoctorRoute, TrainingVideosBlockingPage } from "../components";
+import { useRouter } from "next/navigation";
+import { DashboardStats, Header, DoctorRoute, TrainingVideosBlockingPage, Loader } from "../components";
 import {
   SyrupIcon,
   InventoryIcon,
@@ -48,7 +49,7 @@ const poppins_init = Poppins({
 });
 
 const menuItems = [
-  { label: "Shop", href: "/shop", icon: InventoryIcon },
+  { label: "My Store", href: "/my-store", icon: InventoryIcon },
   { label: "Inventory", href: "/inventory", icon: InventoryIcon },
   { label: "Accounting", href: "/accounting", icon: DashboardIcon },
   { label: "Customers", href: "/customers", icon: CustomerIcon },
@@ -120,10 +121,58 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
   const pathname = usePathname();
-  
-  // Check if doctor hasn't viewed all videos (allow access to training-videos page)
+  const router = useRouter();
+
+  // Redirect doctor with no DEA licenses to complete profile first
   const isDoctor = user?.userType?.toLowerCase() === "doctor";
-  const hasNotViewedAllVideos = isDoctor && user?.hasViewedAllVideos === false;
+  const hasDeaLicenses = (user?.deaLicenses?.length ?? 0) > 0;
+  const shouldRedirectToProfileComplete = !!(user?.id && isDoctor && !hasDeaLicenses);
+
+  useEffect(() => {
+    if (!shouldRedirectToProfileComplete) return;
+    router.replace("/profile-complete");
+  }, [shouldRedirectToProfileComplete, router]);
+
+  const isMobile = useIsMobile();
+  const {
+    data: dashboardData,
+    loading: dashboardLoading,
+    error: dashboardError,
+  } = useQuery<DoctorDashboardResponse>(DOCTOR_DASHBOARD, {
+    skip: !user?.id || shouldRedirectToProfileComplete,
+    fetchPolicy: "network-only",
+  });
+  const [markAllVideosAsViewed, { loading: markAllLoading }] = useMutation(
+    MARK_ALL_VIDEOS_AS_VIEWED,
+    {
+      onCompleted: (data) => {
+        if (data?.markVideoAsViewed?.success && user) {
+          dispatch(setUser({ ...user, hasViewedAllVideos: true }));
+        }
+      },
+      onError: (error) => {
+        console.error("Failed to mark all videos as viewed:", error);
+      },
+    }
+  );
+
+  // Don't render doctor UI when redirecting to profile-complete — show loader to avoid screen blink
+  if (shouldRedirectToProfileComplete) {
+    return (
+      <DoctorRoute>
+        <div className="flex min-h-screen items-center justify-center">
+          <Loader />
+        </div>
+      </DoctorRoute>
+    );
+  }
+
+  if (dashboardError) {
+    console.error("Failed to load doctor dashboard stats:", dashboardError);
+  }
+
+  // Check if doctor hasn't viewed all videos (allow access to training-videos page)
+  const hasNotViewedAllVideos = isDoctor && hasDeaLicenses && user?.hasViewedAllVideos === false;
   const isTrainingVideosPage = pathname === "/training-videos";
   const shouldShowBlockingPage = hasNotViewedAllVideos && !isTrainingVideosPage;
   const heading =
@@ -143,21 +192,6 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const showSubHeads = showSubHeading.some((route) =>
     pathname.startsWith(route),
   );
-
-  const isMobile = useIsMobile();
-
-  const {
-    data: dashboardData,
-    loading: dashboardLoading,
-    error: dashboardError,
-  } = useQuery<DoctorDashboardResponse>(DOCTOR_DASHBOARD, {
-    skip: !user?.id,
-    fetchPolicy: "network-only",
-  });
-
-  if (dashboardError) {
-    console.error("Failed to load doctor dashboard stats:", dashboardError);
-  }
 
   const hasMyClinic = menuItems.some((item) => item.href.includes("clinic"));
 
@@ -215,29 +249,6 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       bgColor: "bg-orange-400",
     },
   ];
-
-  // Mutation to mark all videos as viewed
-  const [markAllVideosAsViewed, { loading: markAllLoading }] = useMutation(
-    MARK_ALL_VIDEOS_AS_VIEWED,
-    {
-      onCompleted: (data) => {
-        if (data?.markVideoAsViewed?.success) {
-          // Update user in Redux so blocking page disappears
-          if (user) {
-            dispatch(
-              setUser({
-                ...user,
-                hasViewedAllVideos: true,
-              })
-            );
-          }
-        }
-      },
-      onError: (error) => {
-        console.error("Failed to mark all videos as viewed:", error);
-      },
-    }
-  );
 
   const accountStats = [
     {
@@ -315,11 +326,16 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     );
   }
 
+  // Hide Training Videos nav item until doctor has added DEA licenses
+  const menuItemsToShow = hasDeaLicenses
+    ? menuItems
+    : menuItems.filter((item) => item.href !== "/training-videos");
+
   return (
     <DoctorRoute>
       <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
         <div className="px-2 py-3 md:p-4 md:pb-6 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex lg:p-5 flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-[20px] !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
-          <Header menuItems={menuItems} />
+          <Header menuItems={menuItemsToShow} />
 
           {!hideStats && (
             <DashboardStats

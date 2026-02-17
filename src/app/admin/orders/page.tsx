@@ -63,22 +63,22 @@ interface OrdersResponse {
   };
 }
 
-/** API date is already UTC. Return date part and 12-hour time for display. */
-function formatDateUtcParts(
+/** API date is UTC. Convert to user's local timezone and return date part and 12-hour time for display. */
+function formatDateLocalParts(
   dateInput: string | null | undefined
 ): { datePart: string; timePart12h: string } | null {
   if (!dateInput) return null;
   const iso = dateInput.endsWith("Z") ? dateInput : `${dateInput.replace(/Z?$/, "")}Z`;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  const yy = String(d.getUTCFullYear()).slice(-2);
-  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
   const datePart = `${mm}-${dd}-${yy}`;
-  const h = d.getUTCHours();
+  const h = d.getHours();
   const h12 = h % 12 || 12;
   const ampm = h < 12 ? "AM" : "PM";
-  const min = String(d.getUTCMinutes()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
   const timePart12h = `${h12}:${min} ${ampm}`;
   return { datePart, timePart12h };
 }
@@ -339,7 +339,7 @@ function OrdersContent() {
                               imageUrl: customerImageUrl,
                               customerEmail,
                               date: (() => {
-                                const parts = formatDateUtcParts(
+                                const parts = formatDateLocalParts(
                                   order.processedAt || order.createdAt
                                 );
                                 if (!parts) return "—";
@@ -347,10 +347,7 @@ function OrdersContent() {
                                   <>
                                     {parts.datePart}
                                     <br />
-                                    <span className="">
-                                      {parts.timePart12h}{" "}
-                                      <span className="text-[10px] text-gray-500">(utc)</span>
-                                    </span>
+                                    <span className="">{parts.timePart12h}</span>
                                   </>
                                 );
                               })(),

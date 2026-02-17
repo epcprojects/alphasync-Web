@@ -120,14 +120,14 @@ export const transformGraphQLProduct = (
     originalId: product.id, // Store the original GraphQL ID
     title: product.title,
     description: product.description || "",
-    category: product.category || "---",
+    category: product.category || "--",
     stock: product.inStock ?? false,
     price: `$${priceValue.toFixed(2)}`,
     image: normalizedPrimaryImage,
     primaryImage: normalizedPrimaryImage || undefined,
     isFavourite: product.isFavorited || false,
     prescription: false, // Default value, can be enhanced later
-    productForm: "Injectable", // Default value, can be enhanced later
+    productForm: "--", // Default value, can be enhanced later
     tags: product.tags?.length ? product.tags : undefined,
     variants: product.variants?.map((variant) => ({
       id: variant.id,

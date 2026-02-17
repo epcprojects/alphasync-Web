@@ -67,14 +67,14 @@ const Dropdown = ({
   return (
     <div className={`${width}`}>
       {label && (
-        <span className="block mb-1 text-sm text-slate-700 font-normal text-start">
+        <span className="block mb-1 text-sm text-slate-700 font-medium text-start">
           {label} {required && <span className="text-red-500"> *</span>}
         </span>
       )}
 
       <Menu as="div" className="relative w-full flex">
         <MenuButton
-          className={`w-full h-11 p-2 md:px-3.5 md:py-2.5 border focus:rin-0  justify-between flex gap-2 items-center rounded-lg outline-none text-slate-900 placeholder:text-slate-400 placeholder:font-normal 
+          className={`w-full bg-white h-11 p-2 md:px-3.5 md:py-2.5 border focus:rin-0  justify-between flex gap-2 items-center rounded-lg outline-none text-slate-900 placeholder:text-slate-400 placeholder:font-normal 
               ${
                 error
                   ? "border-red-500 focus:ring-red-200"
@@ -89,8 +89,10 @@ const Dropdown = ({
         </MenuButton>
 
         <MenuItems
+          portal
+          anchor="bottom start"
           transition
-          className="z-50 absolute mt-12 w-full bg-white border border-slate-200 rounded-lg shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm transition duration-100 ease-out focus:outline-none data-closed:scale-95 data-closed:opacity-0"
+          className="z-[200] min-w-[var(--button-width,10rem)] bg-white border border-slate-200 rounded-lg shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm transition duration-100 ease-out focus:outline-none data-closed:scale-95 data-closed:opacity-0"
           // ✅ when menu loses focus (closes), clear search
           onBlur={resetQuery}
           // ✅ Escape clears query too

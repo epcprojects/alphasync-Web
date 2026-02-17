@@ -92,13 +92,13 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 </p>
                 <div className="flex items-center gap-2 md:gap-3 text-xs font-normal text-gray-800">
                   <span>{product?.variants?.[0]?.sku || " "}</span>
-                  <span
+                  {/* <span
                     className={`${
                       product?.variants?.[0]?.sku && "border-l pl-2 md:pl-3"
                     }  border-gray-200 `}
                   >
                     Injectable
-                  </span>
+                  </span> */}
                   <span className="border-l border-gray-200 pl-2 md:pl-3">
                     Rx Required
                   </span>

@@ -22,7 +22,7 @@ import { useMutation } from "@apollo/client";
 import { Formik, Form, FormikHelpers } from "formik";
 import * as Yup from "yup";
 
-const PHONE_MESSAGE = "Phone number must be in format (512) 312-3123";
+const PHONE_MESSAGE = "Phone number must be in format (000) 000-0000";
 const phoneNumberRegex = /^\(\d{3}\)\s\d{3}-\d{4}$/;
 
 type VerifyInfoFormValues = {
@@ -431,7 +431,7 @@ function VerifyInfoContent() {
                   <ThemeInput
                     label="Phone Number"
                     name="phoneNo"
-                    placeholder="(512) 312-3123"
+                    placeholder="(000) 000-0000"
                     value={formik.values.phoneNo}
                     onChange={(event) =>
                       formik.setFieldValue(

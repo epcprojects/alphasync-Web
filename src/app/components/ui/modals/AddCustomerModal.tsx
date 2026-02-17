@@ -68,7 +68,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
         .required("Phone number is required")
         .matches(
           /^\(\d{3}\)\s\d{3}-\d{4}$/,
-          "Please enter a valid phone number in format (316) 555-0116"
+          "Please enter a valid phone number in format (000) 000-0000"
         ),
       dateOfBirth: Yup.string()
         .required("Date of Birth is required")
@@ -467,7 +467,7 @@ const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                 <ThemeInput
                   required
                   label="Phone Number"
-                  placeholder="(316) 555-0116"
+                  placeholder="(000) 000-0000"
                   name="phoneNo"
                   error={!!errors.phoneNo}
                   errorMessage={errors.phoneNo}

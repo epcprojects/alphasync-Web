@@ -137,6 +137,11 @@ export default function PostDetail() {
   };
 
   // Transform product images for ProductSwiper with better fallback logic
+  const useRxPlaceholder =
+    product?.vendor != null && product.vendor !== "Alpha BioMed";
+  const defaultPlaceholder = useRxPlaceholder
+    ? "/images/products/rx-placeholder.png"
+    : "/images/products/placeholder.png";
 
   const productViews = (() => {
     // Fallback to primary image
@@ -147,6 +152,7 @@ export default function PostDetail() {
           title: product.title || "Product Image",
           imagePath: product.primaryImage,
           thumbnailPath: product.primaryImage,
+          vendor: product.vendor,
         },
       ];
     }
@@ -156,8 +162,9 @@ export default function PostDetail() {
       {
         id: "default",
         title: product?.title || "Product Image",
-        imagePath: "/images/products/placeholder.png",
-        thumbnailPath: "/images/products/placeholder.png",
+        imagePath: defaultPlaceholder,
+        thumbnailPath: defaultPlaceholder,
+        vendor: product?.vendor,
       },
     ];
   })();

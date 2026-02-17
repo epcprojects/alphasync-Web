@@ -61,7 +61,7 @@ const Page = () => {
       .required("Phone number is required")
       .matches(
         /^\(\d{3}\)\s\d{3}-\d{4}$/,
-        "Phone number must be in format (512) 312-3123"
+        "Phone number must be in format (000) 000-0000"
       ),
     dateOfBirth: Yup.string()
       .required("Date of Birth is required")
@@ -549,7 +549,7 @@ const Page = () => {
                               );
                               setFieldValue("phoneNo", formatted);
                             }}
-                            placeholder="(316) 555-0116"
+                            placeholder="(000) 000-0000"
                             className="[&::-webkit-outer-spin-button]:appearance-none [moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <ErrorMessage

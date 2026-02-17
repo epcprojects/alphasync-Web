@@ -17,7 +17,7 @@ import type { AllProductsResponse } from "@/types/products";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { addItem } from "@/lib/store/slices/cartSlice";
 import { ADD_TO_CART, MARK_PRODUCT_NOT_FOR_SALE } from "@/lib/graphql/mutations";
-import { showErrorToast } from "@/lib/toast";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 const Page = () => {
   const isMobile = useIsMobile();
@@ -31,7 +31,7 @@ const Page = () => {
   });
   const [markProductNotForSale] = useMutation(MARK_PRODUCT_NOT_FOR_SALE, {
     onError: (e) => {
-      showErrorToast(e.message || "Failed to remove from shop");
+      showErrorToast(e.message || "Failed to remove from your store");
     },
   });
 
@@ -131,7 +131,7 @@ const Page = () => {
     return (
       <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
         <div className="bg-white rounded-xl border border-red-200 p-6 md:p-12 text-center text-red-500 text-sm">
-          Failed to load shop products. Please try again.
+          Failed to load my store products. Please try again.
         </div>
       </div>
     );
@@ -149,7 +149,7 @@ const Page = () => {
           </span>
           <div className="">
             <h2 className="lg:w-full text-black font-semibold text-base md:text-xl ">
-              Shop now
+              My Store
             </h2>
             <p className="text-sm sm:text-base">
               These are the items your customers see. They won’t see your clinic
@@ -160,7 +160,7 @@ const Page = () => {
 
         <div className="flex flex-col sm:flex-row w-full lg:w-auto items-stretch sm:items-center gap-2 lg:gap-3">
           <ThemeButton
-            label="Add Items to Shop"
+            label="Add Items to My Store"
             icon={<PlusIcon />}
             onClick={() => router.push("/inventory")}
             className="shrink-0"
@@ -208,7 +208,7 @@ const Page = () => {
           <ShoppingCartRemoveIcon />
           <div className="space-y-3">
             <h2 className="font-semibold text-2xl text-gray-900">
-              Your shop is empty.
+                Your Store is empty.
             </h2>
 
               <p className="font-medium text-lg text-gray-800">
@@ -254,6 +254,7 @@ const Page = () => {
                       quantity: payload.qty,
                     },
                   });
+                  showSuccessToast("Added to cart");
                 }}
                 onCardClick={() => {
                   router.push(`/inventory/${product.originalId}`);

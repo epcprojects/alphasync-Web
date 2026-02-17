@@ -24,9 +24,13 @@ type ProductListViewProps = {
   onRowClick?: () => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
-  /** When true, disables Add to Shop / Change Customer Price (e.g. only RFO products can be ordered) */
+  /** When true, disables Add to My Store / Change Customer Price (e.g. only RUO products can be ordered) */
   orderButtonDisabled?: boolean;
   orderButtonDisabledTooltip?: string;
+  /** When not "Alpha BioMed", rx-placeholder is used as image fallback */
+  vendor?: string | null;
+  /** When true, show "Pending approval" text (e.g. for non–Alpha BioMed products) */
+  pendingApproval?: boolean;
 };
 
 export default function ProductListView({
@@ -37,7 +41,9 @@ export default function ProductListView({
   onRemoveFromSale,
   customPrice,
   orderButtonDisabled = false,
-  orderButtonDisabledTooltip = "Only RFO products can be added to your shop.",
+  vendor,
+  pendingApproval = false,
+  // orderButtonDisabledTooltip = "Only RUO products can be added to your shop.",
 }: ProductListViewProps) {
   const productId = product.originalId || String(product.id);
   const isMarkedUp = customPrice != null && customPrice !== undefined;
@@ -54,10 +60,16 @@ export default function ProductListView({
             height={36}
             src={product.image}
             alt={product.title}
+            vendor={vendor}
             className="w-full h-full border rounded-lg border-gray-200"
           />
         </div>
         <div>
+          {pendingApproval && (
+            <span className="inline-block rounded-full bg-amber-100 border border-amber-300 py-0.5 px-2 text-amber-800 font-medium text-xs mb-1">
+              Pending approval
+            </span>
+          )}
           <h3 className="font-semibold sm:line-clamp-1 text-gray-800 text-sm md:text-base">
             {product.title}
           </h3>
@@ -142,11 +154,10 @@ export default function ProductListView({
 
         <Tooltip
           content={
-            orderButtonDisabled
-              ? orderButtonDisabledTooltip
-              : isMarkedUp
+            // orderButtonDisabled ? orderButtonDisabledTooltip :
+            isMarkedUp
                 ? "Change Customer Price"
-                : "Add to Shop"
+              : "Add to My Store"
           }
         >
           <button
@@ -156,7 +167,7 @@ export default function ProductListView({
             }}
             disabled={!onBtnClick || orderButtonDisabled}
             className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label={isMarkedUp ? "Change Customer Price" : "Add to Shop"}
+            aria-label={isMarkedUp ? "Change Customer Price" : "Add to My Store"}
             type="button"
           >
             <InventoryIcon fill="#2862A9" width="16" height="16" />

@@ -122,6 +122,7 @@ export const UPDATE_USER = gql`
     $state: String
     $postalCode: String
     $address: String
+    $deaLicensesAttributes: [DeaLicenseAttributes!]
   ) {
     updateUser(
       input: {
@@ -145,6 +146,7 @@ export const UPDATE_USER = gql`
           state: $state
           postalCode: $postalCode
           address: $address
+          deaLicensesAttributes: $deaLicensesAttributes
         }
       }
     ) {
@@ -242,6 +244,7 @@ export const UPDATE_DOCTOR = gql`
     $shippingCity: String
     $shippingStreet2: String
     $shippingStreet1:String
+    $deaLicensesAttributes: [DeaLicenseAttributes!]
   ) {
     updateUser(
       input: {
@@ -268,6 +271,7 @@ export const UPDATE_DOCTOR = gql`
           shippingCity: $shippingCity
           shippingStreet2: $shippingStreet2
           shippingStreet1: $shippingStreet1
+          deaLicensesAttributes: $deaLicensesAttributes
         }
       }
     ) {
@@ -277,6 +281,23 @@ export const UPDATE_DOCTOR = gql`
     }
   }
 `;
+
+export const APPROVE_DEA_LICENSE = gql`
+  mutation ApproveDeaLicense($deaLicenseId: ID!) {
+    approveDeaLicense(input: { deaLicenseId: $deaLicenseId }) {
+      success
+    }
+  }
+`;
+
+export const REJECT_DEA_LICENSE = gql`
+  mutation RejectDeaLicense($deaLicenseId: ID!) {
+    rejectDeaLicense(input: { deaLicenseId: $deaLicenseId }) {
+      success
+    }
+  }
+`;
+
 export const UPDATE_PASSWORD = gql`
   mutation UpdatePassword(
     $currentPassword: String!

@@ -29,13 +29,27 @@ import React, { Suspense, useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
 import { useQuery, useMutation } from "@apollo/client/react";
-import { ALL_PRODUCTS_INVENTORY, ALL_CATEGORIES } from "@/lib/graphql/queries";
+import {
+  ALL_PRODUCTS_INVENTORY,
+  ALL_CATEGORIES,
+  ALL_VENDORS,
+} from "@/lib/graphql/queries";
 import {
   CREATE_ORDER,
   TOGGLE_FAVOURITE,
   EXPORT_PRODUCTS,
 } from "@/lib/graphql/mutations";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+} from "@headlessui/react";
 import {
   AllProductsResponse,
   Product,
@@ -53,6 +67,9 @@ function InventoryContent() {
   const [showPricModal, setShowPriceModal] = useState(false);
   const [markupFilter, setMarkupFilter] = useState<string>("All");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [inventoryTab, setInventoryTab] = useState<"research-use-only" | "pharmacy">(
+    "research-use-only"
+  );
   const [isBlanketMarkupModalOpen, setIsBlanketMarkupModalOpen] =
     useState(false);
   const [isRefetchingFavorites, setIsRefetchingFavorites] = useState(false);
@@ -63,6 +80,7 @@ function InventoryContent() {
     price?: number;
     customPrice?: number | null;
     imageUrl?: string | null;
+    vendor?: string | null;
   } | null>(null);
 
   const router = useRouter();
@@ -114,12 +132,26 @@ function InventoryContent() {
     setCurrentPage(1);
   }, [selectedCategory]);
 
+  // Reset to first page when inventory tab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [inventoryTab]);
+
   // GraphQL query to fetch categories
   const { data: categoriesData } = useQuery<{ allCategories: string[] }>(
     ALL_CATEGORIES,
     { fetchPolicy: "network-only" }
   );
   const categories = categoriesData?.allCategories ?? [];
+
+  // GraphQL query to fetch vendors (for Research Use Only vs Pharmacy tabs)
+  const { data: vendorsData } = useQuery<{ allVendors: string[] }>(
+    ALL_VENDORS,
+    { fetchPolicy: "cache-and-network" }
+  );
+  const vendors = vendorsData?.allVendors ?? [];
+  const pharmacyVendor =
+    vendors.find((v) => v !== "Alpha BioMed") ?? undefined;
 
   const {
     data: productsData,
@@ -133,6 +165,10 @@ function InventoryContent() {
       perPage: itemsPerPage,
       inStockOnly: showOutOfStock ? false : undefined,
       category: selectedCategory ?? undefined,
+      vendor:
+        inventoryTab === "research-use-only"
+          ? "Alpha BioMed"
+          : pharmacyVendor ?? undefined,
       favoriteProducts: showFavourites ? true : undefined,
       markedUp:
         markupFilter === "Marked Up"
@@ -197,6 +233,10 @@ function InventoryContent() {
           search: debouncedSearch || null,
           productType: null,
           category: selectedCategory || null,
+          vendor:
+            inventoryTab === "research-use-only"
+              ? "Alpha BioMed"
+              : pharmacyVendor || null,
           inStockOnly: showOutOfStock ? false : undefined,
           favoriteProducts: showFavourites ? true : undefined,
           markedUp:
@@ -338,7 +378,7 @@ function InventoryContent() {
             <Tooltip
               autoShowOnceKey={userEmail}
               side="bottom"
-              content="Click Add to Shop, enter your selling price, and click Save. The product will be added to your shop."
+              content="Click Add to My Store, enter your selling price, and click Save. The product will be added to your store."
             >
               <InfoFilledIcon />
             </Tooltip>
@@ -409,7 +449,7 @@ function InventoryContent() {
                 <MenuItems
                   transition
                   anchor="bottom end"
-                  className={`min-w-32 md:min-w-44 z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0 max-h-60 overflow-y-auto`}
+                  className={`min-w-32 md:min-w-44 z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0 h-60 overflow-y-auto`}
                 >
                   <MenuItem>
                     <button
@@ -505,12 +545,44 @@ function InventoryContent() {
           </div>
         </div>
       </div>
-      {productsLoading && !isRefetchingFavorites ? (
-        <InventorySkeleton viewMode={showGridView ? "grid" : "list"} />
-      ) : (
-        <div className="flex flex-col gap-4 md:gap-6">
-          {showGridView ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
+      {/* Tabs: Research Use Only / Pharmacy */}
+      <TabGroup
+        selectedIndex={inventoryTab === "research-use-only" ? 0 : 1}
+        onChange={(index) =>
+          setInventoryTab(index === 0 ? "research-use-only" : "pharmacy")
+        }
+      >
+        <TabList className="flex w-fit items-center gap-1 rounded-full bg-gray-100 p-1 shadow-table overflow-x-auto">
+          <Tab
+            className={({ selected }) =>
+              `whitespace-nowrap px-4 md:px-6 py-2.5 text-sm font-medium rounded-full transition-colors outline-none ${selected
+                ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+              }`
+            }
+          >
+            Research Use Only
+          </Tab>
+          <Tab
+            className={({ selected }) =>
+              `whitespace-nowrap px-4 md:px-6 py-2.5 text-sm font-medium rounded-full transition-colors outline-none ${selected
+                ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+              }`
+            }
+          >
+            Pharmacy
+          </Tab>
+        </TabList>
+
+        <TabPanels className="mt-4">
+          <TabPanel className="focus:outline-none">
+            {productsLoading && !isRefetchingFavorites ? (
+              <InventorySkeleton viewMode={showGridView ? "grid" : "list"} />
+            ) : (
+              <div className="flex flex-col gap-4 md:gap-6">
+                {showGridView ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
               {displayProducts.map((product) => {
                 // Find the original GraphQL product data using the originalId
                 const originalProduct = productsData?.allProducts.allData?.find(
@@ -519,7 +591,7 @@ function InventoryContent() {
                 const isMarkedUp =
                   originalProduct?.customPrice != null &&
                   originalProduct?.customPrice !== undefined;
-                // Only Alpha BioMed (RFO) products can be added to shop / ordered
+                // Only Alpha BioMed (RUO) products can be added to shop / ordered
                 const canOrder = originalProduct?.vendor === "Alpha BioMed";
                 return (
                   <ProductCard
@@ -527,8 +599,10 @@ function InventoryContent() {
                     product={product}
                     customPrice={originalProduct?.customPrice}
                     orderButtonDisabled={!canOrder}
+                    vendor={originalProduct?.vendor}
+                    pendingApproval={!canOrder}
                     onBtnClick={() => {
-                      // Not marked up -> Add to Shop
+                      // Not marked up -> Add to My Store
                       // Marked up -> Change Customer Price
                       if (!originalProduct) {
                         showErrorToast("Product information is missing");
@@ -542,6 +616,7 @@ function InventoryContent() {
                         price: firstVariant?.price ?? 0,
                         customPrice: originalProduct.customPrice ?? null,
                         imageUrl: originalProduct.primaryImage ?? null,
+                        vendor: originalProduct.vendor,
                       });
                       setShowPriceModal(true);
                     }}
@@ -571,7 +646,7 @@ function InventoryContent() {
                 const originalProduct = productsData?.allProducts.allData?.find(
                   (p) => p.id === product.originalId,
                 );
-                // Only Alpha BioMed (RFO) products can be added to shop / ordered
+                // Only Alpha BioMed (RUO) products can be added to shop / ordered
                 const canOrder = originalProduct?.vendor === "Alpha BioMed";
 
                 return (
@@ -583,6 +658,8 @@ function InventoryContent() {
                     product={product}
                     customPrice={originalProduct?.customPrice}
                     orderButtonDisabled={!canOrder}
+                    vendor={originalProduct?.vendor}
+                    pendingApproval={!canOrder}
                     onToggleFavourite={() => {
                       handleToggleFavorite(product.originalId);
                     }}
@@ -599,6 +676,7 @@ function InventoryContent() {
                         price: firstVariant?.price ?? 0,
                         customPrice: originalProduct.customPrice ?? null,
                         imageUrl: originalProduct.primaryImage ?? null,
+                        vendor: originalProduct.vendor,
                       });
                       setShowPriceModal(true);
                     }}
@@ -625,6 +703,115 @@ function InventoryContent() {
           </div>
         </div>
       )}
+          </TabPanel>
+          <TabPanel className="focus:outline-none">
+            {productsLoading && !isRefetchingFavorites ? (
+              <InventorySkeleton viewMode={showGridView ? "grid" : "list"} />
+            ) : (
+              <div className="flex flex-col gap-4 md:gap-6">
+                {showGridView ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
+                    {displayProducts.map((product) => {
+                      const originalProduct = productsData?.allProducts.allData?.find(
+                        (p) => p.id === product.originalId,
+                      );
+                      const canOrder = originalProduct?.vendor === "Alpha BioMed";
+                      return (
+                        <ProductCard
+                          key={product.originalId}
+                          product={product}
+                          customPrice={originalProduct?.customPrice}
+                          orderButtonDisabled={!canOrder}
+                          vendor={originalProduct?.vendor}
+                          pendingApproval={!canOrder}
+                          onBtnClick={() => {
+                            if (!originalProduct) {
+                              showErrorToast("Product information is missing");
+                              return;
+                            }
+                            const firstVariant = originalProduct.variants?.[0];
+                            setSelectedProduct({
+                              id: originalProduct.id,
+                              shopifyVariantId: firstVariant?.shopifyVariantId || "",
+                              title: originalProduct.title,
+                              price: firstVariant?.price ?? 0,
+                              customPrice: originalProduct.customPrice ?? null,
+                              imageUrl: originalProduct.primaryImage ?? null,
+                              vendor: originalProduct.vendor,
+                            });
+                            setShowPriceModal(true);
+                          }}
+                          onCardClick={() =>
+                            router.push(`/inventory/${product.originalId}`)
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium bg-white rounded-xl text-black shadow-table">
+                      <div className="col-span-4 md:col-span-4 lg:col-span-4">Product</div>
+                      <div className="col-span-2 md:col-span-2">Category</div>
+                      <div className="col-span-1">Stock</div>
+                      <div className="col-span-2">Latest Marked up Price</div>
+                      <div className="col-span-1">Base Price</div>
+                      <div className="col-span-1 md:col-span-2 lg:col-span-2 text-center">Actions</div>
+                    </div>
+                    {displayProducts.map((product) => {
+                      const originalProduct = productsData?.allProducts.allData?.find(
+                        (p) => p.id === product.originalId,
+                      );
+                      const canOrder = originalProduct?.vendor === "Alpha BioMed";
+                      return (
+                        <ProductListView
+                          key={product.originalId}
+                          onRowClick={() => router.push(`/inventory/${product.originalId}`)}
+                          product={product}
+                          customPrice={originalProduct?.customPrice}
+                          orderButtonDisabled={!canOrder}
+                          vendor={originalProduct?.vendor}
+                          pendingApproval={!canOrder}
+                          onToggleFavourite={() => handleToggleFavorite(product.originalId)}
+                          onBtnClick={() => {
+                            if (!originalProduct) {
+                              showErrorToast("Product information is missing");
+                              return;
+                            }
+                            const firstVariant = originalProduct.variants?.[0];
+                            setSelectedProduct({
+                              id: originalProduct.id,
+                              shopifyVariantId: firstVariant?.shopifyVariantId || "",
+                              title: originalProduct.title,
+                              price: firstVariant?.price ?? 0,
+                              customPrice: originalProduct.customPrice ?? null,
+                              imageUrl: originalProduct.primaryImage ?? null,
+                              vendor: originalProduct.vendor,
+                            });
+                            setShowPriceModal(true);
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="flex justify-center flex-col gap-2 md:gap-6 ">
+                  {displayProducts.length < 1 && (
+                    <EmptyState mtClasses=" mt-0 md:mt-0" />
+                  )}
+                  {displayProducts.length > 0 && (
+                    <Pagination
+                      currentPage={currentPage - 1}
+                      totalPages={pageCount}
+                      onPageChange={(selectedPage) => handlePageChange(selectedPage + 1)}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+          </TabPanel>
+        </TabPanels>
+      </TabGroup>
 
       <OrderModal
         key={selectedProduct?.id || "order-modal"}
@@ -652,6 +839,7 @@ function InventoryContent() {
               imageUrl: selectedProduct.imageUrl,
               basePrice: selectedProduct.price ?? 0,
               customPrice: selectedProduct.customPrice ?? null,
+              vendor: selectedProduct.vendor,
             }
             : null
         }

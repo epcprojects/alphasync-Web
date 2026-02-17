@@ -31,9 +31,13 @@ interface ProductCardProps {
   onCardClick?: () => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
-  /** When true, disables Add to Shop / Change Customer Price (e.g. only RFO products can be ordered) */
+  /** When true, disables Add to  / Change Customer Price (e.g. only RUO products can be ordered) */
   orderButtonDisabled?: boolean;
   orderButtonDisabledTooltip?: string;
+  /** When not "Alpha BioMed", rx-placeholder is used as image fallback */
+  vendor?: string | null;
+  /** When true, show "Pending approval" text (e.g. for non–Alpha BioMed products) */
+  pendingApproval?: boolean;
 }
 
 export default function ProductCard({
@@ -43,7 +47,9 @@ export default function ProductCard({
   onRemoveFromSale,
   customPrice,
   orderButtonDisabled = false,
-  orderButtonDisabledTooltip = "Only RFO products can be added to your shop.",
+  vendor,
+  pendingApproval = false,
+  // orderButtonDisabledTooltip = "Only RUO products can be added to your shop.",
 }: ProductCardProps) {
   const productId = product.originalId || String(product.id);
   const isMarkedUp = customPrice != null && customPrice !== undefined;
@@ -58,12 +64,18 @@ export default function ProductCard({
           height={240}
           src={product.image}
           alt={product.title}
+          vendor={vendor}
         />
       </div>
 
       <div className="bg-gray-50 border border-gray-100 p-2 md:p-4 md:min-h-64 md:max-h-64 w-full rounded-lg">
         <div className="flex flex-col gap-2 h-full justify-between">
-          <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
+            {pendingApproval && (
+              <span className="block w-fit rounded-full bg-amber-100 border border-amber-300 py-0.5 px-2.5 text-amber-800 font-medium text-xs md:text-sm">
+                Pending approval
+              </span>
+            )}
             <h2 className="text-gray-900 font-semibold line-clamp-2 text-lg md:text-xl">
               {product.title}
             </h2>
@@ -111,11 +123,11 @@ export default function ProductCard({
                   </Tooltip>
                 )}
                 {orderButtonDisabled ? (
-                  <Tooltip content={orderButtonDisabledTooltip}>
+                  // <Tooltip content={orderButtonDisabledTooltip}>
                     <span className="flex-1 flex">
                       <ThemeButton
                         label={
-                          isMarkedUp ? "Change Customer Price" : "Add to Shop"
+                        isMarkedUp ? "Change Customer Price" : "Add to My Store"
                         }
                         icon={<InventoryIcon fill="#2862A9" />}
                         variant="outline"
@@ -124,11 +136,11 @@ export default function ProductCard({
                         disabled
                       />
                     </span>
-                  </Tooltip>
+                  // </Tooltip>
                 ) : (
                   <ThemeButton
                     label={
-                      isMarkedUp ? "Change Customer Price" : "Add to Shop"
+                        isMarkedUp ? "Change Customer Price" : "Add to My Store"
                     }
                     icon={<InventoryIcon fill="#2862A9" />}
                     onClick={(e) => {
