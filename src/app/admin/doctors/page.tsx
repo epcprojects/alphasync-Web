@@ -32,6 +32,7 @@ import { ALL_DOCTORS } from "@/lib/graphql/queries";
 import { MODIFY_ACCESSS_USER, EXPORT_DOCTORS } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
+import { useRouter } from "next/navigation";
 
 // Interface for GraphQL response
 interface AllDoctorsResponse {
@@ -71,7 +72,7 @@ function DoctorContent() {
     { label: "All Status", value: null },
     { label: "Active", value: "ACTIVE" },
     { label: "Inactive", value: "INACTIVE" },
-    { label: 'Pending', value: "PENDING" }
+    { label: "Pending", value: "PENDING" },
   ];
 
   const itemsPerPage = 10;
@@ -101,9 +102,7 @@ function DoctorContent() {
             ? undefined
             : selectedStatus.toUpperCase(),
         pendingInvites:
-          selectedTabIndex === 0
-            ? undefined
-            : selectedTabIndex === 2,
+          selectedTabIndex === 0 ? undefined : selectedTabIndex === 2,
         page: currentPage + 1,
         perPage: itemsPerPage,
       },
@@ -116,7 +115,8 @@ function DoctorContent() {
     useMutation(MODIFY_ACCESSS_USER);
 
   // GraphQL mutation for exporting doctors
-  const [exportDoctors, { loading: exportLoading }] = useMutation(EXPORT_DOCTORS);
+  const [exportDoctors, { loading: exportLoading }] =
+    useMutation(EXPORT_DOCTORS);
 
   // Transform GraphQL data to match Doctor interface
   const doctors = data?.allDoctors.allData;
@@ -220,19 +220,21 @@ function DoctorContent() {
           // If decoding fails, assume it's already plain text
           csvContent = data.exportDoctors.csvData;
         }
-        
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+        const blob = new Blob([csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
-        
+
         link.setAttribute("href", url);
         link.setAttribute("download", data.exportDoctors.fileName);
         link.style.visibility = "hidden";
-        
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         URL.revokeObjectURL(url);
         showSuccessToast("Doctors exported successfully");
       } else {
@@ -245,6 +247,7 @@ function DoctorContent() {
   };
 
   const isMobile = useIsMobile();
+  const router = useRouter();
 
   // Show error state
 
@@ -312,7 +315,6 @@ function DoctorContent() {
             <ThemeButton
               label="Export"
               size={isMobile ? "small" : "medium"}
-             
               onClick={handleExportDoctors}
               heightClass="h-9 sm:h-auto"
               disabled={exportLoading}
@@ -336,15 +338,17 @@ function DoctorContent() {
           onChange={setSelectedTabIndex}
         >
           <TabList className="flex items-center border-b bg-white rounded-t-xl mb-2 sm:mb-0 border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-4">
-            {["All Doctors", "Active Doctors", "Pending Doctors"].map((tab, index) => (
-              <Tab
-                key={index}
-                as="button"
-                className="flex items-center gap-1 md:gap-2 w-full justify-center hover:bg-gray-50 whitespace-nowrap md:text-base text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-1.5 py-2.5 md:py-4 md:px-6"
-              >
-                {tab}
-              </Tab>
-            ))}
+            {["All Doctors", "Active Doctors", "Pending Doctors"].map(
+              (tab, index) => (
+                <Tab
+                  key={index}
+                  as="button"
+                  className="flex items-center gap-1 md:gap-2 w-full justify-center hover:bg-gray-50 whitespace-nowrap md:text-base text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-1.5 py-2.5 md:py-4 md:px-6"
+                >
+                  {tab}
+                </Tab>
+              ),
+            )}
           </TabList>
           <TabPanels>
             <TabPanel>
@@ -364,7 +368,7 @@ function DoctorContent() {
                   </div>
                   <div>
                     <h2>NPI number</h2>
-                  </div>  
+                  </div>
                   <div className="xl:flex hidden">
                     <h2>Status</h2>
                   </div>
@@ -392,7 +396,6 @@ function DoctorContent() {
                   <>
                     {doctors?.map((doctor: UserAttributes) => (
                       <DoctorListView
-                        // onRowClick={() => router.push(`/orders/${doctor.id}`)}
                         key={doctor.id}
                         doctor={doctor}
                         onEditDoctor={() => handleEdit(doctor)}

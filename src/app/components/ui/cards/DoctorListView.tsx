@@ -5,7 +5,6 @@ import {
   MailIcon,
   EllipsisVertical,
 } from "@/icons";
-import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -199,9 +198,8 @@ export default function DoctorListView({
 
   return (
     <div
-      // onClick={onRowClick}
       key={doctor.id}
-      className="grid  grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr]  items-center rounded-xl bg-white p-1 sm:p-1.5 xl:p-3 shadow-table"
+      className="grid  cursor-pointer grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr]  items-center rounded-xl bg-white p-1 sm:p-1.5 xl:p-3 shadow-table"
     >
       <div className="flex items-center gap-2">
         <ProfileImage

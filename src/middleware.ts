@@ -33,6 +33,7 @@ export function middleware(request: NextRequest) {
     "/new-password",
     "/accept-invitation",
     "/forgot",
+    "/profile-complete",
   ];
   const isPublicRoute =
     publicRoutes.includes(pathname) || pathname.startsWith("/admin/login");

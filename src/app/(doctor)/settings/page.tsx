@@ -6,6 +6,7 @@ import {
   ThemeInput,
   ImageUpload,
   GoogleAutocompleteInput,
+  MedicalLicensesSection,
 } from "@/app/components";
 import SelectGroupDropdown from "@/app/components/ui/dropdowns/selectgroupDropdown";
 import {
@@ -45,6 +46,15 @@ import {
 import { FETCH_NOTIFICATION_SETTINGS } from "@/lib/graphql/queries";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
 import { setUser } from "@/lib/store/slices/authSlice";
+
+const States = [
+  {
+    label: "California",
+    value: "California",
+  },
+  { label: "Texas", value: "Texas" },
+  { label: "Florida", value: "Florida" },
+];
 
 const Page = () => {
   const dispatch = useAppDispatch();
@@ -122,10 +132,10 @@ const Page = () => {
       },
       onError: (error) => {
         showErrorToast(
-          error.message || "Failed to update order updates notification"
+          error.message || "Failed to update order updates notification",
         );
       },
-    }
+    },
   );
 
   const [updateLowStockAlerts] = useMutation(
@@ -136,10 +146,10 @@ const Page = () => {
       },
       onError: (error) => {
         showErrorToast(
-          error.message || "Failed to update low stock alerts notification"
+          error.message || "Failed to update low stock alerts notification",
         );
       },
-    }
+    },
   );
 
   // Handler for toggle changes
@@ -191,7 +201,7 @@ const Page = () => {
       onError: (error) => {
         showErrorToast(error.message || "Failed to update profile");
       },
-    }
+    },
   );
 
   const [removeImage] = useMutation(REMOVE_IMAGE, {
@@ -248,14 +258,14 @@ const Page = () => {
       showSuccessToast(
         value
           ? "Two-factor authentication enabled"
-          : "Two-factor authentication disabled"
+          : "Two-factor authentication disabled",
       );
     } catch (error) {
       setIsTwoFaEnabled(previousValue);
       showErrorToast(
         error instanceof Error
           ? error.message
-          : "Failed to update two-factor authentication"
+          : "Failed to update two-factor authentication",
       );
     }
   };
@@ -310,7 +320,7 @@ const Page = () => {
       .required("Phone number is required")
       .matches(
         /^\(\d{3}\)\s\d{3}-\d{4}$/,
-        "Phone number must be in format (512) 312-3123"
+        "Phone number must be in format (512) 312-3123",
       ),
     npiNumber: Yup.string().required("NPI number is required"),
     specialty: Yup.string().required("Specialty is required"),
@@ -359,7 +369,7 @@ const Page = () => {
     }
     return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(
       3,
-      6
+      6,
     )}-${limitedNumbers.slice(6)}`;
   };
 
@@ -533,8 +543,7 @@ const Page = () => {
                     city: user?.city ?? "",
                     state: user?.state ?? "",
                     postalCode: user?.postalCode ?? "",
-                    sameAsShippingAddress:
-                      user?.sameAsBillingAddress ?? true,
+                    sameAsShippingAddress: user?.sameAsBillingAddress ?? true,
                     shippingStreet1: user?.shippingStreet1 ?? "",
                     shippingStreet2: user?.shippingStreet2 ?? "",
                     shippingCity: user?.shippingCity ?? "",
@@ -671,7 +680,7 @@ const Page = () => {
                             value={values.phoneNo}
                             onChange={(e) => {
                               const formatted = formatPhoneNumber(
-                                e.target.value
+                                e.target.value,
                               );
                               setFieldValue("phoneNo", formatted);
                             }}
@@ -958,13 +967,13 @@ const Page = () => {
                                 onAddressSelect={(address) => {
                                   setFieldValue(
                                     "shippingStreet1",
-                                    address.street1
+                                    address.street1,
                                   );
                                   setFieldValue("shippingCity", address.city);
                                   setFieldValue("shippingState", address.state);
                                   setFieldValue(
                                     "shippingPostalCode",
-                                    address.postalCode
+                                    address.postalCode,
                                   );
                                 }}
                                 placeholder="Enter shipping street address"
@@ -1080,6 +1089,37 @@ const Page = () => {
                         </>
                       )}
 
+                      <div className="grid grid-cols-12 gap-1.5 lg:gap-8 items-center py-3 md:pt-6 ">
+                        <div className="col-span-12 md:col-span-4 lg:col-span-3">
+                          <label
+                            htmlFor=""
+                            className="text-xs md:text-sm text-gray-700 font-semibold"
+                          >
+                            DEA Licenses
+                          </label>
+                        </div>
+                        <div className="col-span-12 md:col-span-8 lg:col-span-8 flex items-center gap-2">
+                          <Switch
+                            checked={true}
+                            onChange={(checked) => {}}
+                            className="group inline-flex cursor-pointer h-6 w-11 items-center rounded-full bg-gray-200 transition data-checked:bg-gradient-to-r data-checked:from-[#3C85F5] data-checked:to-[#1A407A]"
+                          >
+                            <span className="size-4 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-6" />
+                          </Switch>{" "}
+                          Yes
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-12 ">
+                        <div className="col-span-9 col-start-4">
+                          <MedicalLicensesSection
+                            values={values}
+                            handleChange={handleChange}
+                            setFieldValue={setFieldValue}
+                            States={States}
+                          />
+                        </div>
+                      </div>
+
                       <div className="flex pt-3 md:pt-6 justify-end">
                         <ThemeButton
                           label={updateLoading ? "Saving..." : "Save Changes"}
@@ -1133,8 +1173,8 @@ const Page = () => {
                         {twoFaUpdating
                           ? "Updating..."
                           : isTwoFaEnabled
-                          ? "Enabled"
-                          : "Disabled"}
+                            ? "Enabled"
+                            : "Disabled"}
                       </p>
                     </div>
                   </div>

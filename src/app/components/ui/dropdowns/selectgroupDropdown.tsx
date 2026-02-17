@@ -116,7 +116,7 @@ const SelectGroupDropdown = ({
     clientSideSearch === false
       ? safeGroups
       : safeGroups.filter((group) =>
-          getGroupLabel(group).toLowerCase().includes(searchTerm.toLowerCase())
+          getGroupLabel(group).toLowerCase().includes(searchTerm.toLowerCase()),
         );
 
   const showSearchInput = alwaysShowSearch || safeGroups.length > 5;
@@ -149,14 +149,14 @@ const SelectGroupDropdown = ({
       if (selected.length === 0) return placeholder || "Select User...";
       return selected
         .map((key) =>
-          getGroupLabel(safeGroups.find((g) => getGroupKey(g) === key) ?? key)
+          getGroupLabel(safeGroups.find((g) => getGroupKey(g) === key) ?? key),
         )
         .join(", ");
     } else {
       const selected = safeGroups.find(
         (g) =>
           getGroupKey(g).toLowerCase() ===
-          (selectedGroup as string)?.toLowerCase()
+          (selectedGroup as string)?.toLowerCase(),
       );
       if (selected) {
         return getGroupEmail(selected)
@@ -174,7 +174,7 @@ const SelectGroupDropdown = ({
   return (
     <>
       {showLabel && (
-        <label className="block mb-1 md:mb-1.5 text-sm  font-medium text-gray-700">
+        <label className="block mb-1  text-sm  font-medium text-gray-700">
           {name}
           {required && <span className="text-red-500 ps-1">*</span>}
         </label>
@@ -186,7 +186,7 @@ const SelectGroupDropdown = ({
             "relative z-10 w-full h-11 rounded-lg py-2 border cursor-pointer bg-white text-left",
             errors ? "border-red-500" : "border-lightGray",
             disabled && "!bg-gray-200 text-gray-400 cursor-not-allowed",
-            paddingClasses
+            paddingClasses,
           )}
           onClick={() => {
             if (!disabled) {
@@ -197,7 +197,7 @@ const SelectGroupDropdown = ({
           <span
             className={cn(
               "text-sm md:text-base flex items-center gap-1",
-              selectedGroup ? "text-gray-900" : "text-gray-400"
+              selectedGroup ? "text-gray-900" : "text-gray-400",
             )}
           >
             {showIcon && (
@@ -256,7 +256,7 @@ const SelectGroupDropdown = ({
             <div
               className={cn(
                 "space-y-1 min-h-32 md:min-h-36 max-h-32 md:max-h-36 overflow-y-auto",
-                optionPaddingClasses
+                optionPaddingClasses,
               )}
             >
               {isSearching ? (
@@ -278,7 +278,7 @@ const SelectGroupDropdown = ({
                       className={cn(
                         "flex items-center justify-between cursor-pointer rounded-md px-2.5 py-2 hover:bg-gray-100",
                         isSelected(key) && "bg-primary/10",
-                        optionPaddingClasses
+                        optionPaddingClasses,
                       )}
                       onClick={() => handleSelect(group)}
                     >
