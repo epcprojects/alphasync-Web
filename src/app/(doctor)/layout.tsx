@@ -2,7 +2,7 @@
 import React, { ReactNode, useEffect } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
-import { DashboardStats, Header, DoctorRoute, TrainingVideosBlockingPage } from "../components";
+import { DashboardStats, Header, DoctorRoute, TrainingVideosBlockingPage, Loader } from "../components";
 import {
   SyrupIcon,
   InventoryIcon,
@@ -124,19 +124,28 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const router = useRouter();
 
   // Redirect doctor with no DEA licenses to complete profile first
+  const isDoctor = user?.userType?.toLowerCase() === "doctor";
+  const hasDeaLicenses = (user?.deaLicenses?.length ?? 0) > 0;
+  const shouldRedirectToProfileComplete = !!(user?.id && isDoctor && !hasDeaLicenses);
+
   useEffect(() => {
-    if (!user?.id) return;
-    const isDoctor = user?.userType?.toLowerCase() === "doctor";
-    const hasDeaLicenses = (user?.deaLicenses?.length ?? 0) > 0;
-    if (isDoctor && !hasDeaLicenses) {
-      router.replace("/profile-complete");
-    }
-  }, [user?.id, user?.userType, user?.deaLicenses, router]);
+    if (!shouldRedirectToProfileComplete) return;
+    router.replace("/profile-complete");
+  }, [shouldRedirectToProfileComplete, router]);
+
+  // Don't render doctor UI when redirecting to profile-complete — show loader to avoid screen blink
+  if (shouldRedirectToProfileComplete) {
+    return (
+      <DoctorRoute>
+        <div className="flex min-h-screen items-center justify-center">
+          <Loader />
+        </div>
+      </DoctorRoute>
+    );
+  }
 
   // Check if doctor hasn't viewed all videos (allow access to training-videos page)
   // Only show training videos flow when doctor has at least one DEA license
-  const isDoctor = user?.userType?.toLowerCase() === "doctor";
-  const hasDeaLicenses = (user?.deaLicenses?.length ?? 0) > 0;
   const hasNotViewedAllVideos = isDoctor && hasDeaLicenses && user?.hasViewedAllVideos === false;
   const isTrainingVideosPage = pathname === "/training-videos";
   const shouldShowBlockingPage = hasNotViewedAllVideos && !isTrainingVideosPage;

@@ -9,6 +9,7 @@ export function middleware(request: NextRequest) {
   type ParsedUser = {
     userType?: string;
     addressVerified?: boolean;
+    deaLicenses?: unknown[];
   };
 
   let parsedUser: ParsedUser | null = null;
@@ -24,6 +25,10 @@ export function middleware(request: NextRequest) {
       console.error("Invalid user cookie:", err);
     }
   }
+
+  const doctorHasNoDeaLicenses =
+    userType === "doctor" && (parsedUser?.deaLicenses?.length ?? 0) === 0;
+  const profileCompleteUrl = new URL("/profile-complete", request.url);
 
   // Public routes (accessible without login)
   const publicRoutes = [
@@ -88,7 +93,9 @@ export function middleware(request: NextRequest) {
     if (userType === "admin") {
       return NextResponse.redirect(new URL("/admin/doctors", request.url));
     } else if (userType === "doctor") {
-      return NextResponse.redirect(new URL("/my-store", request.url));
+      return NextResponse.redirect(
+        doctorHasNoDeaLicenses ? profileCompleteUrl : new URL("/my-store", request.url)
+      );
     } else if (userType === "customer" || userType === "patient") {
       return NextResponse.redirect(new URL("/pending-payments", request.url));
     } else {
@@ -140,6 +147,15 @@ export function middleware(request: NextRequest) {
       doctorRoutes.some((route) => pathname.startsWith(route))
     ) {
       return NextResponse.redirect(new URL("/pending-payments", request.url));
+    }
+
+    // Doctor without DEA licenses must complete profile first — redirect before hitting doctor layout
+    if (
+      userType === "doctor" &&
+      doctorRoutes.some((route) => pathname.startsWith(route)) &&
+      doctorHasNoDeaLicenses
+    ) {
+      return NextResponse.redirect(profileCompleteUrl);
     }
   }
 
