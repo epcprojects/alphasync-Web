@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useEffect, useState } from "react";
-import AppModal from "./AppModal";
+import AppModal, { ModalPosition } from "./AppModal";
 import { DoctorIcon } from "@/icons";
 import { ImageUpload, GoogleAutocompleteInput } from "@/app/components";
 import ThemeInput from "../inputs/ThemeInput";
@@ -54,7 +54,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       .required("Phone number is required")
       .matches(
         /^\(\d{3}\)\s\d{3}-\d{4}$/,
-        "Phone number must be in format (512) 312-3123"
+        "Phone number must be in format (512) 312-3123",
       ),
     email: Yup.string().email("Invalid email").required("Email is required"),
     medicalLicense: Yup.string().required("Medical License is required"),
@@ -78,7 +78,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       onError: (error) => {
         showErrorToast(error.message);
       },
-    }
+    },
   );
 
   const [updateUser, { loading: updateLoading }] = useMutation(UPDATE_USER, {
@@ -110,7 +110,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
     }
     return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(
       3,
-      6
+      6,
     )}-${limitedNumbers.slice(6)}`;
   };
 
@@ -218,8 +218,8 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
             initialData.status === "ACTIVE"
               ? "Active"
               : initialData.status === "INACTIVE"
-              ? "Inactive"
-              : "Active",
+                ? "Inactive"
+                : "Active",
           clinic: initialData.clinic || "",
           street1: initialData.street1 || "",
           street2: initialData.street2 || "",
@@ -398,6 +398,7 @@ const AddEditDoctorModal: React.FC<AddEditDoctorModalProps> = ({
       confimBtnDisable={!isFormValid || loading}
       onCancel={handleCancel}
       cancelLabel={"Cancel"}
+      position={ModalPosition.RIGHT}
     >
       <div className="flex flex-col gap-3 md:gap-5">
         <ImageUpload

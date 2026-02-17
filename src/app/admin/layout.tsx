@@ -57,7 +57,7 @@ const menuItems = [
     icon: AdminIcon,
   },
   {
-        label: "Managers",
+    label: "Managers",
     href: "/admin/managers",
     icon: AdminManagersIcon,
   },
@@ -83,7 +83,7 @@ const headings: Record<string, string> = {
   "/admin/dashboard": "Admin Dashboard",
   "/admin/doctors": "Trusted Peptide Solutions",
   "/admin/admins": "Admin Management",
-  "/admin/managers":"Trusted Peptide Solutions",
+  "/admin/managers": "Trusted Peptide Solutions",
   "/admin/products": "Product Management",
   "/admin/orders": "Orders",
   "/admin/training-videos": "Training Videos",
@@ -95,7 +95,7 @@ const noStatsRoutes = [
   "/admin/dashboard",
   "/admin/admins",
   "/admin/training-videos",
-  "/admin/orders"
+  "/admin/orders",
 ];
 
 const numberFormatter = new Intl.NumberFormat("en-US");
@@ -184,7 +184,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     },
   ];
   const ManagerStats = [
-             {
+    {
       label: "Total Manager",
       value: "0",
       icon: (
@@ -232,40 +232,40 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const isManagerPage = /^\/admin\/managers/.test(pathname);
 
   return (
-    <AdminRoute>
-      <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
-        <div className="px-2 py-3 md:p-4 lg:p-5 md:pb-6 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-[20px] !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
-          <Header menuItems={menuItems} />
+    // <AdminRoute>
+    <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
+      <div className="px-2 py-3 md:p-4 lg:p-5 md:pb-6 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-[20px] !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
+        <Header menuItems={menuItems} />
 
-          {!hideStats && (
-            <DashboardStats
+        {!hideStats && (
+          <DashboardStats
             showUserName={true}
-              // showUserName={pathname.startsWith("/orders") ? false : true}
-              username={user?.fullName || "----"}
-              heading={heading}
-              stats={isManagerPage ? ManagerStats : stats}
-              showWelcome={true}
-            />
-          )}
-          {hideStats && (
-            <div className="flex items-center flex-col">
-              {hideStats && (
-                <>
-                  {showWelcome && (
-                    <h2 className="text-white font-normal mb-4 text-base md:text-2xl">
-                      👋 Welcome {user?.fullName || "----"},
-                    </h2>
-                  )}
-                  <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
-                    {heading}
+            // showUserName={pathname.startsWith("/orders") ? false : true}
+            username={user?.fullName || "----"}
+            heading={heading}
+            stats={isManagerPage ? ManagerStats : stats}
+            showWelcome={true}
+          />
+        )}
+        {hideStats && (
+          <div className="flex items-center flex-col">
+            {hideStats && (
+              <>
+                {showWelcome && (
+                  <h2 className="text-white font-normal mb-4 text-base md:text-2xl">
+                    👋 Welcome {user?.fullName || "----"},
                   </h2>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-        <main className="px-2  pb-2">{children}</main>
+                )}
+                <h2 className="text-white text-2xl font-semibold md:text-4xl xl:text-[44px]">
+                  {heading}
+                </h2>
+              </>
+            )}
+          </div>
+        )}
       </div>
-  </AdminRoute>
+      <main className="px-2  pb-2">{children}</main>
+    </div>
+    // </AdminRoute>
   );
 }

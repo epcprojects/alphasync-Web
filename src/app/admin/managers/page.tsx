@@ -4,7 +4,7 @@ import { Pagination, Skeleton, ThemeButton } from "@/app/components";
 import { useQuery } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
-    AdminFilledIcon,
+  AdminFilledIcon,
   AdminManagersFilledIcon,
   ArrowDownIcon,
   NoUserIcon,
@@ -17,11 +17,21 @@ import React, { useEffect, useState } from "react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import type { AllProductsResponse } from "@/types/products";
 import EmptyResult from "@/app/components/ui/EmptyResult/EmptyResult";
-import OrganizationDatabaseView, { OganizationUser } from "@/app/components/ui/cards/OrganizationDatabaseView";
+import OrganizationDatabaseView, {
+  OganizationUser,
+} from "@/app/components/ui/cards/OrganizationDatabaseView";
 import AddEditUserModal from "@/app/components/ui/modals/AddEditUserModal";
-import { Button, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import {
+  Button,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from "@headlessui/react";
 import AddEditManagerModal from "@/app/components/ui/modals/AddEditManagerModal";
-import ManagersDatabaseView, { ManagersType } from "@/app/components/ui/cards/ManagersDatabaseView";
+import ManagersDatabaseView, {
+  ManagersType,
+} from "@/app/components/ui/cards/ManagersDatabaseView";
 import AssignDoctorModal from "@/app/components/ui/modals/AssignDoctorModal";
 import BlockManagerModal from "@/app/components/ui/modals/BlockManagerModal";
 
@@ -33,21 +43,19 @@ const Page = () => {
   const [showAssignDoctor, setshowAssignDoctor] = useState(false);
   const [assignDoctor, setassignDoctor] = useState<ManagersType | null>(null);
   const [showBlockManager, setshowBlockManager] = useState(false);
-   function handleAssignDoctor(user: ManagersType){
-        setassignDoctor(user);
-        setshowAssignDoctor(true);
+  function handleAssignDoctor(user: ManagersType) {
+    setassignDoctor(user);
+    setshowAssignDoctor(true);
   }
 
-
-  
-  function handleEdit(user: ManagersType){
-     seteditUser(user);
-      setshowAddEditModal(true);
+  function handleEdit(user: ManagersType) {
+    seteditUser(user);
+    setshowAddEditModal(true);
   }
   const [showAddEditModal, setshowAddEditModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
-   const router = useRouter();
+  const router = useRouter();
   const TEST_DATA = [
     {
       id: 1,
@@ -75,24 +83,21 @@ const Page = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { error } = useQuery<AllProductsResponse>(
-    ALL_PRODUCTS_INVENTORY,
-    {
-      variables: {
-        search: debouncedSearch || null,
-        page: currentPage,
-        perPage: itemsPerPage,
-        markedUp: true,
-      },
-      fetchPolicy: "network-only",
+  const { error } = useQuery<AllProductsResponse>(ALL_PRODUCTS_INVENTORY, {
+    variables: {
+      search: debouncedSearch || null,
+      page: currentPage,
+      perPage: itemsPerPage,
+      markedUp: true,
     },
-  );
+    fetchPolicy: "network-only",
+  });
   const ManagerStatuses = [
-      { label: "All Status", value: "", color: "" },
-      { label: "Active", value: "Active", color: "before:bg-green-500" },
-      { label: "Inactive", value: "Inactive", color: "before:bg-red-500" },
-    ];
-    const [status, setStatus] = useState("");
+    { label: "All Status", value: "", color: "" },
+    { label: "Active", value: "Active", color: "before:bg-green-500" },
+    { label: "Inactive", value: "Inactive", color: "before:bg-red-500" },
+  ];
+  const [status, setStatus] = useState("");
 
   if (error) {
     return (
@@ -117,7 +122,7 @@ const Page = () => {
           </span>
           <div className="">
             <h2 className="lg:w-full text-black font-semibold text-base md:text-xl ">
-             Managers
+              Managers
             </h2>
           </div>
         </div>
@@ -137,34 +142,34 @@ const Page = () => {
                 placeholder="Search"
                 className="ps-8  md:ps-10 pe-3 md:pe-4 py-1.5 text-base md:py-2 focus:bg-white bg-gray-100 w-full md:min-w-56 outline-none focus:ring focus:ring-gray-200 rounded-full"
               />
-               <Menu>
-                              <MenuButton className="inline-flex min-w-30 whitespace-nowrap py-1.5 md:w-fit w-full md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline justify-between data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-                                {status || "All Status"} <ArrowDownIcon fill="#717680" />
-                              </MenuButton>
-              
-                              <MenuItems
-                                transition
-                                anchor="bottom end"
-                                className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
-                              >
-                                {ManagerStatuses.map((status) => (
-                                  <MenuItem key={status.label}>
-                                    <button
-                                      onClick={() => {
-                                        setStatus(status.value);
-                                      }}
-                                      className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full ${
-                                        status.color
-                                          ? `before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${status.color}`
-                                          : ""
-                                      }`}
-                                    >
-                                      {status.label}
-                                    </button>
-                                  </MenuItem>
-                                ))}
-                              </MenuItems>
-                            </Menu>
+              <Menu>
+                <MenuButton className="inline-flex min-w-30 whitespace-nowrap py-1.5 md:w-fit w-full md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline justify-between data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
+                  {status || "All Status"} <ArrowDownIcon fill="#717680" />
+                </MenuButton>
+
+                <MenuItems
+                  transition
+                  anchor="bottom end"
+                  className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
+                >
+                  {ManagerStatuses.map((status) => (
+                    <MenuItem key={status.label}>
+                      <button
+                        onClick={() => {
+                          setStatus(status.value);
+                        }}
+                        className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full ${
+                          status.color
+                            ? `before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${status.color}`
+                            : ""
+                        }`}
+                      >
+                        {status.label}
+                      </button>
+                    </MenuItem>
+                  ))}
+                </MenuItems>
+              </Menu>
               <ThemeButton
                 label="Add Manager"
                 icon={<PlusIcon />}
@@ -190,7 +195,7 @@ const Page = () => {
             onEditManager={() => handleEdit(data)}
             onAssignDoctor={() => handleAssignDoctor(data)}
             onRowClick={() => router.push(`/admin/managers/${data.id}`)}
-            onDetailsManager={() =>  router.push(`/admin/managers/${data.id}`)}
+            onDetailsManager={() => router.push(`/admin/managers/${data.id}`)}
             onDisableManager={() => setshowBlockManager(true)}
           />
         ))}
@@ -201,32 +206,36 @@ const Page = () => {
         title={"No managers added yet."}
         description={
           <p className="font-medium text-lg text-gray-800">
-             Create managers to assign doctors and monitor their orders, shops, and accounting.
+            Create managers to assign doctors and monitor their orders, shops,
+            and accounting.
           </p>
         }
         buttonLabel="Add Manager"
         buttonOnClick={() => setshowAddEditModal(true)}
         icon={<NoUserIcon />}
       />
-      <AssignDoctorModal 
-      isOpen={showAssignDoctor} onClose={
-        () => {
-          setshowAssignDoctor(false)
-        }    
-        }
+      <AssignDoctorModal
+        isOpen={showAssignDoctor}
+        onClose={() => {
+          setshowAssignDoctor(false);
+        }}
         initialvalues={assignDoctor}
-        />
+      />
       <AddEditManagerModal
         isOpen={showAddEditModal}
         onClose={() => {
           setshowAddEditModal(false);
           seteditUser(null);
         }}
-        
         initialvalues={editUser}
       />
-      <BlockManagerModal isOpen={showBlockManager} onClose={() => setshowBlockManager(false)} 
-      onDelete={()=>{} } title="Block Manager" subtitle="Are you sure you want to block this manager?" />
+      <BlockManagerModal
+        isOpen={showBlockManager}
+        onClose={() => setshowBlockManager(false)}
+        onDelete={() => {}}
+        title="Block Manager"
+        subtitle="Are you sure you want to block this manager?"
+      />
     </div>
   );
 };
