@@ -9,13 +9,11 @@ import {
   PlusIcon,
   SearchIcon,
 } from "@/icons";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import type { AllProductsResponse } from "@/types/products";
 import EmptyResult from "@/app/components/ui/EmptyResult/EmptyResult";
 import OrganizationDatabaseView, { OganizationUser } from "@/app/components/ui/cards/OrganizationDatabaseView";
-import Link from "next/link";
 import AddEditUserModal from "@/app/components/ui/modals/AddEditUserModal";
 import { Button } from "@headlessui/react";
 
