@@ -4,6 +4,7 @@ import {
   AuthHeader,
   GoogleAutocompleteInput,
   ImageUpload,
+  Loader,
   ProfileStepper,
   SelectGroupDropdown,
   ThemeButton,
@@ -21,6 +22,7 @@ import { setUser } from "@/lib/store/slices/authSlice";
 import { useMutation } from "@apollo/client";
 import { UPDATE_DOCTOR } from "@/lib/graphql/mutations";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import Cookies from "js-cookie";
 import * as Yup from "yup";
 
 const steps = [
@@ -267,7 +269,10 @@ const Page = () => {
   const [updateDoctor, { loading: updateLoading }] = useMutation(UPDATE_DOCTOR, {
     onCompleted: (data) => {
       const updatedUser = data?.updateUser?.user;
-      if (updatedUser) dispatch(setUser(updatedUser));
+      if (updatedUser) {
+        dispatch(setUser(updatedUser));
+        Cookies.set("user_data", JSON.stringify(updatedUser), { expires: 7 });
+      }
       if (!isProfileCompleteFinish.current) showSuccessToast("Profile updated successfully");
       isProfileCompleteFinish.current = false;
     },
@@ -458,8 +463,8 @@ const Page = () => {
         isProfileCompleteFinish.current = true;
         const variables = buildVariables({ deaLicensesAttributes: licenses.length > 0 ? licenses : undefined });
         await updateDoctor({ variables });
-        showSuccessToast("Profile complete! Redirecting to shop.");
-        router.replace("/shop");
+        showSuccessToast("Profile complete! Redirecting to My Store.");
+        window.location.href = "/my-store";
       } catch {
         isProfileCompleteFinish.current = false;
         // Error handled in mutation
@@ -471,7 +476,7 @@ const Page = () => {
     return (
       <div className="relative flex flex-col items-center justify-center min-h-screen">
         <AuthHeader logo={Images.auth.logo} title="" />
-        <p className="text-gray-500">Loading...</p>
+        <Loader />
       </div>
     );
   }
