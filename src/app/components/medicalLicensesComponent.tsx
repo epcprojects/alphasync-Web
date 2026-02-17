@@ -73,7 +73,6 @@ const MedicalLicensesSection: React.FC<Props> = ({
                     <Dropdown
                       label="States"
                       options={States}
-                      bgClass="bg-white"
                       value={values.medicalLicenses?.[index]?.states || ""}
                       onChange={(value: string) =>
                         setFieldValue(`${base}.states`, value)
