@@ -7,9 +7,12 @@ type ProductImageProps = Omit<ImageProps, "src" | "alt"> & {
   src?: string | null;
   alt?: string;
   fallbackSrc?: string;
+  /** When set and not "Alpha BioMed", rx-placeholder is used as fallback instead of the default. */
+  vendor?: string | null;
 };
 
 const DEFAULT_FALLBACK = "/images/products/placeholder.png";
+const RX_PLACEHOLDER = "/images/products/rx-placeholder.png";
 
 const normalizePath = (path: string) =>
   path.startsWith("/") ? path : `/${path}`;
@@ -34,30 +37,38 @@ const buildImageSrc = (rawSrc?: string | null, fallback = DEFAULT_FALLBACK) => {
   return `${normalizedBase}/${normalizedPath}`;
 };
 
+function getFallbackForVendor(vendor?: string | null, fallbackSrc?: string): string {
+  if (vendor != null && vendor !== "Alpha BioMed") {
+    return RX_PLACEHOLDER;
+  }
+  return fallbackSrc ?? DEFAULT_FALLBACK;
+}
+
 export default function ProductImage({
   src,
   alt = "Product image",
-  fallbackSrc = DEFAULT_FALLBACK,
+  fallbackSrc,
+  vendor,
   width,
   height,
   ...rest
 }: ProductImageProps) {
+  const effectiveFallback = getFallbackForVendor(vendor, fallbackSrc ?? DEFAULT_FALLBACK);
   const [imgSrc, setImgSrc] = useState<string>(() =>
-    buildImageSrc(src ?? undefined, fallbackSrc)
+    buildImageSrc(src ?? undefined, effectiveFallback)
   );
   const [useNativeImg, setUseNativeImg] = useState(false);
 
   useEffect(() => {
-    // Reset state and update image source when src prop changes
+    const nextFallback = getFallbackForVendor(vendor, fallbackSrc ?? DEFAULT_FALLBACK);
     setUseNativeImg(false);
-    setImgSrc(buildImageSrc(src ?? undefined, fallbackSrc));
-  }, [src, fallbackSrc]);
+    setImgSrc(buildImageSrc(src ?? undefined, nextFallback));
+  }, [src, fallbackSrc, vendor]);
 
   const handleError = () => {
     if (!useNativeImg) {
-      // Switch to fallback image using native img tag for better error handling
       setUseNativeImg(true);
-      setImgSrc(fallbackSrc);
+      setImgSrc(effectiveFallback);
     }
   };
 
@@ -72,8 +83,7 @@ export default function ProductImage({
         height={height}
         unoptimized
         onError={(e) => {
-          // If fallback also fails, hide the broken image
-          if (imgSrc === fallbackSrc) {
+          if (imgSrc === effectiveFallback) {
             (e.target as HTMLImageElement).style.display = "none";
           }
         }}

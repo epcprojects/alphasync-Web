@@ -34,6 +34,7 @@ export const FETCH_USER = gql`
               title
               primaryImage
               images
+              vendor
             }
           }
         }

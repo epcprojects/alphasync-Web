@@ -85,7 +85,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
     requestStatus && !paymentRequest
       ? [
           { label: "Strength:", value: item.strength },
-          { label: "Dosage Form:", value: "Injectable" },
+        { label: "Dosage Form:", value: '' },
           { label: "Doctor Name:", value: item.doctorName },
           { label: "Requested:", value: item.requestedOn },
           { label: "Category:", value: item.amount ?? "N/A" },
@@ -93,7 +93,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
       : paymentRequest
       ? [
           { label: "Strength:", value: item.strength },
-          { label: "Dosage Form:", value: "Injectable" },
+          { label: "Dosage Form:", value: "" },
           { label: "Doctor Name:", value: item.doctorName },
           { label: "Requested:", value: item.requestedOn },
           { label: "Category:", value: item.amount ?? "N/A" },
@@ -288,7 +288,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
                 {requestStatus ? "Dosage Form:" : "Price"}
               </span>
             <span className="text-xs font-medium text-gray-800">
-              {requestStatus ? "Injectable" : `${formatPrice(item.price)}`}
+                {requestStatus ? "--" : `${formatPrice(item.price)}`}
             </span>
             </div>
           )}

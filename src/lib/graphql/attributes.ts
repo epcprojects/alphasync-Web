@@ -103,6 +103,7 @@ export interface UserAttributes {
         title?: string;
         primaryImage?: string | null;
         images?: Array<string | null> | null;
+        vendor?: string | null;
       } | null;
     }> | null;
   } | null;

@@ -22,7 +22,7 @@ const PROFILE_SCHEMA = Yup.object().shape({
     .required("Phone number is required")
     .matches(
       /^\(\d{3}\)\s\d{3}-\d{4}$/,
-      "Phone number must be in format (512) 312-3123"
+      "Phone number must be in format (000) 000-0000"
     ),
 });
 
@@ -230,7 +230,7 @@ const AdminProfilePage: React.FC = () => {
                   <ThemeInput
                     type="tel"
                     name="phoneNo"
-                    placeholder="(316) 555-0116"
+                    placeholder="(000) 000-0000"
                     value={values.phoneNo}
                     onChange={(e) => {
                       const formatted = formatPhoneNumber(e.target.value);

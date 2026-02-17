@@ -43,11 +43,11 @@ function LoginContext() {
         Cookies.set("user_data", JSON.stringify(user), { expires: 7 });
         const userType = user?.userType?.toLowerCase();
          if (userType === "doctor") {
-          window.location.href = "/shop";
+           window.location.href = "/my-store";
         } else if (userType === "customer" || userType === "patient") {
           window.location.href = user?.addressVerified ? "/pending-payments" : "/verify-info";
         } else {
-          window.location.href = "/shop";
+           window.location.href = "/my-store";
         }
         showSuccessToast(message);
       }

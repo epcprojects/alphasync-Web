@@ -31,9 +31,11 @@ interface ProductCardProps {
   onCardClick?: () => void;
   onRemoveFromSale?: (productId: string) => void;
   customPrice?: number | null;
-  /** When true, disables Add to Shop / Change Customer Price (e.g. only RFO products can be ordered) */
+  /** When true, disables Add to  / Change Customer Price (e.g. only RUO products can be ordered) */
   orderButtonDisabled?: boolean;
   orderButtonDisabledTooltip?: string;
+  /** When not "Alpha BioMed", rx-placeholder is used as image fallback */
+  vendor?: string | null;
 }
 
 export default function ProductCard({
@@ -43,7 +45,8 @@ export default function ProductCard({
   onRemoveFromSale,
   customPrice,
   orderButtonDisabled = false,
-  orderButtonDisabledTooltip = "Only RFO products can be added to your shop.",
+  vendor,
+  // orderButtonDisabledTooltip = "Only RUO products can be added to your shop.",
 }: ProductCardProps) {
   const productId = product.originalId || String(product.id);
   const isMarkedUp = customPrice != null && customPrice !== undefined;
@@ -58,6 +61,7 @@ export default function ProductCard({
           height={240}
           src={product.image}
           alt={product.title}
+          vendor={vendor}
         />
       </div>
 
@@ -111,11 +115,11 @@ export default function ProductCard({
                   </Tooltip>
                 )}
                 {orderButtonDisabled ? (
-                  <Tooltip content={orderButtonDisabledTooltip}>
+                  // <Tooltip content={orderButtonDisabledTooltip}>
                     <span className="flex-1 flex">
                       <ThemeButton
                         label={
-                          isMarkedUp ? "Change Customer Price" : "Add to Shop"
+                        isMarkedUp ? "Change Customer Price" : "Add to My Store"
                         }
                         icon={<InventoryIcon fill="#2862A9" />}
                         variant="outline"
@@ -124,11 +128,11 @@ export default function ProductCard({
                         disabled
                       />
                     </span>
-                  </Tooltip>
+                  // </Tooltip>
                 ) : (
                   <ThemeButton
                     label={
-                      isMarkedUp ? "Change Customer Price" : "Add to Shop"
+                        isMarkedUp ? "Change Customer Price" : "Add to My Store"
                     }
                     icon={<InventoryIcon fill="#2862A9" />}
                     onClick={(e) => {

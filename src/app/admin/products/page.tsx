@@ -96,9 +96,9 @@ function ProductsContent() {
   );
   const categories = categoriesData?.allCategories ?? [];
 
-  // Display "RFO" for "Alpha BioMed" on frontend; send actual value to backend
+  // Display "RUO" for "Alpha BioMed" on frontend; send actual value to backend
   const getVendorDisplayName = (vendor: string) =>
-    vendor === "Alpha BioMed" ? "RFO" : vendor;
+    vendor === "Alpha BioMed" ? "RUO" : vendor;
 
   // GraphQL query to fetch products
   const { data, loading, error, refetch } = useQuery<AllProductsResponse>(
@@ -111,7 +111,7 @@ function ProductsContent() {
         inStockOnly: showOutOfStock ? false : undefined,
         category:
           selectedCategory === null ? null : selectedCategory || undefined,
-        vendor: selectedVendor || undefined, // backend value (e.g. "Alpha BioMed"), not "RFO"
+        vendor: selectedVendor || undefined, // backend value (e.g. "Alpha BioMed"), not "RUO"
       },
       fetchPolicy: "network-only",
     },
