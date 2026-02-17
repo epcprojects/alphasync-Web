@@ -21,6 +21,7 @@ interface ImageUploadProps {
   enableCrop?: boolean;
   cropAspect?: number;
   cropShape?: "rect" | "round";
+  showUpdateBtn?: boolean;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -40,6 +41,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   enableCrop = true,
   cropAspect = 1,
   cropShape = "round",
+  showUpdateBtn = true,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string>(imageUrl || placeholder);
@@ -172,12 +174,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             </button>
           )}
 
-          <button
-            onClick={handleUpdateClick}
-            className="text-gray-600 cursor-pointer hover:bg-gray-100 px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold"
-          >
-            {hasImage ? "Update" : "Upload"}
-          </button>
+          {showUpdateBtn && (
+            <button
+              onClick={handleUpdateClick}
+              className="text-gray-600 cursor-pointer hover:bg-gray-100 px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold"
+            >
+              {hasImage ? "Update" : "Upload"}
+            </button>
+          )}
 
           {/* Hidden file input */}
           <input

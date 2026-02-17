@@ -43,6 +43,14 @@ export const userpayload = `
             shippingStreet2
             shippingStreet1
        hasViewedAllVideos
+       deaLicenses {
+         id
+         deaLicense
+         state
+         expirationDate
+         licenseUrl
+         status
+       }
 `;
 
 export interface UserAttributes {
@@ -90,6 +98,14 @@ export interface UserAttributes {
   shippingCountry?: string;
   unreadNotifications?: boolean;
   hasViewedAllVideos?: boolean;
+  deaLicenses?: Array<{
+    id?: string | number;
+    deaLicense?: string;
+    state?: string;
+    expirationDate?: string;
+    licenseUrl?: string;
+    status?: string;
+  }>;
   cart?: {
     id?: string;
     itemsCount?: number;

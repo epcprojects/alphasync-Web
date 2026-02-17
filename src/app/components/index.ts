@@ -59,8 +59,16 @@ import ShopProductCard from "./ui/cards/ShopProductCard";
 import EditProductModal from "./ui/modals/EditProductModal";
 import Dropdown from "./ui/inputs/ThemeDropDown";
 import TagInput from "./ui/inputs/TagInput";
+import ProfileStepper from "./ui/ProfileStepper";
+import MedicalLicensesSection from "./medicalLicensesComponent";
+import DoctorProfileHeaderCard from "./ui/cards/DoctorProfileHeaderCard";
+import DoctorProfileLicensesCard from "./ui/cards/DoctorProfileLicensesCard";
 
 export {
+  DoctorProfileLicensesCard,
+  DoctorProfileHeaderCard,
+  MedicalLicensesSection,
+  ProfileStepper,
   Dropdown,
   TagInput,
   EditProductModal,

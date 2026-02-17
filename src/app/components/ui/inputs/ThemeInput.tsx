@@ -89,7 +89,7 @@ const ThemeInput = React.forwardRef<HTMLInputElement, ThemeInputProps>(
             id={id}
             type={renderedType}
             style={icon ? { paddingLeft: `${iconTotalPadding}px` } : undefined}
-            className={`w-full focus:ring h-11 p-2 md:px-3 md:py-2.5 border   rounded-lg outline-none text-gray-900 placeholder:text-gray-500 placeholder:font-normal
+            className={`bg-white w-full focus:ring h-11 p-2 md:px-3 md:py-2.5 border   rounded-lg outline-none text-gray-900 placeholder:text-gray-500 placeholder:font-normal
             ${
               error
                 ? "border-red-500 focus:ring-red-200"

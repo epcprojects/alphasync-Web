@@ -5,7 +5,6 @@ import {
   MailIcon,
   EllipsisVertical,
 } from "@/icons";
-import { getInitials } from "@/lib/helpers";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -14,6 +13,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
 type DoctorListingProps = {
   doctor: UserAttributes;
+  onDoctorClick?: (doctor: UserAttributes) => void;
   onEditDoctor?: (id: number) => void;
   onDeleteDoctor?: (id: number) => void;
   onResendInvitation?: (id: string | number) => void;
@@ -75,6 +75,7 @@ function getDisplayStatus(status?: string): string {
 
 export default function DoctorListView({
   doctor,
+  onDoctorClick,
   onDeleteDoctor,
   onEditDoctor,
   onResendInvitation,
@@ -84,10 +85,23 @@ export default function DoctorListView({
 
   const ismobile = useIsMobile();
 
+  const handleRowClick = () => {
+    if (doctor?.id != null) onDoctorClick?.(doctor);
+  };
+
   if (ismobile)
     return (
       <div
         key={doctor.id}
+        role="button"
+        tabIndex={0}
+        onClick={handleRowClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleRowClick();
+          }
+        }}
         className="bg-white flex flex-col gap-2 p-2  cursor-pointer  rounded-xl shadow-table"
       >
         <div className="flex items-start flex-wrap gap-1 justify-between mb-2">
@@ -140,7 +154,7 @@ export default function DoctorListView({
             </span>
           </div>
         </div>
-        <div className="flex items-end sm:items-center gap-1 w-full">
+        <div className="flex items-end sm:items-center gap-1 w-full" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-start flex-col gap-1 w-full">
             <span className="text-black whitespace-nowrap font-medium text-sm block">
               NPI number:
@@ -199,9 +213,17 @@ export default function DoctorListView({
 
   return (
     <div
-      // onClick={onRowClick}
       key={doctor.id}
-      className="grid  grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr]  items-center rounded-xl bg-white p-1 sm:p-1.5 xl:p-3 shadow-table"
+      role="button"
+      tabIndex={0}
+      onClick={handleRowClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleRowClick();
+        }
+      }}
+      className="grid  cursor-pointer grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr]  items-center rounded-xl bg-white p-1 sm:p-1.5 xl:p-3 shadow-table"
     >
       <div className="flex items-center gap-2">
         <ProfileImage
@@ -255,7 +277,7 @@ export default function DoctorListView({
         </span>
       </div>
 
-      <div className="flex items-center justify-end gap-1">
+      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
         {/* {doctor.invitationStatus === "pending" && (
           <Tooltip content="Resend Invitation">
             <button
