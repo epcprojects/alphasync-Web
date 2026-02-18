@@ -363,7 +363,7 @@ const Page = () => {
       );
       currentY += 6;
       doc.text(
-        "Questions about this invoice? Reach us at support@alphasync.com",
+        "Questions about this invoice? Reach us at support@alphasyncrx.com",
         margin,
         currentY
       );
