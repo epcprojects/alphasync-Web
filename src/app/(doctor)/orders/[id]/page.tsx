@@ -7,6 +7,7 @@ import {
   DeliveryTruckIcon,
   LocationIcon,
   MessageOutgoingIcon,
+  PencilEditIcon,
   PrinterIcon,
   ShipmentTrackingIcon,
 } from "@/icons";
@@ -135,10 +136,13 @@ const Page = () => {
     });
   };
 
+  const statusLower = order?.status?.toLowerCase();
+  const isOrderPaid = statusLower === "paid";
   const isOrderCancelled =
-    order?.status?.toLowerCase() === "cancelled" ||
-    order?.status?.toLowerCase() === "canceled" ||
-    order?.status?.toLowerCase() === "paid";
+    statusLower === "cancelled" || statusLower === "canceled";
+  // Hide Cancel/Edit when order is paid or cancelled; only customer orders can be edited
+  const isCustomerOrder = !!order?.patient?.id;
+  const showCancelAndEditButtons = !isOrderPaid && !isOrderCancelled;
 
   const handleDownloadInvoice = async () => {
     if (!order?.id) return;
@@ -553,17 +557,30 @@ const Page = () => {
             </div>
           </div>
           <div className="flex items-center flex-col md:flex-row flex-wrap justify-end gap-1.5 md:gap-3">
-            {!isOrderCancelled && (
-              <ThemeButton
-                label="Cancel Order"
-                variant="outline"
-                size="medium"
-                icon={<CrossIcon fill="#EF4444" height="18" width="18" />}
-                onClick={() => setIsCancelModalOpen(true)}
-                disabled={cancellingOrder}
-                className="w-full sm:w-fit"
-                heightClass="md:h-11 h-10"
-              />
+            {showCancelAndEditButtons && (
+              <>
+                {isCustomerOrder && (
+                  <ThemeButton
+                    label="Edit Order"
+                    variant="outline"
+                    size="medium"
+                    icon={<PencilEditIcon height="18" width="18" />}
+                    onClick={() => router.push(`/orders/${order.id}/edit`)}
+                    className="w-full sm:w-fit"
+                    heightClass="md:h-11 h-10"
+                  />
+                )}
+                <ThemeButton
+                  label="Cancel Order"
+                  variant="outline"
+                  size="medium"
+                  icon={<CrossIcon fill="#EF4444" height="18" width="18" />}
+                  onClick={() => setIsCancelModalOpen(true)}
+                  disabled={cancellingOrder}
+                  className="w-full sm:w-fit"
+                  heightClass="md:h-11 h-10"
+                />
+              </>
             )}
 
             {order.trackingUrl && (
@@ -603,7 +620,7 @@ const Page = () => {
           </div>
         </div>
       </div>
-      {!isOrderCancelled && (
+      {showCancelAndEditButtons && (
         <AppModal
           isOpen={isCancelModalOpen}
           onClose={() => setIsCancelModalOpen(false)}

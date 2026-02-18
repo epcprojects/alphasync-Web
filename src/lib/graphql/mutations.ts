@@ -421,6 +421,45 @@ export const CREATE_ORDER = gql`
   }
 `;
 
+export const UPDATE_ORDER = gql`
+  mutation UpdateOrder(
+    $orderId: ID!
+    $orderItems: [OrderItemAttributes!]!
+    $totalPrice: Float!
+  ) {
+    updateOrder(
+      input: {
+        orderAttributes: {
+          orderId: $orderId
+          orderItems: $orderItems
+          totalPrice: $totalPrice
+        }
+      }
+    ) {
+      order {
+        id
+        displayId
+      }
+    }
+  }
+`;
+
+export const UPDATE_ORDER_ITEMS = gql`
+  mutation UpdateOrderItems(
+    $orderId: ID!
+    $subtotal: Float!
+    $orderItems: [EditOrderItemInput!]!
+  ) {
+    updateOrderItems(
+      input: { orderId: $orderId, subtotal: $subtotal, orderItems: $orderItems }
+    ) {
+      order {
+        id
+      }
+    }
+  }
+`;
+
 export const UPDATE_CUSTOMER_PROFILE = gql`
   mutation UpdateCustomerProfile(
     $fullName: String

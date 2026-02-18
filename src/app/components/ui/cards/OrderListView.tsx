@@ -1,6 +1,6 @@
 "use client";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { ArrowLeftIcon, TrashBinIcon } from "@/icons";
+import { ArrowLeftIcon, PencilEditIcon, TrashBinIcon } from "@/icons";
 import Tooltip from "../tooltip";
 import ProfileImage from "@/app/components/ui/ProfileImage";
 
@@ -36,6 +36,8 @@ type OrderListViewProps = {
   onPayNow?: (id?: number) => void;
   showPayNow?: boolean;
   onCancelOrder?: () => void;
+  /** When provided, show Edit button (e.g. for customer orders that can be edited). */
+  onEditOrder?: () => void;
   /** "admin" = fixed 9-column grid, view-only actions, admin mobile card. "default" = doctor-side layout. */
   layout?: OrderListViewLayout;
   /** Optional grid template for desktop row (e.g. "md:grid-cols-[1.5fr_2.5fr_1fr_2fr_1fr_1fr_1fr_1fr_1fr]"). When set, overrides layout-based grid. */
@@ -109,6 +111,7 @@ export default function OrderListView({
   onPayNow,
   showPayNow = false,
   onCancelOrder,
+  onEditOrder,
   layout = "default",
   gridCols: gridColsProp,
 }: OrderListViewProps) {
@@ -327,6 +330,20 @@ export default function OrderListView({
                   <TrashBinIcon width="14" height="14" />
                 </button>
               )}
+            {!isAdminLayout && onEditOrder && (
+              <Tooltip content="Edit Order">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditOrder();
+                  }}
+                  className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 hover:border-primary hover:bg-primary/5 shrink-0 cursor-pointer"
+                  aria-label="Edit order"
+                >
+                  <PencilEditIcon width="14" height="14" />
+                </button>
+              </Tooltip>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -465,6 +482,20 @@ export default function OrderListView({
               </button>
             </Tooltip>
           )}
+        {!isAdminLayout && onEditOrder && (
+          <Tooltip content="Edit Order">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditOrder();
+              }}
+              className="flex md:h-8 md:w-8 h-7 w-7 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 hover:border-primary hover:bg-primary/5 shrink-0 cursor-pointer"
+              aria-label="Edit order"
+            >
+              <PencilEditIcon width="14" height="14" />
+            </button>
+          </Tooltip>
+        )}
         <Tooltip content={isAdminLayout ? "View order" : "View Order"}>
           <button
             onClick={(e) => {
