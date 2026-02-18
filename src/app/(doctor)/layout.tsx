@@ -336,16 +336,11 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     );
   }
 
-  // Hide Training Videos nav item until doctor has added DEA licenses
-  const menuItemsToShow = hasDeaLicenses
-    ? menuItems
-    : menuItems.filter((item) => item.href !== "/training-videos");
-
   return (
     <DoctorRoute>
       <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
         <div className="px-2 py-3 md:p-4 md:pb-6 lg:mb-6 lg:pb-10 h-fit mb-2 md:mb-4 flex lg:p-5 flex-col gap-5 md:gap-10 relative  items-center justify-center bg-black/40  xl:rounded-[20px] !bg-[url(/images/bannerImage.png)] !bg-center w-full !bg-cover !bg-no-repeat ">
-          <Header menuItems={menuItemsToShow} />
+          <Header menuItems={menuItems} />
 
           {!hideStats && (
             <DashboardStats
