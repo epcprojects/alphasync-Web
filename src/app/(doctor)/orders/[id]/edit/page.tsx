@@ -9,10 +9,10 @@ import * as Yup from "yup";
 import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
-import { useMutation, useQuery, useLazyQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { useApolloClient } from "@apollo/client";
 import { UPDATE_ORDER_ITEMS } from "@/lib/graphql/mutations";
-import { FETCH_ORDER, FETCH_PRODUCT, FETCH_TIER_PRICING } from "@/lib/graphql/queries";
+import { FETCH_ORDER, FETCH_PRODUCT } from "@/lib/graphql/queries";
 import { FetchProductResponse } from "@/types/products";
 
 interface OrderItem {
@@ -93,7 +93,6 @@ const Page = () => {
   const [latestMarkedUpPrice, setLatestMarkedUpPrice] = useState<number | null>(null);
   const [preservedProduct, setPreservedProduct] = useState("");
   const [preservedPrice, setPreservedPrice] = useState<number>(0);
-  const lastTierFetchForItemRef = useRef<{ index: number; quantity: number } | null>(null);
 
   const AddItemSchema = useMemo(
     () =>
@@ -158,10 +157,6 @@ const Page = () => {
       fetchPolicy: "network-only",
     }
   );
-
-  const [fetchTierPricing] = useLazyQuery(FETCH_TIER_PRICING, {
-    fetchPolicy: "network-only",
-  });
 
   const [updateOrderItems, { loading: updateOrderLoading, error: updateOrderError }] =
     useMutation(UPDATE_ORDER_ITEMS);
@@ -273,28 +268,6 @@ const Page = () => {
     if (existingIndex !== -1) {
       const existing = orderItems[existingIndex];
       const newQty = existing.quantity + values.quantity;
-      if (selectedProductData?.tierPricing?.length && productId) {
-        setOrderItems((prev) => {
-          const next = [...prev];
-          next[existingIndex] = { ...next[existingIndex], quantity: newQty };
-          return next;
-        });
-        fetchTierPricing({ variables: { productId, quantity: newQty } }).then(({ data }) => {
-          if (data?.fetchTierPricing?.tieredPrice != null) {
-            setOrderItems((prev) => {
-              const next = [...prev];
-              if (next[existingIndex]?.productId === productId)
-                next[existingIndex] = {
-                  ...next[existingIndex],
-                  price: Number(data.fetchTierPricing.tieredPrice),
-                  initialPrice: Number(data.fetchTierPricing.tieredPrice),
-                };
-              return next;
-            });
-          }
-        });
-        return;
-      }
       setOrderItems((prev) => {
         const next = [...prev];
         next[existingIndex] = {
@@ -332,25 +305,6 @@ const Page = () => {
       if (next[index]) next[index] = { ...next[index], [field]: value };
       return next;
     });
-
-    if (field === "quantity" && current.hasTierPricing && current.productId) {
-      lastTierFetchForItemRef.current = { index, quantity: value };
-      fetchTierPricing({
-        variables: { productId: current.productId, quantity: value },
-      }).then(({ data }) => {
-        if (data?.fetchTierPricing?.tieredPrice != null) {
-          const tieredPrice = Number(data.fetchTierPricing.tieredPrice);
-          setOrderItems((prev) => {
-            const next = [...prev];
-            const item = next[index];
-            const last = lastTierFetchForItemRef.current;
-            if (!item || !last || last.index !== index || last.quantity !== value) return prev;
-            next[index] = { ...item, price: tieredPrice, initialPrice: tieredPrice };
-            return next;
-          });
-        }
-      });
-    }
 
     if (field === "price") {
       if (current.originalPrice != null || current.latestMarkedUpPrice != null) {
