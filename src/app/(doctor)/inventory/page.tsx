@@ -390,16 +390,18 @@ function InventoryContent() {
             onClick={handleExportProducts}
             disabled={exportLoading}
           />
-          <ThemeButton
-            label="Apply Markup"
-            onClick={() => setIsBlanketMarkupModalOpen(true)}
-            icon={
-              <PackageOutlineIcon
-                height={isMobile ? "16" : "18"}
-                width={isMobile ? "16" : "18"}
-              />
-            }
-          />
+          {inventoryTab === "research-use-only" && (
+            <ThemeButton
+              label="Apply Markup"
+              onClick={() => setIsBlanketMarkupModalOpen(true)}
+              icon={
+                <PackageOutlineIcon
+                  height={isMobile ? "16" : "18"}
+                  width={isMobile ? "16" : "18"}
+                />
+              }
+            />
+          )}
           <div className="sm:bg-white rounded-full flex-col sm:flex-row w-full flex items-center gap-1 md:gap-2 p-0 md:px-2.5 md:py-2 sm:shadow-table lg:w-fit">
             <div className="flex items-center relative w-full p-1 sm:p-0 rounded-full bg-white sm:bg-transparent shadow-table sm:shadow-none">
               <span className="absolute left-3">
