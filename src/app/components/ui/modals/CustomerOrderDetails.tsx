@@ -38,6 +38,8 @@ type order = {
   totalTax?: number | null;
   orderItems: OrderItem[];
   status?: string;
+  trackingNumber?: string | null;
+  trackingUrl?: string | null;
   patient?: {
     address?: string | null;
   };
@@ -180,6 +182,22 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                 {shippingAddress}
               </span>
             </div>
+            {order.trackingNumber && order.trackingUrl && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-normal text-gray-800">
+                  Tracking Number
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    window.open(order.trackingUrl!, "_blank", "noopener,noreferrer,width=900,height=700")
+                  }
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-800 underline text-left break-all focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
+                >
+                  {order.trackingNumber}
+                </button>
+              </div>
+            )}
           </div>
           <div className="flex justify-between items-center px-2.5 md:px-0 border-b border-gray-200 pb-4">
             <span className="text-lg font-semibold text-gray-800">

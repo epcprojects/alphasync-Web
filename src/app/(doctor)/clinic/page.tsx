@@ -47,6 +47,8 @@ interface DoctorOrderData {
   totalPrice?: number | null;
   subtotalPrice?: number | null;
   totalTax?: number | null;
+  trackingUrl?: string | null;
+  trackingNumber?: string | null;
   orderItems?: DoctorOrderItemData[] | null;
   patient?: {
     fullName?: string | null;

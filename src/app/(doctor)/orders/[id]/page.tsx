@@ -52,6 +52,7 @@ interface FetchOrderResponse {
     patient: UserAttributes | null;
     orderItems: OrderItem[];
     trackingNumber?: string | number;
+    trackingUrl?: string | null;
   };
 }
 
@@ -513,13 +514,28 @@ const Page = () => {
               <div className="rounded-lg bg-white border border-gray-200 flex items-center justify-center w-10 h-10">
                 <DeliveryTruckIcon />
               </div>
-              <div className="flex flex-col gap-0.5">
+              <div className="flex flex-col gap-0.5 min-w-0">
                 <h2 className="font-medium text-sm text-gray-500 ">
                   Tracking Number:
                 </h2>
-                <h3 className="text-xs md:text-base text-gray-800">
-                  {order.trackingNumber || "In progress"}
-                </h3>
+                {order.trackingNumber ? (
+                  <a
+                    href={
+                      order.trackingUrl
+                        ? order.trackingUrl
+                        : `https://www.google.com/search?q=track+${encodeURIComponent(String(order.trackingNumber))}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs md:text-base text-indigo-600 hover:text-indigo-800 underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded break-all"
+                  >
+                    {order.trackingNumber}
+                  </a>
+                ) : (
+                    <h3 className="text-xs md:text-base text-gray-800">
+                      In progress
+                    </h3>
+                )}
               </div>
             </div>
             <div className="rounded-lg flex items-start sm:items-center gap-1 md:gap-2 p-2 bg-gray-50 ">
@@ -550,13 +566,13 @@ const Page = () => {
               />
             )}
 
-            {order.status?.toLowerCase() === "paid" && (
+            {order.trackingUrl && (
               <ThemeButton
                 label="Track Package"
                 variant="outline"
                 size="medium"
                 icon={<ShipmentTrackingIcon />}
-                onClick={() => {}}
+                onClick={() => window.open(order.trackingUrl!, "_blank", "noopener,noreferrer,width=900,height=700")}
                 className="w-full sm:w-fit"
                 heightClass="md:h-11 h-10"
               />

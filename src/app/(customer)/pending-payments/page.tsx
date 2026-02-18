@@ -56,6 +56,8 @@ interface PatientOrderData {
   createdAt: string;
   totalPrice?: number | null;
   totalTax?: number | null;
+  trackingUrl?: string | null;
+  trackingNumber?: string | null;
   subtotalPrice?: number | null;
   orderItems?: PatientOrderItemData[] | null;
   doctor?: {
@@ -543,15 +545,15 @@ function PendingPayments() {
         onClose={() => setIsSuccess(false)}
         viewOrder={() => {
           setIsSuccess(false);
-          setIsSummaryModalOpen(true);
+          // setIsSummaryModalOpen(true);
         }}
         btnTitle={"View Order"}
       />
-      <CustomerOrderSummary
+      {/* <CustomerOrderSummary
         isOpen={isSummaryModalOpen}
         onClose={() => setIsSummaryModalOpen(false)}
         order={selectedOrder}
-      />
+      /> */}
       <AppModal
         isOpen={isCancelModalOpen}
         onClose={handleCloseCancelModal}

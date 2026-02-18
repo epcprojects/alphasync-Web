@@ -173,6 +173,8 @@ export const DOCTOR_ORDERS = gql`
         }
         createdAt
         status
+        trackingUrl
+        trackingNumber
         orderItems {
           id
           quantity
@@ -211,6 +213,8 @@ export const DOCTOR_ORDERS_ALL = gql`
         }
         createdAt
         status
+        trackingUrl
+        trackingNumber
         orderItems {
           id
           quantity
@@ -256,6 +260,7 @@ export const FETCH_ORDER = gql`
       subtotalPrice
       totalPrice
       trackingNumber
+      trackingUrl
       totalTax
       patient {
         ${userpayload}
@@ -401,6 +406,8 @@ export const PATIENT_ORDERS = gql`
         id
         displayId
         status
+        trackingUrl
+        trackingNumber
         createdAt
         totalPrice
         hasAnotherReorder
@@ -698,6 +705,7 @@ export const ADMIN_ORDERS = gql`
         shipmentStatus
         shipstationOrderId
         trackingNumber
+        trackingUrl
         doctor {
           id
           email
