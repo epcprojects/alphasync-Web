@@ -31,6 +31,8 @@ export interface PrescriptionOrder {
   subtotalPrice?: number | null;
   isDueToday?: string;
   status?: string;
+  trackingUrl?: string | null;
+  trackingNumber?: string | null;
   shippingAddress?: string;
   hasAnotherReorder?: boolean;
   patient?: {

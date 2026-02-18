@@ -36,6 +36,7 @@ interface OrdersResponse {
       shipmentStatus?: string | null;
       shipstationOrderId?: string | null;
       trackingNumber?: string | null;
+      trackingUrl?: string | null;
       doctor?: {
         id: string;
         email?: string | null;

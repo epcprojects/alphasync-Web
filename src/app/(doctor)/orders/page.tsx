@@ -49,6 +49,8 @@ interface DoctorOrdersResponse {
       } | null;
       createdAt: string;
       status: string;
+      trackingUrl?: string | null;
+      trackingNumber?: string | null;
       orderItems: {
         id: string;
         quantity: number;
@@ -101,6 +103,8 @@ function OrderContent() {
       tieredPrice?: number;
     }[];
     status?: string;
+    trackingUrl?: string | null;
+    trackingNumber?: string | null;
     doctorAddress?: string;
   } | null>(null);
   const orderStatuses = [
@@ -108,6 +112,8 @@ function OrderContent() {
     { label: "Pending", value: "PENDING", color: "before:bg-red-500" },
     { label: "Canceled", value: "CANCELED", color: "before:bg-gray-600" },
     { label: "Paid", value: "PAID", color: "before:bg-green-500" },
+    { label: "Shipped", value: "SHIPPED", color: "before:bg-blue-500" },
+    { label: "Delivered", value: "DELIVERED", color: "before:bg-green-500" },
   ];
 
   const [range, setRange] = useState<Selection>({

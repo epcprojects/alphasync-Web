@@ -52,6 +52,8 @@ interface PatientOrderData {
   totalTax?: number | null;
   subtotalPrice?: number | null;
   hasAnotherReorder?: boolean | null;
+  trackingUrl?: string | null;
+  trackingNumber?: string | null;
   doctor?: {
     fullName?: string | null;
   } | null;
@@ -207,6 +209,8 @@ function History() {
       subtotalPrice: order.subtotalPrice ?? 0,
       status: order.status ?? undefined,
       hasAnotherReorder: order.hasAnotherReorder ?? false,
+      trackingNumber: order.trackingNumber ?? undefined,
+      trackingUrl: order.trackingUrl ?? undefined,
       patient: order.patient
         ? {
             address: normalizeAddress(order.patient.address),

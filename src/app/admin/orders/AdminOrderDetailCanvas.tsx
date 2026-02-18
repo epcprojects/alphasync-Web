@@ -46,6 +46,7 @@ export interface AdminOrderDetail {
   shipmentStatus?: string | null;
   shipstationOrderId?: string | null;
   trackingNumber?: string | null;
+  trackingUrl?: string | null;
   doctor?: {
     id: string;
     email?: string | null;
@@ -182,9 +183,22 @@ export default function AdminOrderDetailCanvas({
               )}
               <div className="flex justify-between text-sm gap-4">
                 <span className="text-gray-600 shrink-0">Tracking Number</span>
-                <span className="text-gray-900 font-mono text-xs break-all text-right">
-                  {order.trackingNumber ?? "In Progress"}
-                </span>
+                {order.trackingNumber ? (
+                  <a
+                    href={
+                      order.trackingUrl ? order.trackingUrl : `https://www.google.com/search?q=track+${encodeURIComponent(String(order.trackingNumber))}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-600 hover:text-indigo-800 font-mono text-xs break-all text-right underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
+                  >
+                    {order.trackingNumber}
+                  </a>
+                ) : (
+                    <span className="text-gray-900 font-mono text-xs break-all text-right">
+                      In Progress
+                    </span>
+                )}
               </div>
             </div>
           )}
