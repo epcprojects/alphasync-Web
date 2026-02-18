@@ -563,32 +563,45 @@ function OrderContent() {
                   </div>
                 ) : (
                   <>
-                    {orders.map((order) => (
-                      <OrderListView
-                        onRowClick={() => router.push(`/orders/${order.id}`)}
-                        key={order.id}
-                        order={{
-                          id: parseInt(order.id),
-                          orderId: order.displayId || "---",
-                          displayId: order.displayId
-                            ? parseInt(order.displayId.toString())
-                            : parseInt(order.id),
-                          customer:
-                            order.patient?.fullName || "Unknown Customer",
-                          imageUrl: order.patient?.imageUrl,
-                          customerEmail: order.patient?.email,
-                          date: format(new Date(order.createdAt), "MM-dd-yy"),
-                          status: order.status,
-                          items: order.orderItems.length,
-                          total: order.totalPrice,
-                          netCost: order.netCost ?? 0,
-                          profit: order.profit ?? 0,
-                        }}
-                        onViewOrderDetail={() =>
-                          router.push(`/orders/${order.id}`)
-                        }
-                      />
-                    ))}
+                    {orders.map((order) => {
+                      const statusLower = order.status?.toLowerCase();
+                      const canEdit =
+                        order.patient &&
+                        statusLower !== "paid" &&
+                        statusLower !== "cancelled" &&
+                        statusLower !== "canceled";
+                      return (
+                        <OrderListView
+                          onRowClick={() => router.push(`/orders/${order.id}`)}
+                          key={order.id}
+                          order={{
+                            id: parseInt(order.id),
+                            orderId: order.displayId || "---",
+                            displayId: order.displayId
+                              ? parseInt(order.displayId.toString())
+                              : parseInt(order.id),
+                            customer:
+                              order.patient?.fullName || "Unknown Customer",
+                            imageUrl: order.patient?.imageUrl,
+                            customerEmail: order.patient?.email,
+                            date: format(new Date(order.createdAt), "MM-dd-yy"),
+                            status: order.status,
+                            items: order.orderItems.length,
+                            total: order.totalPrice,
+                            netCost: order.netCost ?? 0,
+                            profit: order.profit ?? 0,
+                          }}
+                          onViewOrderDetail={() =>
+                            router.push(`/orders/${order.id}`)
+                          }
+                          onEditOrder={
+                            canEdit
+                              ? () => router.push(`/orders/${order.id}/edit`)
+                              : undefined
+                          }
+                        />
+                      );
+                    })}
                   </>
                 )}
               </div>
