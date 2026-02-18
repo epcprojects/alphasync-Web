@@ -873,6 +873,14 @@ export const MARK_PRODUCT_NOT_FOR_SALE = gql`
   }
 `;
 
+export const MARK_ALL_PRODUCTS_NOT_FOR_SALE = gql`
+  mutation MarkAllProductsNotForSale($clientMutationId: String) {
+    markAllProductsNotForSale(input: { clientMutationId: $clientMutationId }) {
+      success
+    }
+  }
+`;
+
 export const MARK_NOTIFICATION_AS_READ = gql`
   mutation MarkNotificationAsRead($notificationId: ID!) {
     markNotificationAsRead(input: { notificationId: $notificationId }) {

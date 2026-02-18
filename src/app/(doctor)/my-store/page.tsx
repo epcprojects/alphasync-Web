@@ -1,6 +1,7 @@
 "use client";
 
 import { Pagination, ShopProductCard, Skeleton, ThemeButton } from "@/app/components";
+import AppModal from "@/app/components/ui/modals/AppModal";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
@@ -16,7 +17,11 @@ import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
 import type { AllProductsResponse } from "@/types/products";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { addItem } from "@/lib/store/slices/cartSlice";
-import { ADD_TO_CART, MARK_PRODUCT_NOT_FOR_SALE } from "@/lib/graphql/mutations";
+import {
+  ADD_TO_CART,
+  MARK_ALL_PRODUCTS_NOT_FOR_SALE,
+  MARK_PRODUCT_NOT_FOR_SALE,
+} from "@/lib/graphql/mutations";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 const Page = () => {
@@ -34,10 +39,24 @@ const Page = () => {
       showErrorToast(e.message || "Failed to remove from your store");
     },
   });
+  const [markAllProductsNotForSale, { loading: removingAll }] = useMutation(
+    MARK_ALL_PRODUCTS_NOT_FOR_SALE,
+    {
+      onCompleted: () => {
+        showSuccessToast("All products removed from your store");
+        refetch();
+      },
+      onError: (e) => {
+        showErrorToast(e.message || "Failed to remove all products");
+      },
+    }
+  );
 
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [removingProductIds, setRemovingProductIds] = useState<Record<string, boolean>>({});
+  const [isRemoveAllConfirmOpen, setIsRemoveAllConfirmOpen] = useState(false);
+  const [productToRemove, setProductToRemove] = useState<{ id: string; title: string } | null>(null);
 
   const itemsPerPage = 9;
 
@@ -159,6 +178,15 @@ const Page = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row w-full lg:w-auto items-stretch sm:items-center gap-2 lg:gap-3">
+          {shopProducts.length > 0 && (
+            <ThemeButton
+              label={removingAll ? "Removing..." : "Remove All Products"}
+              onClick={() => setIsRemoveAllConfirmOpen(true)}
+              disabled={removingAll}
+              variant="outline"
+              className="shrink-0"
+            />
+          )}
           <ThemeButton
             label="Add Items to My Store"
             icon={<PlusIcon />}
@@ -235,7 +263,12 @@ const Page = () => {
               <ShopProductCard
                 key={product.originalId || product.id}
                 product={product}
-                onRemoveFromShop={handleRemoveFromShop}
+                onRemoveFromShop={() =>
+                  setProductToRemove({
+                    id: product.originalId || String(product.id),
+                    title: product.title,
+                  })
+                }
                 removingFromShop={!!removingProductIds[product.originalId || String(product.id)]}
                 onAddToCart={(payload) => {
                   dispatch(
@@ -272,6 +305,57 @@ const Page = () => {
           )}
         </>
       )}
+
+      <AppModal
+        isOpen={isRemoveAllConfirmOpen}
+        onClose={() => {
+          if (!removingAll) setIsRemoveAllConfirmOpen(false);
+        }}
+        title="Remove all products?"
+        subtitle=""
+        onConfirm={() => {
+          markAllProductsNotForSale({ variables: { clientMutationId: null } });
+          setIsRemoveAllConfirmOpen(false);
+        }}
+        confirmLabel={removingAll ? "Removing..." : "Remove all"}
+        cancelLabel="Cancel"
+        confirmBtnVarient="danger"
+        confimBtnDisable={removingAll}
+        disableCloseButton={removingAll}
+        outSideClickClose={!removingAll}
+        bodyPaddingClasses="p-4 md:p-6"
+      >
+        <p className="text-sm md:text-base text-gray-700">
+          Remove all products from your store? Customers will no longer see any
+          of these items.
+        </p>
+      </AppModal>
+
+      <AppModal
+        isOpen={!!productToRemove}
+        onClose={() => {
+          if (!removingProductIds[productToRemove?.id ?? ""]) setProductToRemove(null);
+        }}
+        title="Remove from store?"
+        subtitle=""
+        onConfirm={async () => {
+          if (!productToRemove) return;
+          await handleRemoveFromShop(productToRemove.id);
+          setProductToRemove(null);
+        }}
+        confirmLabel={removingProductIds[productToRemove?.id ?? ""] ? "Removing..." : "Remove"}
+        cancelLabel="Cancel"
+        confirmBtnVarient="danger"
+        confimBtnDisable={!!removingProductIds[productToRemove?.id ?? ""]}
+        disableCloseButton={!!removingProductIds[productToRemove?.id ?? ""]}
+        outSideClickClose={!removingProductIds[productToRemove?.id ?? ""]}
+        bodyPaddingClasses="p-4 md:p-6"
+      >
+        <p className="text-sm md:text-base text-gray-700">
+          Remove &quot;{productToRemove?.title ?? ""}&quot; from your store? Customers will no
+          longer see this item.
+        </p>
+      </AppModal>
     </div>
   );
 };
