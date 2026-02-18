@@ -188,13 +188,13 @@ const Page = () => {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(18);
       doc.setFont("helvetica", "bold");
-      doc.text("AlphaSync Pharmacy", margin, 18);
+      doc.text("AlphaSync", margin, 18);
       doc.setFontSize(12);
       doc.text("Official Invoice", pageWidth - margin, 18, { align: "right" });
 
       doc.setFontSize(10);
       doc.text(
-        "Trusted care & pharmacy services for your patients.",
+        "Trusted care & services for your patients.",
         margin,
         28
       );
