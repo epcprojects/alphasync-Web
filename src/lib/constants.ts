@@ -1,5 +1,5 @@
 /**
- * US states for dropdowns and forms.
+ * US states and territories for dropdowns and forms.
  * Format: { label, value } for compatibility with ThemeDropDown and similar components.
  */
 export type StateOption = { label: string; value: string };
@@ -7,6 +7,7 @@ export type StateOption = { label: string; value: string };
 export const US_STATES: StateOption[] = [
   { label: "Alabama", value: "Alabama" },
   { label: "Alaska", value: "Alaska" },
+  { label: "American Samoa", value: "American Samoa" },
   { label: "Arizona", value: "Arizona" },
   { label: "Arkansas", value: "Arkansas" },
   { label: "California", value: "California" },
@@ -16,6 +17,7 @@ export const US_STATES: StateOption[] = [
   { label: "District of Columbia", value: "District of Columbia" },
   { label: "Florida", value: "Florida" },
   { label: "Georgia", value: "Georgia" },
+  { label: "Guam", value: "Guam" },
   { label: "Hawaii", value: "Hawaii" },
   { label: "Idaho", value: "Idaho" },
   { label: "Illinois", value: "Illinois" },
@@ -40,16 +42,19 @@ export const US_STATES: StateOption[] = [
   { label: "New York", value: "New York" },
   { label: "North Carolina", value: "North Carolina" },
   { label: "North Dakota", value: "North Dakota" },
+  { label: "Northern Mariana Islands", value: "Northern Mariana Islands" },
   { label: "Ohio", value: "Ohio" },
   { label: "Oklahoma", value: "Oklahoma" },
   { label: "Oregon", value: "Oregon" },
   { label: "Pennsylvania", value: "Pennsylvania" },
+  { label: "Puerto Rico", value: "Puerto Rico" },
   { label: "Rhode Island", value: "Rhode Island" },
   { label: "South Carolina", value: "South Carolina" },
   { label: "South Dakota", value: "South Dakota" },
   { label: "Tennessee", value: "Tennessee" },
   { label: "Texas", value: "Texas" },
   { label: "Utah", value: "Utah" },
+  { label: "U.S. Virgin Islands", value: "U.S. Virgin Islands" },
   { label: "Vermont", value: "Vermont" },
   { label: "Virginia", value: "Virginia" },
   { label: "Washington", value: "Washington" },
