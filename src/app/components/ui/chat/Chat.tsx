@@ -531,7 +531,7 @@ export default function Chat({
 
             <div
               ref={chatRef}
-              className="flex-1 flex flex-col gap-3 overflow-y-auto h-full p-1"
+                className={`flex-1 flex flex-col gap-3 h-full p-1 ${!isModal ? "overflow-y-auto " : ""}`}
             >
               {isLoadingMore && (
                 <div className="flex justify-center py-2 text-gray-500 text-sm">

@@ -287,7 +287,7 @@ const Page = () => {
                       quantity: payload.qty,
                     },
                   });
-                  showSuccessToast("Added to cart");
+                  showSuccessToast("Item added to cart");
                 }}
                 onCardClick={() => {
                   router.push(`/inventory/${product.originalId}`);

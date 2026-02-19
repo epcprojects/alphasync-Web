@@ -648,6 +648,7 @@ const Page = () => {
           participantId={String(order.patient.id)}
           participantName={order.patient?.fullName || "Customer"}
           itemTitle={order.displayId ? String(order.displayId) : order.id}
+          userType="doctor"
         />
       )}
     </div>

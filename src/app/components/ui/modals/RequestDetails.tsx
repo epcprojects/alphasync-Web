@@ -136,6 +136,7 @@ const RequestDetails: React.FC<requestDetailsProps> = ({
           participantId={request.doctorId}
           participantName={request.doctorName || "Physician"}
           itemTitle={request.displayId || `REQ-${request.id}`}
+          userType="customer"
         />
       )}
       {transformedItem && (

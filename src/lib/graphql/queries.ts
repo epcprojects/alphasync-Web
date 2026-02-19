@@ -2,8 +2,8 @@ import { userpayload } from "@/lib/graphql/attributes";
 import { gql } from "@apollo/client";
 
 export const ALL_DOCTORS = gql`
-  query AllDoctors($pendingInvites: Boolean, $status: UserStatusEnum $search: String, $page: Int, $perPage: Int) {
-    allDoctors(pendingInvites: $pendingInvites, status: $status, search: $search, page: $page, perPage: $perPage) {
+  query AllDoctors($pendingInvites: Boolean, $pendingDeaApproval: Boolean, $status: UserStatusEnum $search: String, $page: Int, $perPage: Int) {
+    allDoctors(pendingInvites: $pendingInvites, pendingDeaApproval: $pendingDeaApproval, status: $status, search: $search, page: $page, perPage: $perPage) {
       allData {
        ${userpayload}
       }
@@ -678,6 +678,7 @@ export const ADMIN_ORDERS = gql`
     $doctorId: ID
     $myClinic: Boolean
     $search: String
+    $pendingPayment: Boolean
   ) {
     adminOrders(
       page: $page
@@ -685,6 +686,7 @@ export const ADMIN_ORDERS = gql`
       doctorId: $doctorId
       myClinic: $myClinic
       search: $search
+      pendingPayment: $pendingPayment
     ) {
       count
       nextPage
