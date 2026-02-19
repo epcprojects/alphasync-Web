@@ -25,8 +25,16 @@ export default function RevenueChart({
   height = 320,
   colors = ["#2862A9", "#16A34A"],
   yPrefix = "$",
-  ySuffix = "k",
+  ySuffix,
 }: Props) {
+  const formatY = (val: number) => {
+    const formatted = val.toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+    return `${yPrefix}${formatted}${ySuffix ?? ""}`;
+  };
+
   const options: ApexOptions = {
     chart: {
       type: "area",
@@ -68,17 +76,19 @@ export default function RevenueChart({
           fontSize: "12px",
           fontWeight: 400,
         },
-        formatter: (val: number) => {
-          const k = val / 1000;
-          const rounded = Number.isInteger(k) ? k : Math.round(k * 10) / 10;
-          return `${yPrefix}${rounded}${ySuffix}`;
-        },
+        formatter: (val: number) => formatY(val),
       },
     },
     legend: { show: false },
     dataLabels: { enabled: false },
     markers: { size: 0 },
-    tooltip: { shared: true, intersect: false },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      y: {
+        formatter: (val: number) => formatY(val),
+      },
+    },
   };
 
   return (
