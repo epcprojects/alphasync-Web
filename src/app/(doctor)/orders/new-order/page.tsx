@@ -358,7 +358,7 @@ const Page = () => {
       },
     });
 
-    showSuccessToast("Added to cart");
+    showSuccessToast("Item added to cart");
     return true;
   };
 
