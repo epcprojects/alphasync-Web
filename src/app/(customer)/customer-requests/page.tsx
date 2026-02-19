@@ -508,6 +508,7 @@ function CustomerRequestContent() {
           participantId={selectedChatInfo.doctorId}
           participantName={selectedChatInfo.doctorName}
           itemTitle={selectedChatInfo.requestDisplayId}
+          userType="customer"
         />
       )}
       <PaymentSuccess

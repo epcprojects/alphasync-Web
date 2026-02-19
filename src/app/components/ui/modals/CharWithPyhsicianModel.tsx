@@ -3,12 +3,27 @@ import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { BubbleChatIcon } from "@/icons";
 import Chat from "../chat/Chat";
 
+const CUSTOMER_QUICK_TEMPLATES = [
+  "I have a question about my prescription",
+  "Can you explain my test results?",
+  "I need to schedule a follow-up",
+  "I'm experiencing side effects",
+];
+
+const DOCTOR_QUICK_TEMPLATES = [
+  "Your prescription is ready",
+  "Please schedule a follow-up",
+  "Lab results are available",
+  "We have updated your records",
+];
+
 interface ChatWithPhysicianProps {
   isOpen: boolean;
   onClose: () => void;
   participantId: string;
   participantName?: string;
   itemTitle?: string;
+  userType?: "customer" | "doctor";
 }
 
 const ChatWithPhysician: React.FC<ChatWithPhysicianProps> = ({
@@ -17,8 +32,12 @@ const ChatWithPhysician: React.FC<ChatWithPhysicianProps> = ({
   participantId,
   participantName = "Physician",
   itemTitle,
+  userType = "customer",
 }) => {
   useBodyScrollLock(isOpen);
+  const templates =
+    userType === "doctor" ? DOCTOR_QUICK_TEMPLATES : CUSTOMER_QUICK_TEMPLATES;
+
   return (
     <AppModal
       isOpen={isOpen}
@@ -32,11 +51,15 @@ const ChatWithPhysician: React.FC<ChatWithPhysicianProps> = ({
       position={ModalPosition.RIGHT}
       showFooter={false}
     >
-      <Chat
+      <div className="h-full">
+        <Chat
         participantId={participantId}
         participantName={participantName}
-        className="min-h-[400px] max-h-[50dvh]"
+          className="h-full!"
+          templates={templates}
+          isModal={true}
       />
+      </div>
     </AppModal>
   );
 };
