@@ -96,11 +96,14 @@ function OrdersContent() {
   const [selectedOrder, setSelectedOrder] = useState<OrdersResponse["adminOrders"]["allData"][0] | null>(null);
 
   const orderTabs = [
-    { label: "Customer Orders", myClinic: false },
-    { label: "Clinic Orders", myClinic: true },
+    { label: "Customer Orders", myClinic: false, pendingPayment: false },
+    { label: "Clinic Orders", myClinic: true, pendingPayment: false },
+    { label: "Pending Payment Orders", myClinic: false, pendingPayment: true },
   ];
 
-  const myClinic = orderTabs[selectedTabIndex]?.myClinic;
+  const currentTab = orderTabs[selectedTabIndex];
+  const myClinic = currentTab?.myClinic ?? false;
+  const pendingPayment = currentTab?.pendingPayment ?? false;
 
   /** Grid template: Order ID | Customer | Doctor | Payment Date | Status | Shipment | Items | Total | Net Cost | Profit | Actions */
   const adminOrdersGrid =
@@ -108,6 +111,9 @@ function OrdersContent() {
   /** Clinic orders: no Customer column — Order ID | Doctor | Payment Date | Status | Shipment | ... */
   const adminOrdersGridClinic =
     "md:grid-cols-[1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1.5fr_1fr_1fr_1fr]";
+  /** Pending payment: no Payment Date or Shipment — Order ID | Customer | Doctor | Status | Items | Total | Net Cost | Profit | Actions */
+  const adminOrdersGridPending =
+    "md:grid-cols-[1.5fr_2.5fr_2fr_1fr_1fr_1.5fr_1fr_1fr_1fr]";
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -127,10 +133,11 @@ function OrdersContent() {
         doctorId: null,
         myClinic,
         search: debouncedSearch || null,
+        pendingPayment: pendingPayment || undefined,
       },
       fetchPolicy: "network-only",
       notifyOnNetworkStatusChange: true,
-    }
+    },
   );
 
   const [exportAdminOrders, { loading: exportLoading }] = useMutation(EXPORT_ADMIN_ORDERS);
@@ -237,9 +244,12 @@ function OrdersContent() {
       </div>
 
       <div className="sm:bg-white rounded-xl sm:shadow-table">
-        <TabGroup selectedIndex={selectedTabIndex} onChange={setSelectedTabIndex}>
+        <TabGroup
+          selectedIndex={selectedTabIndex}
+          onChange={setSelectedTabIndex}
+        >
           <TabList className="flex items-center border-b bg-white rounded-t-xl mb-2 sm:mb-0 border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-4 overflow-x-auto">
-            {orderTabs.map((tab, index) => (
+            {orderTabs.map((tab) => (
               <Tab
                 key={tab.label}
                 as="button"
@@ -254,7 +264,9 @@ function OrdersContent() {
             {orderTabs.map((tab) => (
               <TabPanel key={tab.label}>
                 <div className="space-y-1 p-0 md:p-4 pt-0">
-                  <div className={`hidden md:grid ${tab.myClinic ? adminOrdersGridClinic : adminOrdersGrid} text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table`}>
+                  <div
+                    className={`hidden md:grid ${tab.pendingPayment ? adminOrdersGridPending : tab.myClinic ? adminOrdersGridClinic : adminOrdersGrid} text-black font-medium text-sm gap-4 px-2 py-2.5 bg-white rounded-xl shadow-table`}
+                  >
                     <div>
                       <h2 className="whitespace-nowrap">Order ID</h2>
                     </div>
@@ -266,15 +278,19 @@ function OrdersContent() {
                     <div>
                       <h2>Doctor</h2>
                     </div>
-                    <div>
-                      <h2>Payment Date</h2>
-                    </div>
+                    {!tab.pendingPayment && (
+                      <div>
+                        <h2>Payment Date</h2>
+                      </div>
+                    )}
                     <div>
                       <h2>Status</h2>
                     </div>
-                    <div>
-                      <h2>Shipment Status</h2>
-                    </div>
+                    {!tab.pendingPayment && (
+                      <div>
+                        <h2>Shipment Status</h2>
+                      </div>
+                    )}
                     <div>
                       <h2>Items</h2>
                     </div>
@@ -317,16 +333,23 @@ function OrdersContent() {
                           : customerName;
                         const customerEmail = isClinicOrder
                           ? null
-                          : order.patient?.email ?? null;
+                          : (order.patient?.email ?? null);
                         const customerImageUrl = isClinicOrder
-                          ? order.doctor?.imageUrl ?? null
-                          : order.patient?.imageUrl ?? null;
+                          ? (order.doctor?.imageUrl ?? null)
+                          : (order.patient?.imageUrl ?? null);
 
                         return (
                           <OrderListView
                             layout="admin"
                             hideCustomer={tab.myClinic}
-                            gridCols={tab.myClinic ? adminOrdersGridClinic : adminOrdersGrid}
+                            hidePaymentDateAndShipment={tab.pendingPayment}
+                            gridCols={
+                              tab.pendingPayment
+                                ? adminOrdersGridPending
+                                : tab.myClinic
+                                  ? adminOrdersGridClinic
+                                  : adminOrdersGrid
+                            }
                             onRowClick={() => setSelectedOrder(order)}
                             key={order.id}
                             order={{
@@ -341,14 +364,16 @@ function OrdersContent() {
                               customerEmail,
                               date: (() => {
                                 const parts = formatDateLocalParts(
-                                  order.processedAt || order.createdAt
+                                  order.processedAt || order.createdAt,
                                 );
                                 if (!parts) return "—";
                                 return (
                                   <>
                                     {parts.datePart}
                                     <br />
-                                    <span className="">{parts.timePart12h}</span>
+                                    <span className="">
+                                      {parts.timePart12h}
+                                    </span>
                                   </>
                                 );
                               })(),

@@ -678,6 +678,7 @@ export const ADMIN_ORDERS = gql`
     $doctorId: ID
     $myClinic: Boolean
     $search: String
+    $pendingPayment: Boolean
   ) {
     adminOrders(
       page: $page
@@ -685,6 +686,7 @@ export const ADMIN_ORDERS = gql`
       doctorId: $doctorId
       myClinic: $myClinic
       search: $search
+      pendingPayment: $pendingPayment
     ) {
       count
       nextPage

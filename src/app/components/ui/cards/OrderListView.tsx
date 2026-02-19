@@ -42,6 +42,8 @@ type OrderListViewProps = {
   layout?: OrderListViewLayout;
   /** Optional grid template for desktop row (e.g. "md:grid-cols-[1.5fr_2.5fr_1fr_2fr_1fr_1fr_1fr_1fr_1fr]"). When set, overrides layout-based grid. */
   gridCols?: string;
+  /** When true (e.g. pending payment orders), hide Payment Date and Shipment Status columns. */
+  hidePaymentDateAndShipment?: boolean;
 };
 
 const colorPairs = [
@@ -114,6 +116,7 @@ export default function OrderListView({
   onEditOrder,
   layout = "default",
   gridCols: gridColsProp,
+  hidePaymentDateAndShipment = false,
 }: OrderListViewProps) {
   const { bg, text } = getColorPair(order.id) || colorPairs[0];
 
@@ -165,20 +168,24 @@ export default function OrderListView({
               <p className="text-gray-900 font-medium">{order.doctorName}</p>
             </div>
           )}
-          <div className="col-span-2">
-            <p className="text-gray-500">Shipment Status</p>
-            <span
-              className={`inline-block mt-0.5 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${getShipmentStatusClasses(
-                order.shipmentStatus
-              )}`}
-            >
-              {order.shipmentStatus ?? "—"}
-            </span>
-          </div>
-          <div>
-            <p className="text-gray-500">Payment Date</p>
-            <p className="text-gray-900 font-medium">{order.date}</p>
-          </div>
+          {!hidePaymentDateAndShipment && (
+            <div className="col-span-2">
+              <p className="text-gray-500">Shipment Status</p>
+              <span
+                className={`inline-block mt-0.5 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${getShipmentStatusClasses(
+                  order.shipmentStatus
+                )}`}
+              >
+                {order.shipmentStatus ?? "—"}
+              </span>
+            </div>
+          )}
+          {!hidePaymentDateAndShipment && (
+            <div>
+              <p className="text-gray-500">Payment Date</p>
+              <p className="text-gray-900 font-medium">{order.date}</p>
+            </div>
+          )}
           <div>
             <p className="text-gray-500">Items</p>
             <p className="text-gray-900 font-medium">{order.items}</p>
@@ -407,9 +414,11 @@ export default function OrderListView({
           {order.doctorName ?? "—"}
         </div>
       )}
-      <div className="text-sm md:text-base font-normal text-gray-600 ">
-        {order.date}
-      </div>
+      {!hidePaymentDateAndShipment && (
+        <div className="text-sm md:text-base font-normal text-gray-600 ">
+          {order.date}
+        </div>
+      )}
 
       <div
         className={`flex md:inline w-fit rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium text-center self-center ${getStatusClasses(
@@ -421,7 +430,7 @@ export default function OrderListView({
         </span>
       </div>
 
-      {layout === "admin" && (
+      {layout === "admin" && !hidePaymentDateAndShipment && (
         <div
           className={`flex md:inline w-fit rounded-full px-2.5 py-0.5 text-xs md:text-sm font-medium text-center self-center capitalize ${getShipmentStatusClasses(
             order.shipmentStatus
