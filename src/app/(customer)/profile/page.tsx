@@ -8,7 +8,7 @@ import {
 } from "@/app/components";
 import { InfoIcon, UserIcon } from "@/icons";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels, Switch } from "@headlessui/react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import * as Yup from "yup";
 import { Formik, Form, ErrorMessage } from "formik";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -315,8 +315,8 @@ const Page = () => {
 
   const INITIAL_AVATAR = "/images/arinaProfile.png";
 
-  // Convert user data to form initial values
-  const getInitialValues = () => {
+  // Convert user data to form initial values (memoized so Formik doesn't reset on every render)
+  const profileInitialValues = useMemo(() => {
     if (!user) {
       return {
         firstName: "",
@@ -383,7 +383,7 @@ const Page = () => {
       currentMedications: user.currentMedications || "",
       additionalNotes: user.additionalNotes || "",
     };
-  };
+  }, [user]);
 
   // Show loading if user data is not available yet
   if (!user) {
@@ -461,7 +461,7 @@ const Page = () => {
                   />
                 </div>
                 <Formik
-                  initialValues={getInitialValues()}
+                  initialValues={profileInitialValues}
                   validationSchema={profileSchema}
                   onSubmit={handleProfileSubmit}
                   enableReinitialize={true}
