@@ -217,6 +217,18 @@ function LoginContext() {
           onClick={() => {}}
           heightClass="h-11"
         />
+
+        {!isAdminLogin && (
+          <p className="mt-1 text-center text-xs text-gray-600 md:text-sm">
+            Are you an admin?{" "}
+            <Link
+              href="/admin/login"
+              className="font-semibold text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1 rounded"
+            >
+              Sign in here
+            </Link>
+          </p>
+        )}
       </form>
     </div>
   );
