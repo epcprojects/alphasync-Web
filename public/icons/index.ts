@@ -113,8 +113,28 @@ import KeyLeftIcon from "./KeyLeftIcon";
 import PdfIcon from "./PdfIcon";
 import FileDownloadIcon from "./FileDownloadIcon";
 import EyeViewIcon from "./EyeViewIcon";
+import CoinsIcon from "./CoinsIcon";
+import DollarCircleIcon from "./DollarCircleIcon";
+import NoUserIcon from "./NoUserIcon";
+import AdminManagersFilledIcon from "./AdminManagersFilledIcon";
+import PlusProfileIcon from "./PlusProfileIcon";
+import DisableAdminProfileIcon from "./DisableAdminProfileIcon";
+import ViewDoctorIcon from "./ViewDoctorIcon";
+import ViewEyeIcon from "./ViewEyeIcon";
+import AssignDoctorIcon from "./AssignDoctorIcon";
+import AdminManagersIcon from "./AdminManagersIcon";
 
 export {
+  AdminManagersIcon,
+  AssignDoctorIcon,
+  ViewDoctorIcon,
+  ViewEyeIcon,
+  DisableAdminProfileIcon,
+  PlusProfileIcon,
+  AdminManagersFilledIcon,
+  NoUserIcon,
+  CoinsIcon,
+  DollarCircleIcon,
   EyeViewIcon,
   FileDownloadIcon,
   PdfIcon,

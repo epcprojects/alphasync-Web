@@ -28,6 +28,7 @@ type PeptideOrderListViewProps = {
   order: Order;
   onViewOrderDetail?: (id: number) => void;
   onRowClick?: () => void;
+  isShowMarkup?: boolean;
 };
 
 const colorPairs = [
@@ -83,6 +84,7 @@ export default function PeptideOrderListView({
   order: order,
   onViewOrderDetail,
   onRowClick,
+  isShowMarkup,
 }: PeptideOrderListViewProps) {
   const { bg, text } = getColorPair(order.id) || colorPairs[0];
 
@@ -105,7 +107,7 @@ export default function PeptideOrderListView({
           <div className=" font-medium text-xs md:text-sm text-gray-800">
             <span
               className={`inline-block rounded-full capitalize px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${getStatusClasses(
-                order.status
+                order.status,
               )}`}
             >
               {formatStatusDisplay(order.status)}
@@ -119,7 +121,7 @@ export default function PeptideOrderListView({
               Order #:
             </span>
             <span className="text-gray-800 text-sm font-normal block">
-            {order.orderId}
+              {order.orderId}
             </span>
           </div>
 
@@ -137,19 +139,15 @@ export default function PeptideOrderListView({
               {order.items}
             </span>
           </div>
-
-          
         </div>
         <div className="flex items-center justify-end gap-1.5 w-full">
-            <span className="text-black font-medium text-sm block">
-              Peptide:
-            </span>
-            <span className="text-gray-800 text-sm font-normal block break-words">
-              {order.orderItems && order.orderItems.length > 0
-                ? order.orderItems[0].product.title
-                : "N/A"}
-            </span>
-          </div>
+          <span className="text-black font-medium text-sm block">Peptide:</span>
+          <span className="text-gray-800 text-sm font-normal block break-words">
+            {order.orderItems && order.orderItems.length > 0
+              ? order.orderItems[0].product.title
+              : "N/A"}
+          </span>
+        </div>
 
         <div className="flex items-center gap-1 w-full">
           <div className="flex items-center gap-1.5 w-full">
@@ -247,6 +245,11 @@ export default function PeptideOrderListView({
       <div className="text-gray-800 font-normal text-sm lg:block hidden md:text-base">
         ${order.netCost}
       </div>
+      {isShowMarkup && (
+        <div className="text-primary font-normal text-sm md:text-base">
+          ${order.profit}
+        </div>
+      )}
 
       <div className="text-green-600 font-normal text-sm md:text-base">
         ${order.profit}
@@ -259,7 +262,7 @@ export default function PeptideOrderListView({
       <div className=" font-medium text-sm md:text-base text-gray-800 text-center">
         <span
           className={`flex md:inline rounded-full md:whitespace-nowrap wrap-break-word px-2.5 py-0.5 text-xs md:text-sm font-medium ${getStatusClasses(
-            order.status
+            order.status,
           )}`}
         >
           {formatStatusDisplay(order.status)}
