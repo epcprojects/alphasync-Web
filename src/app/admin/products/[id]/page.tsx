@@ -446,7 +446,7 @@ export default function ProductDetailPage() {
 
               <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                 <span className="block text-gray-800 text-sm !font-normal">
-                  Category
+                  Product Type
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
                   {product?.productType || "N/A"}
