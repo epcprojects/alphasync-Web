@@ -230,7 +230,7 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                   transition
                   anchor="bottom end"
                   className={`min-w-44  z-[400] origin-top-right rounded-xl border border-white/5 ${
-                    isSticky ? "md:bg-black/80" : " bg-gray-800"
+                    isSticky ? "md:bg-black/80 bg-gray-800" : " bg-gray-800"
                   } p-1 text-sm/6 text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
                 >
                   <div className="bg-black/45 mb-1 py-2 px-3 rounded-lg">

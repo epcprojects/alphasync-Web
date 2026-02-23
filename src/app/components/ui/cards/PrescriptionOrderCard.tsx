@@ -13,7 +13,7 @@ interface OrderItem {
   amount: string;
   description?: string;
   imageUrl?: string;
-  tieredPrice?: number;          
+  tieredPrice?: number;
   product?: {
     primaryImage?: string;
     price?: number;
@@ -90,7 +90,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
             </h2>
             <span
               className={` capitalize ${getOrderTags(
-                order.status
+                order.status,
               )} px-3 py-0.5 rounded-full text-sm  font-medium whitespace-nowrap`}
             >
               {order.status === "pending_payment"
@@ -152,8 +152,8 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="bg-white rounded-xs px-1.5 text-sm font-medium text-gray-600">
-                    Quantity - {item.quantity}
+                  <span className="bg-white rounded-xs px-1.5 whitespace-nowrap text-xs font-medium text-gray-600">
+                    Qty: {item.quantity}
                   </span>
                   <span className="text-sm font-semibold text-primary">
                     ${item.price.toFixed(2)}
@@ -200,9 +200,11 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                   icon={type === "order" && <Reload />}
                 />
               )}
-              {order?.totalTax && <span className="text-base text-gray-800 text-left sm:text-right">
-                Tax: ${order.totalTax?.toFixed(2)}
-              </span>}
+              {order?.totalTax && (
+                <span className="text-base text-gray-800 text-left sm:text-right">
+                  Tax: ${order.totalTax?.toFixed(2)}
+                </span>
+              )}
               <span className="text-xl font-semibold text-primary text-left sm:text-right">
                 ${order.totalPrice.toFixed(2)}
               </span>
