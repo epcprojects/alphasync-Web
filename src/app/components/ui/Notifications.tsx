@@ -67,11 +67,11 @@ export default function Notifications({ userType }: NotificationsProps) {
     ALL_NOTIFICATIONS,
     {
       fetchPolicy: "network-only",
-    }
+    },
   );
 
   const [approveOrderRequest, { loading: isApproving }] = useMutation(
-    APPROVE_ORDER_REQUEST
+    APPROVE_ORDER_REQUEST,
   );
 
   const [denyOrderRequest, { loading: isDenying }] =
@@ -416,7 +416,7 @@ export default function Notifications({ userType }: NotificationsProps) {
   const renderList = (
     limit?: number,
     closeDialog?: () => void,
-    setOpenState?: (value: boolean) => void
+    setOpenState?: (value: boolean) => void,
   ) => {
     if (loading || (!data && !error)) {
       return (
@@ -444,7 +444,7 @@ export default function Notifications({ userType }: NotificationsProps) {
 
     const displayNotifications = notifications.slice(
       0,
-      limit ?? notifications.length
+      limit ?? notifications.length,
     );
 
     return (
@@ -639,7 +639,12 @@ export default function Notifications({ userType }: NotificationsProps) {
       {isMobile ? (
         <>
           <button
-            onClick={() => setOpen(!open)}
+            // onClick={() => setOpen(!open)}
+            onClick={() =>
+              currentUserType === "doctor"
+                ? router.push("/notifications")
+                : router.push("/customer-notifications")
+            }
             className={`h-8 w-8 cursor-pointer md:w-11 md:h-11 rounded-full flex items-center justify-center relative transition-all duration-300 ${
               user?.unreadNotifications
                 ? "bg-[#10b981]"
@@ -805,7 +810,7 @@ export default function Notifications({ userType }: NotificationsProps) {
         itemTitle={
           selectedRequest
             ? notifications?.find(
-                (n: NotificationData) => n.orderRequest?.id === selectedRequest
+                (n: NotificationData) => n.orderRequest?.id === selectedRequest,
               )?.orderRequest?.displayId || ""
             : undefined
         }
@@ -825,7 +830,7 @@ export default function Notifications({ userType }: NotificationsProps) {
         itemTitle={
           selectedRequest
             ? notifications?.find(
-                (n: NotificationData) => n.orderRequest?.id === selectedRequest
+                (n: NotificationData) => n.orderRequest?.id === selectedRequest,
               )?.orderRequest?.displayId || ""
             : undefined
         }

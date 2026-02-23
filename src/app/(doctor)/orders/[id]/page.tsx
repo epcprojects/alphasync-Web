@@ -82,7 +82,7 @@ const Page = () => {
         id: params.id,
       },
       fetchPolicy: "network-only",
-    }
+    },
   );
 
   const [cancelOrder, { loading: cancellingOrder }] = useMutation(CANCEL_ORDER);
@@ -197,11 +197,7 @@ const Page = () => {
       doc.text("Official Invoice", pageWidth - margin, 18, { align: "right" });
 
       doc.setFontSize(10);
-      doc.text(
-        "Trusted care & services for your patients.",
-        margin,
-        28
-      );
+      doc.text("Trusted care & services for your patients.", margin, 28);
 
       doc.setTextColor(textColor[0], textColor[1], textColor[2]);
       let currentY = 52;
@@ -212,13 +208,13 @@ const Page = () => {
         title: string,
         rows: { label: string; value: string }[],
         x: number,
-        y: number
+        y: number,
       ) => {
         let dynamicHeight = 20;
         rows.forEach((row) => {
           const lineCount = doc.splitTextToSize(
             row.value || "N/A",
-            infoBoxWidth - 50
+            infoBoxWidth - 50,
           ).length;
           dynamicHeight += Math.max(lineCount, 1) * 6;
         });
@@ -239,7 +235,7 @@ const Page = () => {
           doc.setFont("helvetica", "normal");
           const valueLines = doc.splitTextToSize(
             row.value || "N/A",
-            infoBoxWidth - 50
+            infoBoxWidth - 50,
           );
           doc.text(valueLines, x + 40, rowY);
           rowY += Math.max(valueLines.length, 1) * 6;
@@ -265,13 +261,13 @@ const Page = () => {
         "Invoice Summary",
         invoiceBoxRows,
         margin,
-        currentY
+        currentY,
       );
       const rightBoxEndY = drawInfoCard(
         "Patient Information",
         patientBoxRows,
         margin + infoBoxWidth + 10,
-        currentY
+        currentY,
       );
 
       currentY = Math.max(leftBoxEndY, rightBoxEndY) + 8;
@@ -296,7 +292,7 @@ const Page = () => {
       order.orderItems.forEach((item) => {
         const productLines = doc.splitTextToSize(
           item.product.title,
-          contentWidth * 0.5
+          contentWidth * 0.5,
         );
         const lineHeight = productLines.length * 6 + 4;
         doc.setFillColor(255, 255, 255);
@@ -311,7 +307,7 @@ const Page = () => {
           currentY,
           {
             align: "right",
-          }
+          },
         );
         currentY += lineHeight;
         doc.setDrawColor(241, 245, 249);
@@ -332,12 +328,12 @@ const Page = () => {
       doc.text(
         `Subtotal: ${currency(order.subtotalPrice)}`,
         margin + 6,
-        summaryBoxY + 20
+        summaryBoxY + 20,
       );
       doc.text(
         `Tax: ${currency(order.totalTax)}`,
         margin + 6,
-        summaryBoxY + 28
+        summaryBoxY + 28,
       );
 
       doc.setFont("helvetica", "bold");
@@ -347,7 +343,7 @@ const Page = () => {
         `Grand Total: ${currency(order.totalPrice)}`,
         pageWidth - margin,
         summaryBoxY + 20,
-        { align: "right" }
+        { align: "right" },
       );
       doc.setFont("helvetica", "normal");
       doc.setTextColor(textColor[0], textColor[1], textColor[2]);
@@ -359,13 +355,13 @@ const Page = () => {
       doc.text(
         "Thank you for trusting AlphaSync with your healthcare needs.",
         margin,
-        currentY
+        currentY,
       );
       currentY += 6;
       doc.text(
         "Questions about this invoice? Reach us at support@alphasyncrx.com",
         margin,
-        currentY
+        currentY,
       );
 
       doc.save(`invoice-${invoice.invoiceNumber || order.id}.pdf`);
@@ -440,7 +436,7 @@ const Page = () => {
               </div>
               <span
                 className={`inline-block rounded-full whitespace-nowrap px-2.5 py-0.5 text-xxs md:text-sm font-medium capitalize ${getStatusClasses(
-                  order.status
+                  order.status,
                 )}`}
               >
                 {formatStatusDisplay(order.status)}
@@ -448,25 +444,25 @@ const Page = () => {
             </div>
 
             <div className="flex flex-col gap-1">
-              <div className="hidden sm:grid grid-cols-4 gap-2 text-sm font-medium text-black rounded-xl bg-gray-50 p-1.5 md:p-3">
-                <div>Product</div>
-                <div>Quantity</div>
-                <div>Unit Price</div>
-                <div>Total</div>
+              <div className="hidden sm:grid grid-cols-12 gap-2 text-sm font-medium text-black rounded-xl bg-gray-50 p-1.5 md:p-3">
+                <div className="col-span-8">Product</div>
+                <div className="col-span-1">Quantity</div>
+                <div className="col-span-1">Unit Price</div>
+                <div className="col-span-2">Total</div>
               </div>
 
               {order.orderItems.map((item) => (
                 <div
                   key={item.id}
-                  className="grid grid-cols-2 gap-2 sm:grid-cols-4 items-start rounded-lg sm:rounded-xl bg-gray-50 p-1.5 md:py-2 md:px-3"
+                  className="grid grid-cols-2 gap-2 sm:grid-cols-12 items-start rounded-lg sm:rounded-xl bg-gray-50 p-1.5 md:py-2 md:px-3"
                 >
-                  <div className="text-gray-800 text-sm md:text-base sm:order-1 order-1">
+                  <div className="text-gray-800 text-sm md:text-base sm:col-span-8 sm:order-1 order-1">
                     <span className="text-black font-medium text-sm sm:hidden inline-block pe-2">
                       Product:
                     </span>
                     {item.product.title}
                   </div>
-                  <div className="flex sm:order-2 order-3">
+                  <div className="flex sm:order-2 order-3 sm:sm:col-span-1">
                     <span className="text-black font-medium text-sm sm:hidden inline-block pe-2">
                       Quantity:
                     </span>
@@ -474,13 +470,13 @@ const Page = () => {
                       {item.quantity}
                     </span>
                   </div>
-                  <div className="text-gray-800 flex sm:justify-start justify-end text-sm md:text-base font-normal sm:order-3 order-2">
+                  <div className="text-gray-800 flex sm:sm:col-span-1 sm:justify-start justify-end text-sm md:text-base font-normal sm:order-3 order-2">
                     <span className="text-black font-medium text-sm sm:hidden inline-block pe-2">
                       Unit Price:
                     </span>
                     ${item.price.toFixed(2)}
                   </div>
-                  <div className="text-gray-800 text-sm flex sm:justify-start justify-end md:text-base sm:font-medium sm:order-4 order-4">
+                  <div className="text-gray-800 sm:sm:col-span-2 text-sm flex sm:justify-start justify-end md:text-base sm:font-medium sm:order-4 order-4">
                     <span className="text-black font-medium text-sm sm:hidden inline-block pe-2">
                       Total:
                     </span>
@@ -489,7 +485,7 @@ const Page = () => {
                 </div>
               ))}
 
-              <div className="grid grid-cols-4 bg-gray-50 p-1.5 md:py-2 md:px-3 rounded-lg md:rounded-xl">
+              <div className="grid grid-cols-4 bg-gray-50 gap-2 p-1.5 md:py-2 md:px-3 rounded-lg md:rounded-xl">
                 <div className="col-span-3 text-gray-800 text-base md:text-md">
                   Tax
                 </div>
@@ -513,7 +509,7 @@ const Page = () => {
           <h2 className="font-semibold text-base md:text-lg text-black ">
             Shipping Information
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1 md:gap-4">
             <div className="rounded-lg flex items-center gap-1 md:gap-2 p-2 bg-gray-50 ">
               <div className="rounded-lg bg-white border border-gray-200 flex items-center justify-center w-10 h-10">
                 <DeliveryTruckIcon />
@@ -536,9 +532,9 @@ const Page = () => {
                     {order.trackingNumber}
                   </a>
                 ) : (
-                    <h3 className="text-xs md:text-base text-gray-800">
-                      In progress
-                    </h3>
+                  <h3 className="text-xs md:text-base text-gray-800">
+                    In progress
+                  </h3>
                 )}
               </div>
             </div>
@@ -589,7 +585,13 @@ const Page = () => {
                 variant="outline"
                 size="medium"
                 icon={<ShipmentTrackingIcon />}
-                onClick={() => window.open(order.trackingUrl!, "_blank", "noopener,noreferrer,width=900,height=700")}
+                onClick={() =>
+                  window.open(
+                    order.trackingUrl!,
+                    "_blank",
+                    "noopener,noreferrer,width=900,height=700",
+                  )
+                }
                 className="w-full sm:w-fit"
                 heightClass="md:h-11 h-10"
               />
