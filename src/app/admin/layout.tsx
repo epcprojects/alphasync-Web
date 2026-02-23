@@ -10,6 +10,8 @@ import {
   SettingsIcon,
   AdminIcon,
   OrdersIcon,
+  AdminManagersIcon,
+  AdminManagersFilledIcon,
 } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
@@ -53,6 +55,11 @@ const menuItems = [
     label: "Admins",
     href: "/admin/admins",
     icon: AdminIcon,
+  },
+  {
+    label: "Managers",
+    href: "/admin/managers",
+    icon: AdminManagersIcon,
   },
   {
     label: "Products",
@@ -176,6 +183,54 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     },
   ];
 
+  const ManagerStats = [
+    {
+      label: "Total Manager",
+      value: "0",
+      icon: (
+        <AdminManagersFilledIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-purple-500",
+    },
+    {
+      label: "Active Manager",
+      value: "0",
+      icon: (
+        <AdminManagersFilledIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-emerald-400",
+    },
+    {
+      label: "Inactive Manager",
+      value: "0",
+      icon: (
+        <AdminManagersFilledIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-pink-400",
+    },
+    {
+      label: "New This Month",
+      value: "0",
+      icon: (
+        <AdminManagersFilledIcon
+          height={isMobile ? "16" : "32"}
+          width={isMobile ? "16" : "32"}
+        />
+      ),
+      bgColor: "bg-orange-400",
+    },
+  ];
+  const isManagerPage = /^\/admin\/managers/.test(pathname);
+
   return (
     <AdminRoute>
       <div className={`w-full min-h-screen xl:p-4 ${poppins_init.className}`}>
@@ -187,8 +242,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
               showUserName={pathname.startsWith("/orders") ? false : true}
               username={user?.fullName || "----"}
               heading={heading}
-              stats={stats}
-              showWelcome={showWelcome}
+              stats={isManagerPage ? ManagerStats : stats}
+              showWelcome={true}
             />
           )}
           {hideStats && (
