@@ -596,8 +596,10 @@ function InventoryContent() {
                 const isMarkedUp =
                   originalProduct?.customPrice != null &&
                   originalProduct?.customPrice !== undefined;
-                // Only Alpha BioMed (RUO) products can be added to shop / ordered
-                const canOrder = originalProduct?.vendor === "Alpha BioMed";
+                // Alpha BioMed (RUO) and City Center (pharmacy) products can be added to shop / change price
+                const canOrder =
+                  originalProduct?.vendor === "Alpha BioMed" ||
+                  originalProduct?.vendor === "City Center";
                 return (
                   <ProductCard
                     key={product.originalId}
@@ -651,8 +653,10 @@ function InventoryContent() {
                 const originalProduct = productsData?.allProducts.allData?.find(
                   (p) => p.id === product.originalId,
                 );
-                // Only Alpha BioMed (RUO) products can be added to shop / ordered
-                const canOrder = originalProduct?.vendor === "Alpha BioMed";
+                // Alpha BioMed (RUO) and City Center (pharmacy) products can be added to shop / change price
+                const canOrder =
+                  originalProduct?.vendor === "Alpha BioMed" ||
+                  originalProduct?.vendor === "City Center";
 
                 return (
                   <ProductListView
@@ -720,7 +724,9 @@ function InventoryContent() {
                       const originalProduct = productsData?.allProducts.allData?.find(
                         (p) => p.id === product.originalId,
                       );
-                      const canOrder = originalProduct?.vendor === "Alpha BioMed";
+                      const canOrder =
+                        originalProduct?.vendor === "Alpha BioMed" ||
+                        originalProduct?.vendor === "City Center";
                       return (
                         <ProductCard
                           key={product.originalId}
@@ -767,7 +773,9 @@ function InventoryContent() {
                       const originalProduct = productsData?.allProducts.allData?.find(
                         (p) => p.id === product.originalId,
                       );
-                      const canOrder = originalProduct?.vendor === "Alpha BioMed";
+                      const canOrder =
+                        originalProduct?.vendor === "Alpha BioMed" ||
+                        originalProduct?.vendor === "City Center";
                       return (
                         <ProductListView
                           key={product.originalId}
