@@ -32,8 +32,16 @@ import { useQuery, useMutation } from "@apollo/client/react";
 import {
   ALL_PRODUCTS_INVENTORY,
   ALL_CATEGORIES,
-  ALL_VENDORS,
 } from "@/lib/graphql/queries";
+
+const PHARMACY_VENDORS = [
+  "Integrity",
+  "City Center",
+  "Greenwich",
+  "Integrity B",
+];
+
+const ALPHA_BIOMED_VENDORS = ["Alpha BioMed"];
 import {
   CREATE_ORDER,
   TOGGLE_FAVOURITE,
@@ -144,15 +152,6 @@ function InventoryContent() {
   );
   const categories = categoriesData?.allCategories ?? [];
 
-  // GraphQL query to fetch vendors (for Research Use Only vs Pharmacy tabs)
-  const { data: vendorsData } = useQuery<{ allVendors: string[] }>(
-    ALL_VENDORS,
-    { fetchPolicy: "cache-and-network" }
-  );
-  const vendors = vendorsData?.allVendors ?? [];
-  const pharmacyVendor =
-    vendors.find((v) => v !== "Alpha BioMed") ?? undefined;
-
   const {
     data: productsData,
     loading: productsLoading,
@@ -167,8 +166,10 @@ function InventoryContent() {
       category: selectedCategory ?? undefined,
       vendor:
         inventoryTab === "research-use-only"
-          ? "Alpha BioMed"
-          : pharmacyVendor ?? undefined,
+          ? ALPHA_BIOMED_VENDORS
+          : inventoryTab === "pharmacy"
+            ? PHARMACY_VENDORS
+            : undefined,
       favoriteProducts: showFavourites ? true : undefined,
       markedUp:
         markupFilter === "Marked Up"
@@ -235,8 +236,10 @@ function InventoryContent() {
           category: selectedCategory || null,
           vendor:
             inventoryTab === "research-use-only"
-              ? "Alpha BioMed"
-              : pharmacyVendor || null,
+              ? ALPHA_BIOMED_VENDORS
+              : inventoryTab === "pharmacy"
+                ? PHARMACY_VENDORS
+                : undefined,
           inStockOnly: showOutOfStock ? false : undefined,
           favoriteProducts: showFavourites ? true : undefined,
           markedUp:

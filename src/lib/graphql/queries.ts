@@ -102,7 +102,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
     $perPage: Int
     $inStockOnly: Boolean
     $category: String
-    $vendor: String
+    $vendor: [String!]
     $favoriteProducts: Boolean
     $patientId: ID
     $markedUp: Boolean
