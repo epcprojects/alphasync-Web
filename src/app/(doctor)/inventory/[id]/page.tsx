@@ -494,6 +494,57 @@ export default function PostDetail() {
                 </div>
               )}
 
+            {/* Unit Pricings (quantity-based tiers) */}
+            {product.productUnitPricings &&
+              product.productUnitPricings.length > 0 && (
+                <div className="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200">
+                  <h2 className="text-black font-medium text-sm md:text-base mb-3 md:mb-4">
+                    Unit pricing
+                  </h2>
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <table className="w-full text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 bg-gray-50">
+                          <th className="py-2.5 px-3 font-medium text-gray-700">
+                            Quantity
+                          </th>
+                          <th className="py-2.5 px-3 font-medium text-gray-700">
+                            Price
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {product.productUnitPricings.map((tier) => {
+                          const priceValue =
+                            tier.price != null
+                              ? typeof tier.price === "number"
+                                ? tier.price
+                                : parseFloat(String(tier.price))
+                              : NaN;
+                          const displayPrice =
+                            !Number.isNaN(priceValue)
+                              ? `$${Number(priceValue).toFixed(2)}`
+                              : "—";
+                          return (
+                            <tr
+                              key={tier.id}
+                              className="border-b border-gray-100 last:border-b-0"
+                            >
+                              <td className="py-2 px-3 text-gray-800">
+                                {tier.quantity}
+                              </td>
+                              <td className="py-2 px-3 font-semibold text-gray-900">
+                                {displayPrice}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
             <div className="grid grid-cols-1 gap-2 md:gap-4 md:grid-cols-4">
               <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                 <span className="block text-gray-800 text-sm !font-normal">
