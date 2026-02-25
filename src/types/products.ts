@@ -4,6 +4,16 @@ export interface AllProductsResponse {
     allData: {
       id: string;
       title: string;
+      form?: string;
+      strength?: string;
+      bud?: string;
+      directions?: string;
+      productUnitPricings?: {
+        id: string;
+        price: number;
+        quantity: number;
+        strength?: string;
+      }[];
       customPrice?: number;
       customPriceChangeHistory?: {
         customPrice: number;
@@ -64,6 +74,10 @@ export interface Product {
   prescription: boolean;
   productForm: string;
   primaryImage?: string;
+  form?: string;
+  strength?: string;
+  bud?: string;
+  directions?: string;
   tags?: string[];
   variants?: ProductVariant[];
   basePrice?: string; // Base price (priceRange) before markup
@@ -136,6 +150,10 @@ export const transformGraphQLProduct = (
       price: variant.price,
       sku: variant.sku,
     })),
+    form: product.form ?? "--",
+    strength: product.strength ?? "--",
+    bud: product.bud ?? "--",
+    directions: product.directions ?? "--",
     basePrice: (() => {
       // Use priceRange if available, otherwise use variant price
       if (product.priceRange) {
@@ -192,6 +210,11 @@ export interface FetchProductResponse {
     totalInventory?: number;
     price?: number;
     vendor?: string;
+    form?: string;
+    strength?: string;
+    bud?: string;
+    directions?: string;
+    category?: string;
     tierPricing?: {
       endCount: number | null;
       startCount: number;
@@ -208,6 +231,7 @@ export interface FetchProductResponse {
       id: string;
       price?: number | string;
       quantity: number;
+      strength?: string | null;
     }[];
   };
 }
