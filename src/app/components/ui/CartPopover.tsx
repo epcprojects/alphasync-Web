@@ -95,7 +95,7 @@ export default function CartPopover() {
               </div>
 
               {/* Items */}
-              <div className="overflow-auto p-5">
+              <div className="overflow-auto p-3">
                 <div className="space-y-4">
                   {items.length === 0 ? (
                     <div className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-600">
@@ -105,10 +105,10 @@ export default function CartPopover() {
                     items.map((item) => (
                       <div
                         key={item.id}
-                        className="flex items-start border-b pb-4 last:pb-0 border-b-gray-200 last:border-b-0 gap-4"
+                        className="flex items-start border-b pb-4 last:pb-0 border-b-gray-200 last:border-b-0 gap-4 justify-between"
                       >
-                        <div className="space-x-5 flex">
-                          <div className="relative h-17.5 w-17.5 shrink-0 overflow-hidden rounded-lg">
+                        <div className="space-x-3 flex">
+                          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
                             <ProductImage
                               src={item.imageSrc}
                               alt={item.name}
@@ -120,7 +120,7 @@ export default function CartPopover() {
                           </div>
 
                           <div className="min-w-0 flex-1 space-y-2.5">
-                            <p className="text-sm font-normal leading-snug text-gray-900 line-clamp-2">
+                            <p className="text-sm font-normal leading-snug text-gray-900 line-clamp-2 overflow-hidden w-[152px]">
                               {item.name}
                             </p>
 
@@ -151,7 +151,7 @@ export default function CartPopover() {
               </div>
 
               {/* Footer button */}
-              <div className="px-5 pb-5">
+              <div className="p-3">
                 <ThemeButton
                   type="button"
                   label="Continue"

@@ -39,6 +39,7 @@ interface OrderItem {
   cartPrice?: number;
   cartItemId?: string;
   isMarkedUp?: boolean;
+  vendor?: string | null; // e.g. "Alpha BioMed", "City Center" – used to block City Center for My Clinic
 }
 
 type PaymentOrder = NonNullable<React.ComponentProps<typeof CustomerOrderPayment>["order"]>;
@@ -61,6 +62,7 @@ const Page = () => {
     price?: number;
     customPrice?: number;
     originalPrice?: number;
+    vendor?: string | null;
     customPriceChangeHistory?: Array<{
       customPrice: number;
       id: string;
@@ -137,6 +139,11 @@ const Page = () => {
     Array<{ productId: string; name: string; cartItemId?: string }>
   >([]);
   const [confirmSwitchLoading, setConfirmSwitchLoading] = useState(false);
+  const [confirmCityCenterModalOpen, setConfirmCityCenterModalOpen] = useState(false);
+  const [pendingCityCenterItems, setPendingCityCenterItems] = useState<
+    Array<{ productId: string; name: string; cartItemId?: string }>
+  >([]);
+  const [confirmCityCenterLoading, setConfirmCityCenterLoading] = useState(false);
   const handleOrderTypeChangeRef = useRef<(nextIsClinicOrder: boolean) => void>(() => { });
   const [isClinicPaymentOpen, setIsClinicPaymentOpen] = useState(false);
   const [clinicCheckoutOrder, setClinicCheckoutOrder] = useState<PaymentOrder | undefined>(
@@ -269,6 +276,70 @@ const Page = () => {
       handleOrderTypeChangeRef.current(false);
     } finally {
       setConfirmSwitchLoading(false);
+    }
+  };
+
+  const handleConfirmRemoveCityCenter = async () => {
+    if (confirmCityCenterLoading) return;
+    setConfirmCityCenterLoading(true);
+    try {
+      const productIdsToRemove = new Set(
+        pendingCityCenterItems.map((i) => i.productId),
+      );
+      const needsCartItemIds = pendingCityCenterItems.some((x) => !x.cartItemId);
+      const productToCartItemId = new Map<string, string>();
+
+      if (needsCartItemIds) {
+        type FetchUserCartResult = {
+          fetchUser?: {
+            user?: {
+              cart?: {
+                cartItems?: Array<{
+                  id?: string;
+                  product?: { id?: string } | null;
+                } | null>;
+              } | null;
+            } | null;
+          } | null;
+        };
+        try {
+          const { data } = await apolloClient.query<FetchUserCartResult>({
+            query: FETCH_USER,
+            fetchPolicy: "network-only",
+          });
+          const serverCartItems = data?.fetchUser?.user?.cart?.cartItems ?? [];
+          serverCartItems.forEach((ci) => {
+            const pid = ci?.product?.id;
+            const cid = ci?.id;
+            if (pid && cid) productToCartItemId.set(pid, cid);
+          });
+        } catch {
+          // Best effort
+        }
+      }
+
+      await Promise.all(
+        pendingCityCenterItems.map(async (item) => {
+          dispatch(removeCartItem(item.productId));
+          const cartItemId =
+            item.cartItemId || productToCartItemId.get(item.productId);
+          if (!cartItemId) return;
+          try {
+            await removeFromCart({ variables: { cartItemId } });
+          } catch {
+            // Best effort
+          }
+        }),
+      );
+
+      setOrderItems((prev) =>
+        prev.filter((i) => !productIdsToRemove.has(i.productId)),
+      );
+      setConfirmCityCenterModalOpen(false);
+      setPendingCityCenterItems([]);
+      handleOrderTypeChangeRef.current(true);
+    } finally {
+      setConfirmCityCenterLoading(false);
     }
   };
 
@@ -417,6 +488,7 @@ const Page = () => {
           let hasTierPricing = prev?.hasTierPricing;
           // default to "marked up" until proven otherwise to avoid accidental removals
           let isMarkedUp = prev?.isMarkedUp ?? true;
+          let vendor: string | null | undefined = prev?.vendor ?? undefined;
 
           try {
             const { data } = await apolloClient.query<FetchProductResponse>({
@@ -426,6 +498,7 @@ const Page = () => {
             });
             const p = data?.fetchProduct;
             if (p) {
+              vendor = p.vendor ?? prev?.vendor ?? undefined;
               const firstVariant = p.variants?.[0];
               variantId =
                 firstVariant?.shopifyVariantId || firstVariant?.id || variantId;
@@ -489,6 +562,7 @@ const Page = () => {
             cartPrice,
             cartItemId: ci.cartItemId,
             isMarkedUp,
+            vendor: vendor ?? undefined,
           } satisfies OrderItem;
         }),
       );
@@ -560,6 +634,7 @@ const Page = () => {
         price: price,
         customPrice: product.customPrice,
         originalPrice: originalPrice,
+        vendor: product.vendor ?? undefined,
         customPriceChangeHistory: product.customPriceChangeHistory,
         tierPricing: product.tierPricing,
         variants: product.variants?.map((variant) => ({
@@ -852,6 +927,7 @@ const Page = () => {
       initialPrice: displayedPrice, // Store the displayed price (customPrice or originalPrice) when item was added
       hasTierPricing: isClinicOrder && (selectedProductData?.tierPricing?.length ?? 0) > 0,
       latestMarkedUpPrice: latestMarkedUpPrice, // Store latest marked up price for validation
+      vendor: selectedProductData?.vendor ?? undefined,
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -1216,13 +1292,23 @@ const Page = () => {
                   setFieldValue("customer", "", false);
                   setFieldTouched("customer", false, false);
                   setFieldError("customer", undefined);
-                  // Fetch tier pricing for all order items and update right-side prices
-                  shouldFetchTierPricingForOrderItemsRef.current = true;
-                // Clinic order: show base price in the price input
-                  if (selectedProductData && productBasePrice !== null) {
+                  // City Center products cannot be ordered for My Clinic: unselect if currently selected
+                  if (selectedProductData?.vendor === "City Center") {
+                    setFieldValue("product", "", false);
+                    setFieldTouched("product", false, false);
+                    setFieldError("product", undefined);
+                    setPreservedProduct("");
+                    setSelectedProductData(null);
+                    setFieldValue("price", 0, false);
+                    setPreservedPrice(0);
+                    updatePricingInfo(null);
+                  } else if (selectedProductData && productBasePrice !== null) {
+                    // Clinic order: show base price in the price input
                     setFieldValue("price", productBasePrice, false);
                     setPreservedPrice(productBasePrice);
                   }
+                  // Fetch tier pricing for all order items and update right-side prices
+                  shouldFetchTierPricingForOrderItemsRef.current = true;
                 } else {
                   // Customer order: only marked-up products allowed
                   const isMarkedUp =
@@ -1257,7 +1343,7 @@ const Page = () => {
               handleOrderTypeChangeRef.current = handleOrderTypeChange;
 
               const requestOrderTypeChange = (nextIsClinicOrder: boolean) => {
-                // Prompt only when switching from My Clinic -> Customer
+                // Prompt only when switching from My Clinic -> Customer (unmarked items)
                 if (!nextIsClinicOrder && isClinicOrder) {
                   if (!cartLoaded || isCartHydrating) {
                     showErrorToast("Please wait while cart items load.");
@@ -1278,11 +1364,36 @@ const Page = () => {
                   }
                 }
 
+                // Prompt when switching to My Clinic and cart has City Center products (not allowed for My Clinic)
+                if (nextIsClinicOrder && !isClinicOrder) {
+                  if (!cartLoaded || isCartHydrating) {
+                    showErrorToast("Please wait while cart items load.");
+                    return;
+                  }
+                  const cityCenterItems = orderItems.filter(
+                    (i) => i.vendor === "City Center",
+                  );
+                  if (cityCenterItems.length > 0) {
+                    setPendingCityCenterItems(
+                      cityCenterItems.map((i) => ({
+                        productId: i.productId,
+                        name: i.product || "Product",
+                        cartItemId: i.cartItemId,
+                      })),
+                    );
+                    setConfirmCityCenterModalOpen(true);
+                    return;
+                  }
+                }
+
                 handleOrderTypeChange(nextIsClinicOrder);
               };
 
               const orderTypeRadioDisabled =
-                confirmSwitchLoading || tierPricingLoading || isCartHydrating;
+                confirmSwitchLoading ||
+                confirmCityCenterLoading ||
+                tierPricingLoading ||
+                isCartHydrating;
 
               return (
                 <Form className="flex flex-col gap-4 md:gap-5">
@@ -1890,6 +2001,31 @@ const Page = () => {
           {pendingUnmarkedItems.length} item
           {pendingUnmarkedItems.length === 1 ? "" : "s"} have not been marked up
           and will be removed from your cart. Are you sure you want to continue?
+        </p>
+      </AppModal>
+
+      <AppModal
+        isOpen={confirmCityCenterModalOpen}
+        onClose={() => {
+          if (confirmCityCenterLoading) return;
+          setConfirmCityCenterModalOpen(false);
+          setPendingCityCenterItems([]);
+        }}
+        title="City Center products not allowed for My Clinic"
+        subtitle=""
+        onConfirm={() => void handleConfirmRemoveCityCenter()}
+        confirmLabel={confirmCityCenterLoading ? "Removing..." : "Yes, remove from cart"}
+        cancelLabel="No, stay on Customer"
+        confimBtnDisable={confirmCityCenterLoading}
+        disableCloseButton={confirmCityCenterLoading}
+        outSideClickClose={!confirmCityCenterLoading}
+        bodyPaddingClasses="p-4 md:p-6"
+      >
+        <p className="text-sm md:text-base text-gray-700">
+          City Center products cannot be ordered for My Clinic.{" "}
+          {pendingCityCenterItems.length} item
+          {pendingCityCenterItems.length === 1 ? "" : "s"} will be removed from
+          your cart. Do you want to continue?
         </p>
       </AppModal>
 

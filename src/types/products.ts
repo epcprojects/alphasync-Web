@@ -92,6 +92,7 @@ export interface ProductDropdownItem {
   price?: number;
   customPrice?: number;
   originalPrice?: number;
+  vendor?: string | null;
   variants?: ProductVariant[];
   customPriceChangeHistory?: {
     customPrice: number;
@@ -258,6 +259,7 @@ export const transformToDropdownItem = (
     price: price,
     customPrice: product.customPrice,
     originalPrice: originalPrice,
+    vendor: product.vendor ?? undefined,
     customPriceChangeHistory: product.customPriceChangeHistory,
     tierPricing: product.tierPricing,
     variants: product.variants?.map((variant) => ({
