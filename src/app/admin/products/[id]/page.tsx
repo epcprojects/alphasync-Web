@@ -653,34 +653,34 @@ export default function ProductDetailPage() {
             {product.variants && product.variants.length > 0 && (
               <div className="bg-gray-50 rounded-xl p-2 md:p-4">
                 <div className="space-y-2">
-                  {product.variants.map((variant, index) => (
-                    <div
-                      key={variant.id || index}
-                      className="bg-white rounded-lg p-2 md:p-3 border border-gray-200"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>Price:</div>
-                        {/* <div>
-                          <span className="text-sm font-medium text-gray-700">
-                            Variant {index + 1}
+                  {/* Single price with priority: selected/first unit pricing → customPrice → variant price */}
+                  {(() => {
+                    const unitPricings = product.productUnitPricings;
+                    const selectedTier =
+                      unitPricings?.[selectedUnitPricingIndex] ??
+                      unitPricings?.[0];
+                    const prioritizedPrice =
+                      selectedTier?.price != null
+                        ? typeof selectedTier.price === "number"
+                          ? selectedTier.price
+                          : parseFloat(String(selectedTier.price))
+                        : NaN;
+                    const displayPrice = !Number.isNaN(prioritizedPrice)
+                      ? prioritizedPrice
+                      : product.customPrice ??
+                        product.variants?.[0]?.price ??
+                        0;
+                    return (
+                      <div className="bg-white rounded-lg p-2 md:p-3 border border-gray-200">
+                        <div className="flex items-center justify-between">
+                          <div>Price:</div>
+                          <span className="text-xl font-semibold text-primary">
+                            ${Number(displayPrice).toFixed(2)}
                           </span>
-                          {variant.sku && (
-                            <span className="text-xs text-gray-500 ml-2">
-                              (SKU: {variant.sku})
-                            </span>
-                          )}
-                        </div> */}
-                        <span className="text-xl font-semibold text-primary">
-                          ${variant.price.toFixed(2)}
-                        </span>
-                      </div>
-                      {/* {variant.shopifyVariantId && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          Shopify ID: {variant.shopifyVariantId}
                         </div>
-                      )} */}
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             )}
