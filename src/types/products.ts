@@ -124,9 +124,16 @@ export const transformGraphQLProduct = (
       ? product.primaryImage
       : fallbackImage;
 
-  // Use customPrice if available, otherwise use variant price
-  const priceValue =
-    product.customPrice != null && product.customPrice !== undefined
+  // Use first unit pricing if available, then customPrice, otherwise variant price
+  const firstUnitPrice =
+    product.productUnitPricings?.[0]?.price != null
+      ? typeof product.productUnitPricings[0].price === "number"
+        ? product.productUnitPricings[0].price
+        : parseFloat(String(product.productUnitPricings[0].price))
+      : NaN;
+  const priceValue = !Number.isNaN(firstUnitPrice)
+    ? firstUnitPrice
+    : product.customPrice != null && product.customPrice !== undefined
       ? product.customPrice
       : firstVariant?.price ?? 0;
 
