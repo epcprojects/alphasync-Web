@@ -511,10 +511,10 @@ export default function ProductDetailPage() {
                 {product?.bud != null && product.bud !== "" && (
                   <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                     <span className="block text-gray-800 text-sm !font-normal">
-                      BUD
+                      Best use within
                     </span>
                     <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                      {product.bud}
+                      {product.bud} days
                     </span>
                   </div>
                 )}
@@ -549,14 +549,14 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+              {/* <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                 <span className="block text-gray-800 text-sm !font-normal">
                   SKU
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
                   {product?.variants?.[0]?.sku || "N/A"}
                 </span>
-              </div>
+              </div> */}
             </div>
 
             {product.productUnitPricings &&
