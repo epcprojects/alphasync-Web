@@ -310,6 +310,11 @@ export const FETCH_PRODUCT = gql`
       vendor
       price
       tags
+      productUnitPricings {
+        id
+        price
+        quantity
+      }
       tierPricing {
         endCount
         startCount
