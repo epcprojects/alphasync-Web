@@ -204,6 +204,11 @@ export interface FetchProductResponse {
       shopifyVariantId: string;
       sku: string;
     }[];
+    productUnitPricings?: {
+      id: string;
+      price?: number | string;
+      quantity: number;
+    }[];
   };
 }
 
