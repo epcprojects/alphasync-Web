@@ -35,7 +35,7 @@ export default function PostDetail() {
       },
       skip: !params.id,
       fetchPolicy: "network-only",
-    }
+    },
   );
 
   // GraphQL mutation to toggle favorite
@@ -52,12 +52,32 @@ export default function PostDetail() {
 
   const product = data?.fetchProduct;
 
-  // Initialize price when product data is loaded
+  // Selected unit pricing index (when productUnitPricings exists). Default first.
+  const [selectedUnitPricingIndex, setSelectedUnitPricingIndex] = useState(0);
+
+  // Initialize price when product data is loaded; default to first unit pricing if present
   useEffect(() => {
     if (product) {
-      const currentPrice =
-        product.customPrice || product.variants?.[0]?.price || 0;
-      setPrice(currentPrice.toString());
+      const unitPricings = product.productUnitPricings;
+      if (unitPricings && unitPricings.length > 0) {
+        setSelectedUnitPricingIndex(0);
+        const first = unitPricings[0];
+        const p =
+          first.price != null
+            ? typeof first.price === "number"
+              ? first.price
+              : parseFloat(String(first.price))
+            : NaN;
+        if (!Number.isNaN(p)) setPrice(String(p));
+        else
+          setPrice(
+            String(product.customPrice || product.variants?.[0]?.price || 0),
+          );
+      } else {
+        const currentPrice =
+          product.customPrice || product.variants?.[0]?.price || 0;
+        setPrice(currentPrice.toString());
+      }
       setPriceError("");
     }
   }, [product]);
@@ -96,8 +116,8 @@ export default function PostDetail() {
     if (priceValue <= originalPrice) {
       showErrorToast(
         `Price must be greater than the original price ($${originalPrice.toFixed(
-          2
-        )})`
+          2,
+        )})`,
       );
       return;
     }
@@ -129,7 +149,9 @@ export default function PostDetail() {
       await refetch();
       setPrice((product.variants?.[0]?.price || 0).toString());
       setPriceError("");
-      showSuccessToast("Product removed from sale. It’s back to base price and no longer available for customers to purchase.");
+      showSuccessToast(
+        "Product removed from sale. It’s back to base price and no longer available for customers to purchase.",
+      );
     } catch (error) {
       console.error("Error removing product from sale:", error);
       showErrorToast("Failed to remove from sale. Please try again.");
@@ -297,9 +319,27 @@ export default function PostDetail() {
 
               <span className="text-primary font-semibold text-sm md:text-lg xl:text-xl">
                 $
-                {product?.customPrice ||
-                  product?.variants?.[0]?.price ||
-                  "0.00"}
+                {product?.productUnitPricings &&
+                product.productUnitPricings.length > 0 &&
+                product.productUnitPricings[selectedUnitPricingIndex]
+                  ? (() => {
+                      const tier =
+                        product.productUnitPricings[selectedUnitPricingIndex];
+                      const p =
+                        tier.price != null
+                          ? typeof tier.price === "number"
+                            ? tier.price
+                            : parseFloat(String(tier.price))
+                          : NaN;
+                      return !Number.isNaN(p)
+                        ? Number(p).toFixed(2)
+                        : product?.customPrice ||
+                            product?.variants?.[0]?.price ||
+                            "0.00";
+                    })()
+                  : product?.customPrice ||
+                    product?.variants?.[0]?.price ||
+                    "0.00"}
               </span>
             </div>
 
@@ -335,8 +375,8 @@ export default function PostDetail() {
                       if (priceValue <= originalPrice) {
                         setPriceError(
                           `Price must be greater than original price ($${originalPrice.toFixed(
-                            2
-                          )})`
+                            2,
+                          )})`,
                         );
                       } else {
                         setPriceError("");
@@ -353,8 +393,8 @@ export default function PostDetail() {
                       if (priceValue <= originalPrice) {
                         setPriceError(
                           `Price must be greater than original price ($${originalPrice.toFixed(
-                            2
-                          )})`
+                            2,
+                          )})`,
                         );
                       } else {
                         setPriceError("");
@@ -389,6 +429,20 @@ export default function PostDetail() {
               )}
             </div>
 
+            {product?.directions != null && product.directions !== "" && (
+              <div className="">
+                <h2 className="text-black font-medium text-sm md:text-base mb-2">
+                  Directions
+                </h2>
+                <p
+                  className="text-gray-800 text-sm sm:text-base font-normal"
+                  dangerouslySetInnerHTML={{
+                    __html: product.directions,
+                  }}
+                />
+              </div>
+            )}
+
             <div className="">
               <h2 className="text-black font-medium text-sm md:text-base ">
                 Product Information
@@ -401,6 +455,41 @@ export default function PostDetail() {
                 }}
               ></p>
             </div>
+
+            {(product?.form || product?.strength || product?.bud) && (
+              <div className="grid grid-cols-1 gap-2 md:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {product?.form != null && product.form !== "" && (
+                  <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                    <span className="block text-gray-800 text-sm !font-normal">
+                      Form
+                    </span>
+                    <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                      {product.form}
+                    </span>
+                  </div>
+                )}
+                {product?.strength != null && product.strength !== "" && (
+                  <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                    <span className="block text-gray-800 text-sm !font-normal">
+                      Strength
+                    </span>
+                    <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                      {product.strength}
+                    </span>
+                  </div>
+                )}
+                {product?.bud != null && product.bud !== "" && (
+                  <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                    <span className="block text-gray-800 text-sm !font-normal">
+                      BUD
+                    </span>
+                    <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                      {product.bud}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Price History and Markup Section */}
             {product.customPriceChangeHistory &&
@@ -486,7 +575,7 @@ export default function PostDetail() {
                                 </span>
                               </div>
                             );
-                          }
+                          },
                         )}
                       </div>
                     </div>
@@ -494,44 +583,137 @@ export default function PostDetail() {
                 </div>
               )}
 
-            {/* Unit Pricings (quantity-based tiers) */}
+            <div className="grid grid-cols-1 gap-2 md:gap-4 md:grid-cols-4">
+              <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                <span className="block text-gray-800 text-sm !font-normal">
+                  Manufacturer
+                </span>
+                <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                  {product?.vendor ?? "N/A"}
+                </span>
+              </div>
+
+              <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                <span className="block text-gray-800 text-sm !font-normal">
+                  Product Type
+                </span>
+                <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                  {product?.productType ?? "N/A"}
+                </span>
+              </div>
+
+              <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                <span className="block text-gray-800 text-sm !font-normal">
+                  Stock Quantity
+                </span>
+                <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                  {product?.totalInventory ?? 0} units
+                </span>
+              </div>
+
+              {/* <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                <span className="block text-gray-800 text-sm !font-normal">
+                  SKU
+                </span>
+                <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                  {product?.variants?.[0]?.sku ?? "N/A"}
+                </span>
+              </div> */}
+
+              {/* {product?.tags && product.tags.length > 0 && (
+                <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                  <span className="block text-gray-800 text-sm !font-normal">
+                    Category
+                  </span>
+                  <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                    {product?.category ?? "—"}
+                  </span>
+                </div>
+              )} */}
+            </div>
+
+            {/* Pricing per unit - just above Order button */}
             {product.productUnitPricings &&
               product.productUnitPricings.length > 0 && (
                 <div className="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200">
                   <h2 className="text-black font-medium text-sm md:text-base mb-3 md:mb-4">
-                    Unit pricing
+                    Pricing per unit
                   </h2>
                   <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                     <table className="w-full text-left text-sm">
                       <thead>
                         <tr className="border-b border-gray-200 bg-gray-50">
+                          <th className="py-2.5 px-3 font-medium text-gray-700 w-8">
+                            {" "}
+                          </th>
                           <th className="py-2.5 px-3 font-medium text-gray-700">
                             Quantity
                           </th>
                           <th className="py-2.5 px-3 font-medium text-gray-700">
-                            Price
+                            Strength
+                          </th>
+                          <th className="py-2.5 px-3 font-medium text-gray-700">
+                            Price per unit
                           </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {product.productUnitPricings.map((tier) => {
+                        {product.productUnitPricings.map((tier, index) => {
                           const priceValue =
                             tier.price != null
                               ? typeof tier.price === "number"
                                 ? tier.price
                                 : parseFloat(String(tier.price))
                               : NaN;
-                          const displayPrice =
-                            !Number.isNaN(priceValue)
-                              ? `$${Number(priceValue).toFixed(2)}`
-                              : "—";
+                          const displayPrice = !Number.isNaN(priceValue)
+                            ? `$${Number(priceValue).toFixed(2)}`
+                            : "—";
+                          const isSelected = selectedUnitPricingIndex === index;
                           return (
                             <tr
                               key={tier.id}
-                              className="border-b border-gray-100 last:border-b-0"
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => {
+                                setSelectedUnitPricingIndex(index);
+                                if (!Number.isNaN(priceValue))
+                                  setPrice(String(priceValue));
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  setSelectedUnitPricingIndex(index);
+                                  if (!Number.isNaN(priceValue))
+                                    setPrice(String(priceValue));
+                                }
+                              }}
+                              className="border-b border-gray-100 last:border-b-0 cursor-pointer transition-colors hover:bg-gray-50"
                             >
+                              <td className="py-2 px-3 text-gray-800 w-8">
+                                {isSelected ? (
+                                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
+                                    <svg
+                                      className="h-3 w-3"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                      aria-hidden="true"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                  </span>
+                                ) : (
+                                  <span className="inline-block h-5 w-5" />
+                                )}
+                              </td>
                               <td className="py-2 px-3 text-gray-800">
                                 {tier.quantity}
+                              </td>
+                              <td className="py-2 px-3 text-gray-800">
+                                {tier.strength ?? "—"}
                               </td>
                               <td className="py-2 px-3 font-semibold text-gray-900">
                                 {displayPrice}
@@ -545,49 +727,6 @@ export default function PostDetail() {
                 </div>
               )}
 
-            <div className="grid grid-cols-1 gap-2 md:gap-4 md:grid-cols-4">
-              <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
-                <span className="block text-gray-800 text-sm !font-normal">
-                  Manufacturer
-                </span>
-                <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                  {product?.vendor}
-                </span>
-              </div>
-
-              <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
-                <span className="block text-gray-800 text-sm !font-normal">
-                  Dosage
-                </span>
-                <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                  {/* {product.variants?.[0]?.price
-                    ? `${product.variants[0].price}mg vial`
-                    : "5mg vial"} */}
-                  --
-                </span>
-              </div>
-
-              <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
-                <span className="block text-gray-800 text-sm !font-normal">
-                  Active Ingredient
-                </span>
-                <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                  {/* {product?.variants?.[0]?.sku} */}
-                  --
-                </span>
-              </div>
-              {product?.tags && product.tags.length > 0 && (
-                <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
-                  <span className="block text-gray-800 text-sm !font-normal">
-                    Category
-                  </span>
-                  <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                    {product?.tags[0] || " "}
-                  </span>
-                </div>
-              )}
-            </div>
-
             <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-2 md:gap-4">
               <div>
                 <h2 className="text-sm text-gray-600 font-normal">
@@ -599,20 +738,25 @@ export default function PostDetail() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-2">
-                {product.customPrice != null && product.customPrice !== undefined && (
-                  <ThemeButton
-                    onClick={handleRemoveFromSale}
-                    variant="outline"
-                    className="flex-1"
-                    heightClass="h-10 md:h-11"
-                    disabled={removeFromSaleLoading}
-                    label={removeFromSaleLoading ? "Removing…" : "Remove from Sale"}
-                  />
-                )}
+                {product.customPrice != null &&
+                  product.customPrice !== undefined && (
+                    <ThemeButton
+                      onClick={handleRemoveFromSale}
+                      variant="outline"
+                      className="flex-1"
+                      heightClass="h-10 md:h-11"
+                      disabled={removeFromSaleLoading}
+                      label={
+                        removeFromSaleLoading ? "Removing…" : "Remove from Sale"
+                      }
+                    />
+                  )}
                 <ThemeButton
                   label="Order"
                   icon={<ShopingCartIcon fill="white" height={20} width={20} />}
-                  onClick={() => router.push(`/orders/new-order?productId=${product.id}`)}
+                  onClick={() =>
+                    router.push(`/orders/new-order?productId=${product.id}`)
+                  }
                   className="w-full sm:w-fit sm:min-w-40"
                   heightClass="h-11"
                   disabled={

@@ -315,7 +315,9 @@ function ProductsContent() {
 
             <Menu>
               <MenuButton className="inline-flex py-2 px-3 cursor-pointer whitespace-nowrap bg-gray-100 text-gray-700 items-center gap-2 rounded-full text-sm md:text-sm font-medium shadow-inner focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-                {selectedVendor ? getVendorDisplayName(selectedVendor) : "All Vendors"}
+                {selectedVendor
+                  ? getVendorDisplayName(selectedVendor)
+                  : "All Vendors"}
                 <ArrowDownIcon fill="#717680" />
               </MenuButton>
 
@@ -456,11 +458,12 @@ function ProductsContent() {
                   </span>
                 </div>
 
+
                 {/* Form */}
                 <div className="md:col-span-1 flex justify-between md:justify-start items-center">
                   <span className="text-xs text-gray-500 md:hidden">Form</span>
                   <span className="text-sm text-gray-700">
-                    {product.productForm}
+                    {product.form ?? "-"}
                   </span>
                 </div>
 
@@ -509,7 +512,7 @@ function ProductsContent() {
                       onClick={(e) => {
                         e.stopPropagation();
                         const raw = rawProducts.find(
-                          (p) => p.id === product.originalId
+                          (p) => p.id === product.originalId,
                         );
                         setSelectedProduct(raw ?? null);
                         setEditModal(true);
