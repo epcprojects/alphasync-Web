@@ -74,6 +74,16 @@ export const ALL_PRODUCTS = gql`
       allData {
         id
         title
+        form
+        strength
+        bud
+        directions
+        productUnitPricings {
+            id
+            price
+            quantity
+            strength
+        } 
         variants {
           price
           id
@@ -139,6 +149,16 @@ export const ALL_PRODUCTS_INVENTORY = gql`
         productType
         shopifyId
         title
+        form
+        strength
+        bud
+        directions
+        productUnitPricings {
+          id
+          price
+          quantity
+          strength
+        }
         totalInventory
         vendor
         tags
@@ -299,6 +319,10 @@ export const FETCH_PRODUCT = gql`
       handle
       id
       images
+      form
+      strength
+      bud
+      directions
       inStock
       isFavorited
       priceRange
@@ -310,6 +334,12 @@ export const FETCH_PRODUCT = gql`
       vendor
       price
       tags
+      productUnitPricings {
+        id
+        price
+        quantity
+        strength
+      }
       tierPricing {
         endCount
         startCount
