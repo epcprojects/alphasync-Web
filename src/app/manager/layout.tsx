@@ -24,11 +24,11 @@ const menuItems = [
     href: "/manager/doctors",
     icon: Doctor,
   },
-  {
-    label: "Settings",
-    href: "/manager/settings",
-    icon: SettingsIcon,
-  },
+  // {
+  //   label: "Settings",
+  //   href: "/manager/settings",
+  //   icon: SettingsIcon,
+  // },
 ];
 
 const headings: Record<string, string> = {
