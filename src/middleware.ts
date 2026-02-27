@@ -34,6 +34,7 @@ export function middleware(request: NextRequest) {
   const publicRoutes = [
     "/login",
     "/admin/login",
+    "/manager/login",
     "/otp",
     "/new-password",
     "/accept-invitation",
@@ -41,12 +42,15 @@ export function middleware(request: NextRequest) {
     "/profile-complete",
   ];
   const isPublicRoute =
-    publicRoutes.includes(pathname) || pathname.startsWith("/admin/login");
+    publicRoutes.includes(pathname) ||
+    pathname.startsWith("/admin/login") ||
+    pathname.startsWith("/manager/login");
 
   // Role-based route definitions
   const adminRoutes = [
     "/admin/doctors",
     "/admin/admins",
+    "/admin/managers",
     "/admin/products",
     "/admin/settings",
     "/admin/dashboard",
@@ -92,6 +96,8 @@ export function middleware(request: NextRequest) {
     // Redirect logged-in user to their dashboard
     if (userType === "admin") {
       return NextResponse.redirect(new URL("/admin/doctors", request.url));
+    } else if (userType === "manager") {
+      return NextResponse.redirect(new URL("/admin/managers", request.url));
     } else if (userType === "doctor") {
       return NextResponse.redirect(
         fromInvitation ? profileCompleteUrl : new URL("/my-store", request.url)
@@ -115,17 +121,21 @@ export function middleware(request: NextRequest) {
 
     // Check if user is trying to access routes they're not authorized for
     if (
-      userType === "admin" &&
+      (userType === "admin" || userType === "manager") &&
       doctorRoutes.some((route) => pathname.startsWith(route))
     ) {
-      return NextResponse.redirect(new URL("/admin/doctors", request.url));
+      return NextResponse.redirect(
+        new URL(userType === "manager" ? "/admin/managers" : "/admin/doctors", request.url)
+      );
     }
 
     if (
-      userType === "admin" &&
+      (userType === "admin" || userType === "manager") &&
       customerRoutes.some((route) => pathname.startsWith(route))
     ) {
-      return NextResponse.redirect(new URL("/admin/doctors", request.url));
+      return NextResponse.redirect(
+        new URL(userType === "manager" ? "/admin/managers" : "/admin/doctors", request.url)
+      );
     }
 
     if (
@@ -167,6 +177,7 @@ export const config = {
   matcher: [
     "/login",
     "/admin/login",
+    "/manager/login",
     "/otp",
     "/forgot",
     "/new-password",
