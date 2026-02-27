@@ -219,6 +219,10 @@ const Page = () => {
           seteditUser(null);
         }}
         initialvalues={editUser}
+        onConfirm={() => {
+          // Refetch managers list when a new manager is invited
+          // refetch(); // enable when managers query is wired
+        }}
       />
       <BlockManagerModal
         isOpen={showBlockManager}
