@@ -74,6 +74,18 @@ export const ALL_MANAGERS = gql`
     allManagers(pendingInvites: $pendingInvites, status: $status, search: $search, page: $page, perPage: $perPage) {
       allData {
         ${userpayload}
+        assignedDoctors {
+          id
+          deleted
+          email
+          firstName
+          fullName
+          status
+          imageUrl
+          specialty
+          phoneNo
+          npiNumber
+        }
       }
       count
       nextPage

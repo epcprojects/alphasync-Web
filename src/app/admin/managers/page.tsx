@@ -7,7 +7,7 @@ import {
   Skeleton,
   ThemeButton,
 } from "@/app/components";
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   AdminManagersFilledIcon,
@@ -19,7 +19,9 @@ import {
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import { ALL_MANAGERS } from "@/lib/graphql/queries";
+import { MODIFY_ACCESSS_USER } from "@/lib/graphql/mutations";
 import { UserAttributes } from "@/lib/graphql/attributes";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   Menu,
   MenuButton,
@@ -37,9 +39,25 @@ import ManagersDatabaseView, {
 import AssignDoctorModal from "@/app/components/ui/modals/AssignDoctorModal";
 import BlockManagerModal from "@/app/components/ui/modals/BlockManagerModal";
 
+/** Assigned doctor fields returned by allManagers.allData.assignedDoctors */
+export interface ManagerAssignedDoctor {
+  id?: string | number;
+  deleted?: boolean;
+  email?: string;
+  firstName?: string;
+  fullName?: string;
+  status?: string;
+  imageUrl?: string | null;
+  specialty?: string;
+  phoneNo?: string;
+  npiNumber?: string;
+}
+
 interface AllManagersResponse {
   allManagers: {
-    allData: UserAttributes[];
+    allData: (UserAttributes & {
+      assignedDoctors?: ManagerAssignedDoctor[];
+    })[];
     count: number;
     nextPage: number | null;
     prevPage: number | null;
@@ -47,7 +65,11 @@ interface AllManagersResponse {
   };
 }
 
-function mapManagerToView(m: UserAttributes): ManagersType {
+function mapManagerToView(
+  m: UserAttributes & {
+    assignedDoctors?: ManagerAssignedDoctor[];
+  },
+): ManagersType {
   const status = m.status?.toUpperCase();
   const displayStatus =
     status === "ACTIVE"
@@ -69,7 +91,9 @@ function mapManagerToView(m: UserAttributes): ManagersType {
     contact: m.phoneNo ?? "—",
     email: m.email ?? "—",
     status: displayStatus,
-    assignedDoctors: undefined,
+    assignedDoctors: m.assignedDoctors?.length ?? 0,
+    assignedDoctorIds:
+      m.assignedDoctors?.map((d) => d.id).filter((id) => id != null) ?? [],
     imageUrl: m.imageUrl,
   };
 }
@@ -82,7 +106,38 @@ const Page = () => {
   const [showAssignDoctor, setshowAssignDoctor] = useState(false);
   const [assignDoctor, setassignDoctor] = useState<ManagersType | null>(null);
   const [showBlockManager, setshowBlockManager] = useState(false);
+  const [managerToBlock, setManagerToBlock] = useState<ManagersType | null>(
+    null,
+  );
+  const [modifyAccessUser, { loading: modifyLoading }] =
+    useMutation(MODIFY_ACCESSS_USER);
+
+  function handleBlockManager(user: ManagersType) {
+    setManagerToBlock(user);
+    setshowBlockManager(true);
+  }
+
+  async function handleConfirmBlock() {
+    if (!managerToBlock?.id) return;
+    try {
+      await modifyAccessUser({
+        variables: {
+          userId: managerToBlock.id,
+          revokeAccess: true,
+        },
+      });
+      showSuccessToast("Manager blocked successfully");
+      setshowBlockManager(false);
+      setManagerToBlock(null);
+      refetch();
+    } catch (error) {
+      console.error("Error blocking manager:", error);
+      showErrorToast("Failed to block manager. Please try again.");
+    }
+  }
+
   function handleAssignDoctor(user: ManagersType) {
+    console.log("user", user);
     setassignDoctor(user);
     setshowAssignDoctor(true);
   }
@@ -173,7 +228,6 @@ const Page = () => {
 
   const showList = managers.length > 0 && !loading;
   const showEmpty = !loading && !error && managers.length === 0;
-
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -291,7 +345,7 @@ const Page = () => {
                         onDetailsManager={() =>
                           router.push(`/admin/managers/${data.id}`)
                         }
-                        onDisableManager={() => setshowBlockManager(true)}
+                        onDisableManager={() => handleBlockManager(data)}
                       />
                     ))}
                   </>
@@ -350,7 +404,7 @@ const Page = () => {
                         onDetailsManager={() =>
                           router.push(`/admin/managers/${data.id}`)
                         }
-                        onDisableManager={() => setshowBlockManager(true)}
+                        onDisableManager={() => handleBlockManager(data)}
                       />
                     ))}
                   </>
@@ -408,7 +462,7 @@ const Page = () => {
                         onDetailsManager={() =>
                           router.push(`/admin/managers/${data.id}`)
                         }
-                        onDisableManager={() => setshowBlockManager(true)}
+                        onDisableManager={() => handleBlockManager(data)}
                       />
                     ))}
                   </>
@@ -443,8 +497,10 @@ const Page = () => {
         isOpen={showAssignDoctor}
         onClose={() => {
           setshowAssignDoctor(false);
+          setassignDoctor(null);
         }}
         initialvalues={assignDoctor}
+        onConfirm={() => refetch()}
       />
       <AddEditManagerModal
         isOpen={showAddEditModal}
@@ -458,10 +514,19 @@ const Page = () => {
       />
       <BlockManagerModal
         isOpen={showBlockManager}
-        onClose={() => setshowBlockManager(false)}
-        onDelete={() => {}}
+        onClose={() => {
+          setshowBlockManager(false);
+          setManagerToBlock(null);
+        }}
+        onDelete={handleConfirmBlock}
         title="Block Manager"
-        subtitle="Are you sure you want to block this manager?"
+        subtitle={
+          managerToBlock
+            ? `Are you sure you want to block ${managerToBlock.name}? They will no longer be able to sign in.`
+            : "Are you sure you want to block this manager?"
+        }
+        isLoading={modifyLoading}
+        isMobile={isMobile}
       />
     </div>
   );
