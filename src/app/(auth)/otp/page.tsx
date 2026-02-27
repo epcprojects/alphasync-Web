@@ -104,6 +104,8 @@ function OTPContent() {
           }
         } else if (storedData?.userType === "ADMIN") {
           window.location.href = "/admin/doctors";
+        } else if (storedData?.userType === "MANAGER") {
+          window.location.href = "/admin/managers";
         } else {
           router.push("/login");
         }

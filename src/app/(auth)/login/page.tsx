@@ -2,7 +2,7 @@
 import { AuthHeader, Loader, ThemeButton, ThemeInput } from "@/app/components";
 import { Images } from "@/app/ui/images";
 import Link from "next/link";
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -23,7 +23,15 @@ function LoginContext() {
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const isAdminLogin = searchParams.get("admin") === "admin";
+  const isManagerParam = searchParams.get("manager") === "true";
   const typeParam = searchParams.get("type");
+
+  // Redirect to manager login when ?manager=true
+  useEffect(() => {
+    if (isManagerParam) {
+      router.replace("/manager/login");
+    }
+  }, [isManagerParam, router]);
 
   // Set initial login type based on URL parameter, default to "Doctor"
   const initialLoginType = typeParam === "patient" ? "Patient" : "Doctor";
@@ -119,6 +127,14 @@ function LoginContext() {
     },
     enableReinitialize: true,
   });
+
+  if (isManagerParam) {
+    return (
+      <div className="relative flex flex-col items-center justify-center h-screen">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex flex-col items-center justify-center h-screen">
@@ -219,15 +235,26 @@ function LoginContext() {
         />
 
         {!isAdminLogin && (
-          <p className="mt-1 text-center text-xs text-gray-600 md:text-sm">
-            Are you an admin?{" "}
-            <Link
-              href="/admin/login"
-              className="font-semibold text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1 rounded"
-            >
-              Sign in here
-            </Link>
-          </p>
+          <div className="mt-1 flex flex-col gap-1 text-center text-xs text-gray-600 md:text-sm">
+            <p>
+              Are you an admin?{" "}
+              <Link
+                href="/admin/login"
+                className="font-semibold text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1 rounded"
+              >
+                Sign in here
+              </Link>
+            </p>
+            <p>
+              Are you a manager?{" "}
+              <Link
+                href="/manager/login"
+                className="font-semibold text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1 rounded"
+              >
+                Sign in here
+              </Link>
+            </p>
+          </div>
         )}
       </form>
     </div>
