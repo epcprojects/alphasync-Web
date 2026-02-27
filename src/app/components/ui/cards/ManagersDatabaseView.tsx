@@ -10,7 +10,8 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import ProfileImage from "@/app/components/ui/ProfileImage";
 
 export type ManagersType = {
-  id: number;
+  /** API returns UUID string; we preserve it for links and update mutation */
+  id: number | string;
   name: string;
   contact: string;
   email: string;
@@ -136,9 +137,11 @@ export default function ManagersDatabaseView({
               <ViewDoctorIcon fill="currentColor" />
             </button>
             <button
+              type="button"
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
-                if (id) onEditManager();
+                onEditManager();
               }}
               className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-blue-500 bg-white items-center justify-center rounded-md border cursor-pointer border-blue-500 hover:border-primary group-hover:border-primary"
             >
@@ -226,11 +229,13 @@ export default function ManagersDatabaseView({
         </Tooltip>
         <Tooltip content="Edit Manager">
           <button
+            type="button"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
-              if (id) onEditManager();
+              onEditManager();
             }}
-            className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-blue-500 bg-white items-center justify-center rounded-md border cursor-pointer border-blue-500 hover:border-primary group-hover:"
+            className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-blue-500 bg-white items-center justify-center rounded-md border cursor-pointer border-blue-500 hover:border-primary group-hover:border-primary"
           >
             <PencilEditIcon fill="currentColor" />
           </button>

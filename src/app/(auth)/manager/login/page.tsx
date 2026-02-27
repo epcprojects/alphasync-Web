@@ -31,7 +31,7 @@ function ManagerLoginContext() {
         dispatch(setUser(user));
         Cookies.set("auth_token", token, { expires: 7 });
         Cookies.set("user_data", JSON.stringify(user), { expires: 7 });
-        window.location.href = "/admin/managers";
+        window.location.href = "/manager/doctors";
         showSuccessToast(message);
       }
     },

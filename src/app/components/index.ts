@@ -49,6 +49,7 @@ import TrainingVideosBlockingPage from "./TrainingVideosBlockingPage";
 import {
   RoleBasedRoute,
   AdminRoute,
+  ManagerRoute,
   DoctorRoute,
   CustomerRoute,
   DoctorOrAdminRoute,
@@ -130,6 +131,7 @@ export {
   Chat,
   RoleBasedRoute,
   AdminRoute,
+  ManagerRoute,
   DoctorRoute,
   CustomerRoute,
   DoctorOrAdminRoute,

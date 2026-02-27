@@ -58,9 +58,11 @@ function mapManagerToView(m: UserAttributes): ManagersType {
           ? "Pending"
           : m.invitationStatus === "pending"
             ? "Pending"
-            : status ?? "—";
+            : (status ?? "—");
+  // API returns id as UUID string; preserve it (do not convert to number)
+  const id = m.id != null && m.id !== "" ? m.id : 0;
   return {
-    id: Number(m.id) ?? 0,
+    id,
     name:
       m.fullName ??
       ([m.firstName, m.lastName].filter(Boolean).join(" ") || "—"),
@@ -86,6 +88,7 @@ const Page = () => {
   }
 
   function handleEdit(user: ManagersType) {
+    console.log("user", user);
     seteditUser(user);
     setshowAddEditModal(true);
   }
@@ -171,6 +174,7 @@ const Page = () => {
   const showList = managers.length > 0 && !loading;
   const showEmpty = !loading && !error && managers.length === 0;
 
+
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
       <div className="flex lg:flex-row flex-col lg:items-center justify-between gap-3">
@@ -206,8 +210,7 @@ const Page = () => {
               />
               <Menu>
                 <MenuButton className="inline-flex min-w-30 whitespace-nowrap py-1.5 md:w-fit w-full md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline justify-between data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-                  {selectedStatus}{" "}
-                  <ArrowDownIcon fill="#717680" />
+                  {selectedStatus} <ArrowDownIcon fill="#717680" />
                 </MenuButton>
 
                 <MenuItems
@@ -242,10 +245,7 @@ const Page = () => {
       </div>
       {/* Tabs: All / Active / Pending (like Doctors) */}
       <div className="sm:bg-white rounded-xl sm:shadow-table">
-        <TabGroup
-          selectedIndex={selectedTabIndex}
-          onChange={handleTabChange}
-        >
+        <TabGroup selectedIndex={selectedTabIndex} onChange={handleTabChange}>
           <TabList className="flex items-center border-b bg-white rounded-t-xl mb-2 sm:mb-0 border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-4">
             {["All Managers", "Active Managers", "Pending Managers"].map(
               (tab, index) => (
@@ -256,7 +256,7 @@ const Page = () => {
                 >
                   {tab}
                 </Tab>
-              )
+              ),
             )}
           </TabList>
           <TabPanels>
@@ -279,16 +279,18 @@ const Page = () => {
                   </div>
                 ) : (
                   <>
-                    {managers.map((data) => (
+                    {managers.map((data, index) => (
                       <ManagersDatabaseView
-                        key={data.id}
+                        key={`manager-${data.id}-${index}`}
                         user={data}
                         onEditManager={() => handleEdit(data)}
                         onAssignDoctor={() => handleAssignDoctor(data)}
                         onRowClick={() =>
-                          router.push(`/admin/managers/${data.id}`)}
+                          router.push(`/admin/managers/${data.id}`)
+                        }
                         onDetailsManager={() =>
-                          router.push(`/admin/managers/${data.id}`)}
+                          router.push(`/admin/managers/${data.id}`)
+                        }
                         onDisableManager={() => setshowBlockManager(true)}
                       />
                     ))}
@@ -336,16 +338,18 @@ const Page = () => {
                   </div>
                 ) : (
                   <>
-                    {managers.map((data) => (
+                    {managers.map((data, index) => (
                       <ManagersDatabaseView
-                        key={data.id}
+                        key={`manager-${data.id}-${index}`}
                         user={data}
                         onEditManager={() => handleEdit(data)}
                         onAssignDoctor={() => handleAssignDoctor(data)}
                         onRowClick={() =>
-                          router.push(`/admin/managers/${data.id}`)}
+                          router.push(`/admin/managers/${data.id}`)
+                        }
                         onDetailsManager={() =>
-                          router.push(`/admin/managers/${data.id}`)}
+                          router.push(`/admin/managers/${data.id}`)
+                        }
                         onDisableManager={() => setshowBlockManager(true)}
                       />
                     ))}
@@ -392,16 +396,18 @@ const Page = () => {
                   </div>
                 ) : (
                   <>
-                    {managers.map((data) => (
+                    {managers.map((data, index) => (
                       <ManagersDatabaseView
-                        key={data.id}
+                        key={`manager-${data.id}-${index}`}
                         user={data}
                         onEditManager={() => handleEdit(data)}
                         onAssignDoctor={() => handleAssignDoctor(data)}
                         onRowClick={() =>
-                          router.push(`/admin/managers/${data.id}`)}
+                          router.push(`/admin/managers/${data.id}`)
+                        }
                         onDetailsManager={() =>
-                          router.push(`/admin/managers/${data.id}`)}
+                          router.push(`/admin/managers/${data.id}`)
+                        }
                         onDisableManager={() => setshowBlockManager(true)}
                       />
                     ))}
@@ -447,6 +453,7 @@ const Page = () => {
           seteditUser(null);
         }}
         initialvalues={editUser}
+        managerId={editUser?.id?.toString() ?? null}
         onConfirm={() => refetch()}
       />
       <BlockManagerModal

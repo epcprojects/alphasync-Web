@@ -38,6 +38,9 @@ export function RoleBasedRoute({
           case "admin":
             router.push("/admin/doctors");
             break;
+          case "manager":
+            router.push("/manager/doctors");
+            break;
           case "doctor":
             router.push("/my-store");
             break;
@@ -87,6 +90,14 @@ export function DoctorRoute({ children, fallbackRoute }: { children: ReactNode; 
 export function CustomerRoute({ children, fallbackRoute }: { children: ReactNode; fallbackRoute?: string }) {
   return (
     <RoleBasedRoute allowedRoles={["customer", "patient"]} fallbackRoute={fallbackRoute}>
+      {children}
+    </RoleBasedRoute>
+  );
+}
+
+export function ManagerRoute({ children, fallbackRoute }: { children: ReactNode; fallbackRoute?: string }) {
+  return (
+    <RoleBasedRoute allowedRoles={["manager"]} fallbackRoute={fallbackRoute ?? "/manager/doctors"}>
       {children}
     </RoleBasedRoute>
   );

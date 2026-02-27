@@ -2,9 +2,30 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
   const token = request.cookies.get("auth_token")?.value;
   const userCookie = request.cookies.get("user_data")?.value;
-  const { pathname } = request.nextUrl;
+
+  // Redirect /manager: no token → login; manager logged in → /manager/doctors
+  if (pathname === "/manager" || pathname === "/manager/") {
+    if (!token) {
+      return NextResponse.redirect(new URL("/manager/login", request.url));
+    }
+    let managerUserType: string | null = null;
+    if (userCookie) {
+      try {
+        const parsed = JSON.parse(userCookie);
+        managerUserType = parsed?.userType?.toLowerCase() || null;
+      } catch {
+        // ignore
+      }
+    }
+    if (managerUserType === "manager") {
+      return NextResponse.redirect(new URL("/manager/doctors", request.url));
+    }
+    return NextResponse.redirect(new URL("/manager/login", request.url));
+  }
 
   type ParsedUser = {
     userType?: string;
@@ -55,6 +76,10 @@ export function middleware(request: NextRequest) {
     "/admin/settings",
     "/admin/dashboard",
   ];
+  const managerRoutes = [
+    "/manager/doctors",
+    "/manager/settings",
+  ];
   const doctorRoutes = [
     "/my-store",
     "/inventory",
@@ -77,7 +102,12 @@ export function middleware(request: NextRequest) {
   ];
 
   // All protected routes
-  const protectedRoutes = [...adminRoutes, ...doctorRoutes, ...customerRoutes];
+  const protectedRoutes = [
+    ...adminRoutes,
+    ...managerRoutes,
+    ...doctorRoutes,
+    ...customerRoutes,
+  ];
 
   // 1️⃣ If token not present and user tries to access protected route
   if (!token && protectedRoutes.some((route) => pathname.startsWith(route))) {
@@ -97,7 +127,7 @@ export function middleware(request: NextRequest) {
     if (userType === "admin") {
       return NextResponse.redirect(new URL("/admin/doctors", request.url));
     } else if (userType === "manager") {
-      return NextResponse.redirect(new URL("/admin/managers", request.url));
+      return NextResponse.redirect(new URL("/manager/doctors", request.url));
     } else if (userType === "doctor") {
       return NextResponse.redirect(
         fromInvitation ? profileCompleteUrl : new URL("/my-store", request.url)
@@ -125,7 +155,7 @@ export function middleware(request: NextRequest) {
       doctorRoutes.some((route) => pathname.startsWith(route))
     ) {
       return NextResponse.redirect(
-        new URL(userType === "manager" ? "/admin/managers" : "/admin/doctors", request.url)
+        new URL(userType === "manager" ? "/manager/doctors" : "/admin/doctors", request.url)
       );
     }
 
@@ -134,8 +164,16 @@ export function middleware(request: NextRequest) {
       customerRoutes.some((route) => pathname.startsWith(route))
     ) {
       return NextResponse.redirect(
-        new URL(userType === "manager" ? "/admin/managers" : "/admin/doctors", request.url)
+        new URL(userType === "manager" ? "/manager/doctors" : "/admin/doctors", request.url)
       );
+    }
+
+    // Manager can only access managerRoutes; redirect to /manager/doctors if they hit admin routes
+    if (
+      userType === "manager" &&
+      adminRoutes.some((route) => pathname.startsWith(route))
+    ) {
+      return NextResponse.redirect(new URL("/manager/doctors", request.url));
     }
 
     if (
@@ -176,8 +214,9 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/login",
+    "/manager",
+    "/manager/:path*",
     "/admin/login",
-    "/manager/login",
     "/otp",
     "/forgot",
     "/new-password",

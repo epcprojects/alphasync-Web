@@ -5,7 +5,7 @@ import { PlusIcon, PlusProfileIcon } from "@/icons";
 import ThemeInput from "../inputs/ThemeInput";
 import { ManagersType } from "../cards/ManagersDatabaseView";
 import { useMutation } from "@apollo/client/react";
-import { CREATE_INVITATION } from "@/lib/graphql/mutations";
+import { CREATE_INVITATION, UPDATE_USER } from "@/lib/graphql/mutations";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import * as Yup from "yup";
 
@@ -13,6 +13,8 @@ interface AddEditManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialvalues?: ManagersType | null;
+  /** When editing, pass the manager's user id for the update mutation */
+  managerId?: string | null;
   onConfirm?: () => void;
 }
 
@@ -30,6 +32,7 @@ const AddEditManagerModal: React.FC<AddEditManagerModalProps> = ({
   isOpen,
   onClose,
   initialvalues,
+  managerId,
   onConfirm,
 }) => {
   const [name, setName] = useState("");
@@ -45,9 +48,24 @@ const AddEditManagerModal: React.FC<AddEditManagerModalProps> = ({
       .matches(phoneRegex, "Phone must be (000) 000-0000"),
   });
 
-  const [createInvitation, { loading }] = useMutation(CREATE_INVITATION, {
+  const [createInvitation, { loading: createLoading }] = useMutation(
+    CREATE_INVITATION,
+    {
+      onCompleted: () => {
+        showSuccessToast("Manager invitation sent successfully");
+        onConfirm?.();
+        onClose();
+        resetForm();
+      },
+      onError: (error) => {
+        showErrorToast(error.message);
+      },
+    },
+  );
+
+  const [updateUser, { loading: updateLoading }] = useMutation(UPDATE_USER, {
     onCompleted: () => {
-      showSuccessToast("Manager invitation sent successfully");
+      showSuccessToast("Manager updated successfully");
       onConfirm?.();
       onClose();
       resetForm();
@@ -56,6 +74,8 @@ const AddEditManagerModal: React.FC<AddEditManagerModalProps> = ({
       showErrorToast(error.message);
     },
   });
+
+  const loading = createLoading || updateLoading;
 
   const resetForm = () => {
     setName("");
@@ -91,7 +111,23 @@ const AddEditManagerModal: React.FC<AddEditManagerModalProps> = ({
     }
 
     if (initialvalues) {
-      // Edit: not using CreateInvitation; could wire UPDATE_USER here later
+      const rawId = managerId ?? initialvalues.id;
+      if (rawId == null || rawId === "") {
+        showErrorToast("Manager id is required to update.");
+        return;
+      }
+      try {
+        await updateUser({
+          variables: {
+            id: String(rawId),
+            fullName: payload.name,
+            email: payload.email,
+            phoneNo: payload.phone,
+          },
+        });
+      } catch {
+        // Error already handled in onError
+      }
       return;
     }
 
@@ -120,9 +156,7 @@ const AddEditManagerModal: React.FC<AddEditManagerModalProps> = ({
   };
 
   const isAdd = !initialvalues;
-  const isValid = isAdd
-    ? !!(name.trim() && email.trim() && phoneRegex.test(phone))
-    : true;
+  const isValid = !!name.trim() && !!email.trim() && phoneRegex.test(phone);
 
   return (
     <AppModal
@@ -131,7 +165,13 @@ const AddEditManagerModal: React.FC<AddEditManagerModalProps> = ({
       title={initialvalues ? "Edit Manager" : "Add Manager"}
       onConfirm={handleConfirm}
       confirmLabel={
-        initialvalues ? "Update" : loading ? "Sending..." : "Add Manager"
+        initialvalues
+          ? loading
+            ? "Updating..."
+            : "Update"
+          : loading
+            ? "Sending..."
+            : "Add Manager"
       }
       icon={<PlusProfileIcon />}
       size="small"
@@ -165,6 +205,7 @@ const AddEditManagerModal: React.FC<AddEditManagerModalProps> = ({
           required={true}
           error={!!errors.email}
           errorMessage={errors.email}
+          disabled={!!initialvalues}
         />
         <ThemeInput
           label="Phone Number"
