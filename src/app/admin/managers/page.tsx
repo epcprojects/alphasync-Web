@@ -4,6 +4,7 @@ import {
   AddEditManagerModal,
   EmptyResult,
   Pagination,
+  Skeleton,
   ThemeButton,
 } from "@/app/components";
 import { useQuery } from "@apollo/client/react";
@@ -16,15 +17,60 @@ import {
   SearchIcon,
 } from "@/icons";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { ALL_PRODUCTS_INVENTORY } from "@/lib/graphql/queries";
-import type { AllProductsResponse } from "@/types/products";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import React, { useEffect, useMemo, useState } from "react";
+import { ALL_MANAGERS } from "@/lib/graphql/queries";
+import { UserAttributes } from "@/lib/graphql/attributes";
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+} from "@headlessui/react";
 import ManagersDatabaseView, {
   ManagersType,
 } from "@/app/components/ui/cards/ManagersDatabaseView";
 import AssignDoctorModal from "@/app/components/ui/modals/AssignDoctorModal";
 import BlockManagerModal from "@/app/components/ui/modals/BlockManagerModal";
+
+interface AllManagersResponse {
+  allManagers: {
+    allData: UserAttributes[];
+    count: number;
+    nextPage: number | null;
+    prevPage: number | null;
+    totalPages: number;
+  };
+}
+
+function mapManagerToView(m: UserAttributes): ManagersType {
+  const status = m.status?.toUpperCase();
+  const displayStatus =
+    status === "ACTIVE"
+      ? "Active"
+      : status === "INACTIVE"
+        ? "Inactive"
+        : status === "PENDING"
+          ? "Pending"
+          : m.invitationStatus === "pending"
+            ? "Pending"
+            : status ?? "—";
+  return {
+    id: Number(m.id) ?? 0,
+    name:
+      m.fullName ??
+      ([m.firstName, m.lastName].filter(Boolean).join(" ") || "—"),
+    contact: m.phoneNo ?? "—",
+    email: m.email ?? "—",
+    status: displayStatus,
+    assignedDoctors: undefined,
+    imageUrl: m.imageUrl,
+  };
+}
 
 const Page = () => {
   const isMobile = useIsMobile();
@@ -44,51 +90,73 @@ const Page = () => {
     setshowAddEditModal(true);
   }
   const [showAddEditModal, setshowAddEditModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 9;
   const router = useRouter();
-  const TEST_DATA = [
-    {
-      id: 1,
-      name: "Alex Rivera",
-      contact: "555-0199",
-      email: "alex@medflow.com",
-      status: "Active",
-      assignedDoctors: 5,
-    },
-    {
-      id: 2,
-      name: "Jordan Smith",
-      contact: "555-0244",
-      email: "j.smith@provider.com",
-      status: "Inactive",
-      assignedDoctors: 2,
-    },
-  ];
+  // Tab: 0 = All, 1 = Active, 2 = Pending (invites)
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+  const [selectedStatus, setSelectedStatus] = useState<string>("All Status");
+
+  // Sync status label when tab changes (like Doctors page)
+  useEffect(() => {
+    if (selectedTabIndex === 1) setSelectedStatus("Active");
+    else if (selectedTabIndex === 2) setSelectedStatus("Pending");
+    else setSelectedStatus("All Status");
+  }, [selectedTabIndex]);
+
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
-      setCurrentPage(1);
+      setCurrentPage(0);
     }, 400);
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { error } = useQuery<AllProductsResponse>(ALL_PRODUCTS_INVENTORY, {
-    variables: {
-      search: debouncedSearch || null,
-      page: currentPage,
-      perPage: itemsPerPage,
-      markedUp: true,
-    },
-    fetchPolicy: "network-only",
-  });
-  const ManagerStatuses = [
+  const statusVariable =
+    selectedStatus === "All Status"
+      ? undefined
+      : (selectedStatus.toUpperCase() as "ACTIVE" | "INACTIVE" | "PENDING");
+
+  const { data, loading, error, refetch } = useQuery<AllManagersResponse>(
+    ALL_MANAGERS,
+    {
+      variables: {
+        search: debouncedSearch || undefined,
+        page: currentPage + 1,
+        perPage: itemsPerPage,
+        status: statusVariable,
+        pendingInvites: selectedTabIndex === 2 ? true : undefined,
+      },
+      fetchPolicy: "network-only",
+    }
+  );
+
+  const managers = useMemo(
+    () => (data?.allManagers?.allData ?? []).map(mapManagerToView),
+    [data]
+  );
+  const totalPages = data?.allManagers?.totalPages ?? 0;
+
+  const managerStatusOptions = [
     { label: "All Status", value: "", color: "" },
-    { label: "Active", value: "Active", color: "before:bg-green-500" },
-    { label: "Inactive", value: "Inactive", color: "before:bg-red-500" },
+    { label: "Active", value: "ACTIVE", color: "before:bg-green-500" },
+    { label: "Inactive", value: "INACTIVE", color: "before:bg-red-500" },
+    { label: "Pending", value: "PENDING", color: "before:bg-yellow-500" },
   ];
-  const [status, setStatus] = useState("");
+
+  const handleStatusChange = (label: string) => {
+    setSelectedStatus(label);
+    setCurrentPage(0);
+    if (label === "Active") setSelectedTabIndex(1);
+    else if (label === "Pending") setSelectedTabIndex(2);
+    else setSelectedTabIndex(0);
+  };
+
+  const handleTabChange = (index: number) => {
+    setSelectedTabIndex(index);
+    setCurrentPage(0);
+  };
 
   if (error) {
     return (
@@ -99,6 +167,9 @@ const Page = () => {
       </div>
     );
   }
+
+  const showList = managers.length > 0 && !loading;
+  const showEmpty = !loading && !error && managers.length === 0;
 
   return (
     <div className="lg:max-w-7xl md:max-w-6xl w-full flex flex-col gap-4 md:gap-6 pt-2 mx-auto">
@@ -135,7 +206,8 @@ const Page = () => {
               />
               <Menu>
                 <MenuButton className="inline-flex min-w-30 whitespace-nowrap py-1.5 md:w-fit w-full md:py-2 px-3 cursor-pointer bg-gray-100 text-gray-700 items-center gap-1 md:gap-2 rounded-full  text-xs md:text-sm font-medium  shadow-inner  focus:not-data-focus:outline-none data-focus:outline justify-between data-focus:outline-white data-hover:bg-gray-300 data-open:bg-gray-100">
-                  {status || "All Status"} <ArrowDownIcon fill="#717680" />
+                  {selectedStatus}{" "}
+                  <ArrowDownIcon fill="#717680" />
                 </MenuButton>
 
                 <MenuItems
@@ -143,19 +215,17 @@ const Page = () => {
                   anchor="bottom end"
                   className={`min-w-32 md:min-w-44  z-[400] origin-top-right rounded-lg border bg-white shadow-[0px_14px_34px_rgba(0,0,0,0.1)] p-1 text-sm text-white transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0`}
                 >
-                  {ManagerStatuses.map((status) => (
-                    <MenuItem key={status.label}>
+                  {managerStatusOptions.map((s) => (
+                    <MenuItem key={s.label}>
                       <button
-                        onClick={() => {
-                          setStatus(status.value);
-                        }}
+                        onClick={() => handleStatusChange(s.label)}
                         className={`flex items-center cursor-pointer gap-2 rounded-md text-gray-500 text-xs md:text-sm py-2 px-2.5 hover:bg-gray-100 w-full ${
-                          status.color
-                            ? `before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${status.color}`
+                          s.color
+                            ? `before:w-1.5 before:h-1.5 before:flex-shrink-0 before:content-[''] before:rounded-full before:relative before:block ${s.color}`
                             : ""
                         }`}
                       >
-                        {status.label}
+                        {s.label}
                       </button>
                     </MenuItem>
                   ))}
@@ -170,41 +240,199 @@ const Page = () => {
           </div>
         </div>
       </div>
-      <div className="space-y-1 ">
-        <div className="hidden sm:grid grid-cols-12 gap-4  px-2 py-2.5 text-sm font-medium shadow-table bg-white rounded-xl text-black">
-          <div className="col-span-3">Name</div>
-          <div className="col-span-2">Email</div>
-          <div className="col-span-2">Phone</div>
-          <div className="col-span-2">Assigned Doctors</div>
-          <div className="col-span-1">Status</div>
-          <div className="col-span-2 text-center">Actions</div>
-        </div>
-        {TEST_DATA.map((data, index) => (
-          <ManagersDatabaseView
-            key={index}
-            user={data}
-            onEditManager={() => handleEdit(data)}
-            onAssignDoctor={() => handleAssignDoctor(data)}
-            onRowClick={() => router.push(`/admin/managers/${data.id}`)}
-            onDetailsManager={() => router.push(`/admin/managers/${data.id}`)}
-            onDisableManager={() => setshowBlockManager(true)}
-          />
-        ))}
-        <Pagination currentPage={1} totalPages={20} onPageChange={() => {}} />
+      {/* Tabs: All / Active / Pending (like Doctors) */}
+      <div className="sm:bg-white rounded-xl sm:shadow-table">
+        <TabGroup
+          selectedIndex={selectedTabIndex}
+          onChange={handleTabChange}
+        >
+          <TabList className="flex items-center border-b bg-white rounded-t-xl mb-2 sm:mb-0 border-b-gray-200 gap-2 md:gap-3 md:justify-start justify-between md:px-4">
+            {["All Managers", "Active Managers", "Pending Managers"].map(
+              (tab, index) => (
+                <Tab
+                  key={index}
+                  as="button"
+                  className="flex items-center gap-1 md:gap-2 w-full justify-center hover:bg-gray-50 whitespace-nowrap md:text-base text-sm outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer text-gray-500 px-1.5 py-2.5 md:py-4 md:px-6"
+                >
+                  {tab}
+                </Tab>
+              )
+            )}
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <div className="space-y-1 p-0 md:p-4 pt-0">
+                <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium shadow-table bg-white rounded-xl text-black">
+                  <div className="col-span-3">Name</div>
+                  <div className="col-span-2">Email</div>
+                  <div className="col-span-2">Phone</div>
+                  <div className="col-span-2">Assigned Doctors</div>
+                  <div className="col-span-1">Status</div>
+                  <div className="col-span-2 text-center">Actions</div>
+                </div>
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                  </div>
+                ) : (
+                  <>
+                    {managers.map((data) => (
+                      <ManagersDatabaseView
+                        key={data.id}
+                        user={data}
+                        onEditManager={() => handleEdit(data)}
+                        onAssignDoctor={() => handleAssignDoctor(data)}
+                        onRowClick={() =>
+                          router.push(`/admin/managers/${data.id}`)}
+                        onDetailsManager={() =>
+                          router.push(`/admin/managers/${data.id}`)}
+                        onDisableManager={() => setshowBlockManager(true)}
+                      />
+                    ))}
+                  </>
+                )}
+                {showEmpty && (
+                  <EmptyResult
+                    title={"No managers added yet."}
+                    description={
+                      <p className="font-medium text-lg text-gray-800">
+                        Create managers to assign doctors and monitor their
+                        orders, shops, and accounting.
+                      </p>
+                    }
+                    buttonLabel="Add Manager"
+                    buttonOnClick={() => setshowAddEditModal(true)}
+                    icon={<NoUserIcon />}
+                  />
+                )}
+                {showList && totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                  />
+                )}
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div className="space-y-1 p-0 md:p-4 pt-0">
+                <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium shadow-table bg-white rounded-xl text-black">
+                  <div className="col-span-3">Name</div>
+                  <div className="col-span-2">Email</div>
+                  <div className="col-span-2">Phone</div>
+                  <div className="col-span-2">Assigned Doctors</div>
+                  <div className="col-span-1">Status</div>
+                  <div className="col-span-2 text-center">Actions</div>
+                </div>
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                  </div>
+                ) : (
+                  <>
+                    {managers.map((data) => (
+                      <ManagersDatabaseView
+                        key={data.id}
+                        user={data}
+                        onEditManager={() => handleEdit(data)}
+                        onAssignDoctor={() => handleAssignDoctor(data)}
+                        onRowClick={() =>
+                          router.push(`/admin/managers/${data.id}`)}
+                        onDetailsManager={() =>
+                          router.push(`/admin/managers/${data.id}`)}
+                        onDisableManager={() => setshowBlockManager(true)}
+                      />
+                    ))}
+                  </>
+                )}
+                {showEmpty && (
+                  <EmptyResult
+                    title={"No active managers."}
+                    description={
+                      <p className="font-medium text-lg text-gray-800">
+                        Managers who have accepted their invitation appear here.
+                      </p>
+                    }
+                    buttonLabel="Add Manager"
+                    buttonOnClick={() => setshowAddEditModal(true)}
+                    icon={<NoUserIcon />}
+                  />
+                )}
+                {showList && totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                  />
+                )}
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div className="space-y-1 p-0 md:p-4 pt-0">
+                <div className="hidden sm:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium shadow-table bg-white rounded-xl text-black">
+                  <div className="col-span-3">Name</div>
+                  <div className="col-span-2">Email</div>
+                  <div className="col-span-2">Phone</div>
+                  <div className="col-span-2">Assigned Doctors</div>
+                  <div className="col-span-1">Status</div>
+                  <div className="col-span-2 text-center">Actions</div>
+                </div>
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                  </div>
+                ) : (
+                  <>
+                    {managers.map((data) => (
+                      <ManagersDatabaseView
+                        key={data.id}
+                        user={data}
+                        onEditManager={() => handleEdit(data)}
+                        onAssignDoctor={() => handleAssignDoctor(data)}
+                        onRowClick={() =>
+                          router.push(`/admin/managers/${data.id}`)}
+                        onDetailsManager={() =>
+                          router.push(`/admin/managers/${data.id}`)}
+                        onDisableManager={() => setshowBlockManager(true)}
+                      />
+                    ))}
+                  </>
+                )}
+                {showEmpty && (
+                  <EmptyResult
+                    title={"No pending invitations."}
+                    description={
+                      <p className="font-medium text-lg text-gray-800">
+                        Managers who haven’t accepted their invitation yet
+                        appear here.
+                      </p>
+                    }
+                    buttonLabel="Add Manager"
+                    buttonOnClick={() => setshowAddEditModal(true)}
+                    icon={<NoUserIcon />}
+                  />
+                )}
+                {showList && totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                  />
+                )}
+              </div>
+            </TabPanel>
+          </TabPanels>
+        </TabGroup>
       </div>
-
-      <EmptyResult
-        title={"No managers added yet."}
-        description={
-          <p className="font-medium text-lg text-gray-800">
-            Create managers to assign doctors and monitor their orders, shops,
-            and accounting.
-          </p>
-        }
-        buttonLabel="Add Manager"
-        buttonOnClick={() => setshowAddEditModal(true)}
-        icon={<NoUserIcon />}
-      />
       <AssignDoctorModal
         isOpen={showAssignDoctor}
         onClose={() => {
@@ -219,10 +447,7 @@ const Page = () => {
           seteditUser(null);
         }}
         initialvalues={editUser}
-        onConfirm={() => {
-          // Refetch managers list when a new manager is invited
-          // refetch(); // enable when managers query is wired
-        }}
+        onConfirm={() => refetch()}
       />
       <BlockManagerModal
         isOpen={showBlockManager}

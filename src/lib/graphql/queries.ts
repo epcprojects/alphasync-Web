@@ -68,6 +68,21 @@ export const ALL_ADMINS = gql`
     }
   }
 `;
+
+export const ALL_MANAGERS = gql`
+  query AllManagers($pendingInvites: Boolean, $status: UserStatusEnum, $search: String, $page: Int, $perPage: Int) {
+    allManagers(pendingInvites: $pendingInvites, status: $status, search: $search, page: $page, perPage: $perPage) {
+      allData {
+        ${userpayload}
+      }
+      count
+      nextPage
+      prevPage
+      totalPages
+    }
+  }
+`;
+
 export const ALL_PRODUCTS = gql`
   query AllProducts {
     allProducts(inStockOnly: true) {
