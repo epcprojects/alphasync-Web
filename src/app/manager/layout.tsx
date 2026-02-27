@@ -1,7 +1,7 @@
 "use client";
 import React, { ReactNode } from "react";
 import { Header, ManagerRoute } from "@/app/components";
-import { Doctor, SettingsIcon } from "@/icons";
+import { AccountingIcon, Doctor, SettingsIcon } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useAppSelector } from "@/lib/store/hooks";
@@ -24,15 +24,16 @@ const menuItems = [
     href: "/manager/doctors",
     icon: Doctor,
   },
-  // {
-  //   label: "Settings",
-  //   href: "/manager/settings",
-  //   icon: SettingsIcon,
-  // },
+  {
+    label: "Accounting",
+    href: "/manager/accounting",
+    icon: AccountingIcon,
+  },
 ];
 
 const headings: Record<string, string> = {
   "/manager/doctors": "Doctors",
+  "/manager/accounting": "Accounting",
   "/manager/settings": "Settings",
 };
 

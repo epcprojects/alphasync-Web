@@ -78,6 +78,7 @@ export function middleware(request: NextRequest) {
   ];
   const managerRoutes = [
     "/manager/doctors",
+    "/manager/accounting",
     "/manager/settings",
   ];
   const doctorRoutes = [
