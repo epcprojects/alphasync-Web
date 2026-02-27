@@ -55,12 +55,12 @@ const DoctorProfileLicensesCard = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 items-end gap-4">
         <div className="flex flex-col gap-1">
           <p className="text-gray-500 text-sm">License Document</p>
-          <div className="bg-white flex flex-row justify-between items-center gap-3 border border-mercury p-4 rounded-xl">
+          <div className="bg-white flex flex-row justify-between items-end gap-3 border border-mercury p-4 rounded-xl">
             <div className="flex flex-row  gap-3">
               {licenseItemsArray.documentFormat === "pdf" && <PdfIcon />}
 
-              <div className="flex flex-col items-start">
-                <p className="text-gravel text-sm font-medium">
+              <div className="flex flex-col items-start max-w-40">
+                <p className="text-gravel text-sm font-medium line-clamp-1">
                   {licenseItemsArray.documentName}
                 </p>
                 <p className="text-sm text-vampire-gray">
@@ -68,7 +68,7 @@ const DoctorProfileLicensesCard = ({
                 </p>
               </div>
             </div>
-            <div>
+            <div className="flex flex-row gap-2 self-end">
               <Button
                 className="p-1.5 cursor-pointer"
                 onClick={() =>
