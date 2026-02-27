@@ -168,6 +168,17 @@ export const MODIFY_ACCESSS_USER = gql`
     }
   }
 `;
+
+export const ASSIGN_DOCTORS_TO_MANAGER = gql`
+  mutation AssignDoctorsToManager($managerId: ID!, $doctorIds: [ID!]!) {
+    assignDoctorsToManager(input: { managerId: $managerId, doctorIds: $doctorIds }) {
+      assignedCount
+      message
+      removedCount
+    }
+  }
+`;
+
 export const ACCEPT_INVITATION = gql`
   mutation AcceptInvitation(
     $token: String!

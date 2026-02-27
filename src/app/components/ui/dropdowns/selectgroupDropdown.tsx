@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Transition } from "@headlessui/react";
 import cn from "classnames";
 import {
@@ -38,6 +39,10 @@ type SelectGroupDropdownProps = {
   alwaysShowSearch?: boolean;
   /** When false, do not filter groups by searchTerm (parent handles search, e.g. server-side). Default true. */
   clientSideSearch?: boolean;
+  /** When true, dropdown always opens below (no flip to top). Use in modals to avoid opening upward. */
+  disableFlip?: boolean;
+  /** When true, render dropdown menu in a portal to avoid being cut off by modal overflow. */
+  usePortal?: boolean;
 };
 
 const getGroupKey = (group: GroupOption) =>
@@ -69,21 +74,37 @@ const SelectGroupDropdown = ({
   isSearching = false,
   alwaysShowSearch = false,
   clientSideSearch = true,
+  disableFlip = false,
+  usePortal = false,
 }: SelectGroupDropdownProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [floatingWidth, setFloatingWidth] = useState<number | undefined>();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const { x, y, strategy, update, refs } = useFloating({
     placement: "bottom-start",
-    middleware: [offset(4), flip(), shift()],
+    strategy: usePortal || disableFlip ? "fixed" : "absolute",
+    middleware: [offset(4), ...(disableFlip ? [] : [flip()]), shift()],
   });
 
   useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  useEffect(() => {
+    if (usePortal && isDropdownOpen && refs.reference.current) {
+      setFloatingWidth(refs.reference.current.getBoundingClientRect().width);
+    }
+  }, [usePortal, isDropdownOpen, refs.reference]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      const target = event.target as Node;
+      const inTrigger = dropdownRef.current?.contains(target);
+      const inFloating = refs.floating.current?.contains(target);
+      if (!inTrigger && !inFloating) {
         setIsDropdownOpen(false);
       }
     };
@@ -95,7 +116,7 @@ const SelectGroupDropdown = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isDropdownOpen]);
+  }, [isDropdownOpen, refs.floating]);
 
   useEffect(() => {
     if (isDropdownOpen && refs.reference.current && refs.floating.current) {
@@ -171,6 +192,93 @@ const SelectGroupDropdown = ({
     }
   };
 
+  const floatingContent = (
+    <Transition
+      show={isDropdownOpen && isShowDrop}
+      enter="transition ease-out duration-200"
+      enterFrom="transform opacity-0 scale-95"
+      enterTo="transform opacity-100 scale-100"
+      leave="transition ease-in duration-150"
+      leaveFrom="transform opacity-100 scale-100"
+      leaveTo="transform opacity-0 scale-95"
+    >
+      <div
+        ref={refs.setFloating}
+        style={{
+          position: strategy,
+          top: y ?? 0,
+          left: x ?? 0,
+          zIndex: 9999,
+          width: usePortal && floatingWidth != null ? floatingWidth : "100%",
+        }}
+        className="mt-1 bg-white border border-gray-200 rounded-md shadow-lg"
+      >
+        {showSearchInput && (
+          <div className="p-2 border-b border-gray-200">
+            <div className="relative">
+              <span className="absolute left-2 top-1/2 -translate-y-1/2">
+                <SearchIcon height="16" width="16" />
+              </span>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search..."
+                className="w-full pl-8 pr-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+        )}
+        <div
+          className={cn(
+            "space-y-1 min-h-32 md:min-h-36 max-h-32 md:max-h-36 overflow-y-auto",
+            optionPaddingClasses,
+          )}
+        >
+          {isSearching ? (
+            <div className="flex items-center justify-center min-h-32 md:min-h-36">
+              <span className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : filteredGroups.length === 0 ? (
+            <div className="flex items-center justify-center min-h-32 md:min-h-36 px-3 py-4 text-sm text-gray-500 text-center">
+              No results found
+            </div>
+          ) : (
+            filteredGroups.map((group) => {
+              const key = getGroupKey(group);
+              const label = getGroupLabel(group);
+              const email = getGroupEmail(group);
+              return (
+                <div
+                  key={key}
+                  className={cn(
+                    "flex items-center justify-between cursor-pointer rounded-md px-2.5 py-2 hover:bg-gray-100",
+                    isSelected(key) && "bg-primary/10",
+                    optionPaddingClasses,
+                  )}
+                  onClick={() => handleSelect(group)}
+                >
+                  <span className="text-xs sm:text-sm flex font-medium items-center gap-2 text-gray-900">
+                    {label}
+                    {email && (
+                      <span className="text-gray-600 font-normal">{email}</span>
+                    )}
+                  </span>
+                  {isSelected(key) && (
+                    <span className="text-green-500 text-sm font-bold">
+                      &#10003;
+                    </span>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </Transition>
+  );
+
   return (
     <>
       {showLabel && (
@@ -215,93 +323,9 @@ const SelectGroupDropdown = ({
             </span>
           </div>
         </div>
-
-        <Transition
-          show={isDropdownOpen && isShowDrop}
-          enter="transition ease-out duration-200"
-          enterFrom="transform opacity-0 scale-95"
-          enterTo="transform opacity-100 scale-100"
-          leave="transition ease-in duration-150"
-          leaveFrom="transform opacity-100 scale-100"
-          leaveTo="transform opacity-0 scale-95"
-        >
-          <div
-            ref={refs.setFloating}
-            style={{
-              position: strategy,
-              top: y ?? 0,
-              left: x ?? 0,
-              zIndex: 9999,
-              width: "100%",
-            }}
-            className="mt-1 bg-white border border-gray-200 rounded-md shadow-lg"
-          >
-            {showSearchInput && (
-              <div className="p-2 border-b border-gray-200">
-                <div className="relative">
-                  <span className="absolute left-2 top-1/2 -translate-y-1/2">
-                    <SearchIcon height="16" width="16" />
-                  </span>
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search..."
-                    className="w-full pl-8 pr-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-              </div>
-            )}
-            <div
-              className={cn(
-                "space-y-1 min-h-32 md:min-h-36 max-h-32 md:max-h-36 overflow-y-auto",
-                optionPaddingClasses,
-              )}
-            >
-              {isSearching ? (
-                <div className="flex items-center justify-center min-h-32 md:min-h-36">
-                  <span className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : filteredGroups.length === 0 ? (
-                <div className="flex items-center justify-center min-h-32 md:min-h-36 px-3 py-4 text-sm text-gray-500 text-center">
-                  No results found
-                </div>
-              ) : (
-                filteredGroups.map((group) => {
-                  const key = getGroupKey(group);
-                  const label = getGroupLabel(group);
-                  const email = getGroupEmail(group);
-                  return (
-                    <div
-                      key={key}
-                      className={cn(
-                        "flex items-center justify-between cursor-pointer rounded-md px-2.5 py-2 hover:bg-gray-100",
-                        isSelected(key) && "bg-primary/10",
-                        optionPaddingClasses,
-                      )}
-                      onClick={() => handleSelect(group)}
-                    >
-                      <span className="text-xs sm:text-sm flex font-medium items-center gap-2 text-gray-900">
-                        {label}
-                        {email && (
-                          <span className="text-gray-600 font-normal">
-                            {email}
-                          </span>
-                        )}
-                      </span>
-                      {isSelected(key) && (
-                        <span className="text-green-500 text-sm font-bold">
-                          &#10003;
-                        </span>
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </Transition>
+        {usePortal && mounted
+          ? createPortal(floatingContent, document.body)
+          : floatingContent}
       </div>
     </>
   );

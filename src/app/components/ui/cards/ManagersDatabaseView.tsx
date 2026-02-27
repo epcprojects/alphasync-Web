@@ -16,6 +16,8 @@ export type ManagersType = {
   contact: string;
   email: string;
   assignedDoctors?: number;
+  /** IDs of doctors already assigned to this manager (for pre-selecting in Assign Doctor modal) */
+  assignedDoctorIds?: (string | number)[];
   status: string;
   imageUrl?: string;
 };
@@ -227,7 +229,7 @@ export default function ManagersDatabaseView({
             <ViewDoctorIcon fill="currentColor" />
           </button>
         </Tooltip>
-        <Tooltip content="Edit Manager">
+        {/* <Tooltip content="Edit Manager">
           <button
             type="button"
             onClick={(e) => {
@@ -239,7 +241,7 @@ export default function ManagersDatabaseView({
           >
             <PencilEditIcon fill="currentColor" />
           </button>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip content="Block Manager">
           <button
             onClick={(e) => {
