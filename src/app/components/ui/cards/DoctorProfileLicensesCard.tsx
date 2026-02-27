@@ -22,9 +22,14 @@ export type itemsArray = {
 };
 type Props = {
   licenseItemsArray: itemsArray;
+  /** When true, hide Approve/Disapprove buttons (e.g. manager view) */
+  readOnly?: boolean;
 };
 
-const DoctorProfileLicensesCard = ({ licenseItemsArray }: Props) => {
+const DoctorProfileLicensesCard = ({
+  licenseItemsArray,
+  readOnly = false,
+}: Props) => {
   return (
     <div className="p-3 lg:p-4 bg-gray-50 flex flex-col gap-4 rounded-xl">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -85,30 +90,31 @@ const DoctorProfileLicensesCard = ({ licenseItemsArray }: Props) => {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-4 justify-end items-center">
-          {licenseItemsArray.buttonsState === "pending" ? (
-            <Button
-              className="bg-green-500 min-w-39 text-white py-2.5 cursor-pointer px-6 flex flex-row items-center justify-center gap-3 rounded-full"
-              onClick={() =>
-                licenseItemsArray.onConfirm && licenseItemsArray.onConfirm()
-              }
-            >
-              <TickIcon /> <p className="text-sm font-semibold">Approve</p>
-            </Button>
-          ) : (
-            <span
-              className={
-                licenseItemsArray.buttonsState === "approved"
-                  ? "text-sm font-medium text-green-600"
-                  : "text-sm font-medium text-red-600"
-              }
-            >
-              {licenseItemsArray.buttonsState === "approved"
-                ? "Approved"
-                : "Disapproved"}
-            </span>
-          )}
+          {!readOnly &&
+            (licenseItemsArray.buttonsState === "pending" ? (
+              <Button
+                className="bg-green-500 min-w-39 text-white py-2.5 cursor-pointer px-6 flex flex-row items-center justify-center gap-3 rounded-full"
+                onClick={() =>
+                  licenseItemsArray.onConfirm && licenseItemsArray.onConfirm()
+                }
+              >
+                <TickIcon /> <p className="text-sm font-semibold">Approve</p>
+              </Button>
+            ) : (
+              <span
+                className={
+                  licenseItemsArray.buttonsState === "approved"
+                    ? "text-sm font-medium text-green-600"
+                    : "text-sm font-medium text-red-600"
+                }
+              >
+                {licenseItemsArray.buttonsState === "approved"
+                  ? "Approved"
+                  : "Disapproved"}
+              </span>
+            ))}
 
-          {licenseItemsArray.buttonsState === "pending" && (
+          {!readOnly && licenseItemsArray.buttonsState === "pending" && (
             <Button
               className="bg-red-500 min-w-39 text-white py-2.5 px-6 cursor-pointer flex flex-row items-center justify-center gap-3 rounded-full"
               onClick={() =>
@@ -118,6 +124,23 @@ const DoctorProfileLicensesCard = ({ licenseItemsArray }: Props) => {
               <CrossIcon fill="white" />
               <p className="text-sm font-semibold">Disapprove</p>
             </Button>
+          )}
+          {readOnly && (
+            <span
+              className={
+                licenseItemsArray.buttonsState === "approved"
+                  ? "text-sm font-medium text-green-600"
+                  : licenseItemsArray.buttonsState === "disapproved"
+                    ? "text-sm font-medium text-red-600"
+                    : "text-sm font-medium text-gray-600"
+              }
+            >
+              {licenseItemsArray.buttonsState === "approved"
+                ? "Approved"
+                : licenseItemsArray.buttonsState === "disapproved"
+                  ? "Disapproved"
+                  : "Pending"}
+            </span>
           )}
         </div>
       </div>
