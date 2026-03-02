@@ -248,7 +248,9 @@ const Header: React.FC<HeaderProps> = ({ menuItems }) => {
                           ? "/settings"
                           : user?.userType === "patient"
                             ? "/profile"
-                            : "/admin/settings"
+                            : user?.userType === "manager"
+                              ? "/manager/profile"
+                              : "/admin/settings"
                       }
                       className="group flex cursor-pointer w-full items-center gap-2 rounded-lg px-3 py-1.5 data-focus:bg-white/10"
                     >

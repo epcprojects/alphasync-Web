@@ -22,6 +22,8 @@ function Content() {
   const token = searchParams.get("token");
   const doctorParam = searchParams.get("doctor");
   const adminParam = searchParams.get("admin");
+  const managerParam = searchParams.get("manager");
+
 
   // Debug logging
 
@@ -30,6 +32,7 @@ function Content() {
   const urlString = typeof window !== "undefined" ? window.location.href : "";
   const hasDoctorTrue = urlString.includes("doctor=true");
   const hasAdminTrue = urlString.includes("admin=true");
+  const hasManagerTrue = urlString.includes("manager=true");
 
   const isDoctor =
     doctorParam === "true" ||
@@ -42,6 +45,12 @@ function Content() {
     adminParam === "true?admin=true" ||
     adminParam?.includes("true") ||
     hasAdminTrue;
+
+  const isManager =
+    managerParam === "true" ||
+    managerParam === "true?manager=true" ||
+    managerParam?.includes("true") ||
+    hasManagerTrue;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasAutoExecuted, setHasAutoExecuted] = useState(false);
@@ -65,6 +74,9 @@ function Content() {
     if (isAdmin) {
       return "/admin/login";
     }
+    if (isManager) {
+      return "/manager/login";
+    }
     // If doctor=false, redirect with type=patient to set Patient tab as default
     if (doctorParam === "false" || urlString.includes("doctor=false")) {
       return "/login?type=patient";
@@ -79,11 +91,12 @@ function Content() {
     router.push(getLoginRedirect());
   };
 
-  // Auto-run mutation when doctor=false and admin=false - only once
+  // Auto-run mutation when doctor=false, admin=false, manager=false - only once (e.g. patient: accept without password form)
   useEffect(() => {
     if (
       isDoctor !== true &&
       isAdmin !== true &&
+      isManager !== true &&
       token &&
       !acceptLoading &&
       !hasAutoExecuted
@@ -98,6 +111,7 @@ function Content() {
   }, [
     isDoctor,
     isAdmin,
+    isManager,
     token,
     acceptLoading,
     hasAutoExecuted,
@@ -150,7 +164,7 @@ function Content() {
         subtitle="Please confirm your invitation to access your account"
       />
 
-      {isDoctor === true || isAdmin === true ? (
+      {isDoctor === true || isAdmin === true || isManager === true ? (
         <form
           onSubmit={formik.handleSubmit}
           className="md:w-96 flex flex-col gap-5 md:gap-6 w-72 sm:w-84"

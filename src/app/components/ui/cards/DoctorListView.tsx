@@ -4,6 +4,7 @@ import {
   TrashBinIcon,
   MailIcon,
   EllipsisVertical,
+  ViewEyeIcon,
 } from "@/icons";
 import Tooltip from "../tooltip";
 import { UserAttributes } from "@/lib/graphql/attributes";
@@ -13,10 +14,13 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
 type DoctorListingProps = {
   doctor: UserAttributes;
+  hideActions?: boolean;
   onDoctorClick?: (doctor: UserAttributes) => void;
   onEditDoctor?: (id: number) => void;
   onDeleteDoctor?: (id: number) => void;
   onResendInvitation?: (id: string | number) => void;
+  /** When set, show an Actions column with eye icon to view this doctor's shop (e.g. manager view). */
+  onViewShop?: (doctor: UserAttributes) => void;
 };
 
 const colorPairs = [
@@ -75,10 +79,12 @@ function getDisplayStatus(status?: string): string {
 
 export default function DoctorListView({
   doctor,
+  hideActions = false,
   onDoctorClick,
   onDeleteDoctor,
   onEditDoctor,
   onResendInvitation,
+  onViewShop,
 }: DoctorListingProps) {
   const { bg, text } = getColorPair(doctor.id);
   const displayStatus = getDisplayStatus(doctor.status);
@@ -154,7 +160,10 @@ export default function DoctorListView({
             </span>
           </div>
         </div>
-        <div className="flex items-end sm:items-center gap-1 w-full" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex items-end sm:items-center gap-1 w-full"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="flex items-start flex-col gap-1 w-full">
             <span className="text-black whitespace-nowrap font-medium text-sm block">
               NPI number:
@@ -163,50 +172,73 @@ export default function DoctorListView({
               {doctor.npiNumber ?? "—"}
             </span>
           </div>
-          <div className="flex items-center justify-start gap-1">
-            {doctor.invitationStatus === "pending" && (
-              <Tooltip content="Resend Invitation">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    console.log(
-                      "Resend button clicked for doctor:",
-                      doctor.id,
-                      "invitationStatus:",
-                      doctor.invitationStatus,
-                    );
-                    if (doctor.id) onResendInvitation?.(doctor.id);
-                  }}
-                  className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
-                >
-                  <MailIcon fill="currentColor" height={16} width={16} />
-                </button>
-              </Tooltip>
-            )}
-            <Tooltip content="Edit">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (doctor.id) onEditDoctor?.(Number(doctor.id));
-                }}
-                className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
-              >
-                <PencilEditIcon width="15" height="15" fill={"currentColor"} />
-              </button>
-            </Tooltip>
+          {(onViewShop || !hideActions) && (
+            <div className="flex items-center justify-start gap-1 flex-wrap">
+              {onViewShop && (
+                <Tooltip content="View doctor's store">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onViewShop(doctor);
+                    }}
+                    className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white text-green-500 bg-white items-center justify-center rounded-md border cursor-pointer border-green-500 hover:border-primary"
+                  >
+                    <ViewEyeIcon fill="currentColor" />
+                  </button>
+                </Tooltip>
+              )}
+              {!hideActions && (
+                <>
+                  {doctor.invitationStatus === "pending" && (
+                    <Tooltip content="Resend Invitation">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log(
+                            "Resend button clicked for doctor:",
+                            doctor.id,
+                            "invitationStatus:",
+                            doctor.invitationStatus,
+                          );
+                          if (doctor.id) onResendInvitation?.(doctor.id);
+                        }}
+                        className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+                      >
+                        <MailIcon fill="currentColor" height={16} width={16} />
+                      </button>
+                    </Tooltip>
+                  )}
+                  <Tooltip content="Edit">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (doctor.id) onEditDoctor?.(Number(doctor.id));
+                      }}
+                      className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+                    >
+                      <PencilEditIcon
+                        width="15"
+                        height="15"
+                        fill={"currentColor"}
+                      />
+                    </button>
+                  </Tooltip>
 
-            <Tooltip content="Delete">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (doctor.id) onDeleteDoctor?.(Number(doctor.id));
-                }}
-                className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
-              >
-                <TrashBinIcon width="15" height="15" />
-              </button>
-            </Tooltip>
-          </div>
+                  <Tooltip content="Delete">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (doctor.id) onDeleteDoctor?.(Number(doctor.id));
+                      }}
+                      className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+                    >
+                      <TrashBinIcon width="15" height="15" />
+                    </button>
+                  </Tooltip>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -223,7 +255,13 @@ export default function DoctorListView({
           handleRowClick();
         }
       }}
-      className="grid  cursor-pointer grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr]  items-center rounded-xl bg-white p-1 sm:p-1.5 xl:p-3 shadow-table"
+      className={`grid cursor-pointer items-center rounded-xl bg-white p-1 sm:p-1.5 xl:p-3 shadow-table ${
+        onViewShop
+          ? "grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr]"
+          : hideActions
+            ? "grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr]"
+            : "grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr]"
+      }`}
     >
       <div className="flex items-center gap-2">
         <ProfileImage
@@ -277,111 +315,97 @@ export default function DoctorListView({
         </span>
       </div>
 
-      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-        {/* {doctor.invitationStatus === "pending" && (
-          <Tooltip content="Resend Invitation">
+      {onViewShop && (
+        <div
+          className="flex items-center justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Tooltip content="View doctor's store">
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                console.log(
-                  "Resend button clicked for doctor:",
-                  doctor.id,
-                  "invitationStatus:",
-                  doctor.invitationStatus,
-                );
-                if (doctor.id) onResendInvitation?.(doctor.id);
+                onViewShop(doctor);
               }}
-              className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
+              className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white text-green-500 bg-white items-center justify-center rounded-md border cursor-pointer border-green-500 hover:border-primary"
             >
-              <MailIcon fill="currentColor" height={16} width={16} />
+              <ViewEyeIcon fill="currentColor" />
             </button>
           </Tooltip>
-        )}
-        <Tooltip content="Edit">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (doctor.id) onEditDoctor?.(Number(doctor.id));
-            }}
-            className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white from-[#3C85F5] to-[#1A407A] text-gray-800 bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
-          >
-            <PencilEditIcon width="15" height="15" fill={"currentColor"} />
-          </button>
-        </Tooltip>
+        </div>
+      )}
 
-        <Tooltip content="Delete">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (doctor.id) onDeleteDoctor?.(Number(doctor.id));
-            }}
-            className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-red-50 hover:border-red-500 hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-gray-200"
-          >
-            <TrashBinIcon width="15" height="15" />
-          </button>
-        </Tooltip> */}
-
-        <Menu>
-          <MenuButton
-            className={
-              "w-8 h-8 xl:h-9 xl:w-9 outline-none bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
-            }
-          >
-            <EllipsisVertical />
-          </MenuButton>
-          <MenuItems
-            anchor="bottom end"
-            className={
-              "absolute top-16 right-1 space-y-1 outline-none shadow-[0_14px_34px_0_rgba(0,0,0,0.1)] rounded-lg p-1 bg-white hidden w-44 md:block border border-gray-200 z-10"
-            }
-          >
-            {doctor.invitationStatus === "pending" && (
+      {!hideActions && (
+        <div
+          className="flex items-center justify-end gap-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Menu>
+            <MenuButton
+              className={
+                "w-8 h-8 xl:h-9 xl:w-9 outline-none bg-gray-100 cursor-pointer rounded-full flex items-center justify-center"
+              }
+            >
+              <EllipsisVertical />
+            </MenuButton>
+            <MenuItems
+              anchor="bottom end"
+              className={
+                "absolute top-16 right-1 space-y-1 outline-none shadow-[0_14px_34px_0_rgba(0,0,0,0.1)] rounded-lg p-1 bg-white hidden w-44 md:block border border-gray-200 z-10"
+              }
+            >
+              {doctor.invitationStatus === "pending" && (
+                <MenuItem>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log(
+                        "Resend button clicked for doctor:",
+                        doctor.id,
+                        "invitationStatus:",
+                        doctor.invitationStatus,
+                      );
+                      if (doctor.id) onResendInvitation?.(doctor.id);
+                    }}
+                    className=" data-focus:bg-gray-100 cursor-pointer w-full flex items-center gap-2 rounded-sm p-1.5 text-sm hover:bg-gray-100"
+                  >
+                    <MailIcon fill="currentColor" height={16} width={16} />{" "}
+                    Resend Invitation
+                  </button>
+                </MenuItem>
+              )}
               <MenuItem>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    console.log(
-                      "Resend button clicked for doctor:",
-                      doctor.id,
-                      "invitationStatus:",
-                      doctor.invitationStatus,
-                    );
-                    if (doctor.id) onResendInvitation?.(doctor.id);
+                    if (doctor.id) onEditDoctor?.(Number(doctor.id));
                   }}
-                  className=" data-focus:bg-gray-100 cursor-pointer w-full flex items-center gap-2 rounded-sm p-1.5 text-sm hover:bg-gray-100"
+                  className=" data-focus:bg-gray-100 w-full cursor-pointer flex items-center gap-2 rounded-sm p-1.5 text-sm hover:bg-gray-100"
                 >
-                  <MailIcon fill="currentColor" height={16} width={16} /> Resend
-                  Invitation
+                  <PencilEditIcon
+                    width="15"
+                    height="15"
+                    fill={"currentColor"}
+                  />{" "}
+                  Edit
                 </button>
               </MenuItem>
-            )}
-            <MenuItem>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (doctor.id) onEditDoctor?.(Number(doctor.id));
-                }}
-                className=" data-focus:bg-gray-100 w-full cursor-pointer flex items-center gap-2 rounded-sm p-1.5 text-sm hover:bg-gray-100"
-              >
-                <PencilEditIcon width="15" height="15" fill={"currentColor"} />{" "}
-                Edit
-              </button>
-            </MenuItem>
-            <MenuItem>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (doctor.id) onDeleteDoctor?.(Number(doctor.id));
-                }}
-                className=" data-focus:bg-gray-100 w-full cursor-pointer flex items-center gap-2 hover:text-red-500 rounded-sm p-1.5 text-sm hover:bg-gray-100"
-              >
-                <TrashBinIcon width="15" height="15" fill={"currentColor"} />{" "}
-                Delete
-              </button>
-            </MenuItem>
-          </MenuItems>
-        </Menu>
-      </div>
+              <MenuItem>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (doctor.id) onDeleteDoctor?.(Number(doctor.id));
+                  }}
+                  className=" data-focus:bg-gray-100 w-full cursor-pointer flex items-center gap-2 hover:text-red-500 rounded-sm p-1.5 text-sm hover:bg-gray-100"
+                >
+                  <TrashBinIcon width="15" height="15" fill={"currentColor"} />{" "}
+                  Delete
+                </button>
+              </MenuItem>
+            </MenuItems>
+          </Menu>
+        </div>
+      )}
     </div>
   );
 }

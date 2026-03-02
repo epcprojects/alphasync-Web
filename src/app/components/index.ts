@@ -49,6 +49,7 @@ import TrainingVideosBlockingPage from "./TrainingVideosBlockingPage";
 import {
   RoleBasedRoute,
   AdminRoute,
+  ManagerRoute,
   DoctorRoute,
   CustomerRoute,
   DoctorOrAdminRoute,
@@ -63,11 +64,17 @@ import ProfileStepper from "./ui/ProfileStepper";
 import MedicalLicensesSection from "./medicalLicensesComponent";
 import DoctorProfileHeaderCard from "./ui/cards/DoctorProfileHeaderCard";
 import DoctorProfileLicensesCard from "./ui/cards/DoctorProfileLicensesCard";
+import DoctorDatabaseView from "./ui/cards/DoctorsDatabaseView";
+import EmptyResult from "./ui/emptyResult/EmptyResult";
+import AddEditManagerModal from "./ui/modals/AddEditManagerModal";
 
 export {
+  EmptyResult,
+  AddEditManagerModal,
   DoctorProfileLicensesCard,
   DoctorProfileHeaderCard,
   MedicalLicensesSection,
+  DoctorDatabaseView,
   ProfileStepper,
   Dropdown,
   TagInput,
@@ -124,6 +131,7 @@ export {
   Chat,
   RoleBasedRoute,
   AdminRoute,
+  ManagerRoute,
   DoctorRoute,
   CustomerRoute,
   DoctorOrAdminRoute,

@@ -2,9 +2,30 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
   const token = request.cookies.get("auth_token")?.value;
   const userCookie = request.cookies.get("user_data")?.value;
-  const { pathname } = request.nextUrl;
+
+  // Redirect /manager: no token → login; manager logged in → /manager/doctors
+  if (pathname === "/manager" || pathname === "/manager/") {
+    if (!token) {
+      return NextResponse.redirect(new URL("/manager/login", request.url));
+    }
+    let managerUserType: string | null = null;
+    if (userCookie) {
+      try {
+        const parsed = JSON.parse(userCookie);
+        managerUserType = parsed?.userType?.toLowerCase() || null;
+      } catch {
+        // ignore
+      }
+    }
+    if (managerUserType === "manager") {
+      return NextResponse.redirect(new URL("/manager/doctors", request.url));
+    }
+    return NextResponse.redirect(new URL("/manager/login", request.url));
+  }
 
   type ParsedUser = {
     userType?: string;
@@ -34,6 +55,7 @@ export function middleware(request: NextRequest) {
   const publicRoutes = [
     "/login",
     "/admin/login",
+    "/manager/login",
     "/otp",
     "/new-password",
     "/accept-invitation",
@@ -41,15 +63,24 @@ export function middleware(request: NextRequest) {
     "/profile-complete",
   ];
   const isPublicRoute =
-    publicRoutes.includes(pathname) || pathname.startsWith("/admin/login");
+    publicRoutes.includes(pathname) ||
+    pathname.startsWith("/admin/login") ||
+    pathname.startsWith("/manager/login");
 
   // Role-based route definitions
   const adminRoutes = [
     "/admin/doctors",
     "/admin/admins",
+    "/admin/managers",
     "/admin/products",
     "/admin/settings",
     "/admin/dashboard",
+  ];
+  const managerRoutes = [
+    "/manager/doctors",
+    "/manager/accounting",
+    "/manager/profile",
+    "/manager/settings",
   ];
   const doctorRoutes = [
     "/my-store",
@@ -73,7 +104,12 @@ export function middleware(request: NextRequest) {
   ];
 
   // All protected routes
-  const protectedRoutes = [...adminRoutes, ...doctorRoutes, ...customerRoutes];
+  const protectedRoutes = [
+    ...adminRoutes,
+    ...managerRoutes,
+    ...doctorRoutes,
+    ...customerRoutes,
+  ];
 
   // 1️⃣ If token not present and user tries to access protected route
   if (!token && protectedRoutes.some((route) => pathname.startsWith(route))) {
@@ -92,6 +128,8 @@ export function middleware(request: NextRequest) {
     // Redirect logged-in user to their dashboard
     if (userType === "admin") {
       return NextResponse.redirect(new URL("/admin/doctors", request.url));
+    } else if (userType === "manager") {
+      return NextResponse.redirect(new URL("/manager/doctors", request.url));
     } else if (userType === "doctor") {
       return NextResponse.redirect(
         fromInvitation ? profileCompleteUrl : new URL("/my-store", request.url)
@@ -115,17 +153,29 @@ export function middleware(request: NextRequest) {
 
     // Check if user is trying to access routes they're not authorized for
     if (
-      userType === "admin" &&
+      (userType === "admin" || userType === "manager") &&
       doctorRoutes.some((route) => pathname.startsWith(route))
     ) {
-      return NextResponse.redirect(new URL("/admin/doctors", request.url));
+      return NextResponse.redirect(
+        new URL(userType === "manager" ? "/manager/doctors" : "/admin/doctors", request.url)
+      );
     }
 
     if (
-      userType === "admin" &&
+      (userType === "admin" || userType === "manager") &&
       customerRoutes.some((route) => pathname.startsWith(route))
     ) {
-      return NextResponse.redirect(new URL("/admin/doctors", request.url));
+      return NextResponse.redirect(
+        new URL(userType === "manager" ? "/manager/doctors" : "/admin/doctors", request.url)
+      );
+    }
+
+    // Manager can only access managerRoutes; redirect to /manager/doctors if they hit admin routes
+    if (
+      userType === "manager" &&
+      adminRoutes.some((route) => pathname.startsWith(route))
+    ) {
+      return NextResponse.redirect(new URL("/manager/doctors", request.url));
     }
 
     if (
@@ -166,6 +216,8 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/login",
+    "/manager",
+    "/manager/:path*",
     "/admin/login",
     "/otp",
     "/forgot",

@@ -51,6 +51,19 @@ export const userpayload = `
          licenseUrl
          status
        }
+       assignedDoctors {
+          deleted
+          email
+          firstName
+          fullName
+          id
+          status
+          imageUrl
+          specialty
+          phoneNo
+          npiNumber
+          revokeAccess
+        }
 `;
 
 export interface UserAttributes {
@@ -105,6 +118,19 @@ export interface UserAttributes {
     expirationDate?: string;
     licenseUrl?: string;
     status?: string;
+  }>;
+  assignedDoctors?: Array<{
+    deleted?: boolean;
+    email?: string;
+    firstName?: string;
+    fullName?: string;
+    id?: string | number;
+    status?: string;
+    imageUrl?: string;
+    specialty?: string;
+    phoneNo?: string;
+    npiNumber?: string;
+    revokeAccess?: boolean;
   }>;
   cart?: {
     id?: string;

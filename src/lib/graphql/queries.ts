@@ -68,6 +68,46 @@ export const ALL_ADMINS = gql`
     }
   }
 `;
+
+/** Manager list with pagination/filters */
+export const ALL_MANAGERS = gql`
+  query AllManagers($pendingInvites: Boolean, $status: UserStatusEnum, $search: String, $page: Int, $perPage: Int) {
+    allManagers(pendingInvites: $pendingInvites, status: $status, search: $search, page: $page, perPage: $perPage) {
+      allData {
+        ${userpayload}
+        assignedDoctors {
+          id
+          deleted
+          email
+          firstName
+          fullName
+          status
+          imageUrl
+          specialty
+          phoneNo
+          npiNumber
+        }
+      }
+      count
+      nextPage
+      prevPage
+      totalPages
+    }
+  }
+`;
+
+/** Manager stats for dashboard (total, active, inactive, new this month) */
+export const ALL_MANAGERS_STATS = gql`
+  query AllManagersStats {
+    allManagers {
+      inactiveManagers
+      newThisMonth
+      totalManagers
+      activeManagers
+    }
+  }
+`;
+
 export const ALL_PRODUCTS = gql`
   query AllProducts {
     allProducts(inStockOnly: true) {
@@ -117,6 +157,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
     $patientId: ID
     $markedUp: Boolean
     $notMarkedUp: Boolean
+    $doctorId: ID
   ) {
     allProducts(
       search: $search
@@ -129,6 +170,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
       patientId: $patientId
       markedUp: $markedUp
       notMarkedUp: $notMarkedUp
+      doctorId: $doctorId
     ) {
       allData {
         customPrice
