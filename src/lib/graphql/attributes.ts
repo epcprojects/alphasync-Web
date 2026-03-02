@@ -62,6 +62,7 @@ export const userpayload = `
           specialty
           phoneNo
           npiNumber
+          revokeAccess
         }
 `;
 
@@ -129,6 +130,7 @@ export interface UserAttributes {
     specialty?: string;
     phoneNo?: string;
     npiNumber?: string;
+    revokeAccess?: boolean;
   }>;
   cart?: {
     id?: string;
