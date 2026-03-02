@@ -144,6 +144,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
     $patientId: ID
     $markedUp: Boolean
     $notMarkedUp: Boolean
+    $doctorId: ID
   ) {
     allProducts(
       search: $search
@@ -156,6 +157,7 @@ export const ALL_PRODUCTS_INVENTORY = gql`
       patientId: $patientId
       markedUp: $markedUp
       notMarkedUp: $notMarkedUp
+      doctorId: $doctorId
     ) {
       allData {
         customPrice

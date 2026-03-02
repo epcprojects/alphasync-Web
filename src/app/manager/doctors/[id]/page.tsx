@@ -4,6 +4,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { KeyLeftIcon } from "@/icons";
 import React from "react";
 import Link from "next/link";
+import { ThemeButton } from "@/app/components";
 import { useParams } from "next/navigation";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { DoctorProfileHeaderCard, Loader } from "@/app/components";
@@ -196,6 +197,14 @@ export default function ManagerDoctorDetailPage() {
             </h2>
           </div>
         </div>
+        <Link href={`/manager/store/${id}`} className="shrink-0">
+          <ThemeButton
+            label="View store"
+            variant="filled"
+            heightClass="h-9 md:h-10"
+            className="w-full sm:w-auto"
+          />
+        </Link>
       </div>
       <div className="bg-white rounded-xl">
         <DoctorProfileHeaderCard
@@ -222,7 +231,9 @@ export default function ManagerDoctorDetailPage() {
             </p>
             <div className="flex flex-col lg:col-span-9 gap-5">
               {licenceItemsArray.length === 0 ? (
-                <p className="text-gray-500 text-sm">No DEA licenses on file.</p>
+                <p className="text-gray-500 text-sm">
+                  No DEA licenses on file.
+                </p>
               ) : (
                 licenceItemsArray.map((item, index) => (
                   <DoctorProfileLicensesCard
