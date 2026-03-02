@@ -1,11 +1,12 @@
 "use client";
-import { MinusDisableProfileIcon, ViewEyeIcon } from "@/icons";
+import { ViewEyeIcon } from "@/icons";
 import Tooltip from "../tooltip";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import ProfileImage from "@/app/components/ui/ProfileImage";
+import { Switch } from "@headlessui/react";
 
 export type Doctor = {
-  id: number;
+  id: string | number;
   name: string;
   speciality: string;
   contact: string;
@@ -13,13 +14,18 @@ export type Doctor = {
   npiNumber: string;
   status: string;
   imageUrl?: string;
+  /** From API: true = access revoked, false = has access. Toggle is on when !revokeAccess. */
+  revokeAccess?: boolean;
 };
 
 type ManagerDoctorsDatabaseViewProps = {
   user?: Doctor;
   onRowClick: () => void;
   onViewUser: () => void;
-  onDisableUser: () => void;
+  /** Whether the doctor currently has access (active). Toggle gives/revokes access. */
+  hasAccess: boolean;
+  onToggleAccess: () => void;
+  toggleLoading?: boolean;
 };
 
 const colorPairs = [
@@ -52,8 +58,10 @@ function getStatusClasses(status?: string) {
 export default function ManagerDoctorsDatabaseView({
   user,
   onRowClick,
-  onDisableUser,
   onViewUser,
+  hasAccess,
+  onToggleAccess,
+  toggleLoading = false,
 }: ManagerDoctorsDatabaseViewProps) {
   const id = user?.id;
   const name = user?.name;
@@ -97,7 +105,7 @@ export default function ManagerDoctorsDatabaseView({
           </div>
         </div>
 
-        <div className="flex justify-between  items-center  gap-1 w-full">
+        <div className="flex justify-between items-center gap-1 w-full">
           <div className="flex flex-col gap-1">
             <h2 className="text-gray-800 text-sm md:text-sm font-normal">
               {contact || "—"}
@@ -112,26 +120,34 @@ export default function ManagerDoctorsDatabaseView({
               {speciality || "—"}
             </h2>
           </div>
-          <div className="flex flex-row gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (id) onViewUser();
-              }}
-              className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-green-500 bg-white items-center justify-center rounded-md border cursor-pointer border-green-500 hover:border-primary group-hover:border-primary"
-            >
-              <ViewEyeIcon fill="currentColor" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (id) onDisableUser();
-              }}
-              className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-red-500 bg-white items-center justify-center rounded-md border cursor-pointer border-red-500 hover:border-primary group-hover:border-primary"
-            >
-              <MinusDisableProfileIcon fill="currentColor" />
-            </button>
-          </div>
+        </div>
+        <div className="flex flex-row items-center justify-between gap-2 border-t border-gray-100 pt-2">
+          <span className="text-gray-600 text-xs font-medium">Access</span>
+          <Tooltip content={hasAccess ? "Revoke access" : "Give access"}>
+            <span onClick={(e) => e.stopPropagation()}>
+              <Switch
+                checked={hasAccess}
+                onChange={() => {
+                  if (!toggleLoading) onToggleAccess();
+                }}
+                disabled={toggleLoading}
+                className="group relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border border-gray-200 bg-gray-200 transition data-[checked]:bg-primary data-[checked]:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="pointer-events-none inline-block size-4 translate-x-1 rounded-full bg-white shadow ring-0 transition group-data-[checked]:translate-x-6" />
+              </Switch>
+            </span>
+          </Tooltip>
+        </div>
+        <div className="flex flex-row justify-end gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (id) onViewUser();
+            }}
+            className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white text-green-500 bg-white items-center justify-center rounded-md border cursor-pointer border-green-500 hover:border-primary"
+          >
+            <ViewEyeIcon fill="currentColor" />
+          </button>
         </div>
       </div>
     );
@@ -173,7 +189,7 @@ export default function ManagerDoctorsDatabaseView({
       <div className="col-span-2 text-gray-800 wrap-break-word text-sm md:text-base font-normal">
         {npiNumber || "—"}
       </div>
-      <div className="col-span-2 font-medium text-sm md:text-base text-gray-800">
+      <div className="col-span-1 font-medium text-sm md:text-base text-gray-800">
         <span
           className={`block rounded-full w-fit px-2.5 capitalize  md:whitespace-nowrap wrap-break-word py-0.5 text-xxs md:text-sm font-medium ${getStatusClasses(
             status,
@@ -183,7 +199,24 @@ export default function ManagerDoctorsDatabaseView({
         </span>
       </div>
 
-      <div className="col-span-1 flex items-center flex-wrap justify-end gap-2">
+      <div className="col-span-1 flex items-center">
+        <Tooltip content={hasAccess ? "Revoke access" : "Give access"}>
+          <span onClick={(e) => e.stopPropagation()}>
+            <Switch
+              checked={hasAccess}
+              onChange={() => {
+                if (id && !toggleLoading) onToggleAccess();
+              }}
+              disabled={toggleLoading}
+              className="group relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border border-gray-200 bg-gray-200 transition data-[checked]:bg-primary data-[checked]:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="pointer-events-none inline-block size-4 translate-x-1 rounded-full bg-white shadow ring-0 transition group-data-[checked]:translate-x-6" />
+            </Switch>
+          </span>
+        </Tooltip>
+      </div>
+
+      <div className="col-span-1 flex items-center justify-end">
         <Tooltip content="Doctor Details">
           <button
             onClick={(e) => {
@@ -193,17 +226,6 @@ export default function ManagerDoctorsDatabaseView({
             className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-green-500 bg-white items-center justify-center rounded-md border cursor-pointer border-green-500 hover:border-primary group-hover:border-primary"
           >
             <ViewEyeIcon fill="currentColor" />
-          </button>
-        </Tooltip>
-        <Tooltip content="Disable Doctor">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (id) onDisableUser();
-            }}
-            className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-red-500 bg-white items-center justify-center rounded-md border cursor-pointer border-red-500 hover:border-primary group-hover:border-primary"
-          >
-            <MinusDisableProfileIcon fill="currentColor" />
           </button>
         </Tooltip>
       </div>

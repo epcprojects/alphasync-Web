@@ -10,7 +10,9 @@ import AddEditManagerModal from "@/app/components/ui/modals/AddEditManagerModal"
 import AssignDoctorModal from "@/app/components/ui/modals/AssignDoctorModal";
 import { UserAttributes } from "@/lib/graphql/attributes";
 import { FETCH_CUSTOMER } from "@/lib/graphql/queries";
-import { useQuery } from "@apollo/client/react";
+import { MODIFY_ACCESSS_USER } from "@/lib/graphql/mutations";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { KeyLeftIcon } from "@/icons";
 import Link from "next/link";
@@ -23,12 +25,12 @@ interface FetchUserResponse {
   };
 }
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 10;
 
 type AssignedDoctor = NonNullable<UserAttributes["assignedDoctors"]>[number];
 
 function mapAssignedDoctorToRow(d: AssignedDoctor): Doctor {
-  const id = d?.id != null ? Number(d.id) : 0;
+  const id = d.id ?? "";
   const name =
     d?.fullName ?? (d?.firstName?.trim() ? d.firstName : "—");
   const status =
@@ -37,6 +39,7 @@ function mapAssignedDoctorToRow(d: AssignedDoctor): Doctor {
       : d?.status === "INACTIVE"
         ? "Inactive"
         : d?.status ?? "—";
+
   return {
     id,
     name,
@@ -45,6 +48,7 @@ function mapAssignedDoctorToRow(d: AssignedDoctor): Doctor {
     email: d?.email ?? "—",
     npiNumber: d?.npiNumber ?? "—",
     status,
+    revokeAccess: d?.revokeAccess ?? false,
     imageUrl: d?.imageUrl
       ? `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ?? ""}/${d.imageUrl}`
       : undefined,
@@ -60,6 +64,7 @@ const Page = () => {
   const [editUser, seteditUser] = useState<ManagersType | null>(null);
   const [showAssignDoctor, setshowAssignDoctor] = useState(false);
   const [showAddEditModal, setshowAddEditModal] = useState(false);
+  const [togglingDoctorId, setTogglingDoctorId] = useState<string | number | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
 
   const { data, loading, error, refetch } = useQuery<FetchUserResponse>(
@@ -71,7 +76,33 @@ const Page = () => {
     }
   );
 
+  const [modifyAccessUser, { loading: toggleLoading }] =
+    useMutation(MODIFY_ACCESSS_USER);
+
   const user = data?.fetchUser?.user;
+
+  const handleToggleAccess = async (doctor: Doctor) => {
+    if (doctor?.id == null) return;
+    const revokeAccess = !doctor.revokeAccess;
+    setTogglingDoctorId(doctor.id);
+    try {
+      await modifyAccessUser({
+        variables: {
+          userId: String(doctor.id),
+          revokeAccess,
+        },
+      });
+      showSuccessToast(
+        revokeAccess ? "Access revoked successfully" : "Access granted successfully"
+      );
+      refetch();
+    } catch (e) {
+      console.error("Error toggling doctor access:", e);
+      showErrorToast("Failed to update access. Please try again.");
+    } finally {
+      setTogglingDoctorId(null);
+    }
+  };
 
   const doctorsList: Doctor[] = useMemo(
     () => (user?.assignedDoctors ?? []).map(mapAssignedDoctorToRow),
@@ -193,7 +224,8 @@ const Page = () => {
             <div className="col-span-2">Speciality</div>
             <div className="col-span-2">Phone</div>
             <div className="col-span-2">NPI Number</div>
-            <div className="col-span-2">Status</div>
+            <div className="col-span-1">Status</div>
+            <div className="col-span-1">Access</div>
             <div className="col-span-1 text-center">Actions</div>
           </div>
         )}
@@ -203,7 +235,9 @@ const Page = () => {
             key={data.id}
             onRowClick={() => router.push(`/admin/doctors/${data.id}`)}
             onViewUser={() => router.push(`/admin/doctors/${data.id}`)}
-            onDisableUser={() => {}}
+            hasAccess={!data.revokeAccess}
+            onToggleAccess={() => handleToggleAccess(data)}
+            toggleLoading={togglingDoctorId === data.id || toggleLoading}
           />
         ))}
         <Pagination
