@@ -43,27 +43,22 @@ export default function ManagerDoctorsPage() {
 
   useEffect(() => {
     if (selectedTabIndex === 1) setSelectedStatus("Active");
-    else if (selectedTabIndex === 2) setSelectedStatus("Pending");
     else setSelectedStatus("All Status");
   }, [selectedTabIndex]);
 
-  const { data, loading, error } = useQuery<AllDoctorsResponse>(
-    ALL_DOCTORS,
-    {
-      variables: {
-        search,
-        status:
-          selectedStatus === "All Status"
-            ? undefined
-            : selectedStatus.toUpperCase(),
-        pendingInvites: selectedTabIndex === 2 ? true : undefined,
-        pendingDeaApproval: selectedTabIndex === 3 ? true : undefined,
-        page: currentPage + 1,
-        perPage: itemsPerPage,
-      },
-      fetchPolicy: "network-only",
-    }
-  );
+  const { data, loading, error } = useQuery<AllDoctorsResponse>(ALL_DOCTORS, {
+    variables: {
+      search,
+      status:
+        selectedStatus === "All Status"
+          ? undefined
+          : selectedStatus.toUpperCase(),
+      pendingDeaApproval: selectedTabIndex === 3 ? true : undefined,
+      page: currentPage + 1,
+      perPage: itemsPerPage,
+    },
+    fetchPolicy: "network-only",
+  });
 
   const doctors = data?.allDoctors?.allData ?? [];
   const pageCount = data?.allDoctors?.totalPages ?? 0;
@@ -73,7 +68,6 @@ export default function ManagerDoctorsPage() {
     setSelectedStatus(label);
     setCurrentPage(0);
     if (label === "Active") setSelectedTabIndex(1);
-    else if (label === "Pending") setSelectedTabIndex(2);
     else setSelectedTabIndex(0);
   };
 
@@ -89,7 +83,6 @@ export default function ManagerDoctorsPage() {
     { label: "All Status", value: null },
     { label: "Active", value: "ACTIVE" },
     { label: "Inactive", value: "INACTIVE" },
-    { label: "Pending", value: "PENDING" },
   ];
 
   return (
@@ -152,22 +145,19 @@ export default function ManagerDoctorsPage() {
           onChange={setSelectedTabIndex}
         >
           <TabList className="flex items-center border-b border-b-gray-200 gap-2 md:gap-3  md:justify-start  justify-between md:px-6">
-            {[
-              "All Doctors",
-              "Active Doctors",
-              "Pending Doctors",
-              "Pending DEA Approvals",
-            ].map((tab) => (
-              <Tab
-                key={tab}
-                as="button"
-                className={
-                  "flex items-center gap-1 md:gap-2 w-full justify-center text-sm hover:bg-gray-50 whitespace-nowrap md:text-base outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-1.5 py-3 md:py-4 md:px-6"
-                }
-              >
-                {tab}
-              </Tab>
-            ))}
+            {["All Doctors", "Active Doctors", "Pending DEA Approvals"].map(
+              (tab) => (
+                <Tab
+                  key={tab}
+                  as="button"
+                  className={
+                    "flex items-center gap-1 md:gap-2 w-full justify-center text-sm hover:bg-gray-50 whitespace-nowrap md:text-base outline-none border-b-2 border-b-gray-50 data-selected:border-b-primary data-selected:text-primary font-semibold cursor-pointer  text-gray-500 px-1.5 py-3 md:py-4 md:px-6"
+                  }
+                >
+                  {tab}
+                </Tab>
+              ),
+            )}
           </TabList>
           <TabPanels>
             <TabPanel>
