@@ -1,7 +1,7 @@
 "use client";
 import React, { ReactNode } from "react";
 import { Header, ManagerRoute } from "@/app/components";
-import { AccountingIcon, Doctor, SettingsIcon } from "@/icons";
+import { AccountingIcon, Doctor, SettingsIcon, UserIcon } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useAppSelector } from "@/lib/store/hooks";
@@ -34,6 +34,7 @@ const menuItems = [
 const headings: Record<string, string> = {
   "/manager/doctors": "Doctors",
   "/manager/accounting": "Accounting",
+  "/manager/profile": "Profile",
   "/manager/settings": "Settings",
 };
 
