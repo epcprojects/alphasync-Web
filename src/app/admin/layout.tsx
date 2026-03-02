@@ -17,7 +17,7 @@ import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useAppSelector } from "@/lib/store/hooks";
-import { ADMIN_DASHBOARD } from "@/lib/graphql/queries";
+import { ADMIN_DASHBOARD, ALL_MANAGERS_STATS } from "@/lib/graphql/queries";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -29,6 +29,15 @@ interface AdminDashboardResponse {
     activeDoctors: number;
     pendingDoctors: number;
     newDoctorsThisMonth: number;
+  };
+}
+
+interface AllManagersStatsResponse {
+  allManagers: {
+    totalManagers?: number;
+    activeManagers?: number;
+    inactiveManagers?: number;
+    newThisMonth?: number;
   };
 }
 
@@ -124,6 +133,12 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     fetchPolicy: "network-only",
   });
 
+  const { data: managersStatsData, loading: managersStatsLoading } =
+    useQuery<AllManagersStatsResponse>(ALL_MANAGERS_STATS, {
+      skip: !user?.id || !/^\/admin\/managers/.test(pathname),
+      fetchPolicy: "network-only",
+    });
+
   if (dashboardError) {
     console.error("Failed to load admin dashboard stats:", dashboardError);
   }
@@ -185,8 +200,10 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
   const ManagerStats = [
     {
-      label: "Total Manager",
-      value: "0",
+      label: "Total Managers",
+      value: managersStatsLoading
+        ? "..."
+        : formatNumber(managersStatsData?.allManagers?.totalManagers),
       icon: (
         <AdminManagersFilledIcon
           height={isMobile ? "16" : "32"}
@@ -196,8 +213,10 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       bgColor: "bg-purple-500",
     },
     {
-      label: "Active Manager",
-      value: "0",
+      label: "Active Managers",
+      value: managersStatsLoading
+        ? "..."
+        : formatNumber(managersStatsData?.allManagers?.activeManagers),
       icon: (
         <AdminManagersFilledIcon
           height={isMobile ? "16" : "32"}
@@ -207,8 +226,10 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       bgColor: "bg-emerald-400",
     },
     {
-      label: "Inactive Manager",
-      value: "0",
+      label: "Inactive Managers",
+      value: managersStatsLoading
+        ? "..."
+        : formatNumber(managersStatsData?.allManagers?.inactiveManagers),
       icon: (
         <AdminManagersFilledIcon
           height={isMobile ? "16" : "32"}
@@ -219,7 +240,9 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     },
     {
       label: "New This Month",
-      value: "0",
+      value: managersStatsLoading
+        ? "..."
+        : formatNumber(managersStatsData?.allManagers?.newThisMonth),
       icon: (
         <AdminManagersFilledIcon
           height={isMobile ? "16" : "32"}
