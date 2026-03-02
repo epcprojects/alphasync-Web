@@ -123,6 +123,7 @@ import ViewDoctorIcon from "./ViewDoctorIcon";
 import ViewEyeIcon from "./ViewEyeIcon";
 import AssignDoctorIcon from "./AssignDoctorIcon";
 import AdminManagersIcon from "./AdminManagersIcon";
+import MinusDisableProfileIcon from "./MinusDisableProfileIcon";
 
 export {
   AdminManagersIcon,
@@ -250,4 +251,5 @@ export {
   RejectIcon,
   EyeIcon,
   UserRejectIcon,
+  MinusDisableProfileIcon,
 };
