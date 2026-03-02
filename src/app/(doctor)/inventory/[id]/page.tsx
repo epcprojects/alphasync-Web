@@ -761,9 +761,7 @@ export default function PostDetail() {
                   heightClass="h-11"
                   disabled={
                     product.customPrice === null ||
-                    product.customPrice === undefined ||
-                    (product?.vendor !== "Alpha BioMed" &&
-                      product?.vendor !== "City Center")
+                    product.customPrice === undefined
                   }
                 />
               </div>
