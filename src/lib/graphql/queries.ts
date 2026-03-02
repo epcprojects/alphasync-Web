@@ -69,6 +69,7 @@ export const ALL_ADMINS = gql`
   }
 `;
 
+/** Manager list with pagination/filters */
 export const ALL_MANAGERS = gql`
   query AllManagers($pendingInvites: Boolean, $status: UserStatusEnum, $search: String, $page: Int, $perPage: Int) {
     allManagers(pendingInvites: $pendingInvites, status: $status, search: $search, page: $page, perPage: $perPage) {
@@ -91,6 +92,18 @@ export const ALL_MANAGERS = gql`
       nextPage
       prevPage
       totalPages
+    }
+  }
+`;
+
+/** Manager stats for dashboard (total, active, inactive, new this month) */
+export const ALL_MANAGERS_STATS = gql`
+  query AllManagersStats {
+    allManagers {
+      inactiveManagers
+      newThisMonth
+      totalManagers
+      activeManagers
     }
   }
 `;
