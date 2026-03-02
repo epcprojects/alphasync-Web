@@ -30,6 +30,8 @@ interface ProductCardProps {
   onRemoveFromShop?: (productId: string) => Promise<void> | void;
   removingFromShop?: boolean;
   onCardClick?: () => void;
+  /** When true, hide remove-from-shop and add-to-cart (e.g. manager viewing a doctor's shop). */
+  viewOnly?: boolean;
 }
 
 export default function ShopProductCard({
@@ -38,6 +40,7 @@ export default function ShopProductCard({
   onRemoveFromShop,
   removingFromShop,
   onCardClick,
+  viewOnly = false,
 }: ProductCardProps) {
   const maxQty = useMemo(() => {
     const stock = Number(product.stock ?? 0);
@@ -82,18 +85,20 @@ export default function ShopProductCard({
 
   return (
     <div
-      onClick={onCardClick}
+      onClick={viewOnly ? undefined : onCardClick}
       className="rounded-2xl pb-2 relative cursor-pointer flex-col bg-white shadow-table border  border-gray-200 px-2 flex items-center justify-center"
     >
-      <button
-        className="absolute top-4 end-4 text-gray-700 hover:bg-gray-100 rounded-full border border-gray-200 h-8 w-8 md:h-11 md:w-11 flex items-center justify-center cursor-pointer"
-        aria-label="Remove from My Store"
-        type="button"
-        disabled={!!removingFromShop}
-        onClick={handleRemoveFromShop}
-      >
-        <CrossIcon fill="currentColor" />
-      </button>
+      {!viewOnly && (
+        <button
+          className="absolute top-4 end-4 text-gray-700 hover:bg-gray-100 rounded-full border border-gray-200 h-8 w-8 md:h-11 md:w-11 flex items-center justify-center cursor-pointer"
+          aria-label="Remove from My Store"
+          type="button"
+          disabled={!!removingFromShop}
+          onClick={handleRemoveFromShop}
+        >
+          <CrossIcon fill="currentColor" />
+        </button>
+      )}
       <div className="bg-[url(/images/productBgPattern.png)] bg-cover h-52 md:h-60 pt-3 pb-2 bg-[position:0_20px] flex items-center justify-center ">
         <ProductImage
           width={240}
@@ -139,57 +144,65 @@ export default function ShopProductCard({
                   </span>
                 </div>
               )}
-              <div className="flex items-end  gap-2">
-                <div
-                  className="flex flex-col max-w-20 w-full"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <label className="text-sm mb-1 focus:ring focus:ring-gray-300 outline-none text-gray-700 font-medium">
-                    Quantity <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    value={quantity}
-                    onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => e.stopPropagation()}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      // Allow empty while typing; clamp on blur
-                      const next = e.target.value;
-                      if (next === "") {
-                        setQuantity("");
-                        return;
-                      }
-                      // Only allow digits
-                      if (!/^\d+$/.test(next)) return;
-                      // Limit digits to what stock can represent (prevents huge numbers)
-                      const maxDigits = String(Math.max(maxQty, 1)).length;
-                      setQuantity(next.slice(0, maxDigits));
-                    }}
-                    onBlur={() => setQuantity((prev) => clampQuantity(prev || "1"))}
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    max={maxQty || 1}
-                    disabled={maxQty <= 0}
-                    className="rounded-full h-10 md:h-11 border focus:ring-gray-200 focus:ring-1 outline-none border-gray-200  w-full [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none px-4 text-center"
-                  />
-                </div>
-                <div className="flex items-center w-full gap-2">
-                  <ThemeButton
-                    label={"Add to Cart"}
-                    icon={<ShopingCartIcon height={20} width={20} />}
-                    onClick={handleAddToCart}
-                    variant="outline"
-                    className="flex-1"
-                    heightClass="h-10 md:h-11"
-                    disabled={maxQty <= 0}
-                  />
-
+              {viewOnly ? (
+                <div className="flex items-center justify-end">
                   <h2 className="text-gray-950 font-semibold text-sm md:text-lg lg:text-xl min-w-16 text-end">
                     {product.price}
                   </h2>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-end  gap-2">
+                  <div
+                    className="flex flex-col max-w-20 w-full"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <label className="text-sm mb-1 focus:ring focus:ring-gray-300 outline-none text-gray-700 font-medium">
+                      Quantity <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      value={quantity}
+                      onClick={(e) => e.stopPropagation()}
+                      onFocus={(e) => e.stopPropagation()}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        // Allow empty while typing; clamp on blur
+                        const next = e.target.value;
+                        if (next === "") {
+                          setQuantity("");
+                          return;
+                        }
+                        // Only allow digits
+                        if (!/^\d+$/.test(next)) return;
+                        // Limit digits to what stock can represent (prevents huge numbers)
+                        const maxDigits = String(Math.max(maxQty, 1)).length;
+                        setQuantity(next.slice(0, maxDigits));
+                      }}
+                      onBlur={() => setQuantity((prev) => clampQuantity(prev || "1"))}
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={maxQty || 1}
+                      disabled={maxQty <= 0}
+                      className="rounded-full h-10 md:h-11 border focus:ring-gray-200 focus:ring-1 outline-none border-gray-200  w-full [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none px-4 text-center"
+                    />
+                  </div>
+                  <div className="flex items-center w-full gap-2">
+                    <ThemeButton
+                      label={"Add to Cart"}
+                      icon={<ShopingCartIcon height={20} width={20} />}
+                      onClick={handleAddToCart}
+                      variant="outline"
+                      className="flex-1"
+                      heightClass="h-10 md:h-11"
+                      disabled={maxQty <= 0}
+                    />
+
+                    <h2 className="text-gray-950 font-semibold text-sm md:text-lg lg:text-xl min-w-16 text-end">
+                      {product.price}
+                    </h2>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -81,6 +81,10 @@ export default function ManagerDoctorsPage() {
     if (doctor?.id != null) router.push(`/manager/doctors/${doctor.id}`);
   };
 
+  const handleViewDoctorShop = (doctor: UserAttributes) => {
+    if (doctor?.id != null) router.push(`/manager/store/${doctor.id}`);
+  };
+
   const orderStatuses = [
     { label: "All Status", value: null },
     { label: "Active", value: "ACTIVE" },
@@ -168,7 +172,7 @@ export default function ManagerDoctorsPage() {
           <TabPanels>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr] text-black font-medium text-sm px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr] text-black font-medium text-sm px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div>
                     <h2>Name</h2>
                   </div>
@@ -189,6 +193,9 @@ export default function ManagerDoctorsPage() {
                   </div>
                   <div>
                     <h2>Invitation</h2>
+                  </div>
+                  <div className="text-center">
+                    <h2>Actions</h2>
                   </div>
                 </div>
                 {error && (
@@ -213,6 +220,7 @@ export default function ManagerDoctorsPage() {
                       onDeleteDoctor={() => {}}
                       onResendInvitation={() => {}}
                       hideActions
+                      onViewShop={handleViewDoctorShop}
                     />
                   ))
                 )}
@@ -228,7 +236,7 @@ export default function ManagerDoctorsPage() {
             </TabPanel>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr] text-black font-medium text-sm px-2 py-2.5 bg-white rounded-xl shadow-table">
+                <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr] text-black font-medium text-sm px-2 py-2.5 bg-white rounded-xl shadow-table">
                   <div>
                     <h2>Name</h2>
                   </div>
@@ -250,6 +258,9 @@ export default function ManagerDoctorsPage() {
                   <div>
                     <h2>Invitation</h2>
                   </div>
+                  <div className="text-center">
+                    <h2>Actions</h2>
+                  </div>
                 </div>
                 {loading ? (
                   <div className="my-3 space-y-1">
@@ -268,6 +279,7 @@ export default function ManagerDoctorsPage() {
                       onDeleteDoctor={() => {}}
                       onResendInvitation={() => {}}
                       hideActions
+                      onViewShop={handleViewDoctorShop}
                     />
                   ))
                 )}
@@ -283,14 +295,31 @@ export default function ManagerDoctorsPage() {
             </TabPanel>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr] text-black font-medium text-sm px-2 py-2.5 bg-white rounded-xl shadow-table">
-                  <div><h2>Name</h2></div>
-                  <div><h2>Specialty</h2></div>
-                  <div><h2>Clinic</h2></div>
-                  <div><h2>Phone</h2></div>
-                  <div><h2>NPI number</h2></div>
-                  <div className="xl:flex hidden"><h2>Status</h2></div>
-                  <div><h2>Invitation</h2></div>
+                <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr] text-black font-medium text-sm px-2 py-2.5 bg-white rounded-xl shadow-table">
+                  <div>
+                    <h2>Name</h2>
+                  </div>
+                  <div>
+                    <h2>Specialty</h2>
+                  </div>
+                  <div>
+                    <h2>Clinic</h2>
+                  </div>
+                  <div>
+                    <h2>Phone</h2>
+                  </div>
+                  <div>
+                    <h2>NPI number</h2>
+                  </div>
+                  <div className="xl:flex hidden">
+                    <h2>Status</h2>
+                  </div>
+                  <div>
+                    <h2>Invitation</h2>
+                  </div>
+                  <div className="text-center">
+                    <h2>Actions</h2>
+                  </div>
                 </div>
                 {loading ? (
                   <div className="my-3 space-y-1">
@@ -309,6 +338,7 @@ export default function ManagerDoctorsPage() {
                       onDeleteDoctor={() => {}}
                       onResendInvitation={() => {}}
                       hideActions
+                      onViewShop={handleViewDoctorShop}
                     />
                   ))
                 )}
@@ -324,14 +354,31 @@ export default function ManagerDoctorsPage() {
             </TabPanel>
             <TabPanel>
               <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr] text-black font-medium text-sm px-2 py-2.5 bg-white rounded-xl shadow-table">
-                  <div><h2>Name</h2></div>
-                  <div><h2>Specialty</h2></div>
-                  <div><h2>Clinic</h2></div>
-                  <div><h2>Phone</h2></div>
-                  <div><h2>NPI number</h2></div>
-                  <div className="xl:flex hidden"><h2>Status</h2></div>
-                  <div><h2>Invitation</h2></div>
+                <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr] text-black font-medium text-sm px-2 py-2.5 bg-white rounded-xl shadow-table">
+                  <div>
+                    <h2>Name</h2>
+                  </div>
+                  <div>
+                    <h2>Specialty</h2>
+                  </div>
+                  <div>
+                    <h2>Clinic</h2>
+                  </div>
+                  <div>
+                    <h2>Phone</h2>
+                  </div>
+                  <div>
+                    <h2>NPI number</h2>
+                  </div>
+                  <div className="xl:flex hidden">
+                    <h2>Status</h2>
+                  </div>
+                  <div>
+                    <h2>Invitation</h2>
+                  </div>
+                  <div className="text-center">
+                    <h2>Actions</h2>
+                  </div>
                 </div>
                 {loading ? (
                   <div className="my-3 space-y-1">
@@ -350,6 +397,66 @@ export default function ManagerDoctorsPage() {
                       onDeleteDoctor={() => {}}
                       onResendInvitation={() => {}}
                       hideActions
+                      onViewShop={handleViewDoctorShop}
+                    />
+                  ))
+                )}
+                {!doctors.length && !loading && <EmptyState />}
+                {pageCount > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pageCount}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div className="space-y-1 p-0 md:p-4 pt-0">
+                <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr] text-black font-medium text-sm px-2 py-2.5 bg-white rounded-xl shadow-table">
+                  <div>
+                    <h2>Name</h2>
+                  </div>
+                  <div>
+                    <h2>Specialty</h2>
+                  </div>
+                  <div>
+                    <h2>Clinic</h2>
+                  </div>
+                  <div>
+                    <h2>Phone</h2>
+                  </div>
+                  <div>
+                    <h2>NPI number</h2>
+                  </div>
+                  <div className="xl:flex hidden">
+                    <h2>Status</h2>
+                  </div>
+                  <div>
+                    <h2>Invitation</h2>
+                  </div>
+                  <div className="text-center">
+                    <h2>Actions</h2>
+                  </div>
+                </div>
+                {loading ? (
+                  <div className="my-3 space-y-1">
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                    <Skeleton className="w-full h-12 rounded-full" />
+                  </div>
+                ) : (
+                  doctors.map((doctor: UserAttributes) => (
+                    <DoctorListView
+                      key={doctor.id}
+                      doctor={doctor}
+                      onDoctorClick={handleDoctorClick}
+                      onEditDoctor={() => {}}
+                      onDeleteDoctor={() => {}}
+                      onResendInvitation={() => {}}
+                      hideActions
+                      onViewShop={handleViewDoctorShop}
                     />
                   ))
                 )}
