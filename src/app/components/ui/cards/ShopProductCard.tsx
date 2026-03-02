@@ -86,7 +86,7 @@ export default function ShopProductCard({
   return (
     <div
       onClick={viewOnly ? undefined : onCardClick}
-      className="rounded-2xl pb-2 relative cursor-pointer flex-col bg-white shadow-table border  border-gray-200 px-2 flex items-center justify-center"
+      className={`rounded-2xl pb-2 relative flex-col bg-white shadow-table border  border-gray-200 px-2 flex items-center justify-center ${viewOnly ? "" : "cursor-pointer"}`}
     >
       {!viewOnly && (
         <button
@@ -177,7 +177,9 @@ export default function ShopProductCard({
                         const maxDigits = String(Math.max(maxQty, 1)).length;
                         setQuantity(next.slice(0, maxDigits));
                       }}
-                      onBlur={() => setQuantity((prev) => clampQuantity(prev || "1"))}
+                      onBlur={() =>
+                        setQuantity((prev) => clampQuantity(prev || "1"))
+                      }
                       type="number"
                       inputMode="numeric"
                       min={1}
