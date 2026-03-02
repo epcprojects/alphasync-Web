@@ -1,13 +1,9 @@
 "use client";
-import {
-  DisableAdminProfileIcon,
-  PencilEditIcon,
-  ViewDoctorIcon,
-  ViewEyeIcon,
-} from "@/icons";
+import { PencilEditIcon, ViewDoctorIcon, ViewEyeIcon } from "@/icons";
 import Tooltip from "../tooltip";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import ProfileImage from "@/app/components/ui/ProfileImage";
+import { Switch } from "@headlessui/react";
 
 export type ManagersType = {
   /** API returns UUID string; we preserve it for links and update mutation */
@@ -20,15 +16,20 @@ export type ManagersType = {
   assignedDoctorIds?: (string | number)[];
   status: string;
   imageUrl?: string;
+  /** From API: true = access revoked, false = has access. Toggle is on when !revokeAccess. */
+  revokeAccess?: boolean;
 };
 
 type ManagersDatabaseViewProps = {
   user?: ManagersType;
   onEditManager: () => void;
-  onDisableManager: () => void;
   onAssignDoctor: () => void;
   onDetailsManager: () => void;
   onRowClick: () => void;
+  /** Whether the manager currently has access. Toggle gives/revokes access. */
+  hasAccess: boolean;
+  onToggleAccess: () => void;
+  toggleLoading?: boolean;
 };
 
 const colorPairs = [
@@ -61,10 +62,12 @@ function getStatusClasses(status?: string) {
 export default function ManagersDatabaseView({
   user,
   onEditManager,
-  onDisableManager,
   onAssignDoctor,
   onDetailsManager,
   onRowClick,
+  hasAccess,
+  onToggleAccess,
+  toggleLoading = false,
 }: ManagersDatabaseViewProps) {
   const id = user?.id;
   const name = user?.name;
@@ -118,14 +121,31 @@ export default function ManagersDatabaseView({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-1 w-full">
-          <div className="flex items-center gap-1">
+        <div className="flex flex-col gap-2 w-full">
+          <div className="flex items-center justify-between gap-2 border-t border-gray-100 pt-2">
+            <span className="text-gray-600 text-xs font-medium">Access</span>
+            <Tooltip content={hasAccess ? "Revoke access" : "Give access"}>
+              <span onClick={(e) => e.stopPropagation()}>
+                <Switch
+                  checked={hasAccess}
+                  onChange={() => {
+                    if (!toggleLoading) onToggleAccess();
+                  }}
+                  disabled={toggleLoading}
+                  className="group relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border border-gray-200 bg-gray-200 transition data-[checked]:bg-primary data-[checked]:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="pointer-events-none inline-block size-4 translate-x-1 rounded-full bg-white shadow ring-0 transition group-data-[checked]:translate-x-6" />
+                </Switch>
+              </span>
+            </Tooltip>
+          </div>
+          <div className="flex items-center justify-end gap-1">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 if (id) onDetailsManager();
               }}
-              className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-green-500 bg-white items-center justify-center rounded-md border cursor-pointer border-green-500 hover:border-primary group-hover:border-primary"
+              className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white text-green-500 bg-white items-center justify-center rounded-md border cursor-pointer border-green-500 hover:border-primary"
             >
               <ViewEyeIcon fill="currentColor" />
             </button>
@@ -134,7 +154,7 @@ export default function ManagersDatabaseView({
                 e.stopPropagation();
                 if (id) onAssignDoctor();
               }}
-              className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+              className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
             >
               <ViewDoctorIcon fill="currentColor" />
             </button>
@@ -145,18 +165,9 @@ export default function ManagersDatabaseView({
                 e.stopPropagation();
                 onEditManager();
               }}
-              className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-blue-500 bg-white items-center justify-center rounded-md border cursor-pointer border-blue-500 hover:border-primary group-hover:border-primary"
+              className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white text-blue-500 bg-white items-center justify-center rounded-md border cursor-pointer border-blue-500 hover:border-primary"
             >
               <PencilEditIcon fill="currentColor" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (id) onDisableManager();
-              }}
-              className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-red-500 bg-white items-center justify-center rounded-md border cursor-pointer border-red-500 hover:border-primary group-hover:border-primary"
-            >
-              <DisableAdminProfileIcon fill="currentColor" />
             </button>
           </div>
         </div>
@@ -206,14 +217,31 @@ export default function ManagersDatabaseView({
         </span>
       </div>
 
-      <div className="col-span-2 flex items-center flex-wrap justify-end gap-2">
+      <div className="col-span-1 flex items-center">
+        <Tooltip content={hasAccess ? "Revoke access" : "Give access"}>
+          <span onClick={(e) => e.stopPropagation()}>
+            <Switch
+              checked={hasAccess}
+              onChange={() => {
+                if (id && !toggleLoading) onToggleAccess();
+              }}
+              disabled={toggleLoading}
+              className="group relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border border-gray-200 bg-gray-200 transition data-[checked]:bg-primary data-[checked]:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="pointer-events-none inline-block size-4 translate-x-1 rounded-full bg-white shadow ring-0 transition group-data-[checked]:translate-x-6" />
+            </Switch>
+          </span>
+        </Tooltip>
+      </div>
+
+      <div className="col-span-1 flex items-center justify-end gap-2">
         <Tooltip content="Manager Details">
           <button
             onClick={(e) => {
               e.stopPropagation();
               if (id) onDetailsManager();
             }}
-            className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-green-500 bg-white items-center justify-center rounded-md border cursor-pointer border-green-500 hover:border-primary group-hover:border-primary"
+            className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white text-green-500 bg-white items-center justify-center rounded-md border cursor-pointer border-green-500 hover:border-primary"
           >
             <ViewEyeIcon fill="currentColor" />
           </button>
@@ -224,7 +252,7 @@ export default function ManagersDatabaseView({
               e.stopPropagation();
               if (id) onAssignDoctor();
             }}
-            className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
+            className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white text-primary bg-white items-center justify-center rounded-md border cursor-pointer border-primary"
           >
             <ViewDoctorIcon fill="currentColor" />
           </button>
@@ -237,22 +265,11 @@ export default function ManagersDatabaseView({
               e.stopPropagation();
               onEditManager();
             }}
-            className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-blue-500 bg-white items-center justify-center rounded-md border cursor-pointer border-blue-500 hover:border-primary group-hover:border-primary"
+            className="flex md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white text-blue-500 bg-white items-center justify-center rounded-md border cursor-pointer border-blue-500 hover:border-primary"
           >
             <PencilEditIcon fill="currentColor" />
           </button>
         </Tooltip> */}
-        <Tooltip content="Block Manager">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (id) onDisableManager();
-            }}
-            className="flex  md:h-8 md:w-8 h-7 w-7 hover:bg-gradient-to-r hover:text-white group-hover:text-white group-hover:bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-red-500 bg-white items-center justify-center rounded-md border cursor-pointer border-red-500 hover:border-primary group-hover:border-primary"
-          >
-            <DisableAdminProfileIcon fill="currentColor" />
-          </button>
-        </Tooltip>
       </div>
     </div>
   );
