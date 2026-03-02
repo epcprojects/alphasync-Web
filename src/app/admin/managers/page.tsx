@@ -37,7 +37,6 @@ import ManagersDatabaseView, {
   ManagersType,
 } from "@/app/components/ui/cards/ManagersDatabaseView";
 import AssignDoctorModal from "@/app/components/ui/modals/AssignDoctorModal";
-import BlockManagerModal from "@/app/components/ui/modals/BlockManagerModal";
 
 /** Assigned doctor fields returned by allManagers.allData.assignedDoctors */
 export interface ManagerAssignedDoctor {
@@ -95,6 +94,7 @@ function mapManagerToView(
     assignedDoctorIds:
       m.assignedDoctors?.map((d) => d.id).filter((id) => id != null) ?? [],
     imageUrl: m.imageUrl,
+    revokeAccess: m.revokeAccess ?? false,
   };
 }
 
@@ -105,34 +105,30 @@ const Page = () => {
   const [editUser, seteditUser] = useState<ManagersType | null>(null);
   const [showAssignDoctor, setshowAssignDoctor] = useState(false);
   const [assignDoctor, setassignDoctor] = useState<ManagersType | null>(null);
-  const [showBlockManager, setshowBlockManager] = useState(false);
-  const [managerToBlock, setManagerToBlock] = useState<ManagersType | null>(
-    null,
-  );
+  const [togglingManagerId, setTogglingManagerId] = useState<string | number | null>(null);
   const [modifyAccessUser, { loading: modifyLoading }] =
     useMutation(MODIFY_ACCESSS_USER);
 
-  function handleBlockManager(user: ManagersType) {
-    setManagerToBlock(user);
-    setshowBlockManager(true);
-  }
-
-  async function handleConfirmBlock() {
-    if (!managerToBlock?.id) return;
+  async function handleToggleAccess(manager: ManagersType) {
+    if (manager?.id == null) return;
+    const revokeAccess = !manager.revokeAccess;
+    setTogglingManagerId(manager.id);
     try {
       await modifyAccessUser({
         variables: {
-          userId: managerToBlock.id,
-          revokeAccess: true,
+          userId: String(manager.id),
+          revokeAccess,
         },
       });
-      showSuccessToast("Manager blocked successfully");
-      setshowBlockManager(false);
-      setManagerToBlock(null);
+      showSuccessToast(
+        revokeAccess ? "Access revoked successfully" : "Access granted successfully"
+      );
       refetch();
     } catch (error) {
-      console.error("Error blocking manager:", error);
-      showErrorToast("Failed to block manager. Please try again.");
+      console.error("Error toggling manager access:", error);
+      showErrorToast("Failed to update access. Please try again.");
+    } finally {
+      setTogglingManagerId(null);
     }
   }
 
@@ -322,7 +318,8 @@ const Page = () => {
                   <div className="col-span-2">Phone</div>
                   <div className="col-span-2">Assigned Doctors</div>
                   <div className="col-span-1">Status</div>
-                  <div className="col-span-2 text-center">Actions</div>
+                  <div className="col-span-1">Access</div>
+                  <div className="col-span-1 text-center">Actions</div>
                 </div>
                 {loading ? (
                   <div className="my-3 space-y-1">
@@ -345,7 +342,9 @@ const Page = () => {
                         onDetailsManager={() =>
                           router.push(`/admin/managers/${data.id}`)
                         }
-                        onDisableManager={() => handleBlockManager(data)}
+                        hasAccess={!data.revokeAccess}
+                        onToggleAccess={() => handleToggleAccess(data)}
+                        toggleLoading={togglingManagerId === data.id || modifyLoading}
                       />
                     ))}
                   </>
@@ -381,7 +380,8 @@ const Page = () => {
                   <div className="col-span-2">Phone</div>
                   <div className="col-span-2">Assigned Doctors</div>
                   <div className="col-span-1">Status</div>
-                  <div className="col-span-2 text-center">Actions</div>
+                  <div className="col-span-1">Access</div>
+                  <div className="col-span-1 text-center">Actions</div>
                 </div>
                 {loading ? (
                   <div className="my-3 space-y-1">
@@ -404,7 +404,9 @@ const Page = () => {
                         onDetailsManager={() =>
                           router.push(`/admin/managers/${data.id}`)
                         }
-                        onDisableManager={() => handleBlockManager(data)}
+                        hasAccess={!data.revokeAccess}
+                        onToggleAccess={() => handleToggleAccess(data)}
+                        toggleLoading={togglingManagerId === data.id || modifyLoading}
                       />
                     ))}
                   </>
@@ -439,7 +441,8 @@ const Page = () => {
                   <div className="col-span-2">Phone</div>
                   <div className="col-span-2">Assigned Doctors</div>
                   <div className="col-span-1">Status</div>
-                  <div className="col-span-2 text-center">Actions</div>
+                  <div className="col-span-1">Access</div>
+                  <div className="col-span-1 text-center">Actions</div>
                 </div>
                 {loading ? (
                   <div className="my-3 space-y-1">
@@ -462,7 +465,9 @@ const Page = () => {
                         onDetailsManager={() =>
                           router.push(`/admin/managers/${data.id}`)
                         }
-                        onDisableManager={() => handleBlockManager(data)}
+                        hasAccess={!data.revokeAccess}
+                        onToggleAccess={() => handleToggleAccess(data)}
+                        toggleLoading={togglingManagerId === data.id || modifyLoading}
                       />
                     ))}
                   </>
@@ -511,22 +516,6 @@ const Page = () => {
         initialvalues={editUser}
         managerId={editUser?.id?.toString() ?? null}
         onConfirm={() => refetch()}
-      />
-      <BlockManagerModal
-        isOpen={showBlockManager}
-        onClose={() => {
-          setshowBlockManager(false);
-          setManagerToBlock(null);
-        }}
-        onDelete={handleConfirmBlock}
-        title="Block Manager"
-        subtitle={
-          managerToBlock
-            ? `Are you sure you want to block ${managerToBlock.name}? They will no longer be able to sign in.`
-            : "Are you sure you want to block this manager?"
-        }
-        isLoading={modifyLoading}
-        isMobile={isMobile}
       />
     </div>
   );
