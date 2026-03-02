@@ -39,8 +39,9 @@ const AssignDoctorModal: React.FC<AssignDoctorModalProps> = ({
     useQuery<AllDoctorsResponse>(ALL_DOCTORS, {
       variables: {
         status: "ACTIVE",
-        perPage: 500,
+        perPage: doctorSearchTerm.trim() ? 50 : 30,
         page: 1,
+        search: doctorSearchTerm.trim() || undefined,
       },
       skip: !isOpen,
       fetchPolicy: "network-only",
@@ -158,10 +159,13 @@ const AssignDoctorModal: React.FC<AssignDoctorModalProps> = ({
             showLabel={true}
             multiple={true}
             alwaysShowSearch={true}
-            clientSideSearch={true}
+            clientSideSearch={false}
             isSearching={doctorsLoading}
             disableFlip={true}
             usePortal={true}
+            disabled={loading}
+            displaySelectedAsCount={true}
+            displaySelectedCountLabel="doctors"
           />
         </div>
       </div>

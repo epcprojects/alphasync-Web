@@ -43,6 +43,10 @@ type SelectGroupDropdownProps = {
   disableFlip?: boolean;
   /** When true, render dropdown menu in a portal to avoid being cut off by modal overflow. */
   usePortal?: boolean;
+  /** When true and multiple selection, show only count in trigger (e.g. "3 selected"). Use displaySelectedCountLabel for "3 doctors selected". */
+  displaySelectedAsCount?: boolean;
+  /** Label for count display when displaySelectedAsCount is true (e.g. "doctors" → "3 doctors selected"). */
+  displaySelectedCountLabel?: string;
 };
 
 const getGroupKey = (group: GroupOption) =>
@@ -76,6 +80,8 @@ const SelectGroupDropdown = ({
   clientSideSearch = true,
   disableFlip = false,
   usePortal = false,
+  displaySelectedAsCount = false,
+  displaySelectedCountLabel,
 }: SelectGroupDropdownProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -168,6 +174,13 @@ const SelectGroupDropdown = ({
     if (multiple) {
       const selected = selectedGroup as string[];
       if (selected.length === 0) return placeholder || "Select User...";
+      if (displaySelectedAsCount) {
+        const count = selected.length;
+        const label = displaySelectedCountLabel?.trim();
+        if (!label) return `${count} selected`;
+        const plural = count === 1 ? label.replace(/s$/, "") : label; // "doctors" -> "doctor" for 1
+        return `${count} ${plural} selected`;
+      }
       return selected
         .map((key) =>
           getGroupLabel(safeGroups.find((g) => getGroupKey(g) === key) ?? key),
