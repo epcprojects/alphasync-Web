@@ -116,11 +116,14 @@ const Page = () => {
         stock: p.totalInventory ?? 0,
         price: `$${Number(customerPrice).toFixed(2)}`,
         basePrice,
+        vendor: p.vendor,
         image:
-          (typeof p.primaryImage === "string" && p.primaryImage.trim().length > 0
+          (typeof p.primaryImage === "string" &&
+          p.primaryImage.trim().length > 0
             ? p.primaryImage
-            : p.images?.find((img) => typeof img === "string" && img.trim().length > 0)) ||
-          "",
+            : p.images?.find(
+                (img) => typeof img === "string" && img.trim().length > 0,
+              )) || "",
         isFavourite: !!p.isFavorited,
       };
     });
