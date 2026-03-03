@@ -368,6 +368,7 @@ export const FETCH_PRODUCT = gql`
       directions
       inStock
       isFavorited
+      deaSchedule
       priceRange
       primaryImage
       productType

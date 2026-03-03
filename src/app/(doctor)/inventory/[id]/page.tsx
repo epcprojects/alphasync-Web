@@ -18,6 +18,7 @@ import {
 } from "@/lib/graphql/mutations";
 import { FetchProductResponse } from "@/types/products";
 import { showErrorToast } from "@/lib/toast";
+import { PHARMACY_VENDORS } from "@/lib/constants";
 
 export default function PostDetail() {
   const router = useRouter();
@@ -51,6 +52,9 @@ export default function PostDetail() {
     useMutation(MARK_PRODUCT_NOT_FOR_SALE);
 
   const product = data?.fetchProduct;
+
+  const isPharmacyProduct =
+    !!product?.vendor && PHARMACY_VENDORS.includes(product.vendor);
 
   // Selected unit pricing index (when productUnitPricings exists). Default first.
   const [selectedUnitPricingIndex, setSelectedUnitPricingIndex] = useState(0);
@@ -306,9 +310,11 @@ export default function PostDetail() {
                   : null}
               </div>
 
-              <span className="inline-block whitespace-nowrap text-primary text-xs md:text-sm font-semibold">
-                Stock: {product.totalInventory || 0}
-              </span>
+              {!isPharmacyProduct && (
+                <span className="inline-block whitespace-nowrap text-primary text-xs md:text-sm font-semibold">
+                  Stock: {product.totalInventory || 0}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-2.5 md:gap-5">
@@ -411,6 +417,7 @@ export default function PostDetail() {
                 <button
                   onClick={handleSavePrice}
                   disabled={
+                    isPharmacyProduct ||
                     updatePriceLoading ||
                     !!priceError ||
                     !price ||
@@ -488,11 +495,22 @@ export default function PostDetail() {
                     </span>
                   </div>
                 )}
+                {product?.deaSchedule != null && product.vendor === "Integrity" && (
+                  <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                    <span className="block text-gray-800 text-sm !font-normal">
+                      Quantity
+                    </span>
+                    <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                      {product.deaSchedule}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Price History and Markup Section */}
-            {product.customPriceChangeHistory &&
+            {!isPharmacyProduct &&
+              product.customPriceChangeHistory &&
               product.customPriceChangeHistory.length > 0 && (
                 <div className="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200">
                   <h2 className="text-black font-medium text-sm md:text-base mb-3 md:mb-4">
@@ -586,7 +604,7 @@ export default function PostDetail() {
             <div className="grid grid-cols-1 gap-2 md:gap-4 md:grid-cols-4">
               <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                 <span className="block text-gray-800 text-sm !font-normal">
-                  Manufacturer
+                  {isPharmacyProduct ? "Unit Type" : "Manufacturer"}
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
                   {product?.vendor ?? "N/A"}
@@ -602,14 +620,16 @@ export default function PostDetail() {
                 </span>
               </div>
 
-              <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
-                <span className="block text-gray-800 text-sm !font-normal">
-                  Stock Quantity
-                </span>
-                <span className="text-gray-800 block font-xs md:text-sm font-medium">
-                  {product?.totalInventory ?? 0} units
-                </span>
-              </div>
+              {!isPharmacyProduct && (
+                <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                  <span className="block text-gray-800 text-sm !font-normal">
+                    Stock Quantity
+                  </span>
+                  <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                    {product?.totalInventory ?? 0} units
+                  </span>
+                </div>
+              )}
 
               {/* <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                 <span className="block text-gray-800 text-sm !font-normal">
@@ -633,7 +653,8 @@ export default function PostDetail() {
             </div>
 
             {/* Pricing per unit - just above Order button */}
-            {product.productUnitPricings &&
+            {!isPharmacyProduct &&
+              product.productUnitPricings &&
               product.productUnitPricings.length > 0 && (
                 <div className="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200">
                   <h2 className="text-black font-medium text-sm md:text-base mb-3 md:mb-4">
@@ -728,14 +749,16 @@ export default function PostDetail() {
               )}
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-2 md:gap-4">
-              <div>
-                <h2 className="text-sm text-gray-600 font-normal">
-                  Current Stock:
-                  <span className="text-primary ps-2 font-semibold">
-                    {product.totalInventory || 0} units
-                  </span>
-                </h2>
-              </div>
+              {!isPharmacyProduct && (
+                <div>
+                  <h2 className="text-sm text-gray-600 font-normal">
+                    Current Stock:
+                    <span className="text-primary ps-2 font-semibold">
+                      {product.totalInventory || 0} units
+                    </span>
+                  </h2>
+                </div>
+              )}
 
               <div className="flex flex-col sm:flex-row gap-2">
                 {product.customPrice != null &&
