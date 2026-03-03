@@ -349,13 +349,13 @@ export default function PostDetail() {
               </span>
             </div>
 
-            <div>
-              {!isPharmacyProduct && <label
+            {!isPharmacyProduct && <div>
+              <label
                 htmlFor="input-group-1"
                 className="block mb-1 text-base font-normal text-gray-600"
               >
                 Price to Customer ($)
-              </label>}
+              </label>
               <div className="relative flex items-center w-full sm:w-fit">
                 <div className="absolute inset-y-0 text-gray-400 start-0 text-sm flex items-center ps-3.5 pointer-events-none">
                   $
@@ -434,7 +434,7 @@ export default function PostDetail() {
               {priceError && (
                 <p className="text-xs text-red-500 mt-1">{priceError}</p>
               )}
-            </div>
+            </div>}
 
             {product?.directions != null && product.directions !== "" && (
               <div className="">
