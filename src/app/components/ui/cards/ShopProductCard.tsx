@@ -16,6 +16,7 @@ type Product = {
   image: string;
   isFavourite: boolean;
   basePrice?: string;
+  vendor?: string;
 };
 
 interface ProductCardProps {
@@ -83,6 +84,7 @@ export default function ShopProductCard({
     await Promise.resolve(onRemoveFromShop?.(productId));
   };
 
+  console.log(product.vendor);
   return (
     <div
       onClick={viewOnly ? undefined : onCardClick}
@@ -134,7 +136,7 @@ export default function ShopProductCard({
             </div>
 
             <div className="flex flex-col gap-2">
-              {product.basePrice && (
+              {product.vendor === "Alpha BioMed" && product.basePrice && (
                 <div className="flex items-center justify-between">
                   <span className="text-gray-00 font-semibold text-xs md:text-sm">
                     My Clinic Price:

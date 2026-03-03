@@ -46,6 +46,8 @@ import {
   CREATE_ORDER,
   TOGGLE_FAVOURITE,
   EXPORT_PRODUCTS,
+  MARK_PRODUCT_NOT_FOR_SALE,
+  UPDATE_PRODUCT_PRICE,
 } from "@/lib/graphql/mutations";
 import {
   Menu,
@@ -75,9 +77,9 @@ function InventoryContent() {
   const [showPricModal, setShowPriceModal] = useState(false);
   const [markupFilter, setMarkupFilter] = useState<string>("All");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [inventoryTab, setInventoryTab] = useState<"research-use-only" | "pharmacy">(
-    "research-use-only"
-  );
+  const [inventoryTab, setInventoryTab] = useState<
+    "research-use-only" | "pharmacy"
+  >("research-use-only");
   const [isBlanketMarkupModalOpen, setIsBlanketMarkupModalOpen] =
     useState(false);
   const [isRefetchingFavorites, setIsRefetchingFavorites] = useState(false);
@@ -148,7 +150,7 @@ function InventoryContent() {
   // GraphQL query to fetch categories
   const { data: categoriesData } = useQuery<{ allCategories: string[] }>(
     ALL_CATEGORIES,
-    { fetchPolicy: "network-only" }
+    { fetchPolicy: "network-only" },
   );
   const categories = categoriesData?.allCategories ?? [];
 
@@ -194,6 +196,12 @@ function InventoryContent() {
   const [exportProducts, { loading: exportLoading }] =
     useMutation(EXPORT_PRODUCTS);
 
+  // GraphQL mutation to remove product from sale (Pharmacy / Integrity toggle off)
+  const [markProductNotForSale] = useMutation(MARK_PRODUCT_NOT_FOR_SALE);
+
+  // GraphQL mutation to set product price (Pharmacy / Integrity toggle on – use displayed price)
+  const [updateProductPrice] = useMutation(UPDATE_PRODUCT_PRICE);
+
   // Transform GraphQL product data to match the expected format
   const products: Product[] =
     productsData?.allProducts.allData?.map(transformGraphQLProduct) || [];
@@ -223,6 +231,48 @@ function InventoryContent() {
       showErrorToast("Failed to update favorite status. Please try again.");
     } finally {
       setIsRefetchingFavorites(false);
+    }
+  };
+
+  const handleRemoveFromSale = async (productId: string) => {
+    try {
+      await markProductNotForSale({ variables: { productId } });
+      await refetch();
+      showSuccessToast(
+        "Product removed from your store. It’s back to base price and no longer available for customers to purchase.",
+      );
+    } catch (error) {
+      console.error("Error removing product from sale:", error);
+      showErrorToast("Failed to remove from sale. Please try again.");
+    }
+  };
+
+  /** Get the same numeric price displayed on card/list (unit pricing → customPrice → variant price) */
+  const getDisplayPriceValue = (
+    p: AllProductsResponse["allProducts"]["allData"][number] | undefined
+  ): number => {
+    if (!p) return 0;
+    const firstUnit =
+      p.productUnitPricings?.[0]?.price != null
+        ? typeof p.productUnitPricings[0].price === "number"
+          ? p.productUnitPricings[0].price
+          : parseFloat(String(p.productUnitPricings[0].price))
+        : NaN;
+    if (!Number.isNaN(firstUnit)) return firstUnit;
+    if (p.customPrice != null && p.customPrice !== undefined) return p.customPrice;
+    return p.variants?.[0]?.price ?? 0;
+  };
+
+  const handleAddToStoreWithPrice = async (productId: string, price: number) => {
+    try {
+      await updateProductPrice({
+        variables: { productId, price },
+      });
+      await refetch();
+      showSuccessToast("Product added to your store.");
+    } catch (error) {
+      console.error("Error adding product to store:", error);
+      showErrorToast("Failed to add to store. Please try again.");
     }
   };
 
@@ -560,9 +610,10 @@ function InventoryContent() {
         <TabList className="flex w-fit items-center gap-1 rounded-full bg-gray-100 p-1 shadow-table overflow-x-auto">
           <Tab
             className={({ selected }) =>
-              `whitespace-nowrap px-4 md:px-6 py-2.5 text-sm font-medium rounded-full transition-colors outline-none ${selected
-                ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+              `whitespace-nowrap px-4 md:px-6 py-2.5 text-sm font-medium rounded-full transition-colors outline-none ${
+                selected
+                  ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               }`
             }
           >
@@ -570,9 +621,10 @@ function InventoryContent() {
           </Tab>
           <Tab
             className={({ selected }) =>
-              `whitespace-nowrap px-4 md:px-6 py-2.5 text-sm font-medium rounded-full transition-colors outline-none ${selected
-                ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+              `whitespace-nowrap px-4 md:px-6 py-2.5 text-sm font-medium rounded-full transition-colors outline-none ${
+                selected
+                  ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               }`
             }
           >
@@ -588,145 +640,18 @@ function InventoryContent() {
               <div className="flex flex-col gap-4 md:gap-6">
                 {showGridView ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
-              {displayProducts.map((product) => {
-                // Find the original GraphQL product data using the originalId
-                const originalProduct = productsData?.allProducts.allData?.find(
-                  (p) => p.id === product.originalId,
-                );
-                const isMarkedUp =
-                  originalProduct?.customPrice != null &&
-                  originalProduct?.customPrice !== undefined;
-                // Alpha BioMed (RUO) and City Center (pharmacy) products can be added to shop / change price
-                const canOrder =
-                  originalProduct?.vendor === "Alpha BioMed" ||
-                  originalProduct?.vendor === "City Center";
-                return (
-                  <ProductCard
-                    key={product.originalId}
-                    product={product}
-                    customPrice={originalProduct?.customPrice}
-                    orderButtonDisabled={!canOrder}
-                    vendor={originalProduct?.vendor}
-                    pendingApproval={!canOrder}
-                    onBtnClick={() => {
-                      // Not marked up -> Add to My Store
-                      // Marked up -> Change Customer Price
-                      if (!originalProduct) {
-                        showErrorToast("Product information is missing");
-                        return;
-                      }
-                      const firstVariant = originalProduct.variants?.[0];
-                      setSelectedProduct({
-                        id: originalProduct.id,
-                        shopifyVariantId: firstVariant?.shopifyVariantId || "",
-                        title: originalProduct.title,
-                        price: firstVariant?.price ?? 0,
-                        customPrice: originalProduct.customPrice ?? null,
-                        imageUrl: originalProduct.primaryImage ?? null,
-                        vendor: originalProduct.vendor,
-                      });
-                      setShowPriceModal(true);
-                    }}
-                    onCardClick={() =>
-                      router.push(`/inventory/${product.originalId}`)
-                    }
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <div className="space-y-1">
-              <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium bg-white rounded-xl text-black shadow-table">
-                <div className="col-span-4 md:col-span-4 lg:col-span-4">
-                  Product
-                </div>
-                <div className="col-span-2 md:col-span-2">Category</div>
-                <div className="col-span-1">Stock</div>
-                <div className="col-span-2">Latest Marked up Price</div>
-                <div className="col-span-1">Base Price</div>
-                <div className="col-span-1 md:col-span-2 lg:col-span-2 text-center">
-                  Actions
-                </div>
-              </div>
-              {displayProducts.map((product) => {
-                // Find the original GraphQL product data using the originalId
-                const originalProduct = productsData?.allProducts.allData?.find(
-                  (p) => p.id === product.originalId,
-                );
-                // Alpha BioMed (RUO) and City Center (pharmacy) products can be added to shop / change price
-                const canOrder =
-                  originalProduct?.vendor === "Alpha BioMed" ||
-                  originalProduct?.vendor === "City Center";
-
-                return (
-                  <ProductListView
-                    key={product.originalId}
-                    onRowClick={() =>
-                      router.push(`/inventory/${product.originalId}`)
-                    }
-                    product={product}
-                    customPrice={originalProduct?.customPrice}
-                    orderButtonDisabled={!canOrder}
-                    vendor={originalProduct?.vendor}
-                    pendingApproval={!canOrder}
-                    onToggleFavourite={() => {
-                      handleToggleFavorite(product.originalId);
-                    }}
-                    onBtnClick={() => {
-                      if (!originalProduct) {
-                        showErrorToast("Product information is missing");
-                        return;
-                      }
-                      const firstVariant = originalProduct.variants?.[0];
-                      setSelectedProduct({
-                        id: originalProduct.id,
-                        shopifyVariantId: firstVariant?.shopifyVariantId || "",
-                        title: originalProduct.title,
-                        price: firstVariant?.price ?? 0,
-                        customPrice: originalProduct.customPrice ?? null,
-                        imageUrl: originalProduct.primaryImage ?? null,
-                        vendor: originalProduct.vendor,
-                      });
-                      setShowPriceModal(true);
-                    }}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          <div className="flex justify-center flex-col gap-2 md:gap-6 ">
-            {displayProducts.length < 1 && (
-              <EmptyState mtClasses=" mt-0 md:mt-0" />
-            )}
-
-            {displayProducts.length > 0 && (
-              <Pagination
-                currentPage={currentPage - 1} // Convert 1-based to 0-based for pagination component
-                totalPages={pageCount}
-                onPageChange={(selectedPage) =>
-                  handlePageChange(selectedPage + 1)
-                } // Convert 0-based back to 1-based
-              />
-            )}
-          </div>
-        </div>
-      )}
-          </TabPanel>
-          <TabPanel className="focus:outline-none">
-            {productsLoading && !isRefetchingFavorites ? (
-              <InventorySkeleton viewMode={showGridView ? "grid" : "list"} />
-            ) : (
-              <div className="flex flex-col gap-4 md:gap-6">
-                {showGridView ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
                     {displayProducts.map((product) => {
-                      const originalProduct = productsData?.allProducts.allData?.find(
-                        (p) => p.id === product.originalId,
-                      );
+                      // Find the original GraphQL product data using the originalId
+                      const originalProduct =
+                        productsData?.allProducts.allData?.find(
+                          (p) => p.id === product.originalId,
+                        );
+                      const isMarkedUp =
+                        originalProduct?.customPrice != null &&
+                        originalProduct?.customPrice !== undefined;
+                      // Only Alpha BioMed (RUO) products can be added to shop / ordered
                       const canOrder =
-                        originalProduct?.vendor === "Alpha BioMed" ||
-                        originalProduct?.vendor === "City Center";
+                        originalProduct?.vendor === "Alpha BioMed";
                       return (
                         <ProductCard
                           key={product.originalId}
@@ -736,6 +661,8 @@ function InventoryContent() {
                           vendor={originalProduct?.vendor}
                           pendingApproval={!canOrder}
                           onBtnClick={() => {
+                            // Not marked up -> Add to My Store
+                            // Marked up -> Change Customer Price
                             if (!originalProduct) {
                               showErrorToast("Product information is missing");
                               return;
@@ -743,7 +670,8 @@ function InventoryContent() {
                             const firstVariant = originalProduct.variants?.[0];
                             setSelectedProduct({
                               id: originalProduct.id,
-                              shopifyVariantId: firstVariant?.shopifyVariantId || "",
+                              shopifyVariantId:
+                                firstVariant?.shopifyVariantId || "",
                               title: originalProduct.title,
                               price: firstVariant?.price ?? 0,
                               customPrice: originalProduct.customPrice ?? null,
@@ -762,30 +690,43 @@ function InventoryContent() {
                 ) : (
                   <div className="space-y-1">
                     <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium bg-white rounded-xl text-black shadow-table">
-                      <div className="col-span-4 md:col-span-4 lg:col-span-4">Product</div>
+                      <div className="col-span-4 md:col-span-4 lg:col-span-4">
+                        Product
+                      </div>
                       <div className="col-span-2 md:col-span-2">Category</div>
                       <div className="col-span-1">Stock</div>
-                      <div className="col-span-2">Latest Marked up Price</div>
+                      {inventoryTab === "research-use-only" && (
+                        <div className="col-span-2">Latest Marked up Price</div>
+                      )}
                       <div className="col-span-1">Base Price</div>
-                      <div className="col-span-1 md:col-span-2 lg:col-span-2 text-center">Actions</div>
+                      <div className="col-span-1 md:col-span-2 lg:col-span-2 text-center">
+                        Actions
+                      </div>
                     </div>
                     {displayProducts.map((product) => {
-                      const originalProduct = productsData?.allProducts.allData?.find(
-                        (p) => p.id === product.originalId,
-                      );
+                      // Find the original GraphQL product data using the originalId
+                      const originalProduct =
+                        productsData?.allProducts.allData?.find(
+                          (p) => p.id === product.originalId,
+                        );
+                      // Only Alpha BioMed (RUO) products can be added to shop / ordered
                       const canOrder =
-                        originalProduct?.vendor === "Alpha BioMed" ||
-                        originalProduct?.vendor === "City Center";
+                        originalProduct?.vendor === "Alpha BioMed";
+
                       return (
                         <ProductListView
                           key={product.originalId}
-                          onRowClick={() => router.push(`/inventory/${product.originalId}`)}
+                          onRowClick={() =>
+                            router.push(`/inventory/${product.originalId}`)
+                          }
                           product={product}
                           customPrice={originalProduct?.customPrice}
                           orderButtonDisabled={!canOrder}
                           vendor={originalProduct?.vendor}
                           pendingApproval={!canOrder}
-                          onToggleFavourite={() => handleToggleFavorite(product.originalId)}
+                          onToggleFavourite={() => {
+                            handleToggleFavorite(product.originalId);
+                          }}
                           onBtnClick={() => {
                             if (!originalProduct) {
                               showErrorToast("Product information is missing");
@@ -794,7 +735,138 @@ function InventoryContent() {
                             const firstVariant = originalProduct.variants?.[0];
                             setSelectedProduct({
                               id: originalProduct.id,
-                              shopifyVariantId: firstVariant?.shopifyVariantId || "",
+                              shopifyVariantId:
+                                firstVariant?.shopifyVariantId || "",
+                              title: originalProduct.title,
+                              price: firstVariant?.price ?? 0,
+                              customPrice: originalProduct.customPrice ?? null,
+                              imageUrl: originalProduct.primaryImage ?? null,
+                              vendor: originalProduct.vendor,
+                            });
+                            setShowPriceModal(true);
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="flex justify-center flex-col gap-2 md:gap-6 ">
+                  {displayProducts.length < 1 && (
+                    <EmptyState mtClasses=" mt-0 md:mt-0" />
+                  )}
+
+                  {displayProducts.length > 0 && (
+                    <Pagination
+                      currentPage={currentPage - 1} // Convert 1-based to 0-based for pagination component
+                      totalPages={pageCount}
+                      onPageChange={(selectedPage) =>
+                        handlePageChange(selectedPage + 1)
+                      } // Convert 0-based back to 1-based
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+          </TabPanel>
+          <TabPanel className="focus:outline-none">
+            {productsLoading && !isRefetchingFavorites ? (
+              <InventorySkeleton viewMode={showGridView ? "grid" : "list"} />
+            ) : (
+              <div className="flex flex-col gap-4 md:gap-6">
+                {showGridView ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
+                    {displayProducts.map((product) => {
+                      const originalProduct =
+                        productsData?.allProducts.allData?.find(
+                          (p) => p.id === product.originalId,
+                        );
+                      // Pharmacy (Integrity): toggle for My Store; on enable, set price to displayed price
+                      return (
+                        <ProductCard
+                          key={product.originalId}
+                          product={product}
+                          customPrice={originalProduct?.customPrice}
+                          vendor={originalProduct?.vendor}
+                          pendingApproval={false}
+                          useAddToStoreToggle
+                          displayPriceValue={getDisplayPriceValue(originalProduct ?? undefined)}
+                          onAddToStoreWithPrice={handleAddToStoreWithPrice}
+                          onRemoveFromSale={handleRemoveFromSale}
+                          onBtnClick={() => {
+                            if (!originalProduct) {
+                              showErrorToast("Product information is missing");
+                              return;
+                            }
+                            const firstVariant = originalProduct.variants?.[0];
+                            setSelectedProduct({
+                              id: originalProduct.id,
+                              shopifyVariantId:
+                                firstVariant?.shopifyVariantId || "",
+                              title: originalProduct.title,
+                              price: firstVariant?.price ?? 0,
+                              customPrice: originalProduct.customPrice ?? null,
+                              imageUrl: originalProduct.primaryImage ?? null,
+                              vendor: originalProduct.vendor,
+                            });
+                            setShowPriceModal(true);
+                          }}
+                          onCardClick={() =>
+                            router.push(`/inventory/${product.originalId}`)
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <div className="hidden md:grid grid-cols-12 gap-4 px-2 py-2.5 text-sm font-medium bg-white rounded-xl text-black shadow-table">
+                      <div className="col-span-4 md:col-span-4 lg:col-span-4">
+                        Product
+                      </div>
+                      <div className="col-span-2 md:col-span-2">Category</div>
+                      <div className="col-span-1">Stock</div>
+                      {inventoryTab === "research-use-only" && (
+                        <div className="col-span-2">Latest Marked up Price</div>
+                      )}
+                      <div className="col-span-1">Base Price</div>
+                      <div className="col-span-1 md:col-span-2 lg:col-span-2 text-center">
+                        Actions
+                      </div>
+                    </div>
+                    {displayProducts.map((product) => {
+                      const originalProduct =
+                        productsData?.allProducts.allData?.find(
+                          (p) => p.id === product.originalId,
+                        );
+                      // Pharmacy (Integrity): toggle for My Store; on enable, set price to displayed price
+                      return (
+                        <ProductListView
+                          key={product.originalId}
+                          onRowClick={() =>
+                            router.push(`/inventory/${product.originalId}`)
+                          }
+                          product={product}
+                          customPrice={originalProduct?.customPrice}
+                          vendor={originalProduct?.vendor}
+                          pendingApproval={false}
+                          useAddToStoreToggle
+                          displayPriceValue={getDisplayPriceValue(originalProduct ?? undefined)}
+                          onAddToStoreWithPrice={handleAddToStoreWithPrice}
+                          onRemoveFromSale={handleRemoveFromSale}
+                          onToggleFavourite={() =>
+                            handleToggleFavorite(product.originalId)
+                          }
+                          onBtnClick={() => {
+                            if (!originalProduct) {
+                              showErrorToast("Product information is missing");
+                              return;
+                            }
+                            const firstVariant = originalProduct.variants?.[0];
+                            setSelectedProduct({
+                              id: originalProduct.id,
+                              shopifyVariantId:
+                                firstVariant?.shopifyVariantId || "",
                               title: originalProduct.title,
                               price: firstVariant?.price ?? 0,
                               customPrice: originalProduct.customPrice ?? null,
@@ -816,7 +888,9 @@ function InventoryContent() {
                     <Pagination
                       currentPage={currentPage - 1}
                       totalPages={pageCount}
-                      onPageChange={(selectedPage) => handlePageChange(selectedPage + 1)}
+                      onPageChange={(selectedPage) =>
+                        handlePageChange(selectedPage + 1)
+                      }
                     />
                   )}
                 </div>
@@ -847,13 +921,13 @@ function InventoryContent() {
         product={
           selectedProduct
             ? {
-              id: selectedProduct.id,
-              title: selectedProduct.title,
-              imageUrl: selectedProduct.imageUrl,
-              basePrice: selectedProduct.price ?? 0,
-              customPrice: selectedProduct.customPrice ?? null,
-              vendor: selectedProduct.vendor,
-            }
+                id: selectedProduct.id,
+                title: selectedProduct.title,
+                imageUrl: selectedProduct.imageUrl,
+                basePrice: selectedProduct.price ?? 0,
+                customPrice: selectedProduct.customPrice ?? null,
+                vendor: selectedProduct.vendor,
+              }
             : null
         }
         onSuccess={() => {
