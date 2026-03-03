@@ -50,6 +50,7 @@ interface FetchOrderResponse {
     status: string;
     patient?: { id: string } | null;
     orderItems: FetchedOrderItem[];
+    consultationFee?: number;
   };
 }
 

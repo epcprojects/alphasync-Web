@@ -54,6 +54,7 @@ interface FetchOrderResponse {
     orderItems: OrderItem[];
     trackingNumber?: string | number;
     trackingUrl?: string | null;
+    consultationFee?: number;
   };
 }
 
@@ -485,6 +486,16 @@ const Page = () => {
                 </div>
               ))}
 
+              {order.consultationFee != null && order.consultationFee > 0 && (
+                <div className="grid grid-cols-4 bg-gray-50 gap-2 p-1.5 md:py-2 md:px-3 rounded-lg md:rounded-xl">
+                  <div className="col-span-3 text-gray-800 text-base md:text-md">
+                    Consultation fee
+                  </div>
+                  <div className="text-base md:text-lg text-black">
+                    ${order.consultationFee.toFixed(2)}
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-4 bg-gray-50 gap-2 p-1.5 md:py-2 md:px-3 rounded-lg md:rounded-xl">
                 <div className="col-span-3 text-gray-800 text-base md:text-md">
                   Tax
