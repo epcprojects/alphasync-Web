@@ -498,7 +498,7 @@ export default function PostDetail() {
                 {product?.deaSchedule != null && product.vendor === "Integrity" && (
                   <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                     <span className="block text-gray-800 text-sm !font-normal">
-                      Quantity
+                      DEA Schedule
                     </span>
                     <span className="text-gray-800 block font-xs md:text-sm font-medium">
                       {product.deaSchedule}
@@ -653,7 +653,7 @@ export default function PostDetail() {
             </div>
 
             {/* Pricing per unit - just above Order button */}
-            {!isPharmacyProduct &&
+            {isPharmacyProduct &&
               product.productUnitPricings &&
               product.productUnitPricings.length > 0 && (
                 <div className="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200">

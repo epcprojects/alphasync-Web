@@ -22,6 +22,7 @@ import {
   UPDATE_PRODUCT_PRICE,
 } from "@/lib/graphql/mutations";
 import { FetchProductResponse } from "@/types/products";
+import { PHARMACY_VENDORS } from "@/lib/constants";
 
 export default function ProductDetailPage() {
   const router = useRouter();
@@ -524,7 +525,7 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-1 gap-2 md:gap-4 md:grid-cols-4">
               <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                 <span className="block text-gray-800 text-sm !font-normal">
-                  Manufacturer
+                  {PHARMACY_VENDORS.includes('Integrity') ? "Unit Type" : "Manufacturer"}
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
                   {product?.vendor || "N/A"}
@@ -540,14 +541,25 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+              {!PHARMACY_VENDORS.includes('Integrity') && <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                 <span className="block text-gray-800 text-sm !font-normal">
                   Stock Quantity
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
                   {product?.totalInventory || 0} units
                 </span>
-              </div>
+              </div>}
+
+              {product?.deaSchedule != null && product.vendor === "Integrity" && (
+                <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+                  <span className="block text-gray-800 text-sm !font-normal">
+                    DEA Schedule
+                  </span>
+                  <span className="text-gray-800 block font-xs md:text-sm font-medium">
+                    {product.deaSchedule}
+                  </span>
+                </div>
+              )}
 
               {/* <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                 <span className="block text-gray-800 text-sm !font-normal">
