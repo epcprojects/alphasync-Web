@@ -777,9 +777,28 @@ export default function PostDetail() {
                 <ThemeButton
                   label="Order"
                   icon={<ShopingCartIcon fill="white" height={20} width={20} />}
-                  onClick={() =>
-                    router.push(`/orders/new-order?productId=${product.id}`)
-                  }
+                  onClick={() => {
+                    const params = new URLSearchParams({
+                      productId: String(product.id),
+                    });
+                    if (
+                      isPharmacyProduct &&
+                      product.productUnitPricings?.length &&
+                      product.productUnitPricings[selectedUnitPricingIndex]
+                    ) {
+                      const tier =
+                        product.productUnitPricings[selectedUnitPricingIndex];
+                      const priceVal =
+                        tier.price != null
+                          ? typeof tier.price === "number"
+                            ? tier.price
+                            : parseFloat(String(tier.price))
+                          : NaN;
+                      if (!Number.isNaN(priceVal))
+                        params.set("unitPrice", String(priceVal));
+                    }
+                    router.push(`/orders/new-order?${params.toString()}`);
+                  }}
                   className="w-full sm:w-fit sm:min-w-40"
                   heightClass="h-11"
                   disabled={
