@@ -41,9 +41,11 @@ export default function ManagerDoctorsPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
+  // Sync status when switching tabs: Active tab → "Active", Pending DEA → "All Status". Don't override when on "All Doctors" (tab 0) so "Inactive" selection is preserved.
   useEffect(() => {
     if (selectedTabIndex === 1) setSelectedStatus("Active");
-    else setSelectedStatus("All Status");
+    else if (selectedTabIndex === 2) setSelectedStatus("All Status");
+    setCurrentPage(0);
   }, [selectedTabIndex]);
 
   const { data, loading, error } = useQuery<AllDoctorsResponse>(ALL_DOCTORS, {
@@ -53,7 +55,7 @@ export default function ManagerDoctorsPage() {
         selectedStatus === "All Status"
           ? undefined
           : selectedStatus.toUpperCase(),
-      pendingDeaApproval: selectedTabIndex === 3 ? true : undefined,
+      pendingDeaApproval: selectedTabIndex === 2 ? true : undefined,
       page: currentPage + 1,
       perPage: itemsPerPage,
     },
@@ -193,124 +195,6 @@ export default function ManagerDoctorsPage() {
                     <p className="text-red-500 mb-4">{error.message}</p>
                   </div>
                 )}
-                {loading ? (
-                  <div className="my-3 space-y-1">
-                    <Skeleton className="w-full h-12 rounded-full" />
-                    <Skeleton className="w-full h-12 rounded-full" />
-                    <Skeleton className="w-full h-12 rounded-full" />
-                    <Skeleton className="w-full h-12 rounded-full" />
-                  </div>
-                ) : (
-                  doctors.map((doctor: UserAttributes) => (
-                    <DoctorListView
-                      key={doctor.id}
-                      doctor={doctor}
-                      onDoctorClick={handleDoctorClick}
-                      onEditDoctor={() => {}}
-                      onDeleteDoctor={() => {}}
-                      onResendInvitation={() => {}}
-                      hideActions
-                      onViewShop={handleViewDoctorShop}
-                    />
-                  ))
-                )}
-                {!doctors.length && !loading && <EmptyState />}
-                {pageCount > 1 && (
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={pageCount}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-              </div>
-            </TabPanel>
-            <TabPanel>
-              <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr] text-black font-medium text-sm px-2 py-2.5 bg-white rounded-xl shadow-table">
-                  <div>
-                    <h2>Name</h2>
-                  </div>
-                  <div>
-                    <h2>Specialty</h2>
-                  </div>
-                  <div>
-                    <h2>Clinic</h2>
-                  </div>
-                  <div>
-                    <h2>Phone</h2>
-                  </div>
-                  <div>
-                    <h2>NPI number</h2>
-                  </div>
-                  <div className="xl:flex hidden">
-                    <h2>Status</h2>
-                  </div>
-                  <div>
-                    <h2>Invitation</h2>
-                  </div>
-                  <div className="text-center">
-                    <h2>Actions</h2>
-                  </div>
-                </div>
-                {loading ? (
-                  <div className="my-3 space-y-1">
-                    <Skeleton className="w-full h-12 rounded-full" />
-                    <Skeleton className="w-full h-12 rounded-full" />
-                    <Skeleton className="w-full h-12 rounded-full" />
-                    <Skeleton className="w-full h-12 rounded-full" />
-                  </div>
-                ) : (
-                  doctors.map((doctor: UserAttributes) => (
-                    <DoctorListView
-                      key={doctor.id}
-                      doctor={doctor}
-                      onDoctorClick={handleDoctorClick}
-                      onEditDoctor={() => {}}
-                      onDeleteDoctor={() => {}}
-                      onResendInvitation={() => {}}
-                      hideActions
-                      onViewShop={handleViewDoctorShop}
-                    />
-                  ))
-                )}
-                {!doctors.length && !loading && <EmptyState />}
-                {pageCount > 1 && (
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={pageCount}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-              </div>
-            </TabPanel>
-            <TabPanel>
-              <div className="space-y-1 p-0 md:p-4 pt-0">
-                <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_0.5fr_0.5fr] xl:grid-cols-[3fr_1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_0.5fr] text-black font-medium text-sm px-2 py-2.5 bg-white rounded-xl shadow-table">
-                  <div>
-                    <h2>Name</h2>
-                  </div>
-                  <div>
-                    <h2>Specialty</h2>
-                  </div>
-                  <div>
-                    <h2>Clinic</h2>
-                  </div>
-                  <div>
-                    <h2>Phone</h2>
-                  </div>
-                  <div>
-                    <h2>NPI number</h2>
-                  </div>
-                  <div className="xl:flex hidden">
-                    <h2>Status</h2>
-                  </div>
-                  <div>
-                    <h2>Invitation</h2>
-                  </div>
-                  <div className="text-center">
-                    <h2>Actions</h2>
-                  </div>
-                </div>
                 {loading ? (
                   <div className="my-3 space-y-1">
                     <Skeleton className="w-full h-12 rounded-full" />
