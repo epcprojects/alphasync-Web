@@ -604,7 +604,7 @@ export default function PostDetail() {
             <div className="grid grid-cols-1 gap-2 md:gap-4 md:grid-cols-4">
               <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                 <span className="block text-gray-800 text-sm !font-normal">
-                  {isPharmacyProduct ? "Unit Type" : "Manufacturer"}
+                  Manufacturer
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
                   {product?.vendor ?? "N/A"}
