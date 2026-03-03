@@ -55,6 +55,7 @@ const Page = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const productIdFromUrl = searchParams.get("productId");
+  const unitPriceFromUrl = searchParams.get("unitPrice");
   const apolloClient = useApolloClient();
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
@@ -128,6 +129,11 @@ const Page = () => {
             })
             .test("less-than-latest-markup", function (value) {
               if (!value || latestMarkedUpPrice === null) return true;
+              // Pharmacy products: no cap on price (e.g. unit pricing from inventory)
+              const isPharmacy =
+                selectedProductData?.vendor &&
+                PHARMACY_VENDORS.includes(selectedProductData.vendor);
+              if (isPharmacy) return true;
               if (value > latestMarkedUpPrice) {
                 return this.createError({
                   message: `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
@@ -682,7 +688,15 @@ const Page = () => {
         0;
       // Use clinic order mode if product is not marked up, otherwise respect current mode
       const shouldUseClinicOrder = !isMarkedUp || isClinicOrder;
-      const priceToUse = shouldUseClinicOrder ? basePrice : latestMarkedUpValue;
+      let priceToUse = shouldUseClinicOrder ? basePrice : latestMarkedUpValue;
+      // Pharmacy products: use selected unit price from inventory detail if passed
+      const parsedUnitPrice =
+        unitPriceFromUrl != null && unitPriceFromUrl !== ""
+          ? parseFloat(unitPriceFromUrl)
+          : NaN;
+      if (!Number.isNaN(parsedUnitPrice) && parsedUnitPrice > 0) {
+        priceToUse = parsedUnitPrice;
+      }
       setPreservedPrice(priceToUse);
       
       // Update form field values if form is available
@@ -691,16 +705,17 @@ const Page = () => {
         formikSetFieldValueRef.current("price", priceToUse);
       }
       
-      // Remove productId from URL after prefilling
+      // Remove productId and unitPrice from URL after prefilling
       const newSearchParams = new URLSearchParams(searchParams.toString());
       newSearchParams.delete("productId");
+      newSearchParams.delete("unitPrice");
       const newUrl = newSearchParams.toString()
         ? `${window.location.pathname}?${newSearchParams.toString()}`
         : window.location.pathname;
       router.replace(newUrl, { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchedProductData, productIdFromUrl, searchParams, router]);
+  }, [fetchedProductData, productIdFromUrl, unitPriceFromUrl, searchParams, router]);
 
   // Extract pricing information from selected product data
   const updatePricingInfo = (product: typeof selectedProductData) => {
@@ -910,9 +925,13 @@ const Page = () => {
       ? originalPrice
       : (customPrice ?? originalPrice);
 
-    // Validate price is not greater than latest marked up price (skip for clinic orders)
+    // Validate price is not greater than latest marked up price (skip for clinic and pharmacy)
+    const isPharmacyProduct =
+      selectedProductData?.vendor &&
+      PHARMACY_VENDORS.includes(selectedProductData.vendor);
     if (
       !isClinicOrder &&
+      !isPharmacyProduct &&
       latestMarkedUpPrice !== null &&
       values.price > latestMarkedUpPrice
     ) {
@@ -990,6 +1009,7 @@ const Page = () => {
         if (value < currentItem.originalPrice) {
           errorMessage = `Price must be greater than or equal to original price ($${currentItem.originalPrice.toFixed(2)})`;
         } else if (
+          !(currentItem.vendor && PHARMACY_VENDORS.includes(currentItem.vendor)) &&
           currentItem.latestMarkedUpPrice != null &&
           value > currentItem.latestMarkedUpPrice
         ) {
@@ -1073,6 +1093,7 @@ const Page = () => {
               2,
             )})`;
         } else if (
+          !(item.vendor && PHARMACY_VENDORS.includes(item.vendor)) &&
           item.latestMarkedUpPrice !== null &&
           item.latestMarkedUpPrice !== undefined &&
           item.price > item.latestMarkedUpPrice
