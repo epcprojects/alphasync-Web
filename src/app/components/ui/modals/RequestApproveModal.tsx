@@ -3,13 +3,16 @@ import React, { useState, useEffect } from "react";
 import AppModal from "./AppModal";
 import { ApproveCheckIcon } from "@/icons";
 import TextAreaField from "../inputs/TextAreaField";
+import ThemeInput from "../inputs/ThemeInput";
 
 interface RequestApproveModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: { doctorMessage: string }) => void;
+  onConfirm: (data: { doctorMessage: string; consultationFee?: number }) => void;
   itemTitle?: string;
   isSubmitting?: boolean;
+  /** When true, show consultation fee field (for pharmacy/Integrity requests) */
+  isPharmacyRequest?: boolean;
 }
 
 const RequestApproveModal: React.FC<RequestApproveModalProps> = ({
@@ -18,34 +21,47 @@ const RequestApproveModal: React.FC<RequestApproveModalProps> = ({
   itemTitle,
   onConfirm,
   isSubmitting = false,
+  isPharmacyRequest = false,
 }) => {
   const [doctorMessage, setDoctorMessage] = useState("");
+  const [consultationFeeInput, setConsultationFeeInput] = useState("");
 
-  // Reset message when modal closes
+  // Reset when modal closes
   useEffect(() => {
     if (!isOpen) {
       setDoctorMessage("");
+      setConsultationFeeInput("");
     }
   }, [isOpen]);
 
   const handleClose = () => {
     if (!isSubmitting) {
-      setDoctorMessage(""); // reset on close
+      setDoctorMessage("");
+      setConsultationFeeInput("");
       onClose();
     }
   };
 
   const handleCancel = () => {
     if (!isSubmitting) {
-      setDoctorMessage(""); // reset on cancel
+      setDoctorMessage("");
+      setConsultationFeeInput("");
       onClose();
     }
   };
 
   const handleConfirm = () => {
-    onConfirm({ doctorMessage });
-    // Don't close here - let parent component handle it
+    const consultationFee =
+      isPharmacyRequest && consultationFeeInput.trim() !== ""
+        ? parseFloat(consultationFeeInput) || 0
+        : undefined;
+    onConfirm({ doctorMessage, consultationFee });
   };
+
+  const consultationFeeValue = parseFloat(consultationFeeInput) || 0;
+  const confirmDisabled =
+    isSubmitting ||
+    (isPharmacyRequest && consultationFeeValue <= 0);
 
   return (
     <AppModal
@@ -59,15 +75,31 @@ const RequestApproveModal: React.FC<RequestApproveModalProps> = ({
       confirmBtnVarient="success"
       outSideClickClose={false}
       subtitle={`Approve request ${itemTitle} for patient`}
-      confimBtnDisable={isSubmitting}
+      confimBtnDisable={confirmDisabled}
       disableCloseButton={isSubmitting}
     >
-      <TextAreaField
-        label="Message (Optional)"
-        value={doctorMessage}
-        onChange={(e) => setDoctorMessage(e.target.value)}
-        placeholder="Add any additional message or notes..."
-      />
+      <div className="flex flex-col gap-3">
+        {isPharmacyRequest && (
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">
+              Consultation fee ($) <span className="text-red-500">*</span>
+            </label>
+            <ThemeInput
+              type="number"
+              placeholder="0.00"
+              value={consultationFeeInput}
+              onChange={(e) => setConsultationFeeInput(e.target.value)}
+              className="w-full"
+            />
+          </div>
+        )}
+        <TextAreaField
+          label="Message (Optional)"
+          value={doctorMessage}
+          onChange={(e) => setDoctorMessage(e.target.value)}
+          placeholder="Add any additional message or notes..."
+        />
+      </div>
     </AppModal>
   );
 };

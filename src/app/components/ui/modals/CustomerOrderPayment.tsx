@@ -58,6 +58,7 @@ type order = {
   orderItems: OrderItem[];
   subtotalPrice?: number | null;
   totalTax?: number | null;
+  consultationFee?: number | null;
 };
 
 export type requestProps = {
@@ -395,10 +396,11 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
   const taxAmount =
     calculatedTax !== null ? calculatedTax : order?.totalTax ?? 0;
   const tax = taxAmount.toFixed(2);
+  const consultationFee = order?.consultationFee ?? 0;
   const total =
     calculatedTotal !== null
-      ? calculatedTotal
-      : order?.totalPrice ?? subTotal + taxAmount;
+      ? calculatedTotal + consultationFee
+      : order?.totalPrice ?? subTotal + taxAmount + consultationFee;
 
   const detectCardType = (number: string): void => {
     if (!number) {
@@ -997,7 +999,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     Sub total
                   </span>
                   <span className="text-sm font-medium text-gray-800">
-                    ${formatPrice(order?.subtotalPrice ?? subTotal)}
+                      ${formatPrice(order?.subtotalPrice ?? 0)}
                   </span>
                 </div>
                 {orderDiscountCalculation.hasAnyDiscount && (
@@ -1041,6 +1043,16 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                     </span>
                   </div>
                 )}
+                  {order?.consultationFee != null && order.consultationFee > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-normal text-gray-800">
+                        Consultation fee
+                      </span>
+                      <span className="text-sm font-medium text-gray-800">
+                        ${formatPrice(order.consultationFee)}
+                      </span>
+                    </div>
+                  )}
               </div>
               <div className="flex justify-between items-center border-b border-gray-200 py-3 md:py-4">
                 <span className="text-base font-medium text-gray-800">

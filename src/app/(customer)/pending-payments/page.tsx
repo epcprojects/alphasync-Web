@@ -59,6 +59,7 @@ interface PatientOrderData {
   trackingUrl?: string | null;
   trackingNumber?: string | null;
   subtotalPrice?: number | null;
+  consultationFee?: number | null;
   orderItems?: PatientOrderItemData[] | null;
   doctor?: {
     fullName?: string | null;
@@ -230,6 +231,7 @@ function PendingPayments() {
       subtotalPrice: order?.subtotalPrice ?? 0,
       orderedOn: orderDate ? orderDate.toLocaleDateString("en-US") : "--",
       totalPrice: order.totalPrice ?? 0,
+      consultationFee: order.consultationFee ?? null,
       isDueToday: orderDate ? getDueLabel(orderDate, today) : undefined,
       status: order.status ?? undefined,
       patient: order.patient

@@ -413,6 +413,7 @@ export const CREATE_ORDER = gql`
     $totalPrice: Float!
     $patientId: ID
     $useCustomPricing: Boolean
+    $consultationFee: Float
   ) {
     createOrder(
       input: {
@@ -421,6 +422,7 @@ export const CREATE_ORDER = gql`
           totalPrice: $totalPrice
           patientId: $patientId
           useCustomPricing: $useCustomPricing
+          consultationFee: $consultationFee
         }
       }
     ) {
@@ -621,9 +623,17 @@ export const REQUEST_ORDER = gql`
 `;
 
 export const APPROVE_ORDER_REQUEST = gql`
-  mutation ApproveOrderRequest($requestId: ID!, $doctorMessage: String) {
+  mutation ApproveOrderRequest(
+    $requestId: ID!
+    $doctorMessage: String
+    $consultationFee: Float
+  ) {
     approveOrderRequest(
-      input: { requestId: $requestId, doctorMessage: $doctorMessage }
+      input: {
+        requestId: $requestId
+        doctorMessage: $doctorMessage
+        consultationFee: $consultationFee
+      }
     ) {
       invoiceUrl
     }

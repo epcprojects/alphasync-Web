@@ -62,3 +62,11 @@ export const US_STATES: StateOption[] = [
   { label: "Wisconsin", value: "Wisconsin" },
   { label: "Wyoming", value: "Wyoming" },
 ];
+
+/** Vendor values that indicate pharmacy (e.g. Integrity) products for consultation fee rules */
+export const PHARMACY_VENDORS = [
+  "Integrity",
+  "City Center",
+  "Greenwich",
+  "Integrity B",
+];

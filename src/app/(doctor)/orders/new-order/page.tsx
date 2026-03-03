@@ -39,14 +39,26 @@ interface OrderItem {
   cartPrice?: number;
   cartItemId?: string;
   isMarkedUp?: boolean;
+  vendor?: string | null; // e.g. "Alpha BioMed", "City Center" – used to block City Center for My Clinic
+  /** Selected unit pricing id (e.g. from pharmacy product unit pricing table) */
+  productUnitPricingId?: string | null;
 }
 
 type PaymentOrder = NonNullable<React.ComponentProps<typeof CustomerOrderPayment>["order"]>;
+
+const PHARMACY_VENDORS = [
+  "Integrity",
+  "City Center",
+  "Greenwich",
+  "Integrity B",
+];
 
 const Page = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const productIdFromUrl = searchParams.get("productId");
+  const unitPriceFromUrl = searchParams.get("unitPrice");
+  const unitPricingIdFromUrl = searchParams.get("unitPricingId");
   const apolloClient = useApolloClient();
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
@@ -61,6 +73,8 @@ const Page = () => {
     price?: number;
     customPrice?: number;
     originalPrice?: number;
+    vendor?: string | null;
+    productUnitPricingId?: string | null;
     customPriceChangeHistory?: Array<{
       customPrice: number;
       id: string;
@@ -84,6 +98,7 @@ const Page = () => {
     null
   );
   const [isClinicOrder, setIsClinicOrder] = useState(false);
+  const [consultationFeeInput, setConsultationFeeInput] = useState("");
 
   // Make OrderSchema dynamic to access latestMarkedUpPrice and isClinicOrder
   const OrderSchema = useMemo(() => {
@@ -118,6 +133,11 @@ const Page = () => {
             })
             .test("less-than-latest-markup", function (value) {
               if (!value || latestMarkedUpPrice === null) return true;
+              // Pharmacy products: no cap on price (e.g. unit pricing from inventory)
+              const isPharmacy =
+                selectedProductData?.vendor &&
+                PHARMACY_VENDORS.includes(selectedProductData.vendor);
+              if (isPharmacy) return true;
               if (value > latestMarkedUpPrice) {
                 return this.createError({
                   message: `Price cannot exceed the latest marked up price ($${latestMarkedUpPrice.toFixed(
@@ -137,6 +157,11 @@ const Page = () => {
     Array<{ productId: string; name: string; cartItemId?: string }>
   >([]);
   const [confirmSwitchLoading, setConfirmSwitchLoading] = useState(false);
+  const [confirmCityCenterModalOpen, setConfirmCityCenterModalOpen] = useState(false);
+  const [pendingCityCenterItems, setPendingCityCenterItems] = useState<
+    Array<{ productId: string; name: string; cartItemId?: string }>
+  >([]);
+  const [confirmCityCenterLoading, setConfirmCityCenterLoading] = useState(false);
   const handleOrderTypeChangeRef = useRef<(nextIsClinicOrder: boolean) => void>(() => { });
   const [isClinicPaymentOpen, setIsClinicPaymentOpen] = useState(false);
   const [clinicCheckoutOrder, setClinicCheckoutOrder] = useState<PaymentOrder | undefined>(
@@ -269,6 +294,70 @@ const Page = () => {
       handleOrderTypeChangeRef.current(false);
     } finally {
       setConfirmSwitchLoading(false);
+    }
+  };
+
+  const handleConfirmRemoveCityCenter = async () => {
+    if (confirmCityCenterLoading) return;
+    setConfirmCityCenterLoading(true);
+    try {
+      const productIdsToRemove = new Set(
+        pendingCityCenterItems.map((i) => i.productId),
+      );
+      const needsCartItemIds = pendingCityCenterItems.some((x) => !x.cartItemId);
+      const productToCartItemId = new Map<string, string>();
+
+      if (needsCartItemIds) {
+        type FetchUserCartResult = {
+          fetchUser?: {
+            user?: {
+              cart?: {
+                cartItems?: Array<{
+                  id?: string;
+                  product?: { id?: string } | null;
+                } | null>;
+              } | null;
+            } | null;
+          } | null;
+        };
+        try {
+          const { data } = await apolloClient.query<FetchUserCartResult>({
+            query: FETCH_USER,
+            fetchPolicy: "network-only",
+          });
+          const serverCartItems = data?.fetchUser?.user?.cart?.cartItems ?? [];
+          serverCartItems.forEach((ci) => {
+            const pid = ci?.product?.id;
+            const cid = ci?.id;
+            if (pid && cid) productToCartItemId.set(pid, cid);
+          });
+        } catch {
+          // Best effort
+        }
+      }
+
+      await Promise.all(
+        pendingCityCenterItems.map(async (item) => {
+          dispatch(removeCartItem(item.productId));
+          const cartItemId =
+            item.cartItemId || productToCartItemId.get(item.productId);
+          if (!cartItemId) return;
+          try {
+            await removeFromCart({ variables: { cartItemId } });
+          } catch {
+            // Best effort
+          }
+        }),
+      );
+
+      setOrderItems((prev) =>
+        prev.filter((i) => !productIdsToRemove.has(i.productId)),
+      );
+      setConfirmCityCenterModalOpen(false);
+      setPendingCityCenterItems([]);
+      handleOrderTypeChangeRef.current(true);
+    } finally {
+      setConfirmCityCenterLoading(false);
     }
   };
 
@@ -417,6 +506,7 @@ const Page = () => {
           let hasTierPricing = prev?.hasTierPricing;
           // default to "marked up" until proven otherwise to avoid accidental removals
           let isMarkedUp = prev?.isMarkedUp ?? true;
+          let vendor: string | null | undefined = prev?.vendor ?? undefined;
 
           try {
             const { data } = await apolloClient.query<FetchProductResponse>({
@@ -426,6 +516,7 @@ const Page = () => {
             });
             const p = data?.fetchProduct;
             if (p) {
+              vendor = p.vendor ?? prev?.vendor ?? undefined;
               const firstVariant = p.variants?.[0];
               variantId =
                 firstVariant?.shopifyVariantId || firstVariant?.id || variantId;
@@ -489,6 +580,7 @@ const Page = () => {
             cartPrice,
             cartItemId: ci.cartItemId,
             isMarkedUp,
+            vendor: vendor ?? undefined,
           } satisfies OrderItem;
         }),
       );
@@ -560,6 +652,8 @@ const Page = () => {
         price: price,
         customPrice: product.customPrice,
         originalPrice: originalPrice,
+        vendor: product.vendor ?? undefined,
+        productUnitPricingId: unitPricingIdFromUrl || undefined,
         customPriceChangeHistory: product.customPriceChangeHistory,
         tierPricing: product.tierPricing,
         variants: product.variants?.map((variant) => ({
@@ -599,7 +693,15 @@ const Page = () => {
         0;
       // Use clinic order mode if product is not marked up, otherwise respect current mode
       const shouldUseClinicOrder = !isMarkedUp || isClinicOrder;
-      const priceToUse = shouldUseClinicOrder ? basePrice : latestMarkedUpValue;
+      let priceToUse = shouldUseClinicOrder ? basePrice : latestMarkedUpValue;
+      // Pharmacy products: use selected unit price from inventory detail if passed
+      const parsedUnitPrice =
+        unitPriceFromUrl != null && unitPriceFromUrl !== ""
+          ? parseFloat(unitPriceFromUrl)
+          : NaN;
+      if (!Number.isNaN(parsedUnitPrice) && parsedUnitPrice > 0) {
+        priceToUse = parsedUnitPrice;
+      }
       setPreservedPrice(priceToUse);
       
       // Update form field values if form is available
@@ -608,16 +710,18 @@ const Page = () => {
         formikSetFieldValueRef.current("price", priceToUse);
       }
       
-      // Remove productId from URL after prefilling
+      // Remove productId, unitPrice, and unitPricingId from URL after prefilling
       const newSearchParams = new URLSearchParams(searchParams.toString());
       newSearchParams.delete("productId");
+      newSearchParams.delete("unitPrice");
+      newSearchParams.delete("unitPricingId");
       const newUrl = newSearchParams.toString()
         ? `${window.location.pathname}?${newSearchParams.toString()}`
         : window.location.pathname;
       router.replace(newUrl, { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchedProductData, productIdFromUrl, searchParams, router]);
+  }, [fetchedProductData, productIdFromUrl, unitPriceFromUrl, unitPricingIdFromUrl, searchParams, router]);
 
   // Extract pricing information from selected product data
   const updatePricingInfo = (product: typeof selectedProductData) => {
@@ -827,9 +931,13 @@ const Page = () => {
       ? originalPrice
       : (customPrice ?? originalPrice);
 
-    // Validate price is not greater than latest marked up price (skip for clinic orders)
+    // Validate price is not greater than latest marked up price (skip for clinic and pharmacy)
+    const isPharmacyProduct =
+      selectedProductData?.vendor &&
+      PHARMACY_VENDORS.includes(selectedProductData.vendor);
     if (
       !isClinicOrder &&
+      !isPharmacyProduct &&
       latestMarkedUpPrice !== null &&
       values.price > latestMarkedUpPrice
     ) {
@@ -852,6 +960,8 @@ const Page = () => {
       initialPrice: displayedPrice, // Store the displayed price (customPrice or originalPrice) when item was added
       hasTierPricing: isClinicOrder && (selectedProductData?.tierPricing?.length ?? 0) > 0,
       latestMarkedUpPrice: latestMarkedUpPrice, // Store latest marked up price for validation
+      vendor: selectedProductData?.vendor ?? undefined,
+      productUnitPricingId: selectedProductData?.productUnitPricingId ?? undefined,
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -906,6 +1016,7 @@ const Page = () => {
         if (value < currentItem.originalPrice) {
           errorMessage = `Price must be greater than or equal to original price ($${currentItem.originalPrice.toFixed(2)})`;
         } else if (
+          !(currentItem.vendor && PHARMACY_VENDORS.includes(currentItem.vendor)) &&
           currentItem.latestMarkedUpPrice != null &&
           value > currentItem.latestMarkedUpPrice
         ) {
@@ -965,7 +1076,18 @@ const Page = () => {
     0
   );
 
-  const handleCreateOrder = async () => {
+  const hasPharmacyProduct = orderItems.some(
+    (item) => item.vendor && PHARMACY_VENDORS.includes(item.vendor),
+  );
+
+  const consultationFeeValue = hasPharmacyProduct
+    ? parseFloat(consultationFeeInput) || 0
+    : 0;
+  const totalAmountWithConsultation = totalAmount + consultationFeeValue;
+
+  const handleCreateOrder = async (overrides?: {
+    consultationFee?: number;
+  }) => {
     if (orderItems.length === 0) return;
 
     // Validate all order items before creating order (only for non-clinic orders)
@@ -973,21 +1095,20 @@ const Page = () => {
       const errors: { [index: number]: string } = {};
       orderItems.forEach((item, index) => {
         if (item.price < item.originalPrice) {
-          errors[
-            index
-          ] = `Price must be greater than or equal to original price ($${item.originalPrice.toFixed(
-            2
-          )})`;
+          errors[index] =
+            `Price must be greater than or equal to original price ($${item.originalPrice.toFixed(
+              2,
+            )})`;
         } else if (
+          !(item.vendor && PHARMACY_VENDORS.includes(item.vendor)) &&
           item.latestMarkedUpPrice !== null &&
           item.latestMarkedUpPrice !== undefined &&
           item.price > item.latestMarkedUpPrice
         ) {
-          errors[
-            index
-          ] = `Price cannot exceed the latest marked up price ($${item.latestMarkedUpPrice.toFixed(
-            2
-          )})`;
+          errors[index] =
+            `Price cannot exceed the latest marked up price ($${item.latestMarkedUpPrice.toFixed(
+              2,
+            )})`;
         }
       });
 
@@ -1009,21 +1130,30 @@ const Page = () => {
         variantId: item.variantId,
         quantity: item.quantity,
         price: item.price,
+        ...(item.productUnitPricingId != null && item.productUnitPricingId !== ""
+          ? { productUnitPricingId: item.productUnitPricingId }
+          : {}),
       }));
+
+      const consultationFee = overrides?.consultationFee ?? 0;
+      const orderTotal = totalAmount + consultationFee;
 
       if (isClinicOrder) {
         // Clinic order: no patient, no custom pricing (same as ClinicOrderModal)
         const res = await createOrder({
           variables: {
             orderItems: orderItemsInput,
-            totalPrice: totalAmount,
+            totalPrice: orderTotal,
             patientId: null,
             useCustomPricing: false,
+            consultationFee: consultationFee > 0 ? consultationFee : undefined,
           },
         });
 
         const createdOrderId = res?.data?.createOrder?.order?.id;
-        const displayId = String(res?.data?.createOrder?.order?.displayId ?? "");
+        const displayId = String(
+          res?.data?.createOrder?.order?.displayId ?? "",
+        );
 
         setClinicCheckoutOrder({
           id: createdOrderId ?? "0",
@@ -1032,7 +1162,7 @@ const Page = () => {
           orderedOn: new Date().toISOString(),
           subtotalPrice: totalAmount,
           totalTax: 0,
-          totalPrice: totalAmount,
+          totalPrice: orderTotal,
           orderItems: orderItems.map((item) => {
             const base = Number(item.originalPrice ?? item.price);
             const effective = Number(item.price ?? 0);
@@ -1063,14 +1193,16 @@ const Page = () => {
         // Check if any product price has been manually changed from its initial value
         const useCustomPricing = orderItems.some(
           (item) =>
-            Math.round(item.price * 100) !== Math.round(item.initialPrice * 100)
+            Math.round(item.price * 100) !==
+            Math.round(item.initialPrice * 100),
         );
         await createOrder({
           variables: {
             orderItems: orderItemsInput,
-            totalPrice: totalAmount,
+            totalPrice: orderTotal,
             patientId: selectedCustomerData.id,
             useCustomPricing,
+            consultationFee: consultationFee > 0 ? consultationFee : undefined,
           },
         });
       }
@@ -1097,6 +1229,10 @@ const Page = () => {
 
       if (!isClinicOrder) {
         showSuccessToast("Order created successfully");
+      }
+
+      if (overrides?.consultationFee != null) {
+        setConsultationFeeInput("");
       }
     } catch (error) {
       console.error("Error creating order:", error);
@@ -1159,7 +1295,7 @@ const Page = () => {
             }) => {
               // Store setFieldValue in ref for use in useEffect
               formikSetFieldValueRef.current = setFieldValue;
-              
+
               const handleOrderTypeChange = (nextIsClinicOrder: boolean) => {
                 setIsClinicOrder(nextIsClinicOrder);
                 // Reset debounced quantity when order type changes
@@ -1168,7 +1304,12 @@ const Page = () => {
                 // Reset Formik validation UI when switching order type
                 setErrors({});
                 setTouched(
-                  { customer: false, product: false, quantity: false, price: false },
+                  {
+                    customer: false,
+                    product: false,
+                    quantity: false,
+                    price: false,
+                  },
                   false,
                 );
 
@@ -1181,13 +1322,20 @@ const Page = () => {
 
                     if (nextIsClinicOrder) {
                       const nextPrice =
-                        Number.isFinite(basePrice) && basePrice > 0 ? basePrice : item.price;
-                      return { ...item, price: nextPrice, initialPrice: nextPrice };
+                        Number.isFinite(basePrice) && basePrice > 0
+                          ? basePrice
+                          : item.price;
+                      return {
+                        ...item,
+                        price: nextPrice,
+                        initialPrice: nextPrice,
+                      };
                     }
 
                     // Switching back to Customer: show previous customer price (custom > latest marked up > cart > base)
                     const customPrice =
-                      item.customPrice != null && Number.isFinite(Number(item.customPrice))
+                      item.customPrice != null &&
+                        Number.isFinite(Number(item.customPrice))
                         ? Number(item.customPrice)
                         : null;
                     const latestMarkedUp =
@@ -1196,15 +1344,22 @@ const Page = () => {
                         ? Number(item.latestMarkedUpPrice)
                         : null;
                     const cartPrice =
-                      item.cartPrice != null && Number.isFinite(Number(item.cartPrice))
+                      item.cartPrice != null &&
+                        Number.isFinite(Number(item.cartPrice))
                         ? Number(item.cartPrice)
                         : null;
                     const nextPrice =
                       customPrice ??
                       latestMarkedUp ??
                       cartPrice ??
-                      (Number.isFinite(basePrice) && basePrice > 0 ? basePrice : item.price);
-                    return { ...item, price: nextPrice, initialPrice: nextPrice };
+                      (Number.isFinite(basePrice) && basePrice > 0
+                        ? basePrice
+                        : item.price);
+                    return {
+                      ...item,
+                      price: nextPrice,
+                      initialPrice: nextPrice,
+                    };
                   }),
                 );
 
@@ -1216,17 +1371,31 @@ const Page = () => {
                   setFieldValue("customer", "", false);
                   setFieldTouched("customer", false, false);
                   setFieldError("customer", undefined);
-                  // Fetch tier pricing for all order items and update right-side prices
-                  shouldFetchTierPricingForOrderItemsRef.current = true;
-                // Clinic order: show base price in the price input
-                  if (selectedProductData && productBasePrice !== null) {
+                  // Pharmacy products cannot be ordered for My Clinic: unselect if currently selected
+                  if (
+                    selectedProductData?.vendor &&
+                    PHARMACY_VENDORS.includes(selectedProductData.vendor)
+                  ) {
+                    setFieldValue("product", "", false);
+                    setFieldTouched("product", false, false);
+                    setFieldError("product", undefined);
+                    setPreservedProduct("");
+                    setSelectedProductData(null);
+                    setFieldValue("price", 0, false);
+                    setPreservedPrice(0);
+                    updatePricingInfo(null);
+                  } else if (selectedProductData && productBasePrice !== null) {
+                    // Clinic order: show base price in the price input
                     setFieldValue("price", productBasePrice, false);
                     setPreservedPrice(productBasePrice);
                   }
+                  // Fetch tier pricing for all order items and update right-side prices
+                  shouldFetchTierPricingForOrderItemsRef.current = true;
                 } else {
                   // Customer order: only marked-up products allowed
                   const isMarkedUp =
-                    (selectedProductData?.customPriceChangeHistory?.length ?? 0) > 0;
+                    (selectedProductData?.customPriceChangeHistory?.length ??
+                      0) > 0;
                   if (selectedProductData && !isMarkedUp) {
                     // Selected product is not marked up; clear it (cannot use for customer orders)
                     setFieldValue("product", "", false);
@@ -1257,14 +1426,16 @@ const Page = () => {
               handleOrderTypeChangeRef.current = handleOrderTypeChange;
 
               const requestOrderTypeChange = (nextIsClinicOrder: boolean) => {
-                // Prompt only when switching from My Clinic -> Customer
+                // Prompt only when switching from My Clinic -> Customer (unmarked items)
                 if (!nextIsClinicOrder && isClinicOrder) {
                   if (!cartLoaded || isCartHydrating) {
                     showErrorToast("Please wait while cart items load.");
                     return;
                   }
 
-                  const unmarked = orderItems.filter((i) => i.isMarkedUp === false);
+                  const unmarked = orderItems.filter(
+                    (i) => i.isMarkedUp === false,
+                  );
                   if (unmarked.length > 0) {
                     setPendingUnmarkedItems(
                       unmarked.map((i) => ({
@@ -1278,11 +1449,36 @@ const Page = () => {
                   }
                 }
 
+                // Prompt when switching to My Clinic and cart has pharmacy products (not allowed for My Clinic)
+                if (nextIsClinicOrder && !isClinicOrder) {
+                  if (!cartLoaded || isCartHydrating) {
+                    showErrorToast("Please wait while cart items load.");
+                    return;
+                  }
+                  const pharmacyItems = orderItems.filter(
+                    (i) => i.vendor && PHARMACY_VENDORS.includes(i.vendor),
+                  );
+                  if (pharmacyItems.length > 0) {
+                    setPendingCityCenterItems(
+                      pharmacyItems.map((i) => ({
+                        productId: i.productId,
+                        name: i.product || "Product",
+                        cartItemId: i.cartItemId,
+                      })),
+                    );
+                    setConfirmCityCenterModalOpen(true);
+                    return;
+                  }
+                }
+
                 handleOrderTypeChange(nextIsClinicOrder);
               };
 
               const orderTypeRadioDisabled =
-                confirmSwitchLoading || tierPricingLoading || isCartHydrating;
+                confirmSwitchLoading ||
+                confirmCityCenterLoading ||
+                tierPricingLoading ||
+                isCartHydrating;
 
               return (
                 <Form className="flex flex-col gap-4 md:gap-5">
@@ -1293,9 +1489,7 @@ const Page = () => {
                     <div
                       className={`flex items-center gap-8 ${orderTypeRadioDisabled ? "pointer-events-none opacity-60" : ""}`}
                     >
-                      <label
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
+                      <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="radio"
                           name="orderType"
@@ -1319,9 +1513,7 @@ const Page = () => {
                         </span>
                       </label>
 
-                      <label
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
+                      <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="radio"
                           name="orderType"
@@ -1331,9 +1523,7 @@ const Page = () => {
                           onChange={() => requestOrderTypeChange(true)}
                         />
                         <span
-                          className={`h-5 w-5 rounded-full border flex items-center justify-center ${isClinicOrder
-                            ? "border-primary"
-                            : "border-gray-300"
+                          className={`h-5 w-5 rounded-full border flex items-center justify-center ${isClinicOrder ? "border-primary" : "border-gray-300"
                             }`}
                         >
                           {isClinicOrder ? (
@@ -1345,9 +1535,9 @@ const Page = () => {
                         </span>
                       </label>
                     </div>
-                </div>
-                {!isClinicOrder && (
-                <div>
+                  </div>
+                  {!isClinicOrder && (
+                    <div>
                       <div className="flex justify-end mb-2">
                         <ThemeButton
                           label="Add New Customer"
@@ -1358,294 +1548,319 @@ const Page = () => {
                           className="w-full sm:w-fit"
                         />
                       </div>
-                  <CustomerSelect
+                      <CustomerSelect
                         key={customerSelectKey}
                         selectedCustomer={values.customer || customerDraft}
-                    setSelectedCustomer={(val: string) => {
-                      if (lockedCustomer) return; // prevent changing after first item
-                      // Preserve current product value when customer changes
-                      setPreservedProduct(values.product);
-                      setFieldValue("customer", val);
-                      setCustomerDraft(val);
-                    }}
-                    errors={touched.customer ? errors.customer || "" : ""}
-                    touched={touched.customer}
-                    disabled={!!lockedCustomer}
-                    placeholder={
-                      lockedCustomer ? "Customer locked" : "Select a customer"
-                    }
-                    required={true}
-                    showLabel={true}
-                    paddingClasses="py-2.5 h-11 px-2"
-                    optionPaddingClasses="p-1"
-                    onCustomerChange={(customer) => {
-                      setSelectedCustomerData(customer);
-                      // // Refetch products when customer changes to get latest prices
-                      // if (productSelectRef.current) {
-                      //   productSelectRef.current.refetch();
-                      // }
-                    }}
-                  />
-                </div>
-                )}
-                <div>
-                  <ProductSelect
-                    fetchMarkedUpProductsOnly={!isClinicOrder}
-                    ref={productSelectRef}
-                    selectedProduct={values.product}
-                    setSelectedProduct={(product) => {
-                      setFieldValue("product", product);
-                      setPreservedProduct(product);
-                    }}
-                    errors={touched.product ? errors.product || "" : ""}
-                    touched={touched.product}
-                    onProductChange={(selectedProduct) => {
-                      setSelectedProductData(selectedProduct);
-
-                      // Update pricing information from the product data (already fetched in ProductSelect)
-                      updatePricingInfo(selectedProduct);
-
-                      // Reset validation errors when product changes
-                      setFieldTouched("product", false);
-                      setFieldTouched("price", false);
-                      setFieldError("product", undefined);
-                      setFieldError("price", undefined);
-
-                      // Reset debounced quantity when product changes
-                      setDebouncedQuantity(null);
-
-                      // Auto-populate price when product is selected
-                      // Clinic: tiered price (if available) or base price. Customer: custom price or latest marked up price.
-                      if (selectedProduct) {
-                        const basePrice =
-                          selectedProduct.variants?.[0]?.price ??
-                          selectedProduct.originalPrice ??
-                          selectedProduct.price ??
-                          0;
-                        let latestMarkedUp: number | null = null;
-                        const ph = selectedProduct.customPriceChangeHistory;
-                        if (ph?.length) {
-                          const sorted = [...ph].sort(
-                            (a, b) =>
-                              (new Date(b.createdAt ?? 0).getTime()) -
-                              (new Date(a.createdAt ?? 0).getTime())
-                          );
-                          if (sorted[0]?.customPrice != null)
-                            latestMarkedUp = Number(sorted[0].customPrice);
+                        setSelectedCustomer={(val: string) => {
+                          if (lockedCustomer) return; // prevent changing after first item
+                          // Preserve current product value when customer changes
+                          setPreservedProduct(values.product);
+                          setFieldValue("customer", val);
+                          setCustomerDraft(val);
+                        }}
+                        errors={touched.customer ? errors.customer || "" : ""}
+                        touched={touched.customer}
+                        disabled={!!lockedCustomer}
+                        placeholder={
+                          lockedCustomer
+                            ? "Customer locked"
+                            : "Select a customer"
                         }
-                        
-                        // For clinic orders, use tiered pricing if available (quantity 1 = first tier) or base price
-                        let priceToUse: number;
-                        if (isClinicOrder && selectedProduct.tierPricing && selectedProduct.tierPricing.length > 0) {
-                          const firstTier = selectedProduct.tierPricing.find(tier => tier.startCount === 1);
-                          priceToUse = firstTier?.tieredPrice ?? basePrice;
-                        } else if (isClinicOrder) {
-                          priceToUse = basePrice;
-                        } else {
-                          // Customer order: custom price or latest marked up price in the price input
-                          priceToUse =
-                            selectedProduct.customPrice ??
-                            latestMarkedUp ??
-                            selectedProduct.originalPrice ??
-                            basePrice ??
-                            0;
-                        }
-                        
-                        setPreservedPrice(priceToUse);
-                        setPreservedProduct(selectedProduct.name);
-                        setFieldValue("price", priceToUse);
-                      } else {
-                        // Reset price if no product selected
-                        setPreservedPrice(0);
-                        setFieldValue("price", 0);
-                        setSelectedProductData(null);
-                        setDebouncedQuantity(null);
-                        updatePricingInfo(null);
-                      }
-                    }}
-                  />
-                </div>
-
-                {/* Pricing Information Display */}
-                {!isClinicOrder && preservedProduct &&
-                  (productBasePrice !== null ||
-                    latestMarkedUpPrice !== null) && (
-                    <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
-                      <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-2">
-                        Pricing Information
-                      </h3>
-                      <div className="flex flex-col gap-2">
-                        {productBasePrice !== null && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-600 text-xs md:text-sm">
-                              Base Price
-                            </span>
-                            <span className="text-gray-800 font-semibold text-xs md:text-sm">
-                              ${productBasePrice.toFixed(2)}
-                            </span>
-                          </div>
-                        )}
-                        {latestMarkedUpPrice !== null && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-600 text-xs md:text-sm">
-                              Latest Marked Up Price
-                            </span>
-                            <span className="text-gray-800 font-semibold text-xs md:text-sm">
-                              ${latestMarkedUpPrice.toFixed(2)}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                        required={true}
+                        showLabel={true}
+                        paddingClasses="py-2.5 h-11 px-2"
+                        optionPaddingClasses="p-1"
+                        onCustomerChange={(customer) => {
+                          setSelectedCustomerData(customer);
+                          // // Refetch products when customer changes to get latest prices
+                          // if (productSelectRef.current) {
+                          //   productSelectRef.current.refetch();
+                          // }
+                        }}
+                      />
                     </div>
                   )}
+                  <div>
+                    <ProductSelect
+                      fetchMarkedUpProductsOnly={!isClinicOrder}
+                      ref={productSelectRef}
+                      selectedProduct={values.product}
+                      setSelectedProduct={(product) => {
+                        setFieldValue("product", product);
+                        setPreservedProduct(product);
+                      }}
+                      errors={touched.product ? errors.product || "" : ""}
+                      touched={touched.product}
+                      onProductChange={(selectedProduct) => {
+                        setSelectedProductData(selectedProduct);
 
-                {/* Tiered Pricing Display for Clinic Orders */}
-                {isClinicOrder && preservedProduct && selectedProductData && (
-                  <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
-                    <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-3">
-                      Tiered Pricing
-                    </h3>
-                    {selectedProductData.tierPricing && selectedProductData.tierPricing.length > 0 ? (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs md:text-sm">
-                          <thead>
-                            <tr className="border-b border-gray-200">
-                              <th className="text-left py-2 px-2 text-gray-600 font-medium">Quantity Range</th>
-                              <th className="text-right py-2 px-2 text-gray-600 font-medium">Price per Unit</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                              {selectedProductData.tierPricing.slice(0, 3).map((tier, index) => (
-                              <tr key={tier.id || index} className="border-b border-gray-100">
-                                <td className="py-2 px-2 text-gray-700">
-                                  {tier.startCount}+
-                                </td>
-                                <td className="py-2 px-2 text-right text-gray-800 font-semibold">
-                                  ${tier.tieredPrice.toFixed(2)}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                        // Update pricing information from the product data (already fetched in ProductSelect)
+                        updatePricingInfo(selectedProduct);
+
+                        // Reset validation errors when product changes
+                        setFieldTouched("product", false);
+                        setFieldTouched("price", false);
+                        setFieldError("product", undefined);
+                        setFieldError("price", undefined);
+
+                        // Reset debounced quantity when product changes
+                        setDebouncedQuantity(null);
+
+                        // Auto-populate price when product is selected
+                        // Clinic: tiered price (if available) or base price. Customer: custom price or latest marked up price.
+                        if (selectedProduct) {
+                          const basePrice =
+                            selectedProduct.variants?.[0]?.price ??
+                            selectedProduct.originalPrice ??
+                            selectedProduct.price ??
+                            0;
+                          let latestMarkedUp: number | null = null;
+                          const ph = selectedProduct.customPriceChangeHistory;
+                          if (ph?.length) {
+                            const sorted = [...ph].sort(
+                              (a, b) =>
+                                new Date(b.createdAt ?? 0).getTime() -
+                                new Date(a.createdAt ?? 0).getTime(),
+                            );
+                            if (sorted[0]?.customPrice != null)
+                              latestMarkedUp = Number(sorted[0].customPrice);
+                          }
+
+                          // For clinic orders, use tiered pricing if available (quantity 1 = first tier) or base price
+                          let priceToUse: number;
+                          if (
+                            isClinicOrder &&
+                            selectedProduct.tierPricing &&
+                            selectedProduct.tierPricing.length > 0
+                          ) {
+                            const firstTier = selectedProduct.tierPricing.find(
+                              (tier) => tier.startCount === 1,
+                            );
+                            priceToUse = firstTier?.tieredPrice ?? basePrice;
+                          } else if (isClinicOrder) {
+                            priceToUse = basePrice;
+                          } else {
+                            // Customer order: custom price or latest marked up price in the price input
+                            priceToUse =
+                              selectedProduct.customPrice ??
+                              latestMarkedUp ??
+                              selectedProduct.originalPrice ??
+                              basePrice ??
+                              0;
+                          }
+
+                          setPreservedPrice(priceToUse);
+                          setPreservedProduct(selectedProduct.name);
+                          setFieldValue("price", priceToUse);
+                        } else {
+                          // Reset price if no product selected
+                          setPreservedPrice(0);
+                          setFieldValue("price", 0);
+                          setSelectedProductData(null);
+                          setDebouncedQuantity(null);
+                          updatePricingInfo(null);
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* Pricing Information Display */}
+                  {!isClinicOrder && selectedProductData?.vendor === "Alpha BioMed" &&
+                    preservedProduct &&
+                    (productBasePrice !== null ||
+                      latestMarkedUpPrice !== null) && (
+                      <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
+                        <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-2">
+                          Pricing Information
+                        </h3>
+                        <div className="flex flex-col gap-2">
+                          {productBasePrice !== null && (
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600 text-xs md:text-sm">
+                                Base Price
+                              </span>
+                              <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                                ${productBasePrice.toFixed(2)}
+                              </span>
+                            </div>
+                          )}
+                          {latestMarkedUpPrice !== null && (
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600 text-xs md:text-sm">
+                                Latest Marked Up Price
+                              </span>
+                              <span className="text-gray-800 font-semibold text-xs md:text-sm">
+                                ${latestMarkedUpPrice.toFixed(2)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Tiered Pricing Display for Clinic Orders */}
+                  {isClinicOrder && preservedProduct && selectedProductData && (
+                    <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
+                      <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-3">
+                        Tiered Pricing
+                      </h3>
+                      {selectedProductData.tierPricing &&
+                        selectedProductData.tierPricing.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs md:text-sm">
+                            <thead>
+                              <tr className="border-b border-gray-200">
+                                  <th className="text-left py-2 px-2 text-gray-600 font-medium">
+                                    Quantity Range
+                                  </th>
+                                  <th className="text-right py-2 px-2 text-gray-600 font-medium">
+                                    Price per Unit
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {selectedProductData.tierPricing
+                                  .slice(0, 3)
+                                  .map((tier, index) => (
+                                    <tr
+                                      key={tier.id || index}
+                                      className="border-b border-gray-100"
+                                    >
+                                      <td className="py-2 px-2 text-gray-700">
+                                        {tier.startCount}+
+                                      </td>
+                                      <td className="py-2 px-2 text-right text-gray-800 font-semibold">
+                                        ${tier.tieredPrice.toFixed(2)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                              </tbody>
+                            </table>
                           {/* {selectedProductData.tierPricing.length > 3 && (
                           <p className="text-gray-500 text-xs mt-1.5">
                             Showing first 3 price breaks
                           </p>
                         )} */}
-                      </div>
-                    ) : (
-                      <p className="text-gray-600 text-xs md:text-sm">
-                        No tier pricing for this product
-                      </p>
-                    )}
-                  </div>
-                )}
+                        </div>
+                      ) : (
+                        <p className="text-gray-600 text-xs md:text-sm">
+                          No tier pricing for this product
+                        </p>
+                      )}
+                    </div>
+                  )}
 
-                <div className={`flex gap-4 flex-row`}>
-                  <div className="w-full">
-                    <Field
-                      as={ThemeInput}
-                      label="Quantity"
-                      name="quantity"
-                      placeholder="Enter quantity"
-                      type="number"
-                      id="quantity"
-                      required={true}
-                      min="1"
-                      step="1"
-                      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                        if (
-                          e.key === "-" ||
-                          e.key === "e" ||
-                          e.key === "E" ||
-                          e.key === "+" ||
-                          e.key === "."
-                        ) {
-                          e.preventDefault();
-                        }
-                      }}
-                      onPaste={(e: React.ClipboardEvent<HTMLInputElement>) => {
-                        e.preventDefault();
-                        const pastedText = e.clipboardData.getData("text");
-                        // Remove minus signs and other invalid characters
-                        const cleaned = pastedText.replace(/[-\+eE]/g, "");
-                        const numValue = parseFloat(cleaned);
-                        if (!isNaN(numValue) && numValue > 0) {
-                          setFieldValue("quantity", Math.floor(numValue));
-                        }
-                      }}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        let value = e.target.value;
-                        // Remove minus sign and any negative values
-                        value = value.replace(/-/g, "");
-                        // Remove any non-numeric characters except digits
-                        value = value.replace(/[^0-9]/g, "");
-                        // If value is empty or valid, set it; otherwise set to minimum (1)
-                        if (value === "") {
-                          setFieldValue("quantity", "");
-                          setDebouncedQuantity(null);
-                        } else {
-                          const numValue = parseInt(value, 10);
-                          if (!isNaN(numValue) && numValue > 0) {
-                            setFieldValue("quantity", numValue);
-                            
-                            // Only update price when quantity changes for clinic orders (tiered pricing).
-                            // For customer orders, price stays as custom/latest marked up price and does not change with quantity.
-                            if (
-                              preservedProduct &&
-                              isClinicOrder &&
-                              selectedProductData?.tierPricing &&
-                              selectedProductData.tierPricing.length > 0
-                            ) {
-                              setDebouncedQuantity(numValue);
-                            } else if (isClinicOrder) {
-                              // Clinic order but no tier pricing API: fallback to local tier calculation
-                              const tieredPrice = getTieredPrice(numValue);
-                              if (tieredPrice !== null) {
-                                setFieldValue("price", tieredPrice);
-                                setPreservedPrice(tieredPrice);
-                              }
-                            }
-                            // Customer order: do not change price when quantity changes
-                          } else {
-                            setFieldValue("quantity", 1);
-                            setDebouncedQuantity(1);
+                  <div className={`flex gap-4 flex-row`}>
+                    <div className="w-full">
+                      <Field
+                        as={ThemeInput}
+                        label="Quantity"
+                        name="quantity"
+                        placeholder="Enter quantity"
+                        type="number"
+                        id="quantity"
+                        required={true}
+                        min="1"
+                        step="1"
+                        onKeyDown={(
+                          e: React.KeyboardEvent<HTMLInputElement>,
+                        ) => {
+                          if (
+                            e.key === "-" ||
+                            e.key === "e" ||
+                            e.key === "E" ||
+                            e.key === "+" ||
+                            e.key === "."
+                          ) {
+                            e.preventDefault();
                           }
-                        }
-                      }}
-                    />
-                    {errors.quantity && touched.quantity && (
-                      <p className="text-red-500 text-xs">{errors.quantity}</p>
-                    )}
-                  </div>
-                  <div className="w-full">
-                    <Field
-                      as={ThemeInput}
-                      label="Price ($)"
-                      name="price"
-                      placeholder="Enter price"
-                      type="number"
-                      id="price"
-                      required={true}
-                      min="0.01"
-                      step="0.01"
-                      disabled={isClinicOrder}
-                    />
-                    {errors.price && touched.price && (
-                      <p className="text-red-500 text-xs">{errors.price}</p>
-                    )}
-                  </div>
-                </div>
+                        }}
+                        onPaste={(
+                          e: React.ClipboardEvent<HTMLInputElement>,
+                        ) => {
+                          e.preventDefault();
+                          const pastedText = e.clipboardData.getData("text");
+                          // Remove minus signs and other invalid characters
+                          const cleaned = pastedText.replace(/[-\+eE]/g, "");
+                          const numValue = parseFloat(cleaned);
+                          if (!isNaN(numValue) && numValue > 0) {
+                            setFieldValue("quantity", Math.floor(numValue));
+                          }
+                        }}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          let value = e.target.value;
+                          // Remove minus sign and any negative values
+                          value = value.replace(/-/g, "");
+                          // Remove any non-numeric characters except digits
+                          value = value.replace(/[^0-9]/g, "");
+                          // If value is empty or valid, set it; otherwise set to minimum (1)
+                          if (value === "") {
+                            setFieldValue("quantity", "");
+                            setDebouncedQuantity(null);
+                          } else {
+                            const numValue = parseInt(value, 10);
+                            if (!isNaN(numValue) && numValue > 0) {
+                              setFieldValue("quantity", numValue);
 
-                <ThemeButton
+                              // Only update price when quantity changes for clinic orders (tiered pricing).
+                              // For customer orders, price stays as custom/latest marked up price and does not change with quantity.
+                              if (
+                                preservedProduct &&
+                                isClinicOrder &&
+                                selectedProductData?.tierPricing &&
+                                selectedProductData.tierPricing.length > 0
+                              ) {
+                                setDebouncedQuantity(numValue);
+                              } else if (isClinicOrder) {
+                                // Clinic order but no tier pricing API: fallback to local tier calculation
+                                const tieredPrice = getTieredPrice(numValue);
+                                if (tieredPrice !== null) {
+                                  setFieldValue("price", tieredPrice);
+                                  setPreservedPrice(tieredPrice);
+                                }
+                              }
+                              // Customer order: do not change price when quantity changes
+                            } else {
+                              setFieldValue("quantity", 1);
+                              setDebouncedQuantity(1);
+                            }
+                          }
+                        }}
+                      />
+                      {errors.quantity && touched.quantity && (
+                        <p className="text-red-500 text-xs">
+                          {errors.quantity}
+                        </p>
+                      )}
+                    </div>
+                    <div className="w-full">
+                      <Field
+                        as={ThemeInput}
+                        label="Price ($)"
+                        name="price"
+                        placeholder="Enter price"
+                        type="number"
+                        id="price"
+                        required={true}
+                        min="0.01"
+                        step="0.01"
+                        disabled={isClinicOrder || selectedProductData?.vendor === "Integrity"}
+                      />
+                      {errors.price && touched.price && (
+                        <p className="text-red-500 text-xs">{errors.price}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <ThemeButton
                     label={isClinicOrder ? "Add to Order" : "Add to Cart"}
-                  type="submit"
-                  icon={<PlusIcon />}
-                  variant="primaryOutline"
+                    type="submit"
+                    icon={<PlusIcon />}
+                    variant="primaryOutline"
                     disabled={tierPricingLoading || addingToCart}
-                />
-              </Form>
-            );
+                  />
+                </Form>
+              );
             }}
           </Formik>
         </div>
@@ -1785,7 +2000,7 @@ const Page = () => {
                           min="0.01"
                           step="0.01"
                           value={item.price}
-                          disabled={isClinicOrder}
+                          disabled={isClinicOrder || item.vendor === "Integrity"}
                           onChange={(e) => {
                             const newPrice = Number(e.target.value);
                             if (!isNaN(newPrice) && newPrice > 0) {
@@ -1793,7 +2008,9 @@ const Page = () => {
                             }
                           }}
                           className={`rounded-md border bg-white border-gray-200 w-full max-w-14 py-0.5 px-2 h-7 outline-none text-xs ${
-                            !isClinicOrder && priceErrors[index] ? "border-red-500" : ""
+                            !isClinicOrder && priceErrors[index]
+                              ? "border-red-500"
+                              : ""
                           } ${isClinicOrder ? "cursor-not-allowed bg-gray-50" : ""}`}
                         />
                         {!isClinicOrder && priceErrors[index] && (
@@ -1805,7 +2022,8 @@ const Page = () => {
                     </div>
 
                     <div className="text-xs md:text-sm whitespace-nowrap">
-                      ${(item.quantity * item.price).toLocaleString("en-US", {
+                      $
+                      {(item.quantity * item.price).toLocaleString("en-US", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
@@ -1822,13 +2040,28 @@ const Page = () => {
                   </div>
                 ))}
 
-                <div className="py-2 px-3 md:px-4 flex flex-col gap-2">
+                    <div className="py-2 px-3 md:px-4 flex flex-col gap-2 mt-2">
+                      {hasPharmacyProduct && (
+                        <div className="flex flex-col gap-1">
+                          <label className="text-sm font-medium text-gray-700">
+                            Consultation fee ($) <span className="text-red-500">*</span>
+                          </label>
+                          <ThemeInput
+                            type="number"
+                            placeholder="0.00"
+                            value={consultationFeeInput}
+                            onChange={(e) => setConsultationFeeInput(e.target.value)}
+                            className="w-full "
+                          />
+                        </div>
+                      )}
                   <div className="flex justify-between">
                     <span className="text-black text-base md:text-lg font-semibold">
                       Total Amount:
                     </span>
                     <span className="text-primary text-base md:text-lg font-semibold">
-                      ${totalAmount.toLocaleString("en-US", {
+                          $
+                          {totalAmountWithConsultation.toLocaleString("en-US", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
@@ -1846,9 +2079,15 @@ const Page = () => {
                           ? "Creating Order..."
                               : isClinicOrder
                                 ? "Create Order & Checkout"
-                          : "Create Order"
+                                : "Create Order"
                       }
-                      onClick={handleCreateOrder}
+                          onClick={() =>
+                            handleCreateOrder(
+                              hasPharmacyProduct
+                                ? { consultationFee: parseFloat(consultationFeeInput) || 0 }
+                                : undefined
+                            )
+                          }
                       size="medium"
                       icon={<PlusIcon height="18" width="18" />}
                       heightClass="h-10"
@@ -1858,7 +2097,8 @@ const Page = () => {
                             tierPricingLoading ||
                             !cartLoaded ||
                             isCartHydrating ||
-                            orderItems.length === 0
+                            orderItems.length === 0 ||
+                            (hasPharmacyProduct && consultationFeeValue <= 0)
                           }
                     />
                   </div>
@@ -1893,6 +2133,33 @@ const Page = () => {
         </p>
       </AppModal>
 
+      <AppModal
+        isOpen={confirmCityCenterModalOpen}
+        onClose={() => {
+          if (confirmCityCenterLoading) return;
+          setConfirmCityCenterModalOpen(false);
+          setPendingCityCenterItems([]);
+        }}
+        title="Pharmacy products not allowed for My Clinic"
+        subtitle=""
+        onConfirm={() => void handleConfirmRemoveCityCenter()}
+        confirmLabel={
+          confirmCityCenterLoading ? "Removing..." : "Yes, remove from cart"
+        }
+        cancelLabel="No, stay on Customer"
+        confimBtnDisable={confirmCityCenterLoading}
+        disableCloseButton={confirmCityCenterLoading}
+        outSideClickClose={!confirmCityCenterLoading}
+        bodyPaddingClasses="p-4 md:p-6"
+      >
+        <p className="text-sm md:text-base text-gray-700">
+          Pharmacy products (e.g. Integrity, City Center) cannot be ordered for
+          My Clinic. {pendingCityCenterItems.length} item
+          {pendingCityCenterItems.length === 1 ? "" : "s"} will be removed from
+          your cart. Do you want to continue?
+        </p>
+      </AppModal>
+
       {clinicCheckoutOrder && (
         <CustomerOrderPayment
           isOpen={isClinicPaymentOpen}
@@ -1917,9 +2184,12 @@ const Page = () => {
         onConfirm={(data) => {
           setIsAddCustomerModalOpen(false);
 
-          const firstName = typeof data?.firstName === "string" ? data.firstName : "";
-          const lastName = typeof data?.lastName === "string" ? data.lastName : "";
-          const fullName = `${firstName} ${lastName}`.trim() || data?.email || "Customer";
+          const firstName =
+            typeof data?.firstName === "string" ? data.firstName : "";
+          const lastName =
+            typeof data?.lastName === "string" ? data.lastName : "";
+          const fullName =
+            `${firstName} ${lastName}`.trim() || data?.email || "Customer";
           const id = data?.id != null ? String(data.id) : "";
 
           // Ensure the newly created customer is selected immediately

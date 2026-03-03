@@ -65,7 +65,9 @@ const ProductSelect = forwardRef<ProductSelectRef, ProductSelectProps>(
       fetchPolicy: "no-cache",
       variables: {
         perPage: 10,
-        vendor: 'Alpha BioMed',
+        vendor: fetchMarkedUpProductsOnly
+          ? ["Alpha BioMed", "Integrity"]
+          : ["Alpha BioMed"],
         search: debouncedSearch || undefined,
         markedUp: fetchMarkedUpProductsOnly
           ? fetchMarkedUpProductsOnly

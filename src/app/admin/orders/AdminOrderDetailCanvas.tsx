@@ -44,6 +44,7 @@ export interface AdminOrderDetail {
   netCost: number | null;
   profit: number | null;
   shipmentStatus?: string | null;
+  consultationFee?: number | null;
   shipstationOrderId?: string | null;
   trackingNumber?: string | null;
   trackingUrl?: string | null;
@@ -72,12 +73,15 @@ interface AdminOrderDetailCanvasProps {
   isOpen: boolean;
   onClose: () => void;
   order: AdminOrderDetail | null;
+  /** When true (e.g. manager view), hide customer name/email block. */
+  hideCustomer?: boolean;
 }
 
 export default function AdminOrderDetailCanvas({
   isOpen,
   onClose,
   order,
+  hideCustomer = false,
 }: AdminOrderDetailCanvasProps) {
   useBodyScrollLock(isOpen);
 
@@ -113,9 +117,9 @@ export default function AdminOrderDetailCanvas({
           </div>
 
           <div
-            className={`grid grid-cols-1 gap-4 border border-gray-200 rounded-xl p-4 bg-gray-50/50 ${!order.myClinic ? "sm:grid-cols-2" : ""}`}
+            className={`grid grid-cols-1 gap-4 border border-gray-200 rounded-xl p-4 bg-gray-50/50 ${!order.myClinic && !hideCustomer ? "sm:grid-cols-2" : ""}`}
           >
-            {!order.myClinic && (
+            {!order.myClinic && !hideCustomer && (
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Customer

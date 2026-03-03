@@ -188,6 +188,7 @@ export interface OrderRequestAttributes {
   requestedItems?: RequestedItem[];
   notes?: NoteAttributes[];
   orderPaid?: boolean;
+  consultationFee?: number | null;
   order?: {
     id?: string | number;
     status?: string;

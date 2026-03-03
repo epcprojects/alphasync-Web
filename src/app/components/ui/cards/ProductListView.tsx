@@ -1,5 +1,6 @@
 "use client";
 import { HeartFilledIcon, HeartOutlineIcon, RejectIcon, InventoryIcon } from "@/icons";
+import { Switch } from "@headlessui/react";
 import Tooltip from "../tooltip";
 import ProductImage from "@/app/components/ui/ProductImage";
 
@@ -31,6 +32,12 @@ type ProductListViewProps = {
   vendor?: string | null;
   /** When true, show "Pending approval" text (e.g. for non–Alpha BioMed products) */
   pendingApproval?: boolean;
+  /** When true, show "My Store" toggle instead of Add to My Store / Change Customer Price button */
+  useAddToStoreToggle?: boolean;
+  /** Numeric price shown on the row (used when enabling toggle to call UpdateProductPrice) */
+  displayPriceValue?: number;
+  /** When toggle is turned on, call with productId and displayPriceValue to add to store without modal */
+  onAddToStoreWithPrice?: (productId: string, price: number) => void;
 };
 
 export default function ProductListView({
@@ -43,6 +50,9 @@ export default function ProductListView({
   orderButtonDisabled = false,
   vendor,
   pendingApproval = false,
+  useAddToStoreToggle = false,
+  displayPriceValue,
+  onAddToStoreWithPrice,
   // orderButtonDisabledTooltip = "Only RUO products can be added to your shop.",
 }: ProductListViewProps) {
   const productId = product.originalId || String(product.id);
@@ -105,18 +115,20 @@ export default function ProductListView({
         </span>
       </div>
 
-      <div className="col-span-2 font-medium text-xs md:text-sm text-gray-800">
-        <span className="font-medium text-xs pe-1 text-black inline-flex md:hidden">
-          Latest Marked up Price:
-        </span>
-        {product.price}
-      </div>
+      {vendor === "Alpha BioMed" && (
+        <div className="col-span-2 font-medium text-xs md:text-sm text-gray-800">
+          <span className="font-medium text-xs pe-1 text-black inline-flex md:hidden">
+            Latest Marked up Price:
+          </span>
+          {product.price}
+        </div>
+      )}
 
       <div className="col-span-1 font-medium text-xs md:text-sm text-gray-600">
         <span className="font-medium text-xs pe-1 text-black inline-flex md:hidden">
           Base Price:
         </span>
-        {product.basePrice || "-"}
+        {vendor === "Alpha BioMed" ? product.basePrice : product.price || "-"}
       </div>
 
       <div className="col-span-1 md:col-span-2 lg:col-span-2 flex items-center justify-end md:justify-center gap-2">
@@ -138,7 +150,7 @@ export default function ProductListView({
           </button>
         </Tooltip>
 
-        {isMarkedUp && onRemoveFromSale && (
+        {isMarkedUp && onRemoveFromSale && !useAddToStoreToggle && (
           <Tooltip content="Remove from Sale">
             <button
               onClick={(e) => {
@@ -152,27 +164,64 @@ export default function ProductListView({
           </Tooltip>
         )}
 
-        <Tooltip
-          content={
-            // orderButtonDisabled ? orderButtonDisabledTooltip :
-            isMarkedUp
-                ? "Change Customer Price"
-              : "Add to My Store"
-          }
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!orderButtonDisabled) onBtnClick?.(product.id);
-            }}
-            disabled={!onBtnClick || orderButtonDisabled}
-            className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label={isMarkedUp ? "Change Customer Price" : "Add to My Store"}
-            type="button"
+        {useAddToStoreToggle ? (
+          <Tooltip
+            content={
+              isMarkedUp
+                ? "In your store – toggle off to remove"
+                : "Add to My Store"
+            }
           >
-            <InventoryIcon fill="#2862A9" width="16" height="16" />
-          </button>
-        </Tooltip>
+            <div
+              className="flex items-center gap-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="text-gray-600 font-medium text-xs hidden sm:inline">
+                My Store
+              </span>
+              <Switch
+                checked={isMarkedUp}
+                onChange={(checked) => {
+                  if (checked) {
+                    if (
+                      onAddToStoreWithPrice &&
+                      displayPriceValue != null &&
+                      displayPriceValue > 0
+                    ) {
+                      onAddToStoreWithPrice(productId, displayPriceValue);
+                    } else {
+                      onBtnClick?.(product.id);
+                    }
+                  } else {
+                    onRemoveFromSale?.(productId);
+                  }
+                }}
+                className="group relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border border-gray-200 bg-gray-200 transition data-[checked]:bg-gradient-to-r data-[checked]:from-[#3C85F5] data-[checked]:to-[#1A407A] data-[checked]:border-transparent"
+              >
+                <span className="pointer-events-none inline-block size-4 translate-x-1 rounded-full bg-white shadow ring-0 transition group-data-[checked]:translate-x-6" />
+              </Switch>
+            </div>
+          </Tooltip>
+        ) : (
+          <Tooltip
+            content={isMarkedUp ? "Change Customer Price" : "Add to My Store"}
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!orderButtonDisabled) onBtnClick?.(product.id);
+              }}
+              disabled={!onBtnClick || orderButtonDisabled}
+              className="flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-md border cursor-pointer border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={
+                isMarkedUp ? "Change Customer Price" : "Add to My Store"
+              }
+              type="button"
+            >
+              <InventoryIcon fill="#2862A9" width="16" height="16" />
+            </button>
+          </Tooltip>
+        )}
       </div>
     </div>
   );

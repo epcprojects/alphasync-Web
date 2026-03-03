@@ -324,6 +324,7 @@ export const FETCH_ORDER = gql`
       trackingNumber
       trackingUrl
       totalTax
+      consultationFee
       patient {
         ${userpayload}
       }
@@ -367,6 +368,7 @@ export const FETCH_PRODUCT = gql`
       directions
       inStock
       isFavorited
+      deaSchedule
       priceRange
       primaryImage
       productType
@@ -483,6 +485,7 @@ export const PATIENT_ORDERS = gql`
         createdAt
         totalPrice
         hasAnotherReorder
+        consultationFee
         totalTax
         subtotalPrice
         patient {
@@ -699,6 +702,39 @@ export const DOCTOR_DASHBOARD = gql`
   }
 `;
 
+export const MANAGER_DASHBOARD = gql`
+  query ManagerDashboard {
+    managerDashboard {
+      activeDoctors
+      newDoctorsThisMonth
+      pendingDoctors
+      salesAmountPastMonth
+      salesAmountThisMonth
+      salesAmountToday
+      totalDoctors
+      totalProductsSold
+      newlyOnboardedDoctors {
+        doctorEmail
+        doctorId
+        doctorName
+        onboardedAt
+      }
+      topPerformingDoctors {
+        doctorEmail
+        doctorId
+        doctorName
+        totalSalesAmount
+      }
+      topSellingProducts {
+        productId
+        productTitle
+        salesCount
+        salesPercentage
+      }
+    }
+  }
+`;
+
 export const PAYMENT_INVOICES = gql`
   query PaymentInvoices($orderId: ID!) {
     paymentInvoices(orderId: $orderId) {
@@ -774,6 +810,7 @@ export const ADMIN_ORDERS = gql`
         subtotalPrice
         totalTax
         totalPrice
+        consultationFee
         netCost
         profit
         shipmentStatus
