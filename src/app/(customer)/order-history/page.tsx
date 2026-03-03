@@ -54,6 +54,7 @@ interface PatientOrderData {
   hasAnotherReorder?: boolean | null;
   trackingUrl?: string | null;
   trackingNumber?: string | null;
+  consultationFee?: number | null;
   doctor?: {
     fullName?: string | null;
   } | null;
@@ -188,6 +189,7 @@ function History() {
           quantity,
           price: unitPrice,
           amount: `$${lineTotal.toFixed(2)}`,
+          consultationFee: order.consultationFee ?? null,
           description: item.product?.description ?? undefined,
           variants: variant,
           tags: tagsData && tagsData.length > 0 ? tagsData : undefined,

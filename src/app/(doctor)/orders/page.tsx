@@ -51,6 +51,7 @@ interface DoctorOrdersResponse {
       status: string;
       trackingUrl?: string | null;
       trackingNumber?: string | null;
+      consultationFee?: number | null;
       orderItems: {
         id: string;
         quantity: number;
@@ -91,6 +92,7 @@ function OrderContent() {
     totalPrice: number;
     subtotalPrice: number;
     totalTax: number;
+    consultationFee?: number | null;
     orderItems: {
       id: string;
       medicineName: string;
@@ -258,6 +260,7 @@ function OrderContent() {
       totalTax: order.totalTax,
       status: order.status,
       doctorAddress: doctorAddress || undefined,
+      consultationFee: order.consultationFee ?? null,
       orderItems: order.orderItems.map((item) => ({
         id: item.id,
         medicineName: item.product?.title || "Unknown Product",

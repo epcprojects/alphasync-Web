@@ -39,6 +39,7 @@ type order = {
   orderItems: OrderItem[];
   status?: string;
   trackingNumber?: string | null;
+  consultationFee?: number | null;
   trackingUrl?: string | null;
   patient?: {
     address?: string | null;
@@ -166,6 +167,18 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                 </span>
               </div>
             )}
+            {
+              order.consultationFee !== null && order.consultationFee !== undefined && order.consultationFee !== 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-normal text-gray-800">
+                    Consultation Fee
+                  </span>
+                  <span className="text-sm font-medium text-gray-800">
+                    ${formatPrice(order.consultationFee)}
+                  </span>
+                </div>
+              )
+            }
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Order Date
