@@ -1340,8 +1340,11 @@ const Page = () => {
                   setFieldValue("customer", "", false);
                   setFieldTouched("customer", false, false);
                   setFieldError("customer", undefined);
-                  // City Center products cannot be ordered for My Clinic: unselect if currently selected
-                  if (selectedProductData?.vendor === "City Center") {
+                  // Pharmacy products cannot be ordered for My Clinic: unselect if currently selected
+                  if (
+                    selectedProductData?.vendor &&
+                    PHARMACY_VENDORS.includes(selectedProductData.vendor)
+                  ) {
                     setFieldValue("product", "", false);
                     setFieldTouched("product", false, false);
                     setFieldError("product", undefined);
@@ -1415,18 +1418,18 @@ const Page = () => {
                   }
                 }
 
-                // Prompt when switching to My Clinic and cart has City Center products (not allowed for My Clinic)
+                // Prompt when switching to My Clinic and cart has pharmacy products (not allowed for My Clinic)
                 if (nextIsClinicOrder && !isClinicOrder) {
                   if (!cartLoaded || isCartHydrating) {
                     showErrorToast("Please wait while cart items load.");
                     return;
                   }
-                  const cityCenterItems = orderItems.filter(
-                    (i) => i.vendor === "City Center",
+                  const pharmacyItems = orderItems.filter(
+                    (i) => i.vendor && PHARMACY_VENDORS.includes(i.vendor),
                   );
-                  if (cityCenterItems.length > 0) {
+                  if (pharmacyItems.length > 0) {
                     setPendingCityCenterItems(
-                      cityCenterItems.map((i) => ({
+                      pharmacyItems.map((i) => ({
                         productId: i.productId,
                         name: i.product || "Product",
                         cartItemId: i.cartItemId,
@@ -2106,7 +2109,7 @@ const Page = () => {
           setConfirmCityCenterModalOpen(false);
           setPendingCityCenterItems([]);
         }}
-        title="City Center products not allowed for My Clinic"
+        title="Pharmacy products not allowed for My Clinic"
         subtitle=""
         onConfirm={() => void handleConfirmRemoveCityCenter()}
         confirmLabel={
@@ -2119,8 +2122,8 @@ const Page = () => {
         bodyPaddingClasses="p-4 md:p-6"
       >
         <p className="text-sm md:text-base text-gray-700">
-          City Center products cannot be ordered for My Clinic.{" "}
-          {pendingCityCenterItems.length} item
+          Pharmacy products (e.g. Integrity, City Center) cannot be ordered for
+          My Clinic. {pendingCityCenterItems.length} item
           {pendingCityCenterItems.length === 1 ? "" : "s"} will be removed from
           your cart. Do you want to continue?
         </p>
