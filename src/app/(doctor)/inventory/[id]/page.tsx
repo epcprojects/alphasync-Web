@@ -350,12 +350,12 @@ export default function PostDetail() {
             </div>
 
             <div>
-              <label
+              {!isPharmacyProduct && <label
                 htmlFor="input-group-1"
                 className="block mb-1 text-base font-normal text-gray-600"
               >
                 Price to Customer ($)
-              </label>
+              </label>}
               <div className="relative flex items-center w-full sm:w-fit">
                 <div className="absolute inset-y-0 text-gray-400 start-0 text-sm flex items-center ps-3.5 pointer-events-none">
                   $
@@ -602,14 +602,14 @@ export default function PostDetail() {
               )}
 
             <div className="grid grid-cols-1 gap-2 md:gap-4 md:grid-cols-4">
-              <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
+              {!isPharmacyProduct && <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                 <span className="block text-gray-800 text-sm !font-normal">
                   Manufacturer
                 </span>
                 <span className="text-gray-800 block font-xs md:text-sm font-medium">
                   {product?.vendor ?? "N/A"}
                 </span>
-              </div>
+              </div>}
 
               <div className="bg-gray-50 rounded-xl p-1 md:p-2.5 flex flex-col gap-1">
                 <span className="block text-gray-800 text-sm !font-normal">
