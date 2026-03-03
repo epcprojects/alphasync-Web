@@ -222,6 +222,7 @@ export interface FetchProductResponse {
     bud?: string;
     directions?: string;
     category?: string;
+    deaSchedule?: string;
     tierPricing?: {
       endCount: number | null;
       startCount: number;
