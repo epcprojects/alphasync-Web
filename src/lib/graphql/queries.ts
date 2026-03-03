@@ -699,6 +699,39 @@ export const DOCTOR_DASHBOARD = gql`
   }
 `;
 
+export const MANAGER_DASHBOARD = gql`
+  query ManagerDashboard {
+    managerDashboard {
+      activeDoctors
+      newDoctorsThisMonth
+      pendingDoctors
+      salesAmountPastMonth
+      salesAmountThisMonth
+      salesAmountToday
+      totalDoctors
+      totalProductsSold
+      newlyOnboardedDoctors {
+        doctorEmail
+        doctorId
+        doctorName
+        onboardedAt
+      }
+      topPerformingDoctors {
+        doctorEmail
+        doctorId
+        doctorName
+        totalSalesAmount
+      }
+      topSellingProducts {
+        productId
+        productTitle
+        salesCount
+        salesPercentage
+      }
+    }
+  }
+`;
+
 export const PAYMENT_INVOICES = gql`
   query PaymentInvoices($orderId: ID!) {
     paymentInvoices(orderId: $orderId) {

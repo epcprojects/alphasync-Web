@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("auth_token")?.value;
   const userCookie = request.cookies.get("user_data")?.value;
 
-  // Redirect /manager: no token → login; manager logged in → /manager/doctors
+  // Redirect /manager: no token → login; manager logged in → /manager/dashboard
   if (pathname === "/manager" || pathname === "/manager/") {
     if (!token) {
       return NextResponse.redirect(new URL("/manager/login", request.url));
@@ -22,7 +22,7 @@ export function middleware(request: NextRequest) {
       }
     }
     if (managerUserType === "manager") {
-      return NextResponse.redirect(new URL("/manager/doctors", request.url));
+      return NextResponse.redirect(new URL("/manager/dashboard", request.url));
     }
     return NextResponse.redirect(new URL("/manager/login", request.url));
   }
@@ -77,6 +77,7 @@ export function middleware(request: NextRequest) {
     "/admin/dashboard",
   ];
   const managerRoutes = [
+    "/manager/dashboard",
     "/manager/doctors",
     "/manager/accounting",
     "/manager/orders",
@@ -130,7 +131,7 @@ export function middleware(request: NextRequest) {
     if (userType === "admin") {
       return NextResponse.redirect(new URL("/admin/doctors", request.url));
     } else if (userType === "manager") {
-      return NextResponse.redirect(new URL("/manager/doctors", request.url));
+      return NextResponse.redirect(new URL("/manager/dashboard", request.url));
     } else if (userType === "doctor") {
       return NextResponse.redirect(
         fromInvitation ? profileCompleteUrl : new URL("/my-store", request.url)
@@ -158,7 +159,7 @@ export function middleware(request: NextRequest) {
       doctorRoutes.some((route) => pathname.startsWith(route))
     ) {
       return NextResponse.redirect(
-        new URL(userType === "manager" ? "/manager/doctors" : "/admin/doctors", request.url)
+        new URL(userType === "manager" ? "/manager/dashboard" : "/admin/dashboard", request.url)
       );
     }
 
@@ -167,16 +168,16 @@ export function middleware(request: NextRequest) {
       customerRoutes.some((route) => pathname.startsWith(route))
     ) {
       return NextResponse.redirect(
-        new URL(userType === "manager" ? "/manager/doctors" : "/admin/doctors", request.url)
+        new URL(userType === "manager" ? "/manager/dashboard" : "/admin/dashboard", request.url)
       );
     }
 
-    // Manager can only access managerRoutes; redirect to /manager/doctors if they hit admin routes
+    // Manager can only access managerRoutes; redirect to /manager/dashboard if they hit admin routes
     if (
       userType === "manager" &&
       adminRoutes.some((route) => pathname.startsWith(route))
     ) {
-      return NextResponse.redirect(new URL("/manager/doctors", request.url));
+      return NextResponse.redirect(new URL("/manager/dashboard", request.url));
     }
 
     if (

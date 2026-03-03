@@ -97,7 +97,7 @@ export function CustomerRoute({ children, fallbackRoute }: { children: ReactNode
 
 export function ManagerRoute({ children, fallbackRoute }: { children: ReactNode; fallbackRoute?: string }) {
   return (
-    <RoleBasedRoute allowedRoles={["manager"]} fallbackRoute={fallbackRoute ?? "/manager/doctors"}>
+    <RoleBasedRoute allowedRoles={["manager"]} fallbackRoute={fallbackRoute ?? "/manager/dashboard"}>
       {children}
     </RoleBasedRoute>
   );
