@@ -44,6 +44,7 @@ export interface AdminOrderDetail {
   netCost: number | null;
   profit: number | null;
   shipmentStatus?: string | null;
+  consultationFee?: number | null;
   shipstationOrderId?: string | null;
   trackingNumber?: string | null;
   trackingUrl?: string | null;
@@ -89,7 +90,7 @@ export default function AdminOrderDetailCanvas({
       isOpen={isOpen}
       onClose={onClose}
       icon={<OrderDetail />}
-      title="Order Details"
+      title="Order Details scs"
       outSideClickClose={false}
       subtitle={order ? `#${order.displayId ?? order.id}` : ""}
       position={ModalPosition.RIGHT}

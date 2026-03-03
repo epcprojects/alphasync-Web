@@ -35,6 +35,7 @@ export interface PrescriptionOrder {
   trackingNumber?: string | null;
   shippingAddress?: string;
   hasAnotherReorder?: boolean;
+  consultationFee?: number | null;
   patient?: {
     address?: string | null;
   };

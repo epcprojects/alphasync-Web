@@ -484,6 +484,7 @@ export const PATIENT_ORDERS = gql`
         createdAt
         totalPrice
         hasAnotherReorder
+        consultationFee
         totalTax
         subtotalPrice
         patient {
@@ -808,6 +809,7 @@ export const ADMIN_ORDERS = gql`
         subtotalPrice
         totalTax
         totalPrice
+        consultationFee
         netCost
         profit
         shipmentStatus
