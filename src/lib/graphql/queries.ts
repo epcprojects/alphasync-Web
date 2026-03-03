@@ -324,6 +324,7 @@ export const FETCH_ORDER = gql`
       trackingNumber
       trackingUrl
       totalTax
+      consultationFee
       patient {
         ${userpayload}
       }
