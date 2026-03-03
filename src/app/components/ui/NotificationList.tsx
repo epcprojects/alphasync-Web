@@ -18,6 +18,7 @@ import {
   AlertIcon,
 } from "@/icons";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { PHARMACY_VENDORS } from "@/lib/constants";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
@@ -194,10 +195,22 @@ const NotificationList: React.FC<NotificationListProps> = ({
     setIsRejectModalOpen(true);
   };
 
+  const selectedNotification = notifications?.find(
+    (n: NotificationData) => n.orderRequest?.id === selectedRequest
+  );
+  const isPharmacyRequest = Boolean(
+    selectedNotification?.orderRequest?.requestedItems?.some(
+      (item: { product?: { vendor?: string } | null }) =>
+        item.product?.vendor && PHARMACY_VENDORS.includes(item.product.vendor)
+    )
+  );
+
   const handleApproveConfirm = async ({
     doctorMessage,
+    consultationFee,
   }: {
     doctorMessage: string;
+    consultationFee?: number;
   }) => {
     if (!selectedRequest) {
       showErrorToast("No request selected.");
@@ -208,6 +221,10 @@ const NotificationList: React.FC<NotificationListProps> = ({
         variables: {
           requestId: selectedRequest,
           doctorMessage: doctorMessage || null,
+          consultationFee:
+            isPharmacyRequest && consultationFee != null
+              ? consultationFee
+              : undefined,
         },
       });
       showSuccessToast("Patient request approved successfully.");
@@ -867,6 +884,7 @@ const NotificationList: React.FC<NotificationListProps> = ({
         }}
         onConfirm={handleApproveConfirm}
         isSubmitting={isApproving}
+        isPharmacyRequest={isPharmacyRequest}
         itemTitle={
           selectedRequest
             ? notifications?.find(

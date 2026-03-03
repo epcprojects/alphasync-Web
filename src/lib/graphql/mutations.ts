@@ -623,9 +623,17 @@ export const REQUEST_ORDER = gql`
 `;
 
 export const APPROVE_ORDER_REQUEST = gql`
-  mutation ApproveOrderRequest($requestId: ID!, $doctorMessage: String) {
+  mutation ApproveOrderRequest(
+    $requestId: ID!
+    $doctorMessage: String
+    $consultationFee: Float
+  ) {
     approveOrderRequest(
-      input: { requestId: $requestId, doctorMessage: $doctorMessage }
+      input: {
+        requestId: $requestId
+        doctorMessage: $doctorMessage
+        consultationFee: $consultationFee
+      }
     ) {
       invoiceUrl
     }

@@ -37,6 +37,7 @@ import {
   DELETE_NOTIFICATION,
 } from "@/lib/graphql/mutations";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { PHARMACY_VENDORS } from "@/lib/constants";
 
 interface NotificationsProps {
   userType?: "doctor" | "customer";
@@ -81,6 +82,16 @@ export default function Notifications({ userType }: NotificationsProps) {
     useMutation(DELETE_NOTIFICATION);
 
   const notifications = data?.allNotifications?.allData || [];
+
+  const selectedNotification = notifications.find(
+    (n: NotificationData) => n.orderRequest?.id === selectedRequest
+  );
+  const isPharmacyRequest = Boolean(
+    selectedNotification?.orderRequest?.requestedItems?.some(
+      (item: { product?: { vendor?: string } | null }) =>
+        item.product?.vendor && PHARMACY_VENDORS.includes(item.product.vendor)
+    )
+  );
 
   // Fetch notifications when mobile dialog opens
   useEffect(() => {
@@ -170,8 +181,10 @@ export default function Notifications({ userType }: NotificationsProps) {
 
   const handleApproveConfirm = async ({
     doctorMessage,
+    consultationFee,
   }: {
     doctorMessage: string;
+    consultationFee?: number;
   }) => {
     if (!selectedRequest) {
       showErrorToast("No request selected.");
@@ -182,6 +195,10 @@ export default function Notifications({ userType }: NotificationsProps) {
         variables: {
           requestId: selectedRequest,
           doctorMessage: doctorMessage || null,
+          consultationFee:
+            isPharmacyRequest && consultationFee != null
+              ? consultationFee
+              : undefined,
         },
       });
       showSuccessToast("Patient request approved successfully.");
@@ -807,6 +824,7 @@ export default function Notifications({ userType }: NotificationsProps) {
         }}
         onConfirm={handleApproveConfirm}
         isSubmitting={isApproving}
+        isPharmacyRequest={isPharmacyRequest}
         itemTitle={
           selectedRequest
             ? notifications?.find(
