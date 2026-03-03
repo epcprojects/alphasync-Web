@@ -790,6 +790,7 @@ function OrderContent() {
             totalPrice: selectedOrder.totalPrice,
             subtotalPrice: selectedOrder.subtotalPrice,
             totalTax: selectedOrder.totalTax,
+            consultationFee: selectedOrder.consultationFee || null,
             orderItems: selectedOrder.orderItems.map((item) => ({
               id: item.id,
               medicineName: item.medicineName,

@@ -90,7 +90,7 @@ export default function AdminOrderDetailCanvas({
       isOpen={isOpen}
       onClose={onClose}
       icon={<OrderDetail />}
-      title="Order Details scs"
+      title="Order Details"
       outSideClickClose={false}
       subtitle={order ? `#${order.displayId ?? order.id}` : ""}
       position={ModalPosition.RIGHT}
