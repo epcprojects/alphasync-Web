@@ -40,6 +40,8 @@ interface OrderItem {
   cartItemId?: string;
   isMarkedUp?: boolean;
   vendor?: string | null; // e.g. "Alpha BioMed", "City Center" – used to block City Center for My Clinic
+  /** Selected unit pricing id (e.g. from pharmacy product unit pricing table) */
+  productUnitPricingId?: string | null;
 }
 
 type PaymentOrder = NonNullable<React.ComponentProps<typeof CustomerOrderPayment>["order"]>;
@@ -56,6 +58,7 @@ const Page = () => {
   const searchParams = useSearchParams();
   const productIdFromUrl = searchParams.get("productId");
   const unitPriceFromUrl = searchParams.get("unitPrice");
+  const unitPricingIdFromUrl = searchParams.get("unitPricingId");
   const apolloClient = useApolloClient();
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
@@ -71,6 +74,7 @@ const Page = () => {
     customPrice?: number;
     originalPrice?: number;
     vendor?: string | null;
+    productUnitPricingId?: string | null;
     customPriceChangeHistory?: Array<{
       customPrice: number;
       id: string;
@@ -649,6 +653,7 @@ const Page = () => {
         customPrice: product.customPrice,
         originalPrice: originalPrice,
         vendor: product.vendor ?? undefined,
+        productUnitPricingId: unitPricingIdFromUrl || undefined,
         customPriceChangeHistory: product.customPriceChangeHistory,
         tierPricing: product.tierPricing,
         variants: product.variants?.map((variant) => ({
@@ -705,17 +710,18 @@ const Page = () => {
         formikSetFieldValueRef.current("price", priceToUse);
       }
       
-      // Remove productId and unitPrice from URL after prefilling
+      // Remove productId, unitPrice, and unitPricingId from URL after prefilling
       const newSearchParams = new URLSearchParams(searchParams.toString());
       newSearchParams.delete("productId");
       newSearchParams.delete("unitPrice");
+      newSearchParams.delete("unitPricingId");
       const newUrl = newSearchParams.toString()
         ? `${window.location.pathname}?${newSearchParams.toString()}`
         : window.location.pathname;
       router.replace(newUrl, { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchedProductData, productIdFromUrl, unitPriceFromUrl, searchParams, router]);
+  }, [fetchedProductData, productIdFromUrl, unitPriceFromUrl, unitPricingIdFromUrl, searchParams, router]);
 
   // Extract pricing information from selected product data
   const updatePricingInfo = (product: typeof selectedProductData) => {
@@ -955,6 +961,7 @@ const Page = () => {
       hasTierPricing: isClinicOrder && (selectedProductData?.tierPricing?.length ?? 0) > 0,
       latestMarkedUpPrice: latestMarkedUpPrice, // Store latest marked up price for validation
       vendor: selectedProductData?.vendor ?? undefined,
+      productUnitPricingId: selectedProductData?.productUnitPricingId ?? undefined,
     };
 
     setOrderItems((prev) => [...prev, newItem]);
@@ -1123,6 +1130,9 @@ const Page = () => {
         variantId: item.variantId,
         quantity: item.quantity,
         price: item.price,
+        ...(item.productUnitPricingId != null && item.productUnitPricingId !== ""
+          ? { productUnitPricingId: item.productUnitPricingId }
+          : {}),
       }));
 
       const consultationFee = overrides?.consultationFee ?? 0;

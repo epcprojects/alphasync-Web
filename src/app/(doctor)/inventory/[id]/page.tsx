@@ -796,6 +796,7 @@ export default function PostDetail() {
                           : NaN;
                       if (!Number.isNaN(priceVal))
                         params.set("unitPrice", String(priceVal));
+                      if (tier.id) params.set("unitPricingId", String(tier.id));
                     }
                     router.push(`/orders/new-order?${params.toString()}`);
                   }}
