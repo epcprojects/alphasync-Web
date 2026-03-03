@@ -1,7 +1,7 @@
 "use client";
 import React, { ReactNode } from "react";
 import { Header, ManagerRoute } from "@/app/components";
-import { AccountingIcon, DashboardIcon, Doctor, OrdersIcon } from "@/icons";
+import { AccountingIcon, Doctor, OrdersIcon, SettingsIcon, UserIcon, DashboardIcon } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useAppSelector } from "@/lib/store/hooks";
