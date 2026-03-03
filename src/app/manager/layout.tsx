@@ -1,7 +1,7 @@
 "use client";
 import React, { ReactNode } from "react";
 import { Header, ManagerRoute } from "@/app/components";
-import { AccountingIcon, Doctor, OrdersIcon, SettingsIcon, UserIcon } from "@/icons";
+import { AccountingIcon, DashboardIcon, Doctor, OrdersIcon } from "@/icons";
 import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 import { useAppSelector } from "@/lib/store/hooks";
@@ -20,6 +20,11 @@ const poppins_init = Poppins({
 
 const menuItems = [
   {
+    label: "Dashboard",
+    href: "/manager/dashboard",
+    icon: DashboardIcon,
+  },
+  {
     label: "Doctors",
     href: "/manager/doctors",
     icon: Doctor,
@@ -37,6 +42,7 @@ const menuItems = [
 ];
 
 const headings: Record<string, string> = {
+  "/manager/dashboard": "Dashboard",
   "/manager/doctors": "Doctors",
   "/manager/accounting": "Accounting",
   "/manager/orders": "Orders",
