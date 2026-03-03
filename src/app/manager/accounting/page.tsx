@@ -550,21 +550,11 @@ const Page = () => {
         ) : (
           orders.map((order) => {
             const isClinic = order.myClinic || !order.patient;
-            const customerName =
-              order.patient?.fullName ||
-              order.doctor?.fullName ||
-              "Clinic Order";
+            const customerName = isClinic ? "Clinic Order" : "Customer Order";
             const customerImage =
               order.patient?.imageUrl ?? order.doctor?.imageUrl ?? null;
             return (
               <PeptideOrderListView
-                onRowClick={() => {
-                  if (isClinic) {
-                    openClinicOrderDetails(order);
-                    return;
-                  }
-                  router.push(`/orders/${order.id}`);
-                }}
                 key={order.id}
                 order={{
                   id: parseInt(order.id),
@@ -577,7 +567,7 @@ const Page = () => {
                   customerEmail: order.patient?.email ?? undefined,
                   date: format(
                     new Date(order.processedAt || order.createdAt),
-                    "MM-dd-yy"
+                    "MM-dd-yy",
                   ),
                   status: order.status,
                   items: order.orderItems.length,
