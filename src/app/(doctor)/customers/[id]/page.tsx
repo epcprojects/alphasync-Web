@@ -46,6 +46,7 @@ import {
   DENY_ORDER_REQUEST,
   DELETE_NOTE,
 } from "@/lib/graphql/mutations";
+import { PHARMACY_VENDORS } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 // Interface for GraphQL response
@@ -212,6 +213,16 @@ export default function CustomerDetail() {
   const patientOrders = ordersData?.patientOrders;
   const orderRequests = requestsData?.allOrderRequests.allData || [];
   const requestsPageCount = requestsData?.allOrderRequests.totalPages || 1;
+
+  const selectedOrderRequest = orderRequests.find(
+    (r) => String(r.id) === selectedRequestId
+  );
+  const isPharmacyRequest = Boolean(
+    selectedOrderRequest?.requestedItems?.some(
+      (item) =>
+        item.product?.vendor && PHARMACY_VENDORS.includes(item.product.vendor)
+    )
+  );
 
   // Use GraphQL data for pagination
   const pageCount = patientOrders?.totalPages || 0;
@@ -979,6 +990,10 @@ export default function CustomerDetail() {
               variables: {
                 requestId: selectedRequestId,
                 doctorMessage: data.doctorMessage || null,
+                consultationFee:
+                  isPharmacyRequest && data.consultationFee != null
+                    ? data.consultationFee
+                    : undefined,
               },
             });
             showSuccessToast("Patient request approved successfully.");
@@ -991,6 +1006,7 @@ export default function CustomerDetail() {
           }
         }}
         isSubmitting={isApproving}
+        isPharmacyRequest={isPharmacyRequest}
         itemTitle={
           transformedRequests.find((r) => r.id === selectedRequestId)
             ?.displayId || ""

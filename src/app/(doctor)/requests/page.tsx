@@ -36,6 +36,7 @@ import {
   EXPORT_ORDER_REQUESTS,
 } from "@/lib/graphql/mutations";
 import { OrderRequestAttributes } from "@/lib/graphql/attributes";
+import { PHARMACY_VENDORS } from "@/lib/constants";
 
 interface OrderRequestsResponse {
   allOrderRequests: {
@@ -165,6 +166,16 @@ function RequestContent() {
 
   const pageCount = orderRequestsData?.allOrderRequests.totalPages || 1;
   const currentItems = transformedRequests;
+
+  const selectedRequest = orderRequestsData?.allOrderRequests.allData?.find(
+    (r) => String(r.id) === selectedRequestId
+  );
+  const isPharmacyRequest = Boolean(
+    selectedRequest?.requestedItems?.some(
+      (item) =>
+        item.product?.vendor && PHARMACY_VENDORS.includes(item.product.vendor)
+    )
+  );
 
   useEffect(() => {
     setCurrentPage(0);
@@ -605,6 +616,10 @@ function RequestContent() {
               variables: {
                 requestId: selectedRequestId,
                 doctorMessage: data.doctorMessage || null,
+                consultationFee:
+                  isPharmacyRequest && data.consultationFee != null
+                    ? data.consultationFee
+                    : undefined,
               },
             });
             showSuccessToast("Patient request approved successfully.");
@@ -620,6 +635,7 @@ function RequestContent() {
           }
         }}
         isSubmitting={isApproving}
+        isPharmacyRequest={isPharmacyRequest}
         itemTitle={
           currentItems.find(
             (item) => String(item.originalId) === selectedRequestId
