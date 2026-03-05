@@ -35,6 +35,7 @@ interface OrdersResponse {
       profit: number | null;
       shipmentStatus?: string | null;
       shipstationOrderId?: string | null;
+      consultationFee?: number | null;
       trackingNumber?: string | null;
       trackingUrl?: string | null;
       doctor?: {
@@ -48,7 +49,12 @@ interface OrdersResponse {
         quantity: number;
         price: number;
         totalPrice: number;
-        product?: { id: string; title?: string | null; price?: number | null; primaryImage?: string | null } | null;
+        product?: {
+          id: string;
+          title?: string | null;
+          price?: number | null;
+          primaryImage?: string | null;
+        } | null;
       }>;
       patient: {
         id: string;
@@ -383,6 +389,7 @@ function OrdersContent() {
                               total: order.totalPrice,
                               netCost: order.netCost ?? 0,
                               profit: order.profit ?? 0,
+                              consultationFee: order.consultationFee ?? 0,
                             }}
                             onViewOrderDetail={() => setSelectedOrder(order)}
                           />

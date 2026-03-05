@@ -104,7 +104,7 @@ export default function AdminOrderDetailCanvas({
             <span className="text-sm font-medium text-gray-500">Status</span>
             <span
               className={`rounded-full px-2.5 py-0.5 text-sm font-medium capitalize ${getStatusClasses(
-                order.status
+                order.status,
               )}`}
             >
               {formatStatusDisplay(order.status)}
@@ -148,12 +148,16 @@ export default function AdminOrderDetailCanvas({
           <div className="space-y-2 border-b border-gray-200 pb-4">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Order date</span>
-              <span className="text-gray-900">{formatDate(order.createdAt)}</span>
+              <span className="text-gray-900">
+                {formatDate(order.createdAt)}
+              </span>
             </div>
             {order.processedAt && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Processed</span>
-                <span className="text-gray-900">{formatDate(order.processedAt)}</span>
+                <span className="text-gray-900">
+                  {formatDate(order.processedAt)}
+                </span>
               </div>
             )}
           </div>
@@ -179,7 +183,9 @@ export default function AdminOrderDetailCanvas({
               </div>
               {order.shipstationOrderId && (
                 <div className="flex justify-between text-sm gap-4">
-                  <span className="text-gray-600 shrink-0">ShipStation Order ID</span>
+                  <span className="text-gray-600 shrink-0">
+                    ShipStation Order ID
+                  </span>
                   <span className="text-gray-900 font-mono text-xs break-all text-right">
                     {order.shipstationOrderId}
                   </span>
@@ -190,7 +196,9 @@ export default function AdminOrderDetailCanvas({
                 {order.trackingNumber ? (
                   <a
                     href={
-                      order.trackingUrl ? order.trackingUrl : `https://www.google.com/search?q=track+${encodeURIComponent(String(order.trackingNumber))}`
+                      order.trackingUrl
+                        ? order.trackingUrl
+                        : `https://www.google.com/search?q=track+${encodeURIComponent(String(order.trackingNumber))}`
                     }
                     target="_blank"
                     rel="noopener noreferrer"
@@ -199,9 +207,9 @@ export default function AdminOrderDetailCanvas({
                     {order.trackingNumber}
                   </a>
                 ) : (
-                    <span className="text-gray-900 font-mono text-xs break-all text-right">
-                      In Progress
-                    </span>
+                  <span className="text-gray-900 font-mono text-xs break-all text-right">
+                    In Progress
+                  </span>
                 )}
               </div>
             </div>
@@ -248,30 +256,49 @@ export default function AdminOrderDetailCanvas({
             {order.subtotalPrice != null && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="text-gray-900">${formatPrice(order.subtotalPrice)}</span>
+                <span className="text-gray-900">
+                  ${formatPrice(order.subtotalPrice)}
+                </span>
               </div>
             )}
+            {order.consultationFee != null &&
+              Number(order.consultationFee) > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Consultation fee</span>
+                  <span className="text-gray-900">
+                    ${formatPrice(order.consultationFee)}
+                  </span>
+                </div>
+              )}
             {order.totalTax != null && Number(order.totalTax) > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Tax</span>
-                <span className="text-gray-900">${formatPrice(order.totalTax)}</span>
+                <span className="text-gray-900">
+                  ${formatPrice(order.totalTax)}
+                </span>
               </div>
             )}
             {order.netCost != null && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Net cost</span>
-                <span className="text-gray-900">${formatPrice(order.netCost)}</span>
+                <span className="text-gray-900">
+                  ${formatPrice(order.netCost)}
+                </span>
               </div>
             )}
             {order.profit != null && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Profit</span>
-                <span className="text-green-600 font-medium">${formatPrice(order.profit)}</span>
+                <span className="text-green-600 font-medium">
+                  ${formatPrice(order.profit)}
+                </span>
               </div>
             )}
             <div className="flex justify-between text-sm font-medium pt-1 border-t border-gray-100">
               <span className="text-gray-800">Total</span>
-              <span className="text-gray-900">${formatPrice(order.totalPrice)}</span>
+              <span className="text-gray-900">
+                ${formatPrice(order.totalPrice)}
+              </span>
             </div>
           </div>
         </div>

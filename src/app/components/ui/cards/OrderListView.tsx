@@ -23,6 +23,7 @@ type Order = {
   imageUrl?: string | null;
   customerEmail?: string | null;
   isClinicOrder?: boolean;
+  consultationFee?: number | null;
 };
 
 export type OrderListViewLayout = "default" | "admin";
