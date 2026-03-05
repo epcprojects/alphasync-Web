@@ -42,6 +42,8 @@ interface OrderItem {
   vendor?: string | null; // e.g. "Alpha BioMed", "City Center" – used to block City Center for My Clinic
   /** Selected unit pricing id (e.g. from pharmacy product unit pricing table) */
   productUnitPricingId?: string | null;
+  /** Redux cart line id (productId or productId__productUnitPricingId) – used to remove correct cart line */
+  cartLineId?: string;
 }
 
 type PaymentOrder = NonNullable<React.ComponentProps<typeof CustomerOrderPayment>["order"]>;
@@ -160,12 +162,12 @@ const Page = () => {
   const [isCartHydrating, setIsCartHydrating] = useState(false);
   const [confirmSwitchModalOpen, setConfirmSwitchModalOpen] = useState(false);
   const [pendingUnmarkedItems, setPendingUnmarkedItems] = useState<
-    Array<{ productId: string; name: string; cartItemId?: string }>
+    Array<{ productId: string; name: string; cartItemId?: string; cartLineId?: string }>
   >([]);
   const [confirmSwitchLoading, setConfirmSwitchLoading] = useState(false);
   const [confirmCityCenterModalOpen, setConfirmCityCenterModalOpen] = useState(false);
   const [pendingCityCenterItems, setPendingCityCenterItems] = useState<
-    Array<{ productId: string; name: string; cartItemId?: string }>
+    Array<{ productId: string; name: string; cartItemId?: string; cartLineId?: string }>
   >([]);
   const [confirmCityCenterLoading, setConfirmCityCenterLoading] = useState(false);
   const handleOrderTypeChangeRef = useRef<(nextIsClinicOrder: boolean) => void>(() => { });
@@ -282,7 +284,8 @@ const Page = () => {
 
       await Promise.all(
         pendingUnmarkedItems.map(async (item) => {
-          dispatch(removeCartItem(item.productId));
+          const lineId = item.cartLineId ?? item.productId;
+          dispatch(removeCartItem(lineId));
           const cartItemId =
             item.cartItemId || productToCartItemId.get(item.productId);
           if (!cartItemId) return;
@@ -344,7 +347,8 @@ const Page = () => {
 
       await Promise.all(
         pendingCityCenterItems.map(async (item) => {
-          dispatch(removeCartItem(item.productId));
+          const lineId = item.cartLineId ?? item.productId;
+          dispatch(removeCartItem(lineId));
           const cartItemId =
             item.cartItemId || productToCartItemId.get(item.productId);
           if (!cartItemId) return;
@@ -433,10 +437,16 @@ const Page = () => {
       }
     }
 
-    // Save in Redux cart (optimistic UI). For clinic merge, slice will set existing.price = incoming.price so merged item has tier for total qty
+    // Save in Redux cart (optimistic UI). Use composite id when product has unit pricing so same product + different unit pricing = separate cart lines
+    const cartLineId =
+      selectedProductData?.productUnitPricingId != null &&
+      selectedProductData.productUnitPricingId !== ""
+        ? `${productId}__${selectedProductData.productUnitPricingId}`
+        : productId;
     dispatch(
       addCartItem({
-        id: productId,
+        id: cartLineId,
+        productId,
         name: selectedProductData?.name || values.product || "Product",
         price: priceToUse,
         qty,
@@ -499,12 +509,15 @@ const Page = () => {
       }
 
       setIsCartHydrating(true);
-      const prevByProductId = new Map(prevItems.map((i) => [i.productId, i]));
+      const prevByCartLineId = new Map(
+        prevItems.map((i) => [i.cartLineId ?? i.productId, i]),
+      );
 
       const next = await Promise.all(
         cartItems.map(async (ci) => {
-          const productId = ci.id;
-          const prev = prevByProductId.get(productId);
+          const cartLineId = ci.id;
+          const productId = ci.productId ?? ci.id;
+          const prev = prevByCartLineId.get(cartLineId);
 
           let variantId = prev?.variantId || "";
           let originalPrice = prev?.originalPrice ?? 0;
@@ -518,7 +531,7 @@ const Page = () => {
           try {
             const { data } = await apolloClient.query<FetchProductResponse>({
               query: FETCH_PRODUCT,
-              variables: { id: productId },
+              variables: { id: productId }, // real product id for API
               fetchPolicy: "cache-first",
             });
             const p = data?.fetchProduct;
@@ -589,6 +602,7 @@ const Page = () => {
             isMarkedUp,
             vendor: vendor ?? undefined,
             productUnitPricingId: ci.productUnitPricingId ?? prev?.productUnitPricingId,
+            cartLineId,
           } satisfies OrderItem;
         }),
       );
@@ -907,9 +921,14 @@ const Page = () => {
     const customPrice = selectedProductData?.customPrice;
     const productId = selectedProductData?.productId || "";
 
-    // Check if the same product already exists in order items
+    // Check if the same product already exists in order items (same product + same variant + same unit pricing)
+    // Same product with different per-unit pricing must stay as separate lines
+    const incomingUnitPricingId = selectedProductData?.productUnitPricingId ?? null;
     const existingItemIndex = orderItems.findIndex(
-      (item) => item.productId === productId && item.variantId === selectedProductData?.variantId
+      (item) =>
+        item.productId === productId &&
+        item.variantId === selectedProductData?.variantId &&
+        (item.productUnitPricingId ?? null) === incomingUnitPricingId
     );
 
     if (existingItemIndex !== -1) {
@@ -1066,6 +1085,7 @@ const Page = () => {
 
   const handleDeleteItem = async (index: number) => {
     const item = orderItems[index];
+    const cartLineIdToRemove = item?.cartLineId ?? item?.productId;
     setOrderItems((prev) => prev.filter((_, i) => i !== index));
     // Clear error for deleted item and reindex remaining errors
     setPriceErrors((prev) => {
@@ -1081,9 +1101,9 @@ const Page = () => {
       return newErrors;
     });
 
-    // If this item came from cart, remove it from cart as well.
-    if (item && cartItems.some((ci) => ci.id === item.productId)) {
-      dispatch(removeCartItem(item.productId));
+    // If this item came from cart, remove it from cart as well (use cart line id so same product + different unit pricing removes the correct line).
+    if (item && cartLineIdToRemove && cartItems.some((ci) => ci.id === cartLineIdToRemove)) {
+      dispatch(removeCartItem(cartLineIdToRemove));
       if (item.cartItemId) {
         try {
           await removeFromCart({ variables: { cartItemId: item.cartItemId } });
@@ -1474,6 +1494,7 @@ const Page = () => {
                         productId: i.productId,
                         name: i.product || "Product",
                         cartItemId: i.cartItemId,
+                        cartLineId: i.cartLineId,
                       })),
                     );
                     setConfirmSwitchModalOpen(true);
@@ -1496,6 +1517,7 @@ const Page = () => {
                         productId: i.productId,
                         name: i.product || "Product",
                         cartItemId: i.cartItemId,
+                        cartLineId: i.cartLineId,
                       })),
                     );
                     setConfirmCityCenterModalOpen(true);

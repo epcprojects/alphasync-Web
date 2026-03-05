@@ -1,7 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export type CartItem = {
-  id: string; // product id (GraphQL id)
+  /** Cart line id: productId, or productId__productUnitPricingId when same product can have multiple lines (different unit pricing) */
+  id: string;
+  /** Real product id for API (required when id is composite) */
+  productId?: string;
   cartItemId?: string; // server cart item id (needed for removeFromCart)
   name: string;
   price: number; // unit price
@@ -89,6 +92,7 @@ const cartSlice = createSlice({
         existing.price = incoming.price;
         if (incoming.productUnitPricingId != null)
           existing.productUnitPricingId = incoming.productUnitPricingId;
+        if (incoming.productId != null) existing.productId = incoming.productId;
       } else {
         state.items.push(incoming);
       }

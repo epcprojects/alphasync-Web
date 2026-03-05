@@ -390,7 +390,8 @@ const Page = () => {
           const unitPrice = parseUnitPrice(tier.price);
           dispatch(
             addItem({
-              id: unitPricingModal.productId,
+              id: `${unitPricingModal.productId}__${tier.id}`,
+              productId: unitPricingModal.productId,
               name: unitPricingModal.name,
               price: unitPrice,
               qty: unitPricingModal.qty,
