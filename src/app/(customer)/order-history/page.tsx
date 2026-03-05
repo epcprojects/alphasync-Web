@@ -29,6 +29,12 @@ interface PatientOrderItemData {
   totalPrice?: number | null;
   totalTax?: number | null;
   subtotalPrice?: number | null;
+  productUnitPricing?: {
+    id: string;
+    price?: number | null;
+    quantity?: number | null;
+    strength?: string | null;
+  } | null;
   product?: {
     title?: string | null;
     description?: string | null;
@@ -195,6 +201,7 @@ function History() {
           tags: tagsData && tagsData.length > 0 ? tagsData : undefined,
           imageUrl: imageData,
           primaryImage: primaryImage ?? imageData,
+          productUnitPricing: item.productUnitPricing ?? undefined,
         };
       }) ?? [];
 
@@ -203,6 +210,7 @@ function History() {
       displayId: String(order.displayId ?? order.id),
       doctorName: order.doctor?.fullName || "Unknown Doctor",
       orderItems,
+      consultationFee: order.consultationFee ?? null,
       orderedOn: order.createdAt
         ? new Date(order.createdAt).toLocaleDateString()
         : "--",

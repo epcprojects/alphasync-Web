@@ -25,6 +25,12 @@ type OrderItem = {
     price?: number | null;
   } | null;
   tieredPrice?: number | null;
+  productUnitPricing?: {
+    id: string;
+    price?: number | null;
+    quantity?: number | null;
+    strength?: string | null;
+  } | null;
 };
 
 type order = {
@@ -148,7 +154,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               <div className="flex items-center justify-between">
                 <span
                   className={`${getOrderTags(
-                    order.status
+                    order.status,
                   )} px-3 py-0.5 rounded-full text-sm font-medium`}
                 >
                   {order.status === "pending_payment"
@@ -167,8 +173,9 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                 </span>
               </div>
             )}
-            {
-              order.consultationFee !== null && order.consultationFee !== undefined && order.consultationFee !== 0 && (
+            {order.consultationFee !== null &&
+              order.consultationFee !== undefined &&
+              order.consultationFee !== 0 && (
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-normal text-gray-800">
                     Consultation Fee
@@ -177,8 +184,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                     ${formatPrice(order.consultationFee)}
                   </span>
                 </div>
-              )
-            }
+              )}
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">
                 Order Date
@@ -203,7 +209,11 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
                 <button
                   type="button"
                   onClick={() =>
-                    window.open(order.trackingUrl!, "_blank", "noopener,noreferrer,width=900,height=700")
+                    window.open(
+                      order.trackingUrl!,
+                      "_blank",
+                      "noopener,noreferrer,width=900,height=700",
+                    )
                   }
                   className="text-sm font-medium text-indigo-600 hover:text-indigo-800 underline text-left break-all focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
                 >
@@ -217,10 +227,11 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               Total Order
             </span>
             <span className="text-lg font-semibold text-primary">
-              ${formatPrice(
+              $
+              {formatPrice(
                 typeof order?.totalPrice === "number"
                   ? order.totalPrice
-                  : parseFloat(String(order?.totalPrice)) || 0
+                  : parseFloat(String(order?.totalPrice)) || 0,
               )}
             </span>
           </div>

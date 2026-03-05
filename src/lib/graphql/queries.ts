@@ -250,6 +250,12 @@ export const DOCTOR_ORDERS = gql`
           effectivePrice
           tieredPrice
           customPrice
+          productUnitPricing {
+            id
+            price
+            quantity
+            strength
+          }
           product {
             title
             price
@@ -293,6 +299,12 @@ export const DOCTOR_ORDERS_ALL = gql`
           product {
             title
             price
+          }
+          productUnitPricing {
+            id
+            price
+            quantity
+            strength
           }
         }
         totalPrice
@@ -339,6 +351,12 @@ export const FETCH_ORDER = gql`
         quantity
         price
         totalPrice
+        productUnitPricing {
+          id
+          price
+          quantity
+          strength
+        }
         product {
           id
           title
@@ -505,6 +523,12 @@ export const PATIENT_ORDERS = gql`
           quantity
           price
           totalPrice
+          productUnitPricing {
+            id
+            price
+            quantity
+            strength
+          }
           product {
             title
             description

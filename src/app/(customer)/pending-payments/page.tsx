@@ -36,6 +36,12 @@ interface PatientOrderItemData {
   totalPrice?: number | null;
   totalTax?: number | null;
   subtotalPrice?: number | null;
+  productUnitPricing?: {
+    id: string;
+    price?: number | null;
+    quantity?: number | null;
+    strength?: string | null;
+  } | null;
   product?: {
     title?: string | null;
     description?: string | null;
@@ -219,6 +225,7 @@ function PendingPayments() {
           product: {
             primaryImage,
           },
+          productUnitPricing: item.productUnitPricing ?? undefined,
         };
       }) ?? [];
 

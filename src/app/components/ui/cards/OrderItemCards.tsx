@@ -37,6 +37,12 @@ export interface OrderItemProps {
       price?: number | null;
     } | null;
     tieredPrice?: number | null;
+    productUnitPricing?: {
+      id: string;
+      price?: number | null;
+      quantity?: number | null;
+      strength?: string | null;
+    } | null;
   };
   requestStatus?: boolean;
   paymentRequest?: boolean;
@@ -161,6 +167,23 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
           <h3 className=" text-gray-800 font-semibold text-base">
             {item.medicineName}
           </h3>
+          {item.productUnitPricing && !requestStatus && (
+            <p className="text-xs text-gray-500">
+              Unit:{" "}
+              {[
+                item.productUnitPricing.quantity != null &&
+                  `Qty ${item.productUnitPricing.quantity}`,
+                item.productUnitPricing.strength != null &&
+                  item.productUnitPricing.strength !== "" &&
+                  item.productUnitPricing.strength !== "—" &&
+                  `Strength ${item.productUnitPricing.strength}`,
+                item.productUnitPricing.price != null &&
+                  `$${formatPrice(item.productUnitPricing.price)}/unit`,
+              ]
+                .filter(Boolean)
+                .join(" · ") || "—"}
+            </p>
+          )}
           <div className={`${requestStatus ? "block" : "hidden"} md:flex`}>
             <p
               className="text-sm font-normal text-gray-800"

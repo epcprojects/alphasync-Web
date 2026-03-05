@@ -30,6 +30,12 @@ interface OrderItem {
   quantity: number;
   price: number;
   totalPrice: number;
+  productUnitPricing?: {
+    id: string;
+    price?: number | null;
+    quantity?: number | null;
+    strength?: string | null;
+  } | null;
   product: {
     id: string;
     title: string;
@@ -462,6 +468,23 @@ const Page = () => {
                       Product:
                     </span>
                     {item.product.title}
+                    {item.productUnitPricing && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Unit:{" "}
+                        {[
+                          item.productUnitPricing.quantity != null &&
+                            `Qty ${item.productUnitPricing.quantity}`,
+                          item.productUnitPricing.strength != null &&
+                            item.productUnitPricing.strength !== "" &&
+                            item.productUnitPricing.strength !== "—" &&
+                            `Strength ${item.productUnitPricing.strength}`,
+                          item.productUnitPricing.price != null &&
+                            `$${Number(item.productUnitPricing.price).toFixed(2)}/unit`,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ") || "—"}
+                      </p>
+                    )}
                   </div>
                   <div className="flex sm:order-2 order-3 sm:sm:col-span-1">
                     <span className="text-black font-medium text-sm sm:hidden inline-block pe-2">
