@@ -141,14 +141,6 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
           ))}
 
           <div className="flex flex-col gap-4 px-2.5 md:px-0 border-b border-gray-200 pb-4 ">
-            {order?.totalTax && (
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-normal text-gray-800">Tax</span>
-                <span className="text-sm font-medium text-gray-800">
-                  ${formatPrice(order?.totalTax ?? 0)}
-                </span>
-              </div>
-            )}
             <div className="flex justify-between items-center">
               <span className="text-sm font-normal text-gray-800">Status</span>
               <div className="flex items-center justify-between">
@@ -222,18 +214,29 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               </div>
             )}
           </div>
-          <div className="flex justify-between items-center px-2.5 md:px-0 border-b border-gray-200 pb-4">
-            <span className="text-lg font-semibold text-gray-800">
-              Total Order
-            </span>
-            <span className="text-lg font-semibold text-primary">
-              $
-              {formatPrice(
-                typeof order?.totalPrice === "number"
-                  ? order.totalPrice
-                  : parseFloat(String(order?.totalPrice)) || 0,
-              )}
-            </span>
+          <div className="flex flex-col gap-2 px-2.5 md:px-0 border-b border-gray-200 pb-4">
+            {order?.totalTax != null && Number(order.totalTax) > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-normal text-gray-800">Tax</span>
+                <span className="text-sm font-medium text-gray-800">
+                  ${formatPrice(order.totalTax)}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-semibold text-gray-800">
+                Total Order
+              </span>
+              <span className="text-lg font-semibold text-primary">
+                $
+                {formatPrice(
+                  (typeof order?.totalPrice === "number"
+                    ? order.totalPrice
+                    : parseFloat(String(order?.totalPrice)) || 0) +
+                    Number(order?.totalTax ?? 0),
+                )}
+              </span>
+            </div>
           </div>
         </div>
       )}
