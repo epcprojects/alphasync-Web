@@ -123,6 +123,21 @@ export default function CartPopover() {
                             <p className="text-sm font-normal leading-snug text-gray-900 line-clamp-2 overflow-hidden w-[152px]">
                               {item.name}
                             </p>
+                            {item.productUnitPricingId && (
+                              <p className="text-xs text-gray-500">
+                                {[
+                                  item.productUnitPricingQuantity != null &&
+                                    `Qty ${item.productUnitPricingQuantity}`,
+                                  item.productUnitPricingStrength &&
+                                    item.productUnitPricingStrength.trim() !==
+                                      "" &&
+                                    item.productUnitPricingStrength !== "—" &&
+                                    item.productUnitPricingStrength,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ") || ""}
+                              </p>
+                            )}
 
                             <div className="flex items-center justify-between gap-2">
                               <h2 className="text-gray-700 font-medium text-sm">

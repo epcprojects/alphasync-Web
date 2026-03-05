@@ -103,6 +103,12 @@ function OrderContent() {
         price?: number;
       };
       tieredPrice?: number;
+      productUnitPricing?: {
+        id: string;
+        price?: number | null;
+        quantity?: number | null;
+        strength?: string | null;
+      } | null;
     }[];
     status?: string;
     trackingUrl?: string | null;

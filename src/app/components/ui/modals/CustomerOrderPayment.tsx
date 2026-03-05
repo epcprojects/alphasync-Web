@@ -41,6 +41,12 @@ type OrderItem = {
   amount: string;
   quantity: number;
   price: number;
+  productUnitPricing?: {
+    id: string;
+    price?: number | null;
+    quantity?: number | null;
+    strength?: string | null;
+  } | null;
   product?: {
     price?: number | null;
   } | null;
@@ -930,7 +936,7 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                       className="flex flex-col gap-2 bg-gray-100 rounded-md p-1.5"
                     >
                       <div className="flex justify-between items-center gap-2">
-                        <div className="flex gap-2 items-center">
+                        <div className="flex gap-2 items-center min-w-0 flex-1">
                           <div className="w-12 h-12 flex-shrink-0 bg-white rounded-lg flex items-center justify-center">
                             <Image
                               alt="#"
@@ -940,9 +946,28 @@ const CustomerOrderPayment: React.FC<CustomerOrderPaymentProps> = ({
                               unoptimized
                             />
                           </div>
-                          <span className="text-sm font-normal text-gray-800">
-                            {item.medicineName}
-                          </span>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-sm font-normal text-gray-800 block">
+                              {item.medicineName}
+                            </span>
+                            {item.productUnitPricing && (
+                              <span className="text-xs text-gray-500 block mt-0.5">
+                                Unit:{" "}
+                                {[
+                                  item.productUnitPricing.quantity != null &&
+                                    `Qty ${item.productUnitPricing.quantity}`,
+                                  item.productUnitPricing.strength != null &&
+                                    item.productUnitPricing.strength !== "" &&
+                                    item.productUnitPricing.strength !== "—" &&
+                                    item.productUnitPricing.strength,
+                                  item.productUnitPricing.price != null &&
+                                    `$${formatPrice(item.productUnitPricing.price)}/unit`,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ") || "—"}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex gap-2 items-center">
                           <span className="text-sm font-medium text-raven bg-white px-2.5 rounded-sm">

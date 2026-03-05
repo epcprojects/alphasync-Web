@@ -18,6 +18,12 @@ interface OrderItem {
     primaryImage?: string;
     price?: number;
   };
+  productUnitPricing?: {
+    id: string;
+    price?: number | null;
+    quantity?: number | null;
+    strength?: string | null;
+  } | null;
 }
 
 export interface PrescriptionOrder {
@@ -51,6 +57,7 @@ interface PrescriptionOrderCardProps {
   icon: React.ReactNode;
   type: pageVarient;
   btnDisabled?: boolean;
+  hideTax?: boolean;
 }
 
 const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
@@ -62,6 +69,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   icon,
   type = "order",
   btnDisabled,
+  hideTax = false,
 }) => {
   const getOrderTags = (status?: string) => {
     switch (status) {
@@ -131,9 +139,8 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                 key={item.id}
                 className="flex items-center justify-between bg-gray-100 pl-1 pr-2 py-1 rounded-lg mb-2"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between min-w-0 flex-1">
                   <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
-                    {/* <MedicineIcon /> */}
                     <ProductImage
                       alt="prduct"
                       src={item?.product?.primaryImage}
@@ -142,17 +149,30 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                       className="w-full h-full border rounded-lg border-gray-200"
                     />
                   </div>
-                  <span
-                    className="
-            text-sm sm:text-base  font-normal text-gray-800 ml-2
-            line-clamp-2 overflow-hidden text-ellipsis
-          "
-                  >
-                    {item.medicineName}
-                  </span>
+                  <div className="ml-2 min-w-0 flex-1">
+                    <span className="text-sm sm:text-base font-normal text-gray-800 line-clamp-2 overflow-hidden text-ellipsis block">
+                      {item.medicineName}
+                    </span>
+                    {item.productUnitPricing && (
+                      <span className="text-xs text-gray-500 block mt-0.5">
+                        {[
+                          item.productUnitPricing.quantity != null &&
+                            `Qty ${item.productUnitPricing.quantity}`,
+                          item.productUnitPricing.strength != null &&
+                            item.productUnitPricing.strength !== "" &&
+                            item.productUnitPricing.strength !== "—" &&
+                            item.productUnitPricing.strength,
+                          item.productUnitPricing.price != null &&
+                            `$${Number(item.productUnitPricing.price).toFixed(2)}/unit`,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ") || "Unit pricing"}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="bg-white rounded-xs px-1.5 whitespace-nowrap text-xs font-medium text-gray-600">
                     Qty: {item.quantity}
                   </span>
@@ -201,7 +221,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                   icon={type === "order" && <Reload />}
                 />
               )}
-              {order?.totalTax && (
+              {order?.totalTax && !hideTax && (
                 <span className="text-base text-gray-800 text-left sm:text-right">
                   Tax: ${order.totalTax?.toFixed(2)}
                 </span>

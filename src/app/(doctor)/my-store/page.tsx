@@ -58,6 +58,21 @@ const Page = () => {
   const [isRemoveAllConfirmOpen, setIsRemoveAllConfirmOpen] = useState(false);
   const [productToRemove, setProductToRemove] = useState<{ id: string; title: string } | null>(null);
 
+  /** When set, show modal to select unit pricing before adding to cart (products with productUnitPricings). */
+  const [unitPricingModal, setUnitPricingModal] = useState<{
+    productId: string;
+    name: string;
+    imageSrc: string;
+    qty: number;
+    productUnitPricings: Array<{
+      id: string;
+      price?: unknown;
+      quantity: number;
+      strength?: string | null;
+    }>;
+  } | null>(null);
+  const [selectedUnitPricingIndex, setSelectedUnitPricingIndex] = useState(0);
+
   const itemsPerPage = 9;
 
   // Debounce search
@@ -125,12 +140,26 @@ const Page = () => {
                 (img) => typeof img === "string" && img.trim().length > 0,
               )) || "",
         isFavourite: !!p.isFavorited,
+        productUnitPricings: p.productUnitPricings,
       };
     });
   }, [data]);
 
   const handlePageChange = (selectedPage: number) => {
     setCurrentPage(selectedPage);
+  };
+
+  const parseUnitPrice = (p: unknown): number => {
+    if (typeof p === "number" && !Number.isNaN(p)) return p;
+    if (
+      p &&
+      typeof p === "object" &&
+      "parsedValue" in p &&
+      typeof (p as { parsedValue?: number }).parsedValue === "number"
+    )
+      return (p as { parsedValue: number }).parsedValue;
+    if (typeof p === "string") return parseFloat(p) || 0;
+    return 0;
   };
 
   const handleRemoveFromShop = async (productId: string) => {
@@ -274,6 +303,22 @@ const Page = () => {
                 }
                 removingFromShop={!!removingProductIds[product.originalId || String(product.id)]}
                 onAddToCart={(payload) => {
+                  const product = shopProducts.find(
+                    (p) => (p.originalId || String(p.id)) === payload.productId
+                  );
+                  const unitPricings = (product as { productUnitPricings?: Array<{ id: string; price?: unknown; quantity: number; strength?: string | null }> } | undefined)
+                    ?.productUnitPricings;
+                  if (unitPricings && unitPricings.length > 0) {
+                    setUnitPricingModal({
+                      productId: payload.productId,
+                      name: payload.name,
+                      imageSrc: payload.imageSrc,
+                      qty: payload.qty,
+                      productUnitPricings: unitPricings,
+                    });
+                    setSelectedUnitPricingIndex(0);
+                    return;
+                  }
                   dispatch(
                     addItem({
                       id: payload.productId,
@@ -283,7 +328,6 @@ const Page = () => {
                       imageSrc: payload.imageSrc,
                     })
                   );
-                  // Call API (server-side cart) as well
                   addToCartMutation({
                     variables: {
                       productId: payload.productId,
@@ -332,6 +376,99 @@ const Page = () => {
           Remove all products from your store? Customers will no longer see any
           of these items.
         </p>
+      </AppModal>
+
+      <AppModal
+        isOpen={!!unitPricingModal}
+        onClose={() => setUnitPricingModal(null)}
+        title="Select unit pricing"
+        subtitle=""
+        onConfirm={() => {
+          if (!unitPricingModal) return;
+          const tier = unitPricingModal.productUnitPricings[selectedUnitPricingIndex];
+          if (!tier) return;
+          const unitPrice = parseUnitPrice(tier.price);
+          dispatch(
+            addItem({
+              id: `${unitPricingModal.productId}__${tier.id}`,
+              productId: unitPricingModal.productId,
+              name: unitPricingModal.name,
+              price: unitPrice,
+              qty: unitPricingModal.qty,
+              imageSrc: unitPricingModal.imageSrc,
+              productUnitPricingId: tier.id,
+            })
+          );
+          addToCartMutation({
+            variables: {
+              productId: unitPricingModal.productId,
+              quantity: unitPricingModal.qty,
+              productUnitPricingId: tier.id,
+            },
+          });
+          showSuccessToast("Item added to cart");
+          setUnitPricingModal(null);
+        }}
+        confirmLabel="Add to Cart"
+        cancelLabel="Cancel"
+        confirmBtnVarient="filled"
+        bodyPaddingClasses="p-4 md:p-6"
+      >
+        {unitPricingModal && (
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600">
+              Choose a unit pricing for &quot;{unitPricingModal.name}&quot; (qty: {unitPricingModal.qty})
+            </p>
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="text-left py-2 px-3 w-8 font-medium text-gray-600" aria-hidden="true" />
+                    <th className="text-left py-2 px-3 font-medium text-gray-600">Quantity</th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-600">Strength</th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-600">Price per unit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {unitPricingModal.productUnitPricings.map((tier, index) => {
+                    const price = parseUnitPrice(tier.price);
+                    const isSelected = selectedUnitPricingIndex === index;
+                    return (
+                      <tr
+                        key={tier.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedUnitPricingIndex(index)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setSelectedUnitPricingIndex(index);
+                          }
+                        }}
+                        className={`border-b border-gray-100 last:border-b-0 cursor-pointer transition-colors hover:bg-gray-50 ${isSelected ? "bg-primary-50" : ""}`}
+                      >
+                        <td className="py-2 px-3 w-8">
+                          {isSelected ? (
+                            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
+                              <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </span>
+                          ) : (
+                            <span className="inline-block h-5 w-5" />
+                          )}
+                        </td>
+                        <td className="py-2 px-3 text-gray-800">{tier.quantity}</td>
+                        <td className="py-2 px-3 text-gray-800">{tier.strength ?? "—"}</td>
+                        <td className="py-2 px-3 text-right font-semibold text-gray-900">${price.toFixed(2)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </AppModal>
 
       <AppModal

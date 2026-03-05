@@ -13,6 +13,7 @@ import Pagination from "@/app/components/ui/Pagination";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import BrowserProductCard from "@/app/components/ui/cards/BrowserProductCard";
 import RequestModel from "@/app/components/ui/modals/RequestModel";
+import AppModal from "@/app/components/ui/modals/AppModal";
 import { Menu, MenuItem, MenuItems } from "@headlessui/react";
 import BrowseProductListView from "@/app/components/ui/cards/BrowseProductListView";
 import ProductDetails from "@/app/components/ui/modals/ProductDetails";
@@ -50,14 +51,33 @@ function InventoryContent() {
   // URL uses 1-based pagination, convert to 0-based for internal use
   const initialPage = Math.max(
     0,
-    parseInt(searchParams.get("page") || "1", 10) - 1
+    parseInt(searchParams.get("page") || "1", 10) - 1,
   );
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [selectedCategory, setSelectedCategory] = useState<string>(
-    orderCategories[0].label
+    orderCategories[0].label,
   );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  /** When set, show modal to select unit pricing before opening request modal (products with productUnitPricings). */
+  const [unitPricingModal, setUnitPricingModal] = useState<{
+    product: Product;
+    productId: string;
+    productName: string;
+    productUnitPricings: Array<{
+      id: string;
+      price?: unknown;
+      quantity: number;
+      strength?: string | null;
+    }>;
+  } | null>(null);
+  const [selectedUnitPricingIndex, setSelectedUnitPricingIndex] = useState(0);
+  /** Set when user selects a unit pricing; used in handleConfirmOrder. */
+  const [selectedProductUnitPricingId, setSelectedProductUnitPricingId] =
+    useState<string | null>(null);
+  const [selectedUnitPrice, setSelectedUnitPrice] = useState<number | null>(
+    null,
+  );
 
   // GraphQL query to fetch doctor data
   const { data: doctorData } = useQuery(FETCH_DOCTOR, {
@@ -119,10 +139,23 @@ function InventoryContent() {
     router.replace(`?${params.toString()}`);
   };
 
+  const parseUnitPrice = (p: unknown): number => {
+    if (typeof p === "number" && !Number.isNaN(p)) return p;
+    if (
+      p &&
+      typeof p === "object" &&
+      "parsedValue" in p &&
+      typeof (p as { parsedValue?: number }).parsedValue === "number"
+    )
+      return (p as { parsedValue: number }).parsedValue;
+    if (typeof p === "string") return parseFloat(p) || 0;
+    return 0;
+  };
+
   const handleConfirmOrder = async (reason: string) => {
     if (!selectedProduct || !doctorData?.fetchUser?.user?.doctor?.id) {
       showErrorToast(
-        "Please select a product and ensure you have a doctor assigned."
+        "Please select a product and ensure you have a doctor assigned.",
       );
       return;
     }
@@ -132,7 +165,7 @@ function InventoryContent() {
 
       // Get the product details from GraphQL to get variant information
       const originalProduct = productsData?.allProducts.allData?.find(
-        (p) => p.id === selectedProduct.originalId
+        (p) => p.id === selectedProduct.originalId,
       );
 
       if (
@@ -145,14 +178,24 @@ function InventoryContent() {
       }
 
       const firstVariant = originalProduct.variants[0];
+      const unitPrice =
+        selectedUnitPrice != null && selectedUnitPrice > 0
+          ? selectedUnitPrice
+          : firstVariant.price;
       const requestedItems = [
         {
           productId: selectedProduct.originalId,
           variantId: firstVariant.shopifyVariantId || firstVariant.id,
           quantity: 1,
-          price: firstVariant.price,
+          price: unitPrice,
+          ...(selectedProductUnitPricingId != null &&
+          selectedProductUnitPricingId !== ""
+            ? { productUnitPricingId: selectedProductUnitPricingId }
+            : {}),
         },
       ];
+
+      console.log("requestedItems", requestedItems);
 
       const result = await requestOrder({
         variables: {
@@ -163,6 +206,8 @@ function InventoryContent() {
       });
 
       setIsOrderModalOpen(false);
+      setSelectedProductUnitPricingId(null);
+      setSelectedUnitPrice(null);
       showSuccessToast("Order request sent successfully!");
     } catch (error) {
       console.error("Error in request order:", error);
@@ -180,6 +225,22 @@ function InventoryContent() {
 
   const handleAddToCart = (product: Product) => {
     setSelectedProduct(product);
+    const rawProduct = productsData?.allProducts.allData?.find(
+      (p) => p.id === product.originalId,
+    );
+    const unitPricings = rawProduct?.productUnitPricings;
+    if (unitPricings && unitPricings.length > 0) {
+      setUnitPricingModal({
+        product,
+        productId: product.originalId,
+        productName: product.title,
+        productUnitPricings: unitPricings,
+      });
+      setSelectedUnitPricingIndex(0);
+      return;
+    }
+    setSelectedProductUnitPricingId(null);
+    setSelectedUnitPrice(null);
     setIsOrderModalOpen(true);
   };
 
@@ -357,12 +418,119 @@ function InventoryContent() {
           </div>
         </div>
       )}
+      <AppModal
+        isOpen={!!unitPricingModal}
+        onClose={() => setUnitPricingModal(null)}
+        title="Select unit pricing"
+        subtitle=""
+        onConfirm={() => {
+          if (!unitPricingModal) return;
+          const tier =
+            unitPricingModal.productUnitPricings[selectedUnitPricingIndex];
+          if (!tier) return;
+          const unitPrice = parseUnitPrice(tier.price);
+          setSelectedProductUnitPricingId(tier.id);
+          setSelectedUnitPrice(unitPrice);
+          setUnitPricingModal(null);
+          setIsOrderModalOpen(true);
+        }}
+        confirmLabel="Continue to request"
+        cancelLabel="Cancel"
+        confirmBtnVarient="filled"
+        bodyPaddingClasses="p-4 md:p-6"
+      >
+        {unitPricingModal && (
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600">
+              Choose a unit pricing for &quot;{unitPricingModal.productName}
+              &quot;
+            </p>
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th
+                      className="text-left py-2 px-3 w-8 font-medium text-gray-600"
+                      aria-hidden="true"
+                    />
+                    <th className="text-left py-2 px-3 font-medium text-gray-600">
+                      Quantity
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-600">
+                      Strength
+                    </th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-600">
+                      Price per unit
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {unitPricingModal.productUnitPricings.map((tier, index) => {
+                    const price = parseUnitPrice(tier.price);
+                    const isSelected = selectedUnitPricingIndex === index;
+                    return (
+                      <tr
+                        key={tier.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedUnitPricingIndex(index)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setSelectedUnitPricingIndex(index);
+                          }
+                        }}
+                        className={`border-b border-gray-100 last:border-b-0 cursor-pointer transition-colors hover:bg-gray-50 ${isSelected ? "bg-primary-50" : ""}`}
+                      >
+                        <td className="py-2 px-3 w-8">
+                          {isSelected ? (
+                            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
+                              <svg
+                                className="h-3 w-3"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </span>
+                          ) : (
+                            <span className="inline-block h-5 w-5" />
+                          )}
+                        </td>
+                        <td className="py-2 px-3 text-gray-800">
+                          {tier.quantity}
+                        </td>
+                        <td className="py-2 px-3 text-gray-800">
+                          {tier.strength ?? "—"}
+                        </td>
+                        <td className="py-2 px-3 text-right font-semibold text-gray-900">
+                          ${price.toFixed(2)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </AppModal>
+
       <RequestModel
         isOpen={isOrderModalOpen}
         onConfirm={async ({ reason }) => {
           await handleConfirmOrder(reason);
         }}
-        onClose={() => setIsOrderModalOpen(false)}
+        onClose={() => {
+          setIsOrderModalOpen(false);
+          setSelectedProductUnitPricingId(null);
+          setSelectedUnitPrice(null);
+        }}
       />
       {isProductModalOpen && selectedProduct && (
         <ProductDetails

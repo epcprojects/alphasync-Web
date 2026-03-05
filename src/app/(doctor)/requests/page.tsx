@@ -27,6 +27,7 @@ import {
   ThemeButton,
 } from "@/app/components";
 import ChatModal from "@/app/components/ui/modals/ChatModal";
+import ProductRequestDetailModal from "@/app/components/ui/modals/ProductRequestDetailModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useQuery, useMutation } from "@apollo/client";
 import { ALL_ORDER_REQUESTS } from "@/lib/graphql/queries";
@@ -62,6 +63,9 @@ function RequestContent() {
     name: string;
     requestId: string;
   } | null>(null);
+  const [detailModalRequestId, setDetailModalRequestId] = useState<
+    string | null
+  >(null);
   const orderStatuses = [
     { label: "Pending", value: "pending", color: "before:bg-amber-500" },
     { label: "Approved", value: "approved", color: "before:bg-green-500" },
@@ -170,6 +174,40 @@ function RequestContent() {
   const selectedRequest = orderRequestsData?.allOrderRequests.allData?.find(
     (r) => String(r.id) === selectedRequestId
   );
+  const detailModalRequest = orderRequestsData?.allOrderRequests.allData?.find(
+    (r) => String(r.id) === detailModalRequestId
+  );
+  const requestDataForDetailModal = detailModalRequest
+    ? (() => {
+        const normalizeStatus = (status: string | undefined) => {
+          if (!status) return "Pending";
+          const lowerStatus = status.toLowerCase();
+          if (lowerStatus === "approved") return "Approved";
+          if (lowerStatus === "denied" || lowerStatus === "rejected")
+            return "Denied";
+          if (lowerStatus === "pending" || lowerStatus === "requested")
+            return "Pending";
+          return "Pending";
+        };
+        return {
+          title:
+            (detailModalRequest.requestedItems?.length ?? 0) > 1
+              ? "Request"
+              : detailModalRequest.requestedItems?.[0]?.title || "Request",
+          status: normalizeStatus(detailModalRequest.status),
+          requestedDate: detailModalRequest.patient?.createdAt
+            ? new Date(
+                detailModalRequest.patient.createdAt
+              ).toLocaleDateString()
+            : "",
+          doctorName: detailModalRequest.patient?.fullName || "Customer",
+          reason: detailModalRequest.reason,
+          imageSrc: "/images/fallbackImages/medicine-syrup.svg",
+          requestCustomPrice: detailModalRequest.requestCustomPrice,
+          requestedItems: detailModalRequest.requestedItems,
+        };
+      })()
+    : undefined;
   const isPharmacyRequest = Boolean(
     selectedRequest?.requestedItems?.some(
       (item) =>
@@ -467,6 +505,9 @@ function RequestContent() {
                           });
                           setIsChatModalOpen(true);
                         }}
+                        onRowClick={() =>
+                          setDetailModalRequestId(String(order.originalId))
+                        }
                       />
                     ))
                   )}
@@ -544,6 +585,9 @@ function RequestContent() {
                           });
                           setIsChatModalOpen(true);
                         }}
+                        onRowClick={() =>
+                          setDetailModalRequestId(String(order.originalId))
+                        }
                       />
                     ))
                   )}
@@ -655,6 +699,15 @@ function RequestContent() {
           itemTitle={selectedChatPatient.requestId}
         />
       )}
+
+      <ProductRequestDetailModal
+        isOpen={!!detailModalRequestId}
+        onClose={() => setDetailModalRequestId(null)}
+        itemTitle={
+          detailModalRequest?.displayId || `REQ-${detailModalRequestId}` || ""
+        }
+        requestData={requestDataForDetailModal}
+      />
     </div>
   );
 }

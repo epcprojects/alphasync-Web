@@ -39,6 +39,7 @@ interface AdminOrdersResponse {
       totalPrice: number;
       netCost: number | null;
       profit: number | null;
+      consultationFee?: number | null;
       doctor?: {
         id: string;
         email?: string | null;
@@ -50,7 +51,17 @@ interface AdminOrdersResponse {
         quantity: number;
         price: number;
         totalPrice: number;
-        product?: { id: string; title?: string | null; price?: number | null } | null;
+        productUnitPricing?: {
+          id: string;
+          price?: number | null;
+          quantity?: number | null;
+          strength?: string | null;
+        } | null;
+        product?: {
+          id: string;
+          title?: string | null;
+          price?: number | null;
+        } | null;
       }[];
       patient?: {
         id: string;

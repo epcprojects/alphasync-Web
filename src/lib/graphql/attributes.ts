@@ -158,14 +158,21 @@ export interface ProductInfo {
   productType?: string;
   vendor?: string;
   customPrice?: string | number;
+  imageUrl?: string;
 }
 
 export interface RequestedItem {
-  id?: number | string;
+  productId?: number | string;
   title?: string;
   totalPrice?: string | number;
   price?: string | number;
   product?: ProductInfo;
+  productUnitPricing?: {
+    id?: string;
+    price?: number | null;
+    quantity?: number | null;
+    strength?: string | null;
+  } | null;
 }
 
 export interface NoteAttributes {
