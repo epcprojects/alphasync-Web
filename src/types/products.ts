@@ -105,6 +105,12 @@ export interface ProductDropdownItem {
     tieredPrice: number;
     id: string;
   }[];
+  productUnitPricings?: {
+    id: string;
+    price?: number | string | { parsedValue?: number };
+    quantity: number;
+    strength?: string | null;
+  }[];
 }
 
 // Helper function to transform GraphQL product data to UI format
@@ -263,6 +269,7 @@ export const transformToDropdownItem = (
     vendor: product.vendor ?? undefined,
     customPriceChangeHistory: product.customPriceChangeHistory,
     tierPricing: product.tierPricing,
+    productUnitPricings: product.productUnitPricings,
     variants: product.variants?.map((variant) => ({
       id: variant.id,
       shopifyVariantId: variant.shopifyVariantId,

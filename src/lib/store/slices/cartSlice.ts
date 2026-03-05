@@ -8,6 +8,8 @@ export type CartItem = {
   qty: number;
   imageSrc: string;
   vendor?: string | null;
+  /** Selected pharmacy product unit pricing id (sent with create order) */
+  productUnitPricingId?: string | null;
 };
 
 export type ServerCart = {
@@ -85,6 +87,8 @@ const cartSlice = createSlice({
       if (existing) {
         existing.qty += incoming.qty;
         existing.price = incoming.price;
+        if (incoming.productUnitPricingId != null)
+          existing.productUnitPricingId = incoming.productUnitPricingId;
       } else {
         state.items.push(incoming);
       }

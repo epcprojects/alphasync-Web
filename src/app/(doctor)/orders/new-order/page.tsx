@@ -75,6 +75,12 @@ const Page = () => {
     originalPrice?: number;
     vendor?: string | null;
     productUnitPricingId?: string | null;
+    productUnitPricings?: Array<{
+      id: string;
+      price?: number | string | { parsedValue?: number };
+      quantity: number;
+      strength?: string | null;
+    }>;
     customPriceChangeHistory?: Array<{
       customPrice: number;
       id: string;
@@ -436,6 +442,7 @@ const Page = () => {
         qty,
         imageSrc,
         vendor,
+        productUnitPricingId: selectedProductData?.productUnitPricingId ?? undefined,
       }),
     );
 
@@ -581,6 +588,7 @@ const Page = () => {
             cartItemId: ci.cartItemId,
             isMarkedUp,
             vendor: vendor ?? undefined,
+            productUnitPricingId: ci.productUnitPricingId ?? prev?.productUnitPricingId,
           } satisfies OrderItem;
         }),
       );
@@ -654,6 +662,7 @@ const Page = () => {
         originalPrice: originalPrice,
         vendor: product.vendor ?? undefined,
         productUnitPricingId: unitPricingIdFromUrl || undefined,
+        productUnitPricings: product.productUnitPricings,
         customPriceChangeHistory: product.customPriceChangeHistory,
         tierPricing: product.tierPricing,
         variants: product.variants?.map((variant) => ({
@@ -722,6 +731,20 @@ const Page = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchedProductData, productIdFromUrl, unitPriceFromUrl, unitPricingIdFromUrl, searchParams, router]);
+
+  // Parse backend price (number or { parsedValue })
+  const parseUnitPrice = (p: unknown): number => {
+    if (typeof p === "number" && !Number.isNaN(p)) return p;
+    if (
+      p &&
+      typeof p === "object" &&
+      "parsedValue" in p &&
+      typeof (p as { parsedValue?: number }).parsedValue === "number"
+    )
+      return (p as { parsedValue: number }).parsedValue;
+    if (typeof p === "string") return parseFloat(p) || 0;
+    return 0;
+  };
 
   // Extract pricing information from selected product data
   const updatePricingInfo = (product: typeof selectedProductData) => {
@@ -1124,16 +1147,25 @@ const Page = () => {
     setPriceErrors({});
 
     try {
-      // Transform order items to match the expected GraphQL input format
-      const orderItemsInput = orderItems.map((item) => ({
-        productId: item.productId,
-        variantId: item.variantId,
-        quantity: item.quantity,
-        price: item.price,
-        ...(item.productUnitPricingId != null && item.productUnitPricingId !== ""
-          ? { productUnitPricingId: item.productUnitPricingId }
-          : {}),
-      }));
+      // Transform order items to match the expected GraphQL input format (include productUnitPricingId when user selected pharmacy unit pricing)
+      const orderItemsInput = orderItems.map((item) => {
+        const base: {
+          productId: string;
+          variantId: string;
+          quantity: number;
+          price: number;
+          productUnitPricingId?: string | null;
+        } = {
+          productId: item.productId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+          price: item.price,
+        };
+        if (item.productUnitPricingId != null && item.productUnitPricingId !== "") {
+          base.productUnitPricingId = item.productUnitPricingId;
+        }
+        return base;
+      });
 
       const consultationFee = overrides?.consultationFee ?? 0;
       const orderTotal = totalAmount + consultationFee;
@@ -1592,10 +1624,22 @@ const Page = () => {
                       errors={touched.product ? errors.product || "" : ""}
                       touched={touched.product}
                       onProductChange={(selectedProduct) => {
-                        setSelectedProductData(selectedProduct);
+                        const isPharmacyWithUnitPricings =
+                          selectedProduct?.vendor &&
+                          PHARMACY_VENDORS.includes(selectedProduct.vendor) &&
+                          (selectedProduct.productUnitPricings?.length ?? 0) > 0;
+                        const dataToSet =
+                          isPharmacyWithUnitPricings && selectedProduct
+                            ? {
+                                ...selectedProduct,
+                                productUnitPricingId:
+                                  selectedProduct.productUnitPricings![0].id,
+                              }
+                            : selectedProduct;
+                        setSelectedProductData(dataToSet);
 
                         // Update pricing information from the product data (already fetched in ProductSelect)
-                        updatePricingInfo(selectedProduct);
+                        updatePricingInfo(dataToSet);
 
                         // Reset validation errors when product changes
                         setFieldTouched("product", false);
@@ -1607,7 +1651,7 @@ const Page = () => {
                         setDebouncedQuantity(null);
 
                         // Auto-populate price when product is selected
-                        // Clinic: tiered price (if available) or base price. Customer: custom price or latest marked up price.
+                        // Clinic: tiered price (if available) or base price. Customer: custom price or latest marked up price. Pharmacy with unit pricings: first unit price.
                         if (selectedProduct) {
                           const basePrice =
                             selectedProduct.variants?.[0]?.price ??
@@ -1626,9 +1670,13 @@ const Page = () => {
                               latestMarkedUp = Number(sorted[0].customPrice);
                           }
 
-                          // For clinic orders, use tiered pricing if available (quantity 1 = first tier) or base price
+                          // Pharmacy with unit pricings: default to first unit price
                           let priceToUse: number;
-                          if (
+                          if (isPharmacyWithUnitPricings && selectedProduct.productUnitPricings?.[0]) {
+                            priceToUse = parseUnitPrice(
+                              selectedProduct.productUnitPricings[0].price,
+                            );
+                          } else if (
                             isClinicOrder &&
                             selectedProduct.tierPricing &&
                             selectedProduct.tierPricing.length > 0
@@ -1697,6 +1745,114 @@ const Page = () => {
                         </div>
                       </div>
                     )}
+
+                  {/* Pharmacy product unit pricing selector */}
+                  {!isClinicOrder &&
+                    selectedProductData?.vendor &&
+                    PHARMACY_VENDORS.includes(selectedProductData.vendor) &&
+                    (selectedProductData.productUnitPricings?.length ?? 0) >
+                      0 && (
+                    <div className="bg-gray-50 rounded-lg p-3 mb-1 border border-gray-200 w-full">
+                      <h3 className="text-gray-700 font-medium text-xs md:text-sm mb-3">
+                        Unit pricing
+                      </h3>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs md:text-sm">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left py-2 px-2 w-8 text-gray-600 font-medium" aria-hidden="true" />
+                              <th className="text-left py-2 px-2 text-gray-600 font-medium">
+                                Quantity
+                              </th>
+                              <th className="text-left py-2 px-2 text-gray-600 font-medium">
+                                Strength
+                              </th>
+                              <th className="text-right py-2 px-2 text-gray-600 font-medium">
+                                Price per unit
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedProductData.productUnitPricings?.map(
+                              (tier) => {
+                                const unitPrice = parseUnitPrice(tier.price);
+                                const isSelected =
+                                  selectedProductData.productUnitPricingId ===
+                                  tier.id;
+                                return (
+                                  <tr
+                                    key={tier.id}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => {
+                                      setSelectedProductData((prev) =>
+                                        prev
+                                          ? {
+                                              ...prev,
+                                              productUnitPricingId: tier.id,
+                                            }
+                                          : null,
+                                      );
+                                      setFieldValue("price", unitPrice);
+                                      setPreservedPrice(unitPrice);
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        setSelectedProductData((prev) =>
+                                          prev
+                                            ? {
+                                                ...prev,
+                                                productUnitPricingId: tier.id,
+                                              }
+                                            : null,
+                                        );
+                                        setFieldValue("price", unitPrice);
+                                        setPreservedPrice(unitPrice);
+                                      }
+                                    }}
+                                    className={`border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-100 ${
+                                      isSelected ? "bg-primary-50" : ""
+                                    }`}
+                                  >
+                                    <td className="py-2 px-3 text-gray-800 w-8">
+                                      {isSelected ? (
+                                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
+                                          <svg
+                                            className="h-3 w-3"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                            aria-hidden="true"
+                                          >
+                                            <path
+                                              fillRule="evenodd"
+                                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                              clipRule="evenodd"
+                                            />
+                                          </svg>
+                                        </span>
+                                      ) : (
+                                        <span className="inline-block h-5 w-5" />
+                                      )}
+                                    </td>
+                                    <td className="py-2 px-2 text-gray-700">
+                                      {tier.quantity}
+                                    </td>
+                                    <td className="py-2 px-2 text-gray-700">
+                                      {tier.strength ?? "—"}
+                                    </td>
+                                    <td className="py-2 px-2 text-right text-gray-800 font-semibold">
+                                      ${unitPrice.toFixed(2)}
+                                    </td>
+                                  </tr>
+                                );
+                              },
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Tiered Pricing Display for Clinic Orders */}
                   {isClinicOrder && preservedProduct && selectedProductData && (
