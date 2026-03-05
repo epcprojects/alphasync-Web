@@ -13,6 +13,9 @@ export type CartItem = {
   vendor?: string | null;
   /** Selected pharmacy product unit pricing id (sent with create order) */
   productUnitPricingId?: string | null;
+  /** Unit pricing quantity/strength for display when item has unit pricing (from server) */
+  productUnitPricingQuantity?: number;
+  productUnitPricingStrength?: string | null;
 };
 
 export type ServerCart = {
@@ -24,6 +27,12 @@ export type ServerCart = {
     id?: string;
     quantity?: number;
     markedUpPrice?: number;
+    productUnitPricing?: {
+      id?: string;
+      quantity?: number;
+      strength?: string | null;
+      price?: number;
+    } | null;
     product?: {
       id?: string;
       title?: string;
@@ -63,23 +72,40 @@ const cartSlice = createSlice({
       const serverItems = cart?.cartItems ?? [];
       state.items = serverItems.flatMap((ci): CartItem[] => {
         const product = ci.product;
-        const id = product?.id;
-        if (!id) return [];
+        const productId = product?.id;
+        if (!productId) return [];
+        const unitPricingId = ci.productUnitPricing?.id;
+        const cartLineId =
+          unitPricingId != null && unitPricingId !== ""
+            ? `${productId}__${unitPricingId}`
+            : productId;
         const imageSrc =
           (product?.primaryImage && product.primaryImage.trim().length > 0
             ? product.primaryImage
             : product?.images?.find(
                 (img) => typeof img === "string" && img.trim().length > 0,
               )) || "";
+        const price =
+          typeof ci.markedUpPrice === "number"
+            ? ci.markedUpPrice
+            : typeof ci.markedUpPrice === "object" &&
+                ci.markedUpPrice != null &&
+                "parsedValue" in ci.markedUpPrice
+              ? Number((ci.markedUpPrice as { parsedValue?: number }).parsedValue ?? 0)
+              : Number(ci.markedUpPrice ?? 0);
         return [
           {
-            id,
+            id: cartLineId,
+            productId,
             cartItemId: ci.id,
             name: product?.title || "Product",
-            price: Number(ci.markedUpPrice ?? 0),
+            price,
             qty: Number(ci.quantity ?? 1),
             imageSrc,
             vendor: product?.vendor ?? undefined,
+            productUnitPricingId: unitPricingId ?? undefined,
+            productUnitPricingQuantity: ci.productUnitPricing?.quantity,
+            productUnitPricingStrength: ci.productUnitPricing?.strength ?? undefined,
           },
         ];
       });

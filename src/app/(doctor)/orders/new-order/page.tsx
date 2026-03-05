@@ -456,11 +456,15 @@ const Page = () => {
       }),
     );
 
-    // Save on server cart
+    // Save on server cart (include productUnitPricingId when user selected a unit pricing)
     await addToCartMutation({
       variables: {
         productId,
         quantity: qty,
+        ...(selectedProductData?.productUnitPricingId != null &&
+        selectedProductData.productUnitPricingId !== ""
+          ? { productUnitPricingId: selectedProductData.productUnitPricingId }
+          : {}),
       },
     });
 

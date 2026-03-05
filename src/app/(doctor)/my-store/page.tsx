@@ -403,6 +403,7 @@ const Page = () => {
             variables: {
               productId: unitPricingModal.productId,
               quantity: unitPricingModal.qty,
+              productUnitPricingId: tier.id,
             },
           });
           showSuccessToast("Item added to cart");

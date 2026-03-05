@@ -853,8 +853,18 @@ export const UPDATE_PRODUCT = gql`
 `;
 
 export const ADD_TO_CART = gql`
-  mutation AddToCart($productId: ID!, $quantity: Int!) {
-    addToCart(input: { productId: $productId, quantity: $quantity }) {
+  mutation AddToCart(
+    $productId: ID!
+    $quantity: Int!
+    $productUnitPricingId: ID
+  ) {
+    addToCart(
+      input: {
+        productId: $productId
+        quantity: $quantity
+        productUnitPricingId: $productUnitPricingId
+      }
+    ) {
       success
     }
   }

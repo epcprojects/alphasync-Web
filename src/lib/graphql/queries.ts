@@ -29,6 +29,12 @@ export const FETCH_USER = gql`
             id
             quantity
             markedUpPrice
+            productUnitPricing {
+              id
+              price
+              quantity
+              strength
+            }
             product {
               id
               title
