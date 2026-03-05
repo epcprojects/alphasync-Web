@@ -93,11 +93,48 @@ const ProductRequestDetailModal: React.FC<ProductRequestDetailModalProps> = ({
               {requestData?.title || "Product Request"}
             </h2>
 
-            <p className="text-[10px] md:text-xs text-gray-800">
-              {requestData?.description ||
-                requestData?.subtitle ||
-                "No description"}
-            </p>
+            <div className="text-[10px] md:text-xs text-gray-800 [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:my-1 [&_li]:my-0.5">
+              {requestData?.description ? (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: requestData.description,
+                  }}
+                />
+              ) : (
+                <span>{requestData?.subtitle || "No description"}</span>
+              )}
+            </div>
+
+            {requestData?.requestedItems && requestData.requestedItems.length > 0 && (
+              <div className="mt-1.5 space-y-1">
+                {requestData.requestedItems.map((item, index) => {
+                  const unit = item.productUnitPricing;
+                  if (!unit) return null;
+                  const parts = [
+                    unit.quantity != null && `Qty ${unit.quantity}`,
+                    unit.strength != null &&
+                      unit.strength !== "" &&
+                      unit.strength !== "—" &&
+                      unit.strength,
+                    unit.price != null &&
+                      `$${Number(unit.price).toFixed(2)}/unit`,
+                  ].filter(Boolean);
+                  return (
+                    <p
+                      key={item.productId ?? index}
+                      className="text-[10px] md:text-xs text-gray-500"
+                    >
+                      {item.title && (
+                        <span className="font-medium text-gray-600">
+                          {item.title}:{" "}
+                        </span>
+                      )}
+                      Unit: {parts.length > 0 ? parts.join(" · ") : "—"}
+                    </p>
+                  );
+                })}
+              </div>
+            )}
 
             <div>
               <span

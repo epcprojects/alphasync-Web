@@ -145,7 +145,7 @@ const OrderItemCard: React.FC<OrderItemProps> = ({
       ? { label: "Reason for Denial:", value: item.denialReason }
       : null,
   ].filter((note): note is Note => note !== null);
-  console.log("primaryImage", item.primaryImage);
+
   return (
     <div
       key={item.id}

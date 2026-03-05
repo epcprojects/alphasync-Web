@@ -594,6 +594,7 @@ export const ALL_ORDER_REQUESTS = gql`
           ${userpayload}
         }
         requestedItems {
+          productId
           title
           price
           product {
@@ -604,6 +605,12 @@ export const ALL_ORDER_REQUESTS = gql`
             productType
             vendor
           }
+          productUnitPricing {
+            id
+            price
+            quantity
+            strength
+            }
         }
       }
       dataCount

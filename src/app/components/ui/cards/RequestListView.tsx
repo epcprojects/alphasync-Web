@@ -22,6 +22,7 @@ type RequestListViewProps = {
   onAcceptBtn?: () => void;
   onRejectBtn?: () => void;
   onChatBtn: () => void;
+  onRowClick?: () => void;
 };
 
 const colorPairs = [
@@ -63,14 +64,27 @@ export default function RequestListView({
   onAcceptBtn,
   onRejectBtn,
   onChatBtn,
+  onRowClick,
 }: RequestListViewProps) {
   const { bg, text } = getColorPair(request.id);
+  const itemCountText = `${request.items.length} item${request.items.length !== 1 ? "s" : ""}`;
 
   const isMobile = useIsMobile();
 
   if (isMobile) {
     return (
-      <div className="p-2 bg-white rounded-lg  flex flex-col gap-3 shadow-table">
+      <div
+        role={onRowClick ? "button" : undefined}
+        tabIndex={onRowClick ? 0 : undefined}
+        onClick={onRowClick}
+        onKeyDown={(e) => {
+                if (onRowClick && (e.key === "Enter" || e.key === " ")) {
+                  e.preventDefault();
+                  onRowClick();
+                }
+              }}
+        className={`p-2 bg-white rounded-lg flex flex-col gap-3 shadow-table ${onRowClick ? "cursor-pointer hover:bg-gray-50" : ""}`}
+      >
         <div className="flex items-start gap-1 flex-wrap justify-between">
           <div className="flex items-start gap-2">
             <span
@@ -121,7 +135,7 @@ export default function RequestListView({
           <div>
             <span className="text-black font-medium text-sm pe-1">Items:</span>
             <span className="text-gray-800 font-normal text-sm">
-              {request.items}
+              {itemCountText}
             </span>
           </div>
         </div>
@@ -212,7 +226,16 @@ export default function RequestListView({
   return (
     <div
       key={request.id}
-      className="hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px_120px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_160px] gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table"
+      role={onRowClick ? "button" : undefined}
+      tabIndex={onRowClick ? 0 : undefined}
+      onClick={onRowClick}
+      onKeyDown={(e) => {
+                if (onRowClick && (e.key === "Enter" || e.key === " ")) {
+                  e.preventDefault();
+                  onRowClick();
+                }
+              }}
+      className={`hidden sm:grid grid-cols-[1fr_14rem_1fr_1fr_160px_120px] lg:grid-cols-[1fr_16rem_1fr_1fr_1fr_1fr_1fr_160px] gap-4 items-center rounded-xl bg-white p-1 md:p-3 shadow-table ${onRowClick ? "cursor-pointer hover:bg-gray-50" : ""}`}
     >
       <div>
         <h2 className="text-gray-800 text-sm md:text-base font-normal whitespace-nowrap">
@@ -237,13 +260,7 @@ export default function RequestListView({
       </div>
 
       <div className="lg:block hidden font-normal text-sm md:text-sm text-gray-800">
-        <ul>
-          {request.items.map((item, index) => (
-            <li key={index} className="">
-              {item}
-            </li>
-          ))}
-        </ul>
+        {itemCountText}
       </div>
 
       <div className="text-xs md:text-base font-medium text-gray-800 ">

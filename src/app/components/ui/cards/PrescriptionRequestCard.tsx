@@ -127,7 +127,7 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
   };
 
   const isMobile = useIsMobile();
-  console.log("userNotes", userNotes);
+
 
   return (
     <div className={`${baseClasses} ${variantClasses[cardVarient]}`}>
@@ -158,6 +158,36 @@ const PrescriptionRequestCard: React.FC<PrescriptionRequestCardProps> = ({
                     className="text-sm md:text-base mb-1.5 text-gray-800"
                     dangerouslySetInnerHTML={{ __html: description }}
                   />
+                )}
+                {requestedItems && requestedItems.length > 0 && (
+                  <div className="mt-1.5 space-y-1">
+                    {requestedItems.map((item, index) => {
+                      const unit = item.productUnitPricing;
+                      if (!unit) return null;
+                      const parts = [
+                        unit.quantity != null && `Qty ${unit.quantity}`,
+                        unit.strength != null &&
+                          unit.strength !== "" &&
+                          unit.strength !== "—" &&
+                          unit.strength,
+                        unit.price != null &&
+                          `$${Number(unit.price).toFixed(2)}/unit`,
+                      ].filter(Boolean);
+                      return (
+                        <p
+                          key={item.productId ?? index}
+                          className="text-xs text-gray-500"
+                        >
+                          {item.title && (
+                            <span className="font-medium text-gray-600">
+                              {item.title}:{" "}
+                            </span>
+                          )}
+                          Unit: {parts.length > 0 ? parts.join(" · ") : "—"}
+                        </p>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
 
