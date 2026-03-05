@@ -189,13 +189,11 @@ function RequestContent() {
             return "Pending";
           return "Pending";
         };
-        const firstItem = detailModalRequest.requestedItems?.[0];
         return {
-          title: firstItem?.title || "Request",
-          description:
-            firstItem?.product?.description ||
-            firstItem?.product?.title ||
-            "",
+          title:
+            (detailModalRequest.requestedItems?.length ?? 0) > 1
+              ? "Request"
+              : detailModalRequest.requestedItems?.[0]?.title || "Request",
           status: normalizeStatus(detailModalRequest.status),
           requestedDate: detailModalRequest.patient?.createdAt
             ? new Date(

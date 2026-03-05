@@ -158,6 +158,7 @@ export interface ProductInfo {
   productType?: string;
   vendor?: string;
   customPrice?: string | number;
+  imageUrl?: string;
 }
 
 export interface RequestedItem {
