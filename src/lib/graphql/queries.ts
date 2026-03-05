@@ -840,6 +840,12 @@ export const ADMIN_ORDERS = gql`
             price
             primaryImage
           }
+          productUnitPricing {
+            id
+            price
+            quantity
+            strength
+          }
         }
         patient {
           id

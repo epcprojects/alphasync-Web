@@ -49,6 +49,12 @@ interface OrdersResponse {
         quantity: number;
         price: number;
         totalPrice: number;
+        productUnitPricing?: {
+          id: string;
+          price?: number | null;
+          quantity?: number | null;
+          strength?: string | null;
+        } | null;
         product?: {
           id: string;
           title?: string | null;

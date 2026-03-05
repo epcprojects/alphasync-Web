@@ -59,7 +59,18 @@ export interface AdminOrderDetail {
     quantity: number;
     price: number;
     totalPrice: number;
-    product?: { id: string; title?: string | null; price?: number | null; primaryImage?: string | null } | null;
+    productUnitPricing?: {
+      id: string;
+      price?: number | null;
+      quantity?: number | null;
+      strength?: string | null;
+    } | null;
+    product?: {
+      id: string;
+      title?: string | null;
+      price?: number | null;
+      primaryImage?: string | null;
+    } | null;
   }>;
   patient: {
     id: string;
@@ -242,6 +253,23 @@ export default function AdminOrderDetailCanvas({
                       <p className="text-sm text-gray-500 mt-0.5">
                         Qty: {item.quantity} × ${formatPrice(item.price)}
                       </p>
+                      {item.productUnitPricing && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Unit:{" "}
+                          {[
+                            item.productUnitPricing.quantity != null &&
+                              `Qty ${item.productUnitPricing.quantity}`,
+                            item.productUnitPricing.strength != null &&
+                              item.productUnitPricing.strength !== "" &&
+                              item.productUnitPricing.strength !== "—" &&
+                              `Strength ${item.productUnitPricing.strength}`,
+                            item.productUnitPricing.price != null &&
+                              `$${formatPrice(item.productUnitPricing.price)}/unit`,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ") || "—"}
+                        </p>
+                      )}
                     </div>
                     <div className="text-sm font-medium text-gray-900 shrink-0">
                       ${formatPrice(item.totalPrice)}
