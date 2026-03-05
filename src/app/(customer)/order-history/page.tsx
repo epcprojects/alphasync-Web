@@ -420,8 +420,8 @@ function History() {
                 order.hasAnotherReorder
                   ? "Already submitted"
                   : reorderingOrderId === order.id
-                  ? "Processing..."
-                  : "Reorder"
+                    ? "Processing..."
+                    : "Reorder"
               }
               btnDisabled={
                 order.hasAnotherReorder || reorderingOrderId === order.id
@@ -432,6 +432,7 @@ function History() {
               }}
               icon={<EyeIcon />}
               type="order"
+              hideTax={true}
             />
           ))
         )}
@@ -449,6 +450,7 @@ function History() {
         onClose={() => setIsDetailModelOpen(false)}
         order={selectedOrder}
         type="order"
+        hideTax={true}
       />
     </div>
   );

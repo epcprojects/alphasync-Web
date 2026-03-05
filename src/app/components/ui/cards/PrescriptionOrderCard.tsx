@@ -57,6 +57,7 @@ interface PrescriptionOrderCardProps {
   icon: React.ReactNode;
   type: pageVarient;
   btnDisabled?: boolean;
+  hideTax?: boolean;
 }
 
 const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
@@ -68,6 +69,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
   icon,
   type = "order",
   btnDisabled,
+  hideTax = false,
 }) => {
   const getOrderTags = (status?: string) => {
     switch (status) {
@@ -148,9 +150,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                     />
                   </div>
                   <div className="ml-2 min-w-0 flex-1">
-                    <span
-                      className="text-sm sm:text-base font-normal text-gray-800 line-clamp-2 overflow-hidden text-ellipsis block"
-                    >
+                    <span className="text-sm sm:text-base font-normal text-gray-800 line-clamp-2 overflow-hidden text-ellipsis block">
                       {item.medicineName}
                     </span>
                     {item.productUnitPricing && (
@@ -221,7 +221,7 @@ const PrescriptionOrderCard: React.FC<PrescriptionOrderCardProps> = ({
                   icon={type === "order" && <Reload />}
                 />
               )}
-              {order?.totalTax && (
+              {order?.totalTax && !hideTax && (
                 <span className="text-base text-gray-800 text-left sm:text-right">
                   Tax: ${order.totalTax?.toFixed(2)}
                 </span>

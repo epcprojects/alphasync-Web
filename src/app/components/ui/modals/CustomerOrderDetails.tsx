@@ -58,6 +58,7 @@ interface CustomerOrderDetailsProps {
   onClose: () => void;
   order: order | null;
   type?: pageVarient;
+  hideTax?: boolean;
   showDoctorName?: boolean;
 }
 
@@ -65,7 +66,8 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
   isOpen,
   onClose,
   order,
-  showDoctorName = true, // Default to true for customer side
+  showDoctorName = true,
+  hideTax = false,
 }) => {
   useBodyScrollLock(isOpen);
   const normalizeAddress = (value?: string | null) => {
@@ -106,7 +108,7 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
       }
       return acc;
     },
-    { totalBeforeDiscount: 0, totalWithDiscount: 0, hasAnyDiscount: false }
+    { totalBeforeDiscount: 0, totalWithDiscount: 0, hasAnyDiscount: false },
   );
 
   const getOrderTags = (status?: string) => {
@@ -227,15 +229,26 @@ const CustomerOrderDetails: React.FC<CustomerOrderDetailsProps> = ({
               <span className="text-lg font-semibold text-gray-800">
                 Total Order
               </span>
-              <span className="text-lg font-semibold text-primary">
-                $
-                {formatPrice(
-                  (typeof order?.totalPrice === "number"
-                    ? order.totalPrice
-                    : parseFloat(String(order?.totalPrice)) || 0) +
-                    Number(order?.totalTax ?? 0),
-                )}
-              </span>
+              {hideTax ? (
+                <span className="text-lg font-semibold text-primary">
+                  $
+                  {formatPrice(
+                    typeof order?.totalPrice === "number"
+                      ? order.totalPrice
+                      : parseFloat(String(order?.totalPrice)) || 0,
+                  )}
+                </span>
+              ) : (
+                <span className="text-lg font-semibold text-primary">
+                  $
+                  {formatPrice(
+                    (typeof order?.totalPrice === "number"
+                      ? order.totalPrice
+                      : parseFloat(String(order?.totalPrice)) || 0) +
+                      Number(order?.totalTax ?? 0),
+                  )}
+                </span>
+              )}
             </div>
           </div>
         </div>
