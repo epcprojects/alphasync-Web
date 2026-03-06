@@ -7,7 +7,6 @@ import {
   InventorySkeleton,
   ProductCard,
   ProductListView,
-  Pagination,
   ThemeButton,
   PriceModal,
 } from "@/components";
@@ -29,6 +28,7 @@ import React, { Suspense, useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Tooltip from "@/app/components/ui/tooltip";
 import { useQuery, useMutation } from "@apollo/client/react";
+import { NetworkStatus } from "@apollo/client";
 import {
   ALL_PRODUCTS_INVENTORY,
   ALL_CATEGORIES,
@@ -97,6 +97,9 @@ function InventoryContent() {
   const isMobile = useIsMobile();
   const itemsPerPage = 9;
   const [currentPage, setCurrentPage] = useState(1);
+  type AllDataItem = AllProductsResponse["allProducts"]["allData"][number];
+  const [loadedAllData, setLoadedAllData] = useState<AllDataItem[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const userEmail = useAppSelector((state) => state.auth.user?.email);
 
@@ -106,46 +109,31 @@ function InventoryContent() {
     { label: "Not Marked Up", value: "Not Marked Up" },
   ];
 
+  const clearLoadedAndResetPage = () => {
+    setLoadedAllData([]);
+    setCurrentPage(1);
+    setIsLoadingMore(false);
+  };
+
   const handleMarkupFilterChange = (filter: string) => {
     setMarkupFilter(filter);
-    setCurrentPage(1);
+    clearLoadedAndResetPage();
   };
 
   // Debounce search input to avoid too many API calls
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
-      // Reset to first page when search changes
-      setCurrentPage(1);
+      clearLoadedAndResetPage();
     }, 500);
 
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Reset to first page when out of stock filter changes
+  // Reset loaded list and page when any filter changes
   useEffect(() => {
-    setCurrentPage(1);
-  }, [showOutOfStock]);
-
-  // Reset to first page when favorites filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [showFavourites]);
-
-  // Reset to first page when markup filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [markupFilter]);
-
-  // Reset to first page when category filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedCategory]);
-
-  // Reset to first page when inventory tab changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [inventoryTab]);
+    clearLoadedAndResetPage();
+  }, [showOutOfStock, showFavourites, markupFilter, selectedCategory, inventoryTab]);
 
   // GraphQL query to fetch categories
   const { data: categoriesData } = useQuery<{ allCategories: string[] }>(
@@ -154,36 +142,43 @@ function InventoryContent() {
   );
   const categories = categoriesData?.allCategories ?? [];
 
+  const queryVariables = {
+    search: debouncedSearch,
+    page: 1,
+    perPage: itemsPerPage,
+    inStockOnly: showOutOfStock ? false : undefined,
+    category: selectedCategory ?? undefined,
+    vendor:
+      inventoryTab === "research-use-only"
+        ? ALPHA_BIOMED_VENDORS
+        : inventoryTab === "pharmacy"
+          ? PHARMACY_VENDORS
+          : undefined,
+    favoriteProducts: showFavourites ? true : undefined,
+    markedUp:
+      markupFilter === "Marked Up"
+        ? true
+        : markupFilter === "Not Marked Up"
+          ? false
+          : undefined,
+    notMarkedUp: markupFilter === "Not Marked Up" ? true : undefined,
+  };
+
   const {
     data: productsData,
     loading: productsLoading,
     error: productsError,
     refetch,
+    fetchMore: fetchMoreProducts,
+    networkStatus,
   } = useQuery<AllProductsResponse>(ALL_PRODUCTS_INVENTORY, {
-    variables: {
-      search: debouncedSearch,
-      page: currentPage, // Use currentPage directly (1-based pagination)
-      perPage: itemsPerPage,
-      inStockOnly: showOutOfStock ? false : undefined,
-      category: selectedCategory ?? undefined,
-      vendor:
-        inventoryTab === "research-use-only"
-          ? ALPHA_BIOMED_VENDORS
-          : inventoryTab === "pharmacy"
-            ? PHARMACY_VENDORS
-            : undefined,
-      favoriteProducts: showFavourites ? true : undefined,
-      markedUp:
-        markupFilter === "Marked Up"
-          ? true
-          : markupFilter === "Not Marked Up"
-            ? false
-            : undefined,
-      notMarkedUp: markupFilter === "Not Marked Up" ? true : undefined,
-    },
+    variables: queryVariables,
     fetchPolicy: "network-only",
     notifyOnNetworkStatusChange: true,
   });
+
+  const hasNoDataYet = !productsData?.allProducts?.allData?.length && !loadedAllData.length;
+  const isInitialLoading = hasNoDataYet && (productsLoading || networkStatus === NetworkStatus.loading);
 
   // GraphQL mutation to create order
   const [createOrder, { loading: createOrderLoading }] =
@@ -202,18 +197,35 @@ function InventoryContent() {
   // GraphQL mutation to set product price (Pharmacy / Integrity toggle on – use displayed price)
   const [updateProductPrice] = useMutation(UPDATE_PRODUCT_PRICE);
 
-  // Transform GraphQL product data to match the expected format
-  const products: Product[] =
-    productsData?.allProducts.allData?.map(transformGraphQLProduct) || [];
-
   // Get pagination info from GraphQL response
   const pageCount = productsData?.allProducts.totalPages || 1;
+  const hasMorePages = currentPage < pageCount;
 
-  // All filtering is handled by the backend
-  const displayProducts = products;
+  const displayAllData =
+    loadedAllData.length > 0
+      ? loadedAllData
+      : (productsData?.allProducts.allData ?? []);
+  const displayProducts = displayAllData.map(transformGraphQLProduct);
 
-  const handlePageChange = (selectedPage: number) => {
-    setCurrentPage(selectedPage);
+  const handleLoadMore = () => {
+    const nextPage = currentPage + 1;
+    if (currentPage === 1 && loadedAllData.length === 0) {
+      setLoadedAllData(productsData?.allProducts.allData ?? []);
+    }
+    setIsLoadingMore(true);
+    fetchMoreProducts({
+      variables: { ...queryVariables, page: nextPage },
+    })
+      .then((result) => {
+        if (result.data?.allProducts?.allData?.length) {
+          setLoadedAllData((prev) => [
+            ...prev,
+            ...result.data.allProducts.allData,
+          ]);
+          setCurrentPage(nextPage);
+        }
+      })
+      .finally(() => setIsLoadingMore(false));
   };
 
   const handleToggleFavorite = async (productId: string) => {
@@ -530,10 +542,9 @@ function InventoryContent() {
               <Tooltip content="Favorite Products">
                 <button
                   onClick={() => setShowFavourites((prev) => !prev)}
-                  className={`w-8 h-8 shrink-0 md:h-11 md:w-11 ${
-                    showFavourites &&
+                  className={`w-8 h-8 shrink-0 md:h-11 md:w-11 ${showFavourites &&
                     "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-                  }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+                    }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
                 >
                   {showFavourites ? (
                     <HeartFilledIcon
@@ -551,10 +562,9 @@ function InventoryContent() {
               <Tooltip content="Out of Stock">
                 <button
                   onClick={() => setShowOutOfStock((prev) => !prev)}
-                  className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-                    showOutOfStock &&
+                  className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${showOutOfStock &&
                     "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-                  }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+                    }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
                 >
                   <PackageOutlineIcon
                     height={isMobile ? "15" : "20"}
@@ -568,10 +578,9 @@ function InventoryContent() {
                   onClick={() => {
                     setShowGridView(true);
                   }}
-                  className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-                    showGridView &&
+                  className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${showGridView &&
                     "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-                  }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+                    }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
                 >
                   <GridViewIcon
                     height={isMobile ? "15" : "20"}
@@ -585,10 +594,9 @@ function InventoryContent() {
                   onClick={() => {
                     setShowGridView(false);
                   }}
-                  className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${
-                    !showGridView &&
+                  className={`w-8 h-8 md:h-11 shrink-0 md:w-11 ${!showGridView &&
                     "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white"
-                  }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
+                    }  cursor-pointer rounded-full bg-gray-100 flex items-center justify-center`}
                 >
                   <ListViewIcon
                     height={isMobile ? "15" : "20"}
@@ -610,10 +618,9 @@ function InventoryContent() {
         <TabList className="flex w-fit items-center gap-1 rounded-full bg-gray-100 p-1 shadow-table overflow-x-auto">
           <Tab
             className={({ selected }) =>
-              `whitespace-nowrap px-4 md:px-6 py-2.5 text-sm font-medium rounded-full transition-colors outline-none ${
-                selected
-                  ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+              `whitespace-nowrap px-4 md:px-6 py-2.5 text-sm font-medium rounded-full transition-colors outline-none ${selected
+                ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
               }`
             }
           >
@@ -621,10 +628,9 @@ function InventoryContent() {
           </Tab>
           <Tab
             className={({ selected }) =>
-              `whitespace-nowrap px-4 md:px-6 py-2.5 text-sm font-medium rounded-full transition-colors outline-none ${
-                selected
-                  ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+              `whitespace-nowrap px-4 md:px-6 py-2.5 text-sm font-medium rounded-full transition-colors outline-none ${selected
+                ? "bg-gradient-to-r from-[#3C85F5] to-[#1A407A] text-white shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
               }`
             }
           >
@@ -634,7 +640,7 @@ function InventoryContent() {
 
         <TabPanels className="mt-4">
           <TabPanel className="focus:outline-none">
-            {productsLoading && !isRefetchingFavorites ? (
+            {isInitialLoading && !isRefetchingFavorites ? (
               <InventorySkeleton viewMode={showGridView ? "grid" : "list"} />
             ) : (
               <div className="flex flex-col gap-4 md:gap-6">
@@ -643,7 +649,7 @@ function InventoryContent() {
                     {displayProducts.map((product) => {
                       // Find the original GraphQL product data using the originalId
                       const originalProduct =
-                        productsData?.allProducts.allData?.find(
+                        displayAllData.find(
                           (p) => p.id === product.originalId,
                         );
                       const isMarkedUp =
@@ -706,7 +712,7 @@ function InventoryContent() {
                     {displayProducts.map((product) => {
                       // Find the original GraphQL product data using the originalId
                       const originalProduct =
-                        productsData?.allProducts.allData?.find(
+                        displayAllData.find(
                           (p) => p.id === product.originalId,
                         );
                       // Only Alpha BioMed (RUO) products can be added to shop / ordered
@@ -756,21 +762,23 @@ function InventoryContent() {
                     <EmptyState mtClasses=" mt-0 md:mt-0" />
                   )}
 
-                  {displayProducts.length > 0 && (
-                    <Pagination
-                      currentPage={currentPage - 1} // Convert 1-based to 0-based for pagination component
-                      totalPages={pageCount}
-                      onPageChange={(selectedPage) =>
-                        handlePageChange(selectedPage + 1)
-                      } // Convert 0-based back to 1-based
-                    />
+                  {displayProducts.length > 0 && hasMorePages && (
+                    <div className="flex justify-center pt-2">
+                      <ThemeButton
+                        variant="filled"
+                        label={isLoadingMore ? "Loading…" : "Load more products"}
+                        onClick={handleLoadMore}
+                        disabled={isLoadingMore}
+                        className="min-w-[140px]"
+                      />
+                    </div>
                   )}
                 </div>
               </div>
             )}
           </TabPanel>
           <TabPanel className="focus:outline-none">
-            {productsLoading && !isRefetchingFavorites ? (
+            {isInitialLoading && !isRefetchingFavorites ? (
               <InventorySkeleton viewMode={showGridView ? "grid" : "list"} />
             ) : (
               <div className="flex flex-col gap-4 md:gap-6">
@@ -778,7 +786,7 @@ function InventoryContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3  gap-2 md:gap-6">
                     {displayProducts.map((product) => {
                       const originalProduct =
-                        productsData?.allProducts.allData?.find(
+                        displayAllData.find(
                           (p) => p.id === product.originalId,
                         );
                       // Pharmacy (Integrity): toggle for My Store; on enable, set price to displayed price
@@ -836,7 +844,7 @@ function InventoryContent() {
                     </div>
                     {displayProducts.map((product) => {
                       const originalProduct =
-                        productsData?.allProducts.allData?.find(
+                        displayAllData.find(
                           (p) => p.id === product.originalId,
                         );
                       // Pharmacy (Integrity): toggle for My Store; on enable, set price to displayed price
@@ -884,14 +892,16 @@ function InventoryContent() {
                   {displayProducts.length < 1 && (
                     <EmptyState mtClasses=" mt-0 md:mt-0" />
                   )}
-                  {displayProducts.length > 0 && (
-                    <Pagination
-                      currentPage={currentPage - 1}
-                      totalPages={pageCount}
-                      onPageChange={(selectedPage) =>
-                        handlePageChange(selectedPage + 1)
-                      }
-                    />
+                  {displayProducts.length > 0 && hasMorePages && (
+                    <div className="flex justify-center pt-2">
+                      <ThemeButton
+                        variant="filled"
+                        label={isLoadingMore ? "Loading…" : "Load more products"}
+                        onClick={handleLoadMore}
+                        disabled={isLoadingMore}
+                        className="min-w-[140px]"
+                      />
+                    </div>
                   )}
                 </div>
               </div>
@@ -921,13 +931,13 @@ function InventoryContent() {
         product={
           selectedProduct
             ? {
-                id: selectedProduct.id,
-                title: selectedProduct.title,
-                imageUrl: selectedProduct.imageUrl,
-                basePrice: selectedProduct.price ?? 0,
-                customPrice: selectedProduct.customPrice ?? null,
-                vendor: selectedProduct.vendor,
-              }
+              id: selectedProduct.id,
+              title: selectedProduct.title,
+              imageUrl: selectedProduct.imageUrl,
+              basePrice: selectedProduct.price ?? 0,
+              customPrice: selectedProduct.customPrice ?? null,
+              vendor: selectedProduct.vendor,
+            }
             : null
         }
         onSuccess={() => {
